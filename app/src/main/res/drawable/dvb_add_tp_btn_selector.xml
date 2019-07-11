@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 非触摸模式下获得焦点并单击时的背景图片 -->
+    <item android:state_focused="true" android:state_pressed="true">
+        <shape>
+            <corners android:radius="3dp" />
+            <solid android:color="#C01B20" />
+        </shape>
+    </item>
+    <!-- 获得焦点时的图片背景 -->
+    <item android:state_focused="true">
+        <shape>
+            <corners android:radius="3dp" />
+            <solid android:color="#8D2326" />
+        </shape>
+    </item>
+    <!-- 默认时的背景图片 -->
+    <item android:drawable="@drawable/btn_translate_bg_select_shape" />
+
+</selector>

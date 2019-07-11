@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/background"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@mipmap/right_background"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:gravity="center_horizontal"
+                android:text="@string/preference_settings"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="18dp"
+                android:background="#c0bfbf" />
+
+            <!-- General Setting -->
+            <RelativeLayout
+                android:id="@+id/rl_general_settings"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginLeft="200dp"
+                android:layout_marginTop="50dp"
+                android:layout_marginRight="200dp"
+                android:background="@drawable/dvb_btn_fragment_selector"
+                android:focusable="true"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/general_setting"
+                    android:textSize="@dimen/sp_12" />
+            </RelativeLayout>
+
+            <!-- Parental Control -->
+            <RelativeLayout
+                android:id="@+id/rl_parental_control"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginLeft="200dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="200dp"
+                android:background="@drawable/dvb_btn_fragment_selector"
+                android:focusable="true"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/parental_control"
+                    android:textSize="@dimen/sp_12" />
+            </RelativeLayout>
+
+            <!-- PVR Setting -->
+            <RelativeLayout
+                android:id="@+id/rl_pvr_settings"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginLeft="200dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="200dp"
+                android:background="@drawable/dvb_btn_fragment_selector"
+                android:focusable="true"
+                android:gravity="center"
+                android:visibility="visible">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/pvr_settings"
+                    android:textSize="@dimen/sp_12" />
+            </RelativeLayout>
+
+            <!-- Book List -->
+            <RelativeLayout
+                android:id="@+id/rl_book_list"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginLeft="200dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="200dp"
+                android:background="@drawable/dvb_btn_fragment_selector"
+                android:focusable="true"
+                android:gravity="center"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/book_list"
+                    android:textSize="@dimen/sp_12" />
+            </RelativeLayout>
+
+            <!-- Record List -->
+            <RelativeLayout
+                android:id="@+id/rl_record_list"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginLeft="200dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="200dp"
+                android:background="@drawable/dvb_btn_fragment_selector"
+                android:focusable="true"
+                android:gravity="center"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/record_list"
+                    android:textSize="@dimen/sp_12" />
+            </RelativeLayout>
+        </LinearLayout>
+
+        <include
+            layout="@layout/bottom_bar_select_item"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_alignParentBottom="true" />
+    </RelativeLayout>
+</RelativeLayout>

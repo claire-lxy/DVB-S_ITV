@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">iTV</string>
+
+    <string name="topmost_no_signal">Interrupt Signal</string>
+    <string name="topmost_program_empty">The program list is empty. Please search</string>
+
+    <string name="scan_tp_tv">TV：</string>
+
+    <string name="audio_track_left">The left channel</string>
+    <string name="audio_track_right">The right channel</string>
+    <string name="audio_track_stereo">Stereo</string>
+
+    <string name="epg_event_playing">Playing</string>
+    <string name="dialog_favorite_title">Favorite Type</string>
+
+    <string name="Installation">Installation</string>
+    <string name="menu">BACK</string>
+    <string name="back">Back</string>
+    <string name="up_down">PageUp/Down</string>
+    <string name="auto_diseqc">Auto DiSEqC</string>
+    <string name="auto">Auto</string>
+    <string name="tp">TP</string>
+    <string name="tp1">TP:</string>
+    <string name="edit">Edit</string>
+    <string name="scan">Scan</string>
+    <string name="find">Find</string>
+    <string name="search_01">Search</string>
+    <string name="off">OFF</string>
+    <string name="on">ON</string>
+    <string name="motor">Motor:</string>
+    <string name="motor_0">Motor</string>
+    <string name="diseqc">DiSEqC:</string>
+    <string name="freq">Freq:</string>
+    <string name="lnb_power">LNB Power:</string>
+    <string name="lnb">LNB:</string>
+    <string name="satellite_S">Satellite:</string>
+    <string name="all">ALL</string>
+    <string name="diseqc_1.X">DiSEqC 1.X:</string>
+    <string name="longitude">Longitude:</string>
+    <string name="_22khz">22KHz:</string>
+    <string name="i">I</string>
+    <string name="q">Q</string>
+    <string name="rename">Rename</string>
+    <string name="lock">Lock</string>
+    <string name="skip">Skip</string>
+    <string name="pid">PID</string>
+    <string name="single_satellite_search">Single Satellite Search</string>
+    <string name="multi_satellite_search">MultiSatellite Search</string>
+
+    <!--Motor-->
+    <string name="motor_01">Motor</string>
+
+    <string name="motor_satellite">Satellite</string>
+    <string name="motor_Insat_2e">Insat 2e</string>
+    <string name="motor_type">Motor Type</string>
+    <string name="motor_diseqc">DiSEqC1.2</string>
+    <string name="motor_move_steps">Move Steps</string>
+    <string name="motor_stop">Stop</string>
+    <string name="motor_step_size">Step Size</string>
+    <string name="motor_continue">Continue</string>
+    <string name="motor_position">Position</string>
+    <string name="motor_position_text">Position: 1</string>
+    <string name="motor_diseqc_command">DiSEqC Command</string>
+    <string name="motor_save_position">Save Position</string>
+    <string name="motor_change_item">Change Item</string>
+    <string name="motor_select">Select</string>
+    <string name="motor_ok">OK</string>
+
+    <!--DVB setting-->
+    <string name="general_setting">General Settings</string>
+    <string name="subtitles_setting">Subtitle Display</string>
+    <string name="timeout">P/F Bar Timeout</string>
+    <string name="aspect_ratio_mode">Aspect Ratio Mode</string>
+    <string name="switch_channel_mode">Switch Channel Mode</string>
+    <string name="first_audio_language">First Audio Language</string>
+    <string name="second_audio_language">Second Audio Language</string>
+    <string name="language">English</string>
+    <string name="teletext">Teletext Language</string>
+    <string name="subtitle_language">Subtitle Language</string>
+    <string name="switch_channel_block">Blank</string>
+
+    <!--TV-->
+    <string name="tv">TV</string>
+    <string name="radio">Radio</string>
+
+    <!--tplist-->
+    <string name="add">Add</string>
+    <string name="tp_listing">TP List</string>
+    <string name="delete">Delete</string>
+
+    <!--channel manager-->
+    <string name="channel_edit">Channel Edit</string>
+    <string name="channel_list_fav">Channel Favorite List</string>
+
+    <!-- EPG -->
+    <string name="monday">Mon</string>
+    <string name="tuesday">Tue</string>
+    <string name="wednesday">Wed</string>
+    <string name="thursday">Thu</string>
+    <string name="friday">Fri</string>
+    <string name="saturday">Sat</string>
+    <string name="sunday">Sun</string>
+
+    <string name="manual_installation">Manual Installation</string>
+    <string name="blind_scan">Blind Scan</string>
+    <string name="epg">EPG</string>
+    <string name="clear_channel">Clear Channel</string>
+    <string name="Channel_management">Channel Manager</string>
+    <string name="dtv_setting">DTV Setting</string>
+
+    <!--activity_blind_select.xml-->
+    <string name="blindscan_select">BlindScan Select</string>
+    <string name="satellite_blind">Satellite:</string>
+    <string name="lnb_5150">5150</string>
+    <string name="diseqc_1_x">DiSEqC 1.X:</string>
+    <string name="diseqc_d">DiSEqC D</string>
+    <string name="freq_22KHz">22KHz:</string>
+
+    <!--activity_scan_tv_and_radio.xml-->
+    <string name="progress">Progress</string>
+    <string name="new_tv">New Tv :</string>
+    <string name="_radio">Radio :</string>
+    <string name="switch_frame">Switch Frame</string>
+
+    <!--activity_tp_blind.xml-->
+    <string name="new_tp">New Tp :</string>
+    <string name="porgress">Progress</string>
+    <string name="change_item">Change Item</string>
+
+    <string name="all_channel">All Channel</string>
+    <string name="favorite_group_list">Favorite Group</string>
+    <string name="favorite_channel_list">Favorite Channel</string>
+    <string name="channel_num">NO.</string>
+    <string name="channel_name">Channel Name</string>
+    <string name="channel_del">Del</string>
+    <string name="channel_move">Move</string>
+    <string name="channel_fav">Fav</string>
+    <string name="channel_lock">Lock</string>
+    <string name="channel_skip">Skip</string>
+    <string name="channel_sort">Sort</string>
+    <string name="channel_more">More</string>
+
+    <string name="symbol_rate">Symbol Rate</string>
+    <string name="pol">Pol</string>
+    <string name="h">H</string>
+    <string name="v">V</string>
+    <string name="add_failure">the Freq or Symbol is too much</string>
+
+    <!--dialog_autodiseqc.xml-->
+    <string name="ok">OK</string>
+
+    <!--dialog_blind_scan.xml-->
+    <string name="scan_mode">Scan Mode</string>
+    <string name="cas_system">CAS System</string>
+    <string name="allca">ALLCA</string>
+
+    <string name="yes">Yes</string>
+    <string name="cancel">Cancel</string>
+
+    <!--dialog_delete_tp.xml-->
+    <string name="delete_selected_transponder">Delete selected transponder?</string>
+    <string name="capital_yes">YES</string>
+    <string name="capital_no">NO</string>
+
+    <!--dialog_epg_remind.xml-->
+    <string name="no_program">No program!\nDo you want to enter the search interface?</string>
+
+    <string name="_freq">Freq</string>
+
+    <string name="edit_rename">Rename</string>
+    <string name="edit_satellite_name">Satellite Name</string>
+    <string name="edit_favorite_group_name">Group Name</string>
+
+
+    <!-- dialog back -->
+    <string name="back_infomation">If you exit, the data will not save.</string>
+
+    <!--dialog_scan.xml-->
+    <string name="network">Network</string>
+    <string name="nit_off">NIT OFF</string>
+    <string name="nit_on">NIT ON</string>
+    <string name="freeca">FREECA</string>
+    <string name="onlyca">ONLYCA</string>
+    <string name="ftaonly">FTA Only</string>
+
+    <string name="mhz">MHz</string>
+    <string name="ks">ks</string>
+
+    <string name="select">Select</string>
+
+    <!--fragment_clear_search.xml-->
+    <string name="clear_prog_date">Clear prog date</string>
+    <string name="are_you_sure_clear_prog_data">Are you sure clear prog data?</string>
+
+    <!--pf_info_popwindow.xmll-->
+    <string name="sub">SUB</string>
+    <string name="txt">TXT</string>
+    <string name="rate">RATE</string>
+    <string name="no_information">Information not available</string>
+    <string name="dialog_pf_detail_title">Service Info</string>
+    <string name="dialog_pf_no_detail">No detail information!</string>
+    <string name="dialog_pf_satellite_name">Satellite Name:{0}</string>
+    <string name="dialog_pf_channel_name">Channel Name:{0}</string>
+    <string name="dialog_pf_vpid">VPID:{0}</string>
+    <string name="dialog_pf_apid">APID:{0}</string>
+    <string name="dialog_pf_ppid">PPID:{0}</string>
+    <string name="dialog_pf_freq">Frequency:{0}</string>
+    <string name="dialog_pf_symbol">Symbolrate:{0}</string>
+    <string name="dialog_pf_pol">Polarization:{0}</string>
+
+    <!--pid_dialog-->
+    <string name="video_type">Video Type</string>
+    <string name="audio_type">Audio Type</string>
+    <string name="video_pid">Video PID</string>
+    <string name="audio_pid">Audio PID</string>
+    <string name="pcr_pid">PCR PID</string>
+    <string name="h264">H264</string>
+    <string name="mpeg2">MPEG2</string>
+
+    <!--password_dialog-->
+    <string name="password">Enter Password</string>
+    <string name="password_input">Please Input Password:</string>
+
+    <!--sort_dialog-->
+    <string name="please_search">No programs, please search</string>
+
+    <!-- Parental Control -->
+    <string name="preference_settings">Preference Settings</string>
+    <string name="parental_control">Parental Control</string>
+    <string name="menu_lock">Menu Lock</string>
+    <string name="channel_lock2">Channel Lock</string>
+    <string name="control_age">Control Age</string>
+    <string name="set_password">Set Password</string>
+    <string name="current_password">Current Password:</string>
+    <string name="new_password">New Password:</string>
+    <string name="confirm_password">Confirm Password:</string>
+
+    <!-- PVR Setting -->
+    <string name="pvr_settings">PVR Settings</string>
+    <string name="time_shift_length">TimeShift Length</string>
+    <string name="record_length">Record Length</string>
+    <string name="record_type">Record Type</string>
+    <string name="device_name">Device Name</string>
+    <string name="device_format">Device Format</string>
+    <string name="device_format_OK">OK</string>
+    <string name="device_none">None</string>
+    <string name="device_format_dialog_content">Confirm to format the device?</string>
+    <string name="device_file_system">File System:  {0}</string>
+    <string name="device_free_space">Free Space:  {0}</string>
+    <string name="device_total_capacity">Total Capacity:  {0}</string>
+
+    <!-- T2 -->
+    <string name="dialog_title_tips">Tips</string>
+    <string name="installation_s2">DVB S/S2</string>
+    <string name="installation_t2">DVB T/T2</string>
+    <string name="installation_t2_title">Installation T2</string>
+    <string name="t2_auto_search">Auto Search</string>
+    <string name="t2_manual_search">Manual Search</string>
+    <string name="channel_type">Channel Type</string>
+    <string name="scan_type">Scan Type</string>
+
+    <string name="transponder">TransponderNo:</string>
+    <string name="frequency">Frequency:</string>
+    <string name="bandwidth">BandWidth:</string>
+
+    <string name="antenna_power">Antenna Power</string>
+    <string name="area_setting">Area Setting</string>
+    <string name="lcn">LCN</string>
+
+    <string name="channel_edit_save_title">Save</string>
+    <string name="channel_edit_save_content">Do you want to save data?</string>
+
+    <string name="channel_edit_FAVList_delete_title">Delete</string>
+    <string name="channel_edit_FAVList_delete_content">Do you want to delete data?</string>
+
+    <string name="exit_app_content">Do you want to exit iTV?</string>
+
+    <string name="book">Book</string>
+    <string name="booklist">BookList</string>
+    <string name="book_list">Book List</string>
+    <string name="book_type">Type</string>
+    <string name="book_mode">Mode</string>
+    <string name="book_channel_type">Channel Type</string>
+    <string name="book_channel_name">Channel Name</string>
+    <string name="book_date">Date</string>
+    <string name="book_week">Week</string>
+    <string name="book_day">Day</string>
+    <string name="book_time">Time</string>
+    <string name="book_start_time">Start Time</string>
+    <string name="book_end_time">End Time</string>
+    <string name="delete_book_title">Cancel Book</string>
+    <string name="delete_book_content">Do you want to cancel book the program?</string>
+    <string name="book_date_day">{0}th</string>
+    <string name="book_date_week_everyday">EveryDay</string>
+    <string name="book_weekly_dialog_title">Weekday Select</string>
+    <string name="epg_booking_dialog_title">Select The Book Type</string>
+    <string name="book_date_segment">-</string>
+    <string name="book_time_segment">:</string>
+    <string name="book_non">None</string>
+    <string name="book_play">Play</string>
+    <string name="book_record">Record</string>
+    <string name="book_standby">Standby</string>
+    <string name="book_once">Once</string>
+    <string name="book_daily">Daily</string>
+    <string name="book_weekly">Weekly</string>
+    <string name="book_monthly">Monthly</string>
+    <string name="book_time_once_format">{0}-{1}-{2} {3}:{4}{5}-{6}-{7}-{8} {9}:{10}</string>
+    <string name="book_time_once_format_non_endtime">{0}-{1}-{2} {3}:{4}</string>
+    <string name="book_time_daily_format">{0}:{1}-{3}:{4}</string>
+    <string name="book_time_daily_format_non_endtime">{0}:{1}</string>
+    <string name="book_time_weekly_or_monthly_format">{0} {1} {2}:{3}-{4}:{5}</string>
+    <string name="book_time_weekly_or_monthly_format_non_endtime">{0} {1} {2}:{3}</string>
+    <string name="dialog_book_content">Will {0} after {1} seconds!</string>
+    <string name="dialog_book_standby_content">Standby</string>
+    <string name="dialog_book_record_content">Record the following program</string>
+    <string name="dialog_book_play_content">Play the following program</string>
+    <string name="dialog_book_standby">Standby Now</string>
+    <string name="dialog_book_record">Record Now</string>
+    <string name="dialog_book_play">Play Now</string>
+    <string name="dialog_book_cancel">Cancel Book</string>
+    <string name="dialog_book_conflict_title">Conflict Event</string>
+    <string name="dialog_book_conflict_content">Do you want to replace the following program?\nBookTime: {0}\nChannelName: {1}\nType: {2}</string>
+    <string name="dialog_book_conflict_positive">Replace</string>
+
+    <!-- Record List -->
+    <string name="record_list">Record List</string>
+    <string name="storage_device">Storage Device</string>
+    <string name="play">Play</string>
+    <string name="dialog_delete_channel_content">Are you sure to delete?</string>
+
+    <string name="toast_invalid_password">Invalid password</string>
+    <string name="toast_book_limit">Book Limit</string>
+    <string name="toast_current_password_error">Current password error</string>
+    <string name="toast_confirm_password_invalid">Confirm password is incorrect</string>
+    <string name="toast_pid_not_empty">parameter should be not empty</string>
+    <string name="toast_program_number_invalid">invalid program number</string>
+
+    <string name="dialog_try_auto_diseqc">Scanning DiSEqC Port Index {0}.Try [{1}/{2}] times...</string>
+    <string name="dialog_auto_diseqc_title">Information</string>
+    <string name="dialog_no_found_diseqc">No DiSEqC Found!</string>
+    <string name="dialog_found_diseqc">Found {0}</string>
+
+    <string name="dialog_search_result_title">Search Result</string>
+    <string name="dialog_no_search">No Program!</string>
+    <string name="dialog_search_result_tv">TV: {0}</string>
+    <string name="dialog_search_result_radio">Radio: {0}</string>
+</resources>

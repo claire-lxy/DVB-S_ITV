@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ll_menu"
+    android:layout_width="235dp"
+    android:layout_height="match_parent"
+    android:background="@mipmap/main_menu_bg"
+    android:orientation="vertical">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="110dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="10dp"
+        android:src="@mipmap/logo"
+        tools:ignore="ContentDescription" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/item_installation"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@drawable/dvb_btn_selector"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingLeft="40dp">
+
+            <ImageView
+                android:id="@+id/iv_installation_back"
+                android:layout_width="wrap_content"
+                android:layout_height="10dp"
+                android:src="@mipmap/back"
+                android:visibility="gone"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_installation"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:background="@drawable/dvb_btn_selector"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:text="@string/Installation"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/item_manual_installation"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@drawable/dvb_btn_selector"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:paddingLeft="40dp"
+            android:text="@string/manual_installation"
+            android:textSize="15sp"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/item_blind_scan"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@drawable/dvb_btn_selector"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:paddingLeft="40dp"
+            android:text="@string/blind_scan"
+            android:textSize="15sp"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/item_epg"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:background="@drawable/dvb_btn_selector"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:paddingLeft="40dp"
+            android:text="@string/epg" />
+
+        <LinearLayout
+            android:id="@+id/item_channel_manage"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@drawable/dvb_btn_selector"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingLeft="40dp">
+
+            <ImageView
+                android:id="@+id/iv_channel_manage_back"
+                android:layout_width="wrap_content"
+                android:layout_height="10dp"
+                android:src="@mipmap/back"
+                android:visibility="gone"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_channel_manage"
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:background="@drawable/dvb_btn_selector"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:text="@string/Channel_management"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/item_channel_edit"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:background="@drawable/dvb_btn_selector"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:paddingLeft="40dp"
+            android:text="@string/channel_edit"
+            android:textSize="15sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/item_channel_favorite"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:background="@drawable/dvb_btn_selector"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:paddingLeft="40dp"
+            android:text="@string/channel_list_fav"
+            android:textSize="15sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/item_clear_channel"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:background="@drawable/dvb_btn_selector"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:paddingLeft="40dp"
+            android:text="@string/clear_channel"
+            android:textSize="15sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/item_dtv_setting"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:background="@drawable/dvb_btn_selector"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:paddingLeft="40dp"
+            android:text="@string/dtv_setting"
+            android:textSize="15sp" />
+    </LinearLayout>
+</LinearLayout>

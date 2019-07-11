@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 编辑部分 -->
+    <string-array name="LNB" translatable="false">
+        <item>user0</item>  <!--用户自定义-->
+
+        <!--单本证-->
+        <item>5150</item>
+        <item>5750</item>
+        <item>9750</item>
+        <item>10600</item>
+        <item>11300</item>
+
+        <!--双本证-->
+        <item>5150/5750</item>
+        <item>9700/10750</item>
+
+        <item>Uni9750/10600</item>
+    </string-array>
+
+
+    <!-- pfbar超時部分 -->
+    <string-array name="pfbar_time" translatable="false">
+        <item>5s</item>
+        <item>8s</item>
+        <item>10s</item>
+    </string-array>
+
+    <!-- 語言部分 -->
+    <string-array name="language" translatable="false">
+        <item>English</item>
+    </string-array>
+
+    <!-- 宽高比部分 -->
+    <string-array name="aspect_ratio_mode" translatable="false">
+        <item>4:3</item>
+        <item>16:9</item>
+        <item>Auto</item>
+    </string-array>
+
+    <!--切台画面模式-->
+    <string-array name="switch_channel_mode" translatable="false">
+        <item>Blank</item>
+        <item>Freeze</item>
+    </string-array>
+
+    <!--通用开关-->
+    <string-array name="general_switch" translatable="false">
+        <item>@string/off</item>
+        <item>@string/on</item>
+    </string-array>
+
+    <!-- 编辑部分 -->
+    <string-array name="DISEQC" translatable="false">
+        <item>@string/off</item>
+        <item>ToneBurst A</item>
+        <item>ToneBurst B</item>
+        <item>DisEqc A</item>
+        <item>DisEqc B</item>
+        <item>DisEqc C</item>
+        <item>DisEqc D</item>
+        <item>LNB-1</item>
+        <item>LNB-2</item>
+        <item>LNB-3</item>
+        <item>LNB-4</item>
+        <item>LNB-5</item>
+        <item>LNB-6</item>
+        <item>LNB-7</item>
+        <item>LNB-8</item>
+        <item>LNB-9</item>
+        <item>LNB-10</item>
+        <item>LNB-11</item>
+        <item>LNB-12</item>
+        <item>LNB-13</item>
+        <item>LNB-14</item>
+        <item>LNB-15</item>
+        <item>LNB-16</item>
+        <item>Auto</item>
+
+    </string-array>
+
+    <!-- sort排序方式 -->
+    <string-array name="sort_content" translatable="false">
+        <item>A to Z</item>
+        <!--    <item>Satellite</item>
+            <item>Transponder</item> -->
+        <item>Z to A</item>
+        <item>CAS</item>
+
+
+    </string-array>
+    <string-array name="parental_control_age" translatable="false">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+        <item>14</item>
+        <item>15</item>
+        <item>16</item>
+        <item>17</item>
+        <item>18</item>
+    </string-array>
+
+    <string-array name="dateTexts">
+        <item>@string/monday</item>
+        <item>@string/tuesday</item>
+        <item>@string/wednesday</item>
+        <item>@string/thursday</item>
+        <item>@string/friday</item>
+        <item>@string/saturday</item>
+        <item>@string/sunday</item>
+    </string-array>
+
+    <string-array name="scanMode">
+        <item>@string/all</item>
+        <item>@string/tv</item>
+        <item>@string/radio</item>
+    </string-array>
+
+    <string-array name="network">
+        <item>@string/nit_off</item>
+        <item>@string/nit_on</item>
+    </string-array>
+
+    <string-array name="casSystem">
+        <item>@string/allca</item>
+        <item>@string/freeca</item>
+        <item>@string/onlyca</item>
+    </string-array>
+
+    <string-array name="channelType">
+        <item>@string/all</item>
+        <item>@string/ftaonly</item>
+    </string-array>
+
+    <string-array name="scanType">
+        <item>@string/t2_auto_search</item>
+        <item>@string/t2_manual_search</item>
+    </string-array>
+
+    <string-array name="antenna_power">
+        <item>@string/off</item>
+        <item>@string/on</item>
+    </string-array>
+
+    <string-array name="area_setting">
+        <item>Italy</item>
+        <item>Sweden</item>
+        <item>Holland</item>
+        <item>England</item>
+        <item>Australia</item>
+        <item>NewZealand</item>
+        <item>TaiWan</item>
+        <item>Albania</item>
+        <item>Russia</item>
+        <item>Thailand</item>
+        <item>Germany</item>
+        <item>France</item>
+        <item>Spain</item>
+    </string-array>
+
+    <string-array name="time_shift_length">
+        <item>1 hour</item>
+        <item>User-defined</item>
+        <item>1 minute</item>
+        <item>5 minutes</item>
+        <item>30 minutes</item>
+    </string-array>
+
+    <string-array name="record_length">
+        <item>1 hour</item>
+        <item>User-defined</item>
+        <item>Auto</item>
+        <item>1 minute</item>
+        <item>10 minutes</item>
+        <item>30 minutes</item>
+    </string-array>
+
+    <string-array name="record_type">
+        <item>Current Service</item>
+        <item>Whole TS</item>
+    </string-array>
+
+    <string-array name="book_type">
+        <item>Standby</item>
+        <item>Play</item>
+        <item>Record</item>
+    </string-array>
+
+    <string-array name="book_mode">
+        <item>@string/book_once</item>
+        <item>@string/book_daily</item>
+        <item>@string/book_weekly</item>
+        <item>@string/book_monthly</item>
+    </string-array>
+
+    <string-array name="book_channel_type">
+        <item>@string/tv</item>
+        <item>@string/radio</item>
+    </string-array>
+
+    <!-- 按照Calendar.DAY_OF_WEEK排序 -->
+    <string-array name="book_date_weekly">
+        <item>@string/sunday</item>
+        <item>@string/monday</item>
+        <item>@string/tuesday</item>
+        <item>@string/wednesday</item>
+        <item>@string/thursday</item>
+        <item>@string/friday</item>
+        <item>@string/saturday</item>
+    </string-array>
+
+    <string-array name="epg_booking">
+        <item>@string/book_play</item>
+        <item>@string/book_record</item>
+    </string-array>
+
+    <string-array name="epg_booked">
+        <item>@string/book_non</item>
+        <item>@string/book_play</item>
+        <item>@string/book_record</item>
+    </string-array>
+</resources>

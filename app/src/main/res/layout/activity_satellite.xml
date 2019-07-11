@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/background">
+
+    <LinearLayout
+        android:layout_width="235dp"
+        android:layout_height="match_parent"
+        android:background="@mipmap/left_background"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="220dp"
+            android:layout_height="110dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:src="@mipmap/logo"
+            tools:ignore="contentDescription" />
+
+        <com.konkawise.dtv.view.TVListView
+            android:id="@+id/lv_satellite"
+            android:layout_width="match_parent"
+            android:layout_height="375dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="85dp"
+            android:divider="@null"
+            android:fadeScrollbars="false"
+            android:focusable="false"
+            android:listSelector="@drawable/dvb_btn_selector"
+            android:scrollbarThumbVertical="@mipmap/scroller_bg"
+            android:scrollbarTrackVertical="@mipmap/left_scroll_background" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="84dp"
+        android:layout_marginBottom="84dp"
+        android:background="@mipmap/right_background"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:text="@string/manual_installation"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="#c0bfbf" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="265dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <!--LNB-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="56dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingLeft="257dp"
+                    android:text="@string/lnb"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:id="@+id/tv_lnb"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="17sp" />
+            </LinearLayout>
+
+            <!--LNBPower -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingLeft="257dp"
+                    android:text="@string/lnb_power"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:id="@+id/tv_lnb_power"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="17sp" />
+            </LinearLayout>
+
+            <!--Freq-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingLeft="257dp"
+                    android:text="@string/freq"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:id="@+id/tv_lnb_power_freq"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="17sp" />
+            </LinearLayout>
+
+            <!--DisEqc-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingLeft="257dp"
+                    android:text="@string/diseqc"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:id="@+id/tv_lnb_power_diseqc"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="17sp" />
+            </LinearLayout>
+
+            <!--Motor-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingLeft="257dp"
+                    android:text="@string/motor"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:id="@+id/tv_lnb_power_motor"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="17sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <include layout="@layout/bottom_bar_control_item" />
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="fav_text_color">#FCFFB9</color>
+    <color name="channel_edit_gray">#FF282828</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- epg -->
+    <color name="epg_text_select">#FFFFFF</color>
+    <color name="epg_text_normal">#A1A1A1</color>
+
+    <!-- dialog-->
+    <color name="dialog_bg">#000000</color>
+
+    <color name="color_4D4D4D">#4D4D4D</color>
+</resources>

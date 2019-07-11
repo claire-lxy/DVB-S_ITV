@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.konkawise.dtv.view.TopmostLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <SurfaceView
+            android:id="@+id/sv_topmost"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center" />
+
+        <include
+            layout="@layout/hint_box"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:focusable="false" />
+
+        <ImageView
+            android:id="@+id/iv_radio_bg"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:background="@drawable/music_bg"
+            android:visibility="invisible"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/tv_track"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="50dp"
+            android:layout_marginEnd="180dp"
+            android:layout_marginRight="180dp"
+            android:textColor="@android:color/white"
+            android:textSize="50sp" />
+
+        <TextView
+            android:id="@+id/tv_prog_num"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="50dp"
+            android:layout_marginEnd="80dp"
+            android:layout_marginRight="80dp"
+            android:textColor="@android:color/white"
+            android:textSize="50sp" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_prog_list_menu"
+        android:layout_width="270dp"
+        android:layout_height="match_parent"
+        android:background="@android:color/black"
+        android:orientation="vertical">
+
+        <include
+            layout="@layout/sat_list_switch_bar"
+            android:layout_width="match_parent"
+            android:layout_height="33dp"
+            android:layout_marginTop="5dp" />
+
+        <ListView
+            android:id="@+id/lv_prog_list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_gravity="start"
+            android:layout_weight="1"
+            android:divider="@null"
+            android:fadeScrollbars="true"
+            android:listSelector="@drawable/dvb_btn_selector"
+            android:paddingTop="30dp"
+            android:paddingBottom="40dp"
+            android:scrollbarThumbVertical="@mipmap/scroller_bg"
+            android:scrollbarTrackVertical="@mipmap/left_scroll_background" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="#c0bfbf" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:drawableStart="@drawable/tag_yellow_bg"
+            android:drawableLeft="@drawable/tag_yellow_bg"
+            android:drawablePadding="10dp"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="@string/find"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <include layout="@layout/menu_layout" />
+</com.konkawise.dtv.view.TopmostLayout>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.konkawise.dtv">
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+
+    <application
+        android:name="com.konkawise.dtv.KonkaApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/icon"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/icon"
+        android:supportsRtl="true"
+        android:testOnly="false"
+        android:theme="@style/Theme.AppCompat.NoActionBar"
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning">
+        <activity
+            android:name="com.konkawise.dtv.ui.Topmost"
+            android:configChanges="keyboardHidden"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name="com.konkawise.dtv.ui.SatelliteActivity" />
+        <activity android:name="com.konkawise.dtv.ui.MotorActivity" />
+        <activity android:name="com.konkawise.dtv.ui.TpBlindActivity" />
+        <activity
+            android:name="com.konkawise.dtv.ui.TpListingActivity"
+            android:configChanges="keyboardHidden" />
+        <activity android:name="com.konkawise.dtv.ui.EditManualActivity" />
+        <activity android:name="com.konkawise.dtv.ui.ScanTVandRadioActivity" />
+        <activity android:name="com.konkawise.dtv.ui.BlindActivity" />
+        <activity android:name="com.konkawise.dtv.ui.DTVSettingActivity" />
+        <activity android:name="com.konkawise.dtv.ui.FavoriteActivity" />
+        <activity android:name="com.konkawise.dtv.ui.BookListActivity" />
+
+        <receiver android:name="com.konkawise.dtv.receiver.HomeReceiver" />
+        <receiver android:name="com.konkawise.dtv.receiver.UsbReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_MOUNTED" />
+                <action android:name="android.intent.action.MEDIA_UNMOUNTED" />
+
+                <data android:scheme="file" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name="com.konkawise.dtv.receiver.BookCompletedReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <activity android:name="com.konkawise.dtv.ui.GeneralSettingsActivity" />
+        <activity android:name="com.konkawise.dtv.ui.ParentalControlActivity" />
+        <activity android:name="com.konkawise.dtv.ui.EpgActivity" />
+        <activity android:name="com.konkawise.dtv.ui.ChannelEditActivity" />
+        <activity android:name="com.konkawise.dtv.ui.InstallationT2Activity" />
+        <activity android:name="com.konkawise.dtv.ui.T2ManualSearchActivity" />
+        <activity android:name="com.konkawise.dtv.ui.PVRSettingActivity" />
+        <activity android:name="com.konkawise.dtv.ui.RecordListActivity" />
+
+        <provider
+            android:name="com.konkawise.dtv.utils.ChannelLockProvider"
+            android:authorities="dvbchannellock"
+            android:exported="true" />
+        <service android:name="com.konkawise.dtv.service.BookListenerService" />
+    </application>
+
+</manifest>

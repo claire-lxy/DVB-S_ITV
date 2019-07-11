@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    android:background="@drawable/right_bottom_background"
+    android:gravity="center"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:layout_width="@dimen/dp_30"
+        android:layout_height="@dimen/dp_20"
+        android:background="@drawable/btn_translate_bg_shape"
+        android:gravity="center"
+        android:padding="@dimen/dp_3">
+
+        <ImageView
+            android:layout_width="@dimen/dp_8"
+            android:layout_height="@dimen/dp_8"
+            android:src="@drawable/triangle_up"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:layout_width="@dimen/dp_8"
+            android:layout_height="@dimen/dp_8"
+            android:src="@drawable/triangle_down"
+            tools:ignore="ContentDescription" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:layout_marginLeft="6dp"
+        android:text="@string/motor_change_item"
+        android:textSize="@dimen/sp_10" />
+
+    <TextView
+        android:layout_width="@dimen/dp_30"
+        android:layout_height="@dimen/dp_20"
+        android:layout_marginStart="40dp"
+        android:layout_marginLeft="40dp"
+        android:background="@drawable/btn_translate_bg_shape"
+        android:gravity="center"
+        android:padding="@dimen/dp_3"
+        android:text="@string/motor_ok"
+        android:textSize="@dimen/sp_10" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:layout_marginLeft="6dp"
+        android:text="@string/motor_select"
+        android:textSize="@dimen/sp_10" />
+</LinearLayout>

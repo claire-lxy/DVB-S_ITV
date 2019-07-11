@@ -1,0 +1,601 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/dialog_bg"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tv_book_dialog_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="10dp"
+        android:textSize="16sp"
+        tools:text="Add" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:background="#c0bfbf" />
+
+    <!-- Type -->
+    <LinearLayout
+        android:id="@+id/item_book_type"
+        android:layout_width="match_parent"
+        android:layout_height="22dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="60dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginRight="60dp"
+        android:background="@drawable/btn_translate_bg_select_shape"
+        android:orientation="horizontal"
+        android:paddingLeft="6dp"
+        android:paddingRight="6dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/book_type" />
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1">
+
+            <ImageView
+                android:id="@+id/iv_book_type_left"
+                android:layout_width="@dimen/dp_8"
+                android:layout_height="@dimen/dp_8"
+                android:layout_centerVertical="true"
+                android:src="@drawable/triangle_left"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_book_type"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp_12"
+                android:layout_marginRight="@dimen/dp_12"
+                android:background="@drawable/btn_red_bg_shape"
+                android:gravity="center" />
+
+            <ImageView
+                android:id="@+id/iv_book_type_right"
+                android:layout_width="@dimen/dp_8"
+                android:layout_height="@dimen/dp_8"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/triangle_right"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <!-- Mode -->
+    <LinearLayout
+        android:id="@+id/item_book_mode"
+        android:layout_width="match_parent"
+        android:layout_height="22dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginLeft="60dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="60dp"
+        android:orientation="horizontal"
+        android:paddingLeft="6dp"
+        android:paddingRight="6dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/book_mode" />
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1">
+
+            <ImageView
+                android:id="@+id/iv_book_mode_left"
+                android:layout_width="@dimen/dp_8"
+                android:layout_height="@dimen/dp_8"
+                android:layout_centerVertical="true"
+                android:src="@drawable/triangle_left"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_book_mode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp_12"
+                android:layout_marginRight="@dimen/dp_12"
+                android:gravity="center" />
+
+            <ImageView
+                android:id="@+id/iv_book_mode_right"
+                android:layout_width="@dimen/dp_8"
+                android:layout_height="@dimen/dp_8"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/triangle_right"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <!-- Channel Type -->
+    <LinearLayout
+        android:id="@+id/item_book_channel_type"
+        android:layout_width="match_parent"
+        android:layout_height="22dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginLeft="60dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="60dp"
+        android:orientation="horizontal"
+        android:paddingLeft="6dp"
+        android:paddingRight="6dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/book_channel_type" />
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1">
+
+            <ImageView
+                android:id="@+id/iv_book_channel_type_left"
+                android:layout_width="@dimen/dp_8"
+                android:layout_height="@dimen/dp_8"
+                android:layout_centerVertical="true"
+                android:src="@drawable/triangle_left"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_book_channel_type"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp_12"
+                android:layout_marginRight="@dimen/dp_12"
+                android:gravity="center" />
+
+            <ImageView
+                android:id="@+id/iv_book_channel_type_right"
+                android:layout_width="@dimen/dp_8"
+                android:layout_height="@dimen/dp_8"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/triangle_right"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <!-- Channel Name -->
+    <LinearLayout
+        android:id="@+id/item_book_channel_name"
+        android:layout_width="match_parent"
+        android:layout_height="22dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginLeft="60dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="60dp"
+        android:orientation="horizontal"
+        android:paddingLeft="6dp"
+        android:paddingRight="6dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/book_channel_name" />
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1">
+
+            <ImageView
+                android:id="@+id/iv_book_channel_name_left"
+                android:layout_width="@dimen/dp_8"
+                android:layout_height="@dimen/dp_8"
+                android:layout_centerVertical="true"
+                android:src="@drawable/triangle_left"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_book_channel_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp_12"
+                android:layout_marginRight="@dimen/dp_12"
+                android:gravity="center" />
+
+            <ImageView
+                android:id="@+id/iv_book_channel_name_right"
+                android:layout_width="@dimen/dp_8"
+                android:layout_height="@dimen/dp_8"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/triangle_right"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <!-- Date -->
+    <LinearLayout
+        android:id="@+id/item_book_date"
+        android:layout_width="match_parent"
+        android:layout_height="22dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginLeft="60dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="60dp"
+        android:orientation="horizontal"
+        android:paddingLeft="6dp"
+        android:paddingRight="6dp">
+
+        <TextView
+            android:id="@+id/tv_book_date_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/book_date" />
+
+        <!-- weekly -->
+        <!--<TextView-->
+            <!--android:id="@+id/tv_book_date_weekly"-->
+            <!--android:layout_width="0dp"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_marginLeft="@dimen/dp_12"-->
+            <!--android:layout_marginRight="@dimen/dp_12"-->
+            <!--android:layout_weight="1"-->
+            <!--android:gravity="center"-->
+            <!--android:visibility="gone" />-->
+        <RelativeLayout
+            android:id="@+id/rl_book_date_weekly"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/iv_book_date_weekly_left"
+                android:layout_width="@dimen/dp_8"
+                android:layout_height="@dimen/dp_8"
+                android:layout_centerVertical="true"
+                android:src="@drawable/triangle_left"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_book_date_weekly"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp_12"
+                android:layout_marginRight="@dimen/dp_12"
+                android:gravity="center" />
+
+            <ImageView
+                android:id="@+id/iv_book_date_weekly_right"
+                android:layout_width="@dimen/dp_8"
+                android:layout_height="@dimen/dp_8"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/triangle_right"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <!-- monthly -->
+        <RelativeLayout
+            android:id="@+id/rl_book_date_monthly"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/iv_book_date_monthly_left"
+                android:layout_width="@dimen/dp_8"
+                android:layout_height="@dimen/dp_8"
+                android:layout_centerVertical="true"
+                android:src="@drawable/triangle_left"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_book_date_monthly"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/dp_12"
+                android:layout_marginRight="@dimen/dp_12"
+                android:gravity="center" />
+
+            <ImageView
+                android:id="@+id/iv_book_date_monthly_right"
+                android:layout_width="@dimen/dp_8"
+                android:layout_height="@dimen/dp_8"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/triangle_right"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <!-- date -->
+        <LinearLayout
+            android:id="@+id/ll_book_date_edit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/et_book_date_year"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:background="@null"
+                android:digits="0123456789"
+                android:focusable="false"
+                android:gravity="center"
+                android:inputType="date"
+                android:maxLength="4"
+                android:nextFocusRight="@+id/et_book_date_month"
+                android:textColor="@android:color/white"
+                android:textSize="13sp"
+                tools:ignore="Autofill,LabelFor"
+                tools:text="2019" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:text="@string/book_date_segment" />
+
+            <EditText
+                android:id="@+id/et_book_date_month"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:background="@null"
+                android:digits="0123456789"
+                android:focusable="false"
+                android:gravity="center"
+                android:inputType="date"
+                android:maxLength="2"
+                android:nextFocusRight="@+id/et_book_date_day"
+                android:textColor="@android:color/white"
+                android:textSize="13sp"
+                tools:ignore="Autofill,LabelFor"
+                tools:text="06" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:text="@string/book_date_segment" />
+
+            <EditText
+                android:id="@+id/et_book_date_day"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:background="@null"
+                android:digits="0123456789"
+                android:focusable="false"
+                android:gravity="center"
+                android:inputType="date"
+                android:maxLength="2"
+                android:nextFocusRight="@+id/et_book_date_year"
+                android:textColor="@android:color/white"
+                android:textSize="13sp"
+                tools:ignore="Autofill,LabelFor"
+                tools:text="13" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Start Time -->
+    <LinearLayout
+        android:id="@+id/item_book_start_time"
+        android:layout_width="match_parent"
+        android:layout_height="22dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginLeft="60dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="60dp"
+        android:orientation="horizontal"
+        android:paddingLeft="6dp"
+        android:paddingRight="6dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/book_start_time" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/et_book_start_time_hour"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:background="@null"
+                android:digits="0123456789"
+                android:focusable="false"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="2"
+                android:nextFocusRight="@+id/et_book_start_time_minute"
+                android:textColor="@android:color/white"
+                android:textSize="13sp"
+                tools:ignore="Autofill,LabelFor"
+                tools:text="14:20" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:text="@string/book_time_segment" />
+
+            <EditText
+                android:id="@+id/et_book_start_time_minute"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:background="@null"
+                android:digits="0123456789"
+                android:focusable="false"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="2"
+                android:nextFocusRight="@+id/et_book_start_time_hour"
+                android:textColor="@android:color/white"
+                android:textSize="13sp"
+                tools:ignore="Autofill,LabelFor"
+                tools:text="14:20" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- End Time -->
+    <LinearLayout
+        android:id="@+id/item_book_end_time"
+        android:layout_width="match_parent"
+        android:layout_height="22dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginLeft="60dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="60dp"
+        android:layout_marginBottom="24dp"
+        android:orientation="horizontal"
+        android:paddingLeft="6dp"
+        android:paddingRight="6dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/book_end_time" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/et_book_end_time_hour"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:background="@null"
+                android:digits="0123456789"
+                android:focusable="false"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="2"
+                android:nextFocusRight="@+id/et_book_end_time_minute"
+                android:textColor="@android:color/white"
+                android:textSize="13sp"
+                tools:ignore="Autofill,LabelFor"
+                tools:text="14:20" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:text="@string/book_time_segment" />
+
+            <EditText
+                android:id="@+id/et_book_end_time_minute"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:background="@null"
+                android:digits="0123456789"
+                android:focusable="false"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="2"
+                android:nextFocusRight="@+id/et_book_end_time_hour"
+                android:textColor="@android:color/white"
+                android:textSize="13sp"
+                tools:ignore="Autofill,LabelFor"
+                tools:text="14:20" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="15dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/btn_book"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/dvb_delete_btn_selector"
+            android:focusable="false"
+            android:gravity="center"
+            android:paddingLeft="30dp"
+            android:paddingTop="5dp"
+            android:paddingRight="30dp"
+            android:paddingBottom="5dp"
+            android:text="@string/ok"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/btn_cancel_book"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="60dp"
+            android:layout_marginLeft="60dp"
+            android:background="@drawable/dvb_delete_btn_selector"
+            android:focusable="false"
+            android:gravity="center"
+            android:paddingLeft="30dp"
+            android:paddingTop="5dp"
+            android:paddingRight="30dp"
+            android:paddingBottom="5dp"
+            android:text="@string/cancel"
+            android:textSize="15sp" />
+    </LinearLayout>
+</LinearLayout>

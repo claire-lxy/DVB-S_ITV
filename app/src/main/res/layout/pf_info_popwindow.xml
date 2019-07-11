@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="868dp"
+    android:layout_height="106dp"
+    android:background="@mipmap/background5"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tv_pf_prog_num"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="38dp"
+            android:layout_marginLeft="38dp"
+            android:layout_marginTop="2dp"
+            android:textSize="20sp"
+            tools:text="1001" />
+
+        <TextView
+            android:id="@+id/tv_pf_prog_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/dp_10"
+            android:layout_marginLeft="@dimen/dp_10"
+            android:layout_marginTop="2dp"
+            android:layout_weight="1"
+            android:ellipsize="marquee"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:singleLine="true"
+            android:textSize="20sp"
+            tools:text="HD Phx Infonews Channel" />
+
+        <ImageView
+            android:id="@+id/iv_prog_fav"
+            android:layout_width="20dp"
+            android:layout_height="16dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginLeft="20dp"
+            android:src="@mipmap/channel_edit_fav"
+            android:visibility="invisible"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/iv_prog_lock"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginLeft="20dp"
+            android:src="@mipmap/channel_edit_lock"
+            android:visibility="invisible"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/iv_prog_pay"
+            android:layout_width="14dp"
+            android:layout_height="16dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="15dp"
+            android:layout_marginRight="15dp"
+            android:background="@mipmap/ic_epg_pay"
+            android:visibility="invisible"
+            tools:ignore="contentDescription" />
+
+        <TextView
+            android:layout_width="38dp"
+            android:layout_height="16dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="2dp"
+            android:background="@drawable/pf_btn_background"
+            android:gravity="center"
+            android:text="@string/sub"
+            android:textColor="#ffffff"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tv_pf_sub_num"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/dp_5"
+            android:layout_marginLeft="@dimen/dp_5"
+            android:layout_marginTop="2dp"
+            android:textSize="@dimen/sp_8"
+            tools:text="0" />
+
+        <TextView
+            android:layout_width="38dp"
+            android:layout_height="16dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="2dp"
+            android:background="@drawable/pf_btn_background"
+            android:gravity="center"
+            android:text="@string/txt"
+            android:textColor="#ffffff"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tv_pf_txt_num"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/dp_5"
+            android:layout_marginLeft="@dimen/dp_5"
+            android:layout_marginTop="2dp"
+            android:gravity="center"
+            android:textSize="@dimen/sp_8"
+            tools:text="0" />
+
+        <TextView
+            android:layout_width="38dp"
+            android:layout_height="16dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="2dp"
+            android:background="@drawable/pf_btn_background"
+            android:gravity="center"
+            android:text="@string/rate"
+            android:textColor="#ffffff"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tv_pf_rate_num"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/dp_5"
+            android:layout_marginLeft="@dimen/dp_5"
+            android:layout_marginTop="2dp"
+            android:textSize="@dimen/sp_8"
+            tools:text="0" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="16dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="2dp"
+            android:background="@mipmap/pf_info_sound"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/tv_pf_sound_num"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="2dp"
+            android:textSize="12sp"
+            tools:text="0" />
+
+        <TextView
+            android:id="@+id/tv_pf_time"
+            android:layout_width="wrap_content"
+            android:layout_height="16dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="15dp"
+            android:layout_marginRight="15dp"
+            android:textSize="12sp"
+            tools:text="2019-07-04 11:25" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="vertical"
+            android:paddingLeft="38dp">
+
+            <TextView
+                android:id="@+id/tv_pf_information_1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:maxEms="18"
+                android:singleLine="true"
+                android:text="@string/no_information"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tv_pf_information_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:ellipsize="marquee"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:maxEms="18"
+                android:singleLine="true"
+                android:text="@string/no_information"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical|center"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="3dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="@dimen/dp_10"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/i"
+                    android:textSize="11sp" />
+
+                <ProgressBar
+                    android:id="@+id/pb_strength"
+                    style="@style/pfBar_mProgress_horizontal1"
+                    android:layout_width="236dp"
+                    android:layout_height="8dp"
+                    android:layout_marginStart="@dimen/dp_6"
+                    android:layout_marginLeft="@dimen/dp_6"
+                    android:indeterminate="false"
+                    android:indeterminateOnly="false"
+                    android:max="100" />
+
+                <TextView
+                    android:id="@+id/tv_progress_strength"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/dp_10"
+                    android:layout_marginLeft="@dimen/dp_10"
+                    android:textSize="11sp"
+                    tools:ignore="SmallSp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="@dimen/dp_10"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/q"
+                    android:textSize="11sp"
+                    tools:ignore="SmallSp" />
+
+                <ProgressBar
+                    android:id="@+id/pb_quality"
+                    style="@style/pfBar_mProgress_horizontal2"
+                    android:layout_width="236dp"
+                    android:layout_height="8dp"
+                    android:layout_marginStart="@dimen/sp_6"
+                    android:layout_marginLeft="@dimen/sp_6"
+                    android:indeterminate="false"
+                    android:indeterminateOnly="false"
+                    android:max="100" />
+
+                <TextView
+                    android:id="@+id/tv_progress_quality"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/dp_10"
+                    android:layout_marginLeft="@dimen/dp_10"
+                    android:textSize="11sp"
+                    tools:ignore="SpUsage" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+
+</LinearLayout>
