@@ -230,4 +230,34 @@
         <item>@string/book_play</item>
         <item>@string/book_record</item>
     </string-array>
+
+    <string-array name="step_size">
+        <item>Continue</item>
+        <item>Step 1</item>
+        <item>Step 4</item>
+        <item>Step 8</item>
+        <item>Step 16</item>
+        <item>Step 32</item>
+        <item>1s</item>
+        <item>2s</item>
+        <item>3s</item>
+        <item>4s</item>
+    </string-array>
+
+    <string-array name="diseqc_command">
+        <item>Save Position</item>
+        <item>(Re-)Calculate</item>
+        <item>Disable Limit</item>
+        <item>East Limit</item>
+        <item>West Limit</item>
+        <item>Goto Ref</item>
+    </string-array>
+
+    <string-array name="command">
+    <item>Goto XX</item>
+    <item>Save Pos</item>
+    <item>Calculate</item>
+    <item>Shift</item>
+    <item>Goto Ref</item>
+    </string-array>
 </resources>

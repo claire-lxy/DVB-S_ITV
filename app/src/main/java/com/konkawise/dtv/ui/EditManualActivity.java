@@ -177,7 +177,8 @@ public class EditManualActivity extends BaseActivity {
     @Override
     protected void setup() {
         mTvBottomBarGreen.setText(getString(R.string.rename));
-        mTvBottomBarYellow.setVisibility(View.GONE);
+        //mTvBottomBarYellow.setVisibility(View.GONE);
+        mTvBottomBarYellow.setText(getString(R.string.motor_01));
 
         mLastFocusable22KHz = getResources().getString(R.string.on);
         mCurrentSatellite = getIntent().getIntExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, -1);
@@ -335,6 +336,15 @@ public class EditManualActivity extends BaseActivity {
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_GREEN) {
             showRenameDialog();
+        }
+        //马达功能
+        if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_YELLOW) {
+            Intent intent=new Intent(EditManualActivity.this,MotorActivity.class);
+            intent.putExtra("edit",tv_blind_satellite.getText());
+            intent.putExtra("tpname",tv_edit_tp_mode.getText());
+            intent.putExtra("currntTp",mCurrentTp);
+            intent.putExtra("currnt",mCurrentSatellite);
+            startActivity(intent);
         }
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_BLUE) {

@@ -60,7 +60,7 @@
     <string name="motor_step_size">Step Size</string>
     <string name="motor_continue">继续</string>
     <string name="motor_position">位置</string>
-    <string name="motor_position_text">位置: 1</string>
+    <string name="motor_position_text">位置: </string>
     <string name="motor_diseqc_command">DisEqc Command</string>
     <string name="motor_save_position">保存位置</string>
     <string name="motor_change_item">改变 条目</string>

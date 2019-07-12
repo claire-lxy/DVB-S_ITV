@@ -60,7 +60,7 @@
     <string name="motor_step_size">Step Size</string>
     <string name="motor_continue">Continue</string>
     <string name="motor_position">Position</string>
-    <string name="motor_position_text">Position: 1</string>
+    <string name="motor_position_text">Position: </string>
     <string name="motor_diseqc_command">DiSEqC Command</string>
     <string name="motor_save_position">Save Position</string>
     <string name="motor_change_item">Change Item</string>
@@ -341,6 +341,18 @@
     <string name="dialog_no_found_diseqc">No DiSEqC Found!</string>
     <string name="dialog_found_diseqc">Found {0}</string>
 
+    <string name="dialog_save_position">Save Position</string>
+    <string name="dialog_calculate">(Re-)Calculate Satellite Positions</string>
+    <string name="dialog_disable_limit">Disable Limit</string>
+    <string name="dialog_east_limit">Set East Limit</string>
+    <string name="dialog_west_limit">Set West Limit</string>
+    <string name="dialog_goto_ref">Goto REF Position</string>
+
+    <string name="dialog_goto_xx">Goto XX</string>
+    <string name="dialog_save_pos">Save Pos</string>
+    <string name="dialog_commannd_calculate">Calculate</string>
+    <string name="dialog_shift">Shift</string>
+    <string name="dialog_command_goto_ref">Goto Ref</string>
     <string name="dialog_search_result_title">Search Result</string>
     <string name="dialog_no_search">No Program!</string>
     <string name="dialog_search_result_tv">TV: {0}</string>

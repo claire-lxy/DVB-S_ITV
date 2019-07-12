@@ -1,28 +1,39 @@
 package com.konkawise.dtv.ui;
 
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.konkawise.dtv.PreferenceManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.base.BaseActivity;
+import com.konkawise.dtv.dialog.CommRemindDialog;
+import com.konkawise.dtv.dialog.OnCommPositiveListener;
+
+import com.konkawise.dtv.utils.LogUtils;
 import com.konkawise.dtv.utils.Utils;
+import com.konkawise.dtv.weaktool.CheckSignalHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindArray;
 import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
+import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 
 /**
  * motor界面
  */
 
 public class MotorActivity extends BaseActivity {
+    private static final String TAG = "MotorActivity";
     @BindView(R.id.imgeview_satellite_left)
     ImageView mImgeview_satellite_left;
 
@@ -98,6 +109,9 @@ public class MotorActivity extends BaseActivity {
     @BindView(R.id.tv_position)
     TextView tv_position;
 
+    @BindView(R.id.tv_position_bg)
+    TextView tv_position_bg;
+
     @BindView(R.id.image_position_right)
     ImageView image_position_right;
 
@@ -119,6 +133,28 @@ public class MotorActivity extends BaseActivity {
     @BindView(R.id.ll_sat_command_root)
     RelativeLayout ll_sat_command_root;
 
+
+    @BindArray(R.array.step_size)
+    String[] mStepSize;
+
+    @BindArray(R.array.diseqc_command)
+    String[] mDISEqcCommand;
+
+    @BindArray(R.array.command)
+    String[] mCommand;
+
+    @BindView(R.id.tv_edit_progress_i)
+    TextView mTv_edit_progress_i;
+
+    @BindView(R.id.progress_edit_i)
+    ProgressBar progress_edit_i;
+
+    @BindView(R.id.tv_edit_progress_q)
+    TextView mTv_edit_progress_q;
+
+    @BindView(R.id.progress_edit_q)
+    ProgressBar progress_edit_q;
+
     private List<String> typeList = new ArrayList<>();
     private List<String> moveStepList = new ArrayList<>();
 
@@ -131,6 +167,11 @@ public class MotorActivity extends BaseActivity {
     private int mMotorType = 0;
 
     private int mMoveStep = 0;
+    private int mSetpSizeStep = 0;
+    private int mPositionStep = 1;//Position 1到Position 51
+    private int mCommandStep = 0;
+    private int mDISEqcCommandStep = 0;
+    private CheckSignalHelper mCheckSignalHelper;
 
     @Override
     public int getLayoutId() {
@@ -158,7 +199,40 @@ public class MotorActivity extends BaseActivity {
         mTpList = SWPDBaseManager.getInstance().getSatChannelInfoList(currnt);
         mTv_satellite.setText(satName);
         tv_tp.setText(tpName);
+        tv_Longitude.setText(mStepSize[0]);
+        tv_position.bringToFront();
+
+        initCheckSignal();
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mCheckSignalHelper.startCheckSignal();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mCheckSignalHelper.stopCheckSignal();
+    }
+
+    private void initCheckSignal() {
+        mCheckSignalHelper = new CheckSignalHelper(this);
+        mCheckSignalHelper.setOnCheckSignalListener(new CheckSignalHelper.OnCheckSignalListener() {
+            @Override
+            public void signal(int strength, int quality) {
+                String strengthPercent = strength + "%";
+                mTv_edit_progress_i.setText(strengthPercent);
+                progress_edit_i.setProgress(strength);
+
+                String qualityPercent = quality + "%";
+                mTv_edit_progress_q.setText(qualityPercent);
+                progress_edit_q.setProgress(quality);
+            }
+        });
+    }
+
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -174,9 +248,10 @@ public class MotorActivity extends BaseActivity {
             } else if (position == 4) {
                 --position;
                 if (mMotorType == 1) {
-                    position = 3;
+                    position = 2;
                     selecteMotorTp();
                 } else {
+                    position = 3;
                     selecteMoveStep();
                 }
 
@@ -246,6 +321,7 @@ public class MotorActivity extends BaseActivity {
                 }
 
                 tv_motor_type.setText(typeList.get(mMotorType));
+                saveSatMotorTypeInfo();
 
             } else if (position == 2) {
                 //控制Tp栏左键
@@ -266,6 +342,37 @@ public class MotorActivity extends BaseActivity {
                 }
                 tv_step.setText(moveStepList.get(mMoveStep));
 
+            } else if (position == 4) {
+                //mMotorType==0 DiaEqc1.2 mMotorType==1 USALS
+                if (mMotorType == 0) {
+                    --mSetpSizeStep;
+
+                    if (mSetpSizeStep < 0) {
+                        mSetpSizeStep = mStepSize.length - 1;
+                    }
+                    tv_Longitude.setText(mStepSize[mSetpSizeStep]);
+                }
+            } else if (position == 5) {
+                --mPositionStep;
+                if (mPositionStep < 1) {
+                    mPositionStep = 51;
+                }
+                tv_position.setText(Integer.toString(mPositionStep));
+            } else if (position == 6) {
+                //mMotorType==0 DiaEqc1.2 mMotorType==1 USALS
+                if (mMotorType == 0) {
+                    --mDISEqcCommandStep;
+                    if (mDISEqcCommandStep < 0) {
+                        mDISEqcCommandStep = mDISEqcCommand.length - 1;
+                    }
+                    tv_command.setText(mDISEqcCommand[mDISEqcCommandStep]);
+                } else if (mMotorType == 1) {
+                    --mCommandStep;
+                    if (mCommandStep < 0) {
+                        mCommandStep = mCommand.length - 1;
+                    }
+                    tv_command.setText(mCommand[mCommandStep]);
+                }
             }
 
             Log.e("LJ", position + "LJ点击了左键");
@@ -294,7 +401,7 @@ public class MotorActivity extends BaseActivity {
                 }
 
                 tv_motor_type.setText(typeList.get(mMotorType));
-
+                saveSatMotorTypeInfo();
 
             } else if (position == 2) {
                 //控制Tp栏右键
@@ -317,10 +424,198 @@ public class MotorActivity extends BaseActivity {
                 }
                 tv_step.setText(moveStepList.get(mMoveStep));
 
+            } else if (position == 4) {
+                if (mMotorType == 0) {
+                    ++mSetpSizeStep;
+
+                    if (mSetpSizeStep > mStepSize.length - 1) {
+                        mSetpSizeStep = 0;
+                    }
+                    tv_Longitude.setText(mStepSize[mSetpSizeStep]);
+                }
+            } else if (position == 5) {
+                ++mPositionStep;
+                if (mPositionStep > 51) {
+                    mPositionStep = 1;
+                }
+                tv_position.setText(Integer.toString(mPositionStep));
+            } else if (position == 6) {
+                //mMotorType==0 DiaEqc1.2 mMotorType==1 USALS
+                if (mMotorType == 0) {
+                    ++mDISEqcCommandStep;
+                    if (mDISEqcCommandStep > mDISEqcCommand.length - 1) {
+                        mDISEqcCommandStep = 0;
+                    }
+                    tv_command.setText(mDISEqcCommand[mDISEqcCommandStep]);
+                } else if (mMotorType == 1) {
+                    ++mCommandStep;
+                    if (mCommandStep > mCommand.length - 1) {
+                        mCommandStep = 0;
+                    }
+                    tv_command.setText(mCommand[mCommandStep]);
+                }
+            }
+
+        }
+        if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_CENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
+            if (position == 6) {
+                //mMotorType==0 DiaEqc1.2 mMotorType==1 USALS
+                if (mMotorType == 0) {
+                    switch (tv_command.getText().toString()) {
+                        case "Save Position":
+                            new CommRemindDialog()
+                                    .content(getString(R.string.dialog_save_position))
+                                    .setOnPositiveListener("", new OnCommPositiveListener() {
+                                        @Override
+                                        public void onPositiveListener() {
+                                            saveSatMotorTypeInfo();
+                                            saveSatPositionInfo();
+                                        }
+                                    }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
+                            break;
+                        case "(Re-)Calculate":
+                            new CommRemindDialog()
+                                    .content(getString(R.string.dialog_calculate))
+                                    .setOnPositiveListener("", new OnCommPositiveListener() {
+                                        @Override
+                                        public void onPositiveListener() {
+
+                                        }
+                                    }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
+                            break;
+                        case "Disable Limit":
+                            new CommRemindDialog()
+                                    .content(getString(R.string.dialog_disable_limit))
+                                    .setOnPositiveListener("", new OnCommPositiveListener() {
+                                        @Override
+                                        public void onPositiveListener() {
+
+                                        }
+                                    }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
+                            break;
+                        case "East Limit":
+                            new CommRemindDialog()
+                                    .content(getString(R.string.dialog_east_limit))
+                                    .setOnPositiveListener("", new OnCommPositiveListener() {
+                                        @Override
+                                        public void onPositiveListener() {
+
+                                        }
+                                    }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
+                            break;
+                        case "West Limit":
+                            new CommRemindDialog()
+                                    .content(getString(R.string.dialog_west_limit))
+                                    .setOnPositiveListener("", new OnCommPositiveListener() {
+                                        @Override
+                                        public void onPositiveListener() {
+
+                                        }
+                                    }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
+                            break;
+                        case "Goto Ref":
+                            new CommRemindDialog()
+                                    .content(getString(R.string.dialog_goto_ref))
+                                    .setOnPositiveListener("", new OnCommPositiveListener() {
+                                        @Override
+                                        public void onPositiveListener() {
+
+                                        }
+                                    }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
+                            break;
+                        default:
+                            break;
+
+                    }
+                } else if (mMotorType == 1) {
+                    switch (tv_command.getText().toString()) {
+                        case "Goto XX":
+                            new CommRemindDialog()
+                                    .content(getString(R.string.dialog_goto_xx))
+                                    .setOnPositiveListener("", new OnCommPositiveListener() {
+                                        @Override
+                                        public void onPositiveListener() {
+
+                                        }
+                                    }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
+                            break;
+                        case "Save Pos":
+                            new CommRemindDialog()
+                                    .content(getString(R.string.dialog_save_pos))
+                                    .setOnPositiveListener("", new OnCommPositiveListener() {
+                                        @Override
+                                        public void onPositiveListener() {
+
+                                        }
+                                    }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
+                            break;
+                        case "Calculate":
+                            new CommRemindDialog()
+                                    .content(getString(R.string.dialog_commannd_calculate))
+                                    .setOnPositiveListener("", new OnCommPositiveListener() {
+                                        @Override
+                                        public void onPositiveListener() {
+
+                                        }
+                                    }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
+                            break;
+                        case "Shift":
+                            new CommRemindDialog()
+                                    .content(getString(R.string.dialog_shift))
+                                    .setOnPositiveListener("", new OnCommPositiveListener() {
+                                        @Override
+                                        public void onPositiveListener() {
+
+                                        }
+                                    }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
+                            break;
+                        case "Goto Ref":
+                            new CommRemindDialog()
+                                    .content(getString(R.string.dialog_command_goto_ref))
+                                    .setOnPositiveListener("", new OnCommPositiveListener() {
+                                        @Override
+                                        public void onPositiveListener() {
+
+                                        }
+                                    }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
+                            break;
+
+                        default:
+                            break;
+
+                    }
+                }
             }
         }
 
         return super.onKeyDown(keyCode, event);
+    }
+
+    private void saveSatMotorTypeInfo() {
+        SatInfo_t satInfo_t = SWPDBaseManager.getInstance().getSatList().get(currnt);
+        switch (tv_motor_type.getText().toString()) {
+            case "OFF":
+                satInfo_t.diseqc12 = 0;
+                break;
+            case "DisEqc1.2":
+                satInfo_t.diseqc12 = 1;
+                break;
+            case "USALS":
+                satInfo_t.diseqc12 = 2;
+                break;
+            default:
+                break;
+        }
+
+        SWPDBaseManager.getInstance().setSatInfo(currnt, satInfo_t);  //将卫星Motor Type信息设置到对应的bean类中,保存更改的信息
+
+    }
+
+    private void saveSatPositionInfo() {
+        SatInfo_t satInfo_t = SWPDBaseManager.getInstance().getSatList().get(currnt);
+        satInfo_t.diseqc12_pos=Integer.parseInt(tv_position.getText().toString());
+        SWPDBaseManager.getInstance().setSatInfo(currnt, satInfo_t);  //将卫星Motor Type信息设置到对应的bean类中,保存更改的信息
+
     }
 
     /**
@@ -334,7 +629,7 @@ public class MotorActivity extends BaseActivity {
         ll_sat_position_root.setVisibility(View.VISIBLE);
         ll_sat_command_root.setVisibility(View.VISIBLE);
         tv_diseqc_common.setText("Command");
-        tv_command.setText("Goto XX");
+        tv_command.setText(mCommand[0]);
     }
 
     /**
@@ -349,12 +644,18 @@ public class MotorActivity extends BaseActivity {
         ll_sat_position_root.setVisibility(View.VISIBLE);
         ll_sat_command_root.setVisibility(View.VISIBLE);
         tv_diseqc_common.setText("DisEqc Command");
+        tv_command.setText(mDISEqcCommand[0]);
+        tv_Longitude.setText(R.string.motor_continue);
     }
 
     /**
      * 获取TP数据
      */
     private void getTPName(int index) {
+        if (mTpList == null || mTpList.size() == 0) {
+            tv_tp.setText("");
+            return;
+        }
         ChannelNew_t channelNew_t = mTpList.get(index);
 
         mTpName = channelNew_t.Freq + Utils.getVorH(this, channelNew_t.Qam) + channelNew_t.Symbol;
@@ -392,7 +693,7 @@ public class MotorActivity extends BaseActivity {
         // Step Size
         ll_sat_position_root.setBackgroundColor(0);
         image_position_left.setVisibility(View.INVISIBLE);
-        tv_position.setBackgroundColor(0);
+        tv_position_bg.setBackgroundColor(0);
         image_position_right.setVisibility(View.INVISIBLE);
 
         //Command
@@ -431,7 +732,7 @@ public class MotorActivity extends BaseActivity {
         // Step Size
         ll_sat_position_root.setBackgroundColor(0);
         image_position_left.setVisibility(View.INVISIBLE);
-        tv_position.setBackgroundColor(0);
+        tv_position_bg.setBackgroundColor(0);
         image_position_right.setVisibility(View.INVISIBLE);
 
         //Command
@@ -470,7 +771,7 @@ public class MotorActivity extends BaseActivity {
         // Step Size
         ll_sat_position_root.setBackgroundColor(0);
         image_position_left.setVisibility(View.INVISIBLE);
-        tv_position.setBackgroundColor(0);
+        tv_position_bg.setBackgroundColor(0);
         image_position_right.setVisibility(View.INVISIBLE);
 
         //Command
@@ -509,7 +810,7 @@ public class MotorActivity extends BaseActivity {
         // Step Size
         ll_sat_position_root.setBackgroundColor(0);
         image_position_left.setVisibility(View.INVISIBLE);
-        tv_position.setBackgroundColor(0);
+        tv_position_bg.setBackgroundColor(0);
         image_position_right.setVisibility(View.INVISIBLE);
 
         //Command
@@ -548,7 +849,7 @@ public class MotorActivity extends BaseActivity {
         // Step Size
         ll_sat_position_root.setBackgroundResource(R.drawable.btn_translate_bg_select_shape);
         image_position_left.setVisibility(View.VISIBLE);
-        tv_position.setBackgroundResource(R.drawable.btn_red_bg_shape);
+        tv_position_bg.setBackgroundResource(R.drawable.btn_red_bg_shape);
         image_position_right.setVisibility(View.VISIBLE);
 
         //Command
@@ -587,7 +888,7 @@ public class MotorActivity extends BaseActivity {
         // Step Size
         ll_sat_position_root.setBackgroundColor(0);
         image_position_left.setVisibility(View.INVISIBLE);
-        tv_position.setBackgroundColor(0);
+        tv_position_bg.setBackgroundColor(0);
         image_position_right.setVisibility(View.INVISIBLE);
 
         //Command
