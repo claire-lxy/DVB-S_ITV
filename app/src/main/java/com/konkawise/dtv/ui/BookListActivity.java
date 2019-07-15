@@ -1,7 +1,10 @@
 package com.konkawise.dtv.ui;
 
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.KeyEvent;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.konkawise.dtv.Constants;
@@ -16,6 +19,8 @@ import com.konkawise.dtv.dialog.BookDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.view.TVListView;
+import com.konkawise.dtv.weaktool.RealTimeHelper;
+import com.konkawise.dtv.weaktool.WeakAsyncTask;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -27,6 +32,9 @@ import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
 
 public class BookListActivity extends BaseActivity {
+    @BindView(R.id.tv_system_time)
+    TextView mTvSystemTime;
+
     @BindView(R.id.lv_book_list)
     TVListView mLvBookList;
 
@@ -35,10 +43,14 @@ public class BookListActivity extends BaseActivity {
         mCurrSelectPosition = position;
     }
 
-    private BookListAdapter mAdapter;
-
-    private int mCurrSelectPosition;
     private boolean mBook;
+
+    private BookListAdapter mAdapter;
+    private int mCurrSelectPosition;
+    private LoadBookingTask mLoadBookingTask;
+    private List<PDPInfo_t> mAllProgList;
+
+    private RealTimeHelper mRealTimeHelper;
 
     @Override
     public int getLayoutId() {
@@ -47,15 +59,70 @@ public class BookListActivity extends BaseActivity {
 
     @Override
     protected void setup() {
-        mAdapter = new BookListAdapter(this, SWBookingManager.getInstance().getBookingModelList());
+        mAdapter = new BookListAdapter(this, new ArrayList<>());
         mLvBookList.setAdapter(mAdapter);
+
+        mLoadBookingTask = new LoadBookingTask(this);
+        mLoadBookingTask.execute();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startUpdateRealTime();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mRealTimeHelper.stop();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (isFinishing() && mBook) {
-            SWBookingManager.getInstance().updateDBase(0);
+        if (isFinishing()) {
+            if (mLoadBookingTask != null) {
+                mLoadBookingTask.release();
+                mLoadBookingTask = null;
+            }
+            if (mBook) SWBookingManager.getInstance().updateDBase(0);
+        }
+    }
+
+    private void startUpdateRealTime() {
+        mRealTimeHelper = new RealTimeHelper(this);
+        mRealTimeHelper.setOnRealTimeListener(new RealTimeHelper.OnRealTimerListener() {
+            @Override
+            public void onRealTimeCallback(String realTime) {
+                if (!TextUtils.isEmpty(realTime)) {
+                    mTvSystemTime.setText(realTime);
+                }
+            }
+        });
+        mRealTimeHelper.start();
+    }
+
+    private static class LoadBookingTask extends WeakAsyncTask<BookListActivity, Void, List<BookingModel>> {
+
+        LoadBookingTask(BookListActivity view) {
+            super(view);
+        }
+
+        @Override
+        protected List<BookingModel> backgroundExecute(Void... param) {
+            BookListActivity context = mWeakReference.get();
+
+            context.mAllProgList = SWPDBaseManager.getInstance().getCurrGroupProgInfoList();
+
+            return SWBookingManager.getInstance().getBookingModelList();
+        }
+
+        @Override
+        protected void postExecute(List<BookingModel> bookingModels) {
+            if (bookingModels != null && !bookingModels.isEmpty()) {
+                mWeakReference.get().mAdapter.addData(bookingModels);
+            }
         }
     }
 
@@ -112,6 +179,7 @@ public class BookListActivity extends BaseActivity {
                 .title(getString(R.string.dialog_book_conflict_title))
                 .content(MessageFormat.format(getString(R.string.dialog_book_conflict_content),
                         conflictBookModel.getBookDate(this, BookingModel.BOOK_TIME_SEPARATOR_EMPTY), conflictBookModel.progInfo.Name, conflictBookModel.getBookType(this)))
+                .lineSpacing(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 35, getResources().getDisplayMetrics()))
                 .setOnPositiveListener(getString(R.string.dialog_book_conflict_positive), new OnCommPositiveListener() {
                     @Override
                     public void onPositiveListener() {
@@ -125,10 +193,11 @@ public class BookListActivity extends BaseActivity {
     }
 
     private int findConflictBookProgPosition(@NonNull HSubforProg_t conflictBookProg) {
-        PDPInfo_t conflictProgInfo = SWPDBaseManager.getInstance().getProgInfoByServiceId(conflictBookProg.servid, conflictBookProg.tsid, conflictBookProg.sat);
-        if (conflictProgInfo != null && mAdapter.getCount() > 0) {
+        if (mAdapter.getCount() > 0) {
             for (int i = 0; i < mAdapter.getData().size(); i++) {
-                if (mAdapter.getData().get(i).progInfo.Name.equals(conflictProgInfo.Name)) {
+                HSubforProg_t bookInfo = mAdapter.getData().get(i).bookInfo;
+                if (bookInfo == null) continue;
+                if (bookInfo.servid == conflictBookProg.servid && bookInfo.tsid == conflictBookProg.tsid && bookInfo.sat == conflictBookProg.sat) {
                     return i;
                 }
             }
@@ -137,22 +206,18 @@ public class BookListActivity extends BaseActivity {
     }
 
     private int getChannelNamePosition(int bookingType) {
-        switch (bookingType) {
-            case Constants.BOOK_TYPE_ADD:
-                return 0;
-            case Constants.BOOK_TYPE_EDIT:
-                BookingModel bookingModel = mAdapter.getItem(mCurrSelectPosition);
-                if (bookingModel != null) {
-                    List<PDPInfo_t> progList = getProgList(bookingType);
-                    if (progList != null && !progList.isEmpty()) {
-                        for (int i = 0; i < progList.size(); i++) {
-                            if (progList.get(i).Name.equals(bookingModel.progInfo.Name)) {
-                                return i;
-                            }
+        if (bookingType == Constants.BOOK_TYPE_EDIT) {
+            BookingModel bookingModel = mAdapter.getItem(mCurrSelectPosition);
+            if (bookingModel != null) {
+                List<PDPInfo_t> progList = getProgList(bookingType);
+                if (progList != null && !progList.isEmpty()) {
+                    for (int i = 0; i < progList.size(); i++) {
+                        if (progList.get(i).Name.equals(bookingModel.progInfo.Name)) {
+                            return i;
                         }
                     }
                 }
-                break;
+            }
         }
         return 0;
     }
@@ -160,6 +225,9 @@ public class BookListActivity extends BaseActivity {
     private List<PDPInfo_t> getProgList(int bookingType) {
         switch (bookingType) {
             case Constants.BOOK_TYPE_ADD:
+                if (mAllProgList != null && !mAllProgList.isEmpty()) {
+                    return mAllProgList;
+                }
                 return SWPDBaseManager.getInstance().getCurrGroupProgInfoList();
             case Constants.BOOK_TYPE_EDIT:
                 List<BookingModel> bookingModels = mAdapter.getData();
@@ -180,8 +248,10 @@ public class BookListActivity extends BaseActivity {
                 .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
                     @Override
                     public void onPositiveListener() {
-                        SWBookingManager.getInstance().deleteProg(mAdapter.getItem(mCurrSelectPosition).bookInfo);
-                        mAdapter.notifyDataSetChanged();
+                        if (mAdapter.getCount() > 0) {
+                            SWBookingManager.getInstance().deleteProg(mAdapter.getItem(mCurrSelectPosition).bookInfo);
+                            mAdapter.removeData(mCurrSelectPosition);
+                        }
                     }
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }

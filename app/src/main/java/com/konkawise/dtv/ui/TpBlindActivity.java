@@ -92,6 +92,10 @@ public class TpBlindActivity extends BaseActivity {
 
     @Override
     protected void setup() {
+        mTvTp_num.setText("0");
+        radio_tp_num.setText("0");
+        tv_progress_tp.setText("0%");
+
         initRecyclerView();
         setupBlindSatInfo();
 
@@ -178,14 +182,11 @@ public class TpBlindActivity extends BaseActivity {
                 @Override
                 public void run() {
                     if (scanProgress != null) {
-                        int progress = scanProgress.currStep;
-                        int maxProgress = scanProgress.endStep;
-                        if (progress < maxProgress) {
-                            context.tv_progress_tp.setText(String.valueOf(progress));
-                            context.progress_tp_blind.setMax(maxProgress);
-                            context.progress_tp_blind.setProgress(progress);
-                        } else {
-                            context.stopBlindScanProgressTimer();
+                        if (scanProgress.currStep <= scanProgress.endStep) {
+                            String progress = scanProgress.currStep + "%";
+                            context.tv_progress_tp.setText(progress);
+                            context.progress_tp_blind.setMax(scanProgress.endStep);
+                            context.progress_tp_blind.setProgress(scanProgress.currStep);
                         }
                     }
                 }
@@ -216,6 +217,7 @@ public class TpBlindActivity extends BaseActivity {
         @Override
         public int PSearch_PROG_ONETSOK(int AllNum, int CurrIndex, int Sat,
                                         int freq, int symbol, int qam) {
+            stopBlindScanProgressTimer();
             PSRNum_t psr = SWPSearchManager.getInstance().getProgNumOfThisSarch(Sat, freq);
             if (null == psr) return 1;
 

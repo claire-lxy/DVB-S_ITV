@@ -41,15 +41,16 @@ public class CheckSignalHelper {
 
         @Override
         protected void runTimer() {
+            int strength = getSignalStrength();
+            int quality = getSignalQuality();
+            // 实现进度条信号上下浮动效果
+            int randomStrength = (int) (getRandomMin(strength) + Math.random() * (getRandomMax(strength) - getRandomMin(strength) + 1));
+            int randomQuality = (int) (getRandomMax(quality) + Math.random() * (getRandomMax(quality) - getRandomMin(quality) + 1));
+
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     if (mOnCheckSignalListener != null) {
-                        int strength = getSignalStrength();
-                        int quality = getSignalQuality();
-                        // 实现进度条信号上下浮动效果
-                        int randomStrength = (int) (getRandomMin(strength) + Math.random() * (getRandomMax(strength) - getRandomMin(strength) + 1));
-                        int randomQuality = (int) (getRandomMax(quality) + Math.random() * (getRandomMax(quality) - getRandomMin(quality) + 1));
                         mOnCheckSignalListener.signal(randomStrength, randomQuality);
                     }
                 }

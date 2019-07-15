@@ -3,7 +3,6 @@ package com.konkawise.dtv.dialog;
 import android.content.DialogInterface;
 import android.text.TextUtils;
 import android.util.Log;
-import android.util.SparseBooleanArray;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +10,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;
@@ -192,11 +192,21 @@ public class BookDialog extends BaseDialogFragment {
     @BindArray(R.array.book_date_weekly)
     String[] mBookDateWeeklyArray;
 
+    /**
+     * Booking逻辑：
+     * 在Type是Record时，无论Mode是哪种，只要确保startTime和endTime的年月日相同，startTime和endTime的时分不同能计算出所跨的秒数即可
+     * 在Type不是Record时，无论Mode是哪种，只要确保startTime和endTime的年月日相同，startTime的时分不为空即可
+     */
     @OnClick(R.id.btn_book)
     void book() {
-        if (!isInputValid()) return;
+        if (!isInputValid()) {
+            Toast.makeText(getContext(), getStrings(R.string.toast_book_invalid), Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         if (mOnBookCallbackListener != null && mProgList != null && !mProgList.isEmpty()) {
+            dismiss();
+
             updateBookInfo();
 
             SysTime_t startTime = new SysTime_t();
@@ -222,12 +232,58 @@ public class BookDialog extends BaseDialogFragment {
                 case BOOK_MODE_WEEKLY:
                     // daily mode
                     // TextUtils.equals(mTvBookDateWeekly.getText().toString(), getStrings(R.string.book_date_week_everyday))
-                    // 如果选了Mon，获取当前天数日期
-                    // 只有当前年月和星期字符串获取到天数日期
+                    int dayOfWeek = TimeUtils.getWeekByStr(getContext(), mTvBookDateWeekly.getText().toString());
+                    List<Integer> dayOfMonths = TimeUtils.getDayOfMonthsByDayOfWeek(startTime.Year, startTime.Month, dayOfWeek);
+                    if (dayOfMonths != null && !dayOfMonths.isEmpty()) {
+                        boolean isFound = true;
+                        int currDayOfMonth = TimeUtils.getDay();
+                        for (int i = 0; i < dayOfMonths.size(); i++) {
+                            int dayOfMonth = dayOfMonths.get(i);
+                            // 最后一个日期和当前日期相同，那要从下个月或下一年开始找开始找同一个星期的日期
+                            if (currDayOfMonth >= dayOfMonth && i == dayOfMonths.size() - 1) {
+                                isFound = false;
+                                break;
+                            } else {
+                                // 如果有日期大于当前日期，开始日期就是这一天
+                                if (dayOfMonth > currDayOfMonth) {
+                                    startTime.Day = endTime.Day = dayOfMonth;
+                                    mBookModel.bookInfo.day = startTime.Day;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!isFound) {
+                            startTime.Month += 1;
+                            if (startTime.Month > 12) {
+                                startTime.Month = 1;
+                                startTime.Year += 1;
+                            }
+                            mBookModel.bookInfo.year = endTime.Year = startTime.Year;
+                            mBookModel.bookInfo.month = endTime.Month = startTime.Month;
+                            dayOfMonths = TimeUtils.getDayOfMonthsByDayOfWeek(startTime.Year, startTime.Month, dayOfWeek);
+                            if (dayOfMonths != null && !dayOfMonths.isEmpty()) {
+                                // 找到最近的一个日期
+                                startTime.Day = endTime.Day = dayOfMonths.get(0);
+                                mBookModel.bookInfo.day = startTime.Day;
+                            }
+                        }
+                    }
                     break;
 
                 case BOOK_MODE_MONTHLY:
                     startTime.Day = mCurrBookDayOfMonthPosition;
+                    int currDayOfMonth = TimeUtils.getDay();
+                    if (startTime.Day < currDayOfMonth) {
+                        startTime.Month += 1;
+                        if (startTime.Month > 12) {
+                            startTime.Month = 1;
+                            startTime.Year += 1;
+                        }
+                    }
+                    mBookModel.bookInfo.year = endTime.Year = startTime.Year;
+                    mBookModel.bookInfo.month = endTime.Month = startTime.Month;
+                    mBookModel.bookInfo.day = endTime.Day = startTime.Day;
                     break;
             }
 
@@ -240,11 +296,8 @@ public class BookDialog extends BaseDialogFragment {
             if (bpm.bookConflict == Constants.BOOK_CONFLICT_ADD || bpm.bookConflict == Constants.BOOK_CONFLICT_REPLACE) {
                 bpm.conflictBookProg = conflictBookProg;
             }
-            bpm.bookConflict = Constants.BOOK_CONFLICT_NONE;
-            Log.i("test", "parameter model = " + bpm);
+            Log.i(TAG, "parameter model = " + bpm);
             mOnBookCallbackListener.onBookCallback(bpm);
-
-            dismiss();
         }
     }
 
@@ -258,39 +311,10 @@ public class BookDialog extends BaseDialogFragment {
         if (mBookModel == null) return false;
 
         if (mBookModel.bookInfo.repeatway == SWBooking.BookRepeatWay.ONCE.ordinal()) {
-            if (!isDateValid()) {
-                mEtBookDateYear.requestFocus();
-                return false;
-            }
-            if (!isHourAndMinuteValid()) {
-                mEtBookStartTimeHour.requestFocus();
-                return false;
-            }
-            return true;
+            return isDateValid() && isHourAndMinuteValid();
         }
 
-        if (mBookModel.bookInfo.repeatway == SWBooking.BookRepeatWay.DAILY.ordinal()) {
-            if (!isHourAndMinuteValid()) {
-                mEtBookStartTimeHour.requestFocus();
-                return false;
-            }
-            return true;
-        }
-
-        if (mBookModel.bookInfo.repeatway == SWBooking.BookRepeatWay.WEEKLY.ordinal()) {
-            //  return isWeeklyValid() || isHourAndMinuteValid();
-            if (!isHourAndMinuteValid()) {
-                mEtBookStartTimeHour.requestFocus();
-                return false;
-            }
-            return true;
-        }
-
-        if (mBookModel.bookInfo.repeatway == SWBooking.BookRepeatWay.MONTHLY.ordinal()) {
-            return isMonthlyValid() || isHourAndMinuteValid();
-        }
-
-        return false;
+        return isHourAndMinuteValid();
     }
 
     private boolean isDateValid() {
@@ -299,18 +323,29 @@ public class BookDialog extends BaseDialogFragment {
         String year = mEtBookDateYear.getText().toString();
         String month = mEtBookDateMonth.getText().toString();
         String day = mEtBookDateDay.getText().toString();
-        return !TextUtils.isEmpty(year)
-                && !TextUtils.isEmpty(month)
-                && !TextUtils.isEmpty(day)
-                && TimeUtils.isMonthValid(Integer.valueOf(month))
-                && Integer.valueOf(day) <= TimeUtils.getDayOfMonthByYearAndMonth(Integer.valueOf(year), Integer.valueOf(month));
+        if (TextUtils.isEmpty(year) || Integer.valueOf(year) < TimeUtils.getYear()) {
+            dateInvalidFocus(mEtBookDateYear);
+            return false;
+        }
+
+        if (TextUtils.isEmpty(month) || Integer.valueOf(month) < TimeUtils.getMonth() || !TimeUtils.isMonthValid(Integer.valueOf(month))) {
+            dateInvalidFocus(mEtBookDateMonth);
+            return false;
+        }
+
+        if (TextUtils.isEmpty(day) || Integer.valueOf(day) < TimeUtils.getDay() || Integer.valueOf(day) > TimeUtils.getDayOfMonthByYearAndMonth(Integer.valueOf(year), Integer.valueOf(month))) {
+            dateInvalidFocus(mEtBookDateDay);
+            return false;
+        }
+
+        return true;
     }
 
-    private boolean isMonthlyValid() {
-        if (mBookModel == null) return false;
-
-        return !TextUtils.isEmpty(mTvBookDateMonthly.getText().toString());
-    }
+//    private boolean isMonthlyValid() {
+//        if (mBookModel == null) return false;
+//
+//        return !TextUtils.isEmpty(mTvBookDateMonthly.getText().toString());
+//    }
 
 //    private boolean isWeeklyValid() {
 //        if (mBookModel == null) return false;
@@ -321,28 +356,38 @@ public class BookDialog extends BaseDialogFragment {
     private boolean isHourAndMinuteValid() {
         if (mBookModel == null) return false;
 
-        boolean isStartTimeValid;
         String startHour = mEtBookStartTimeHour.getText().toString();
         String startMinute = mEtBookStartTimeMinute.getText().toString();
 
-        isStartTimeValid = !TextUtils.isEmpty(startHour)
-                && !TextUtils.isEmpty(startMinute)
-                && TimeUtils.isHourValid(Integer.valueOf(startHour))
-                && TimeUtils.isMinuteValid(Integer.valueOf(startMinute));
+        if (TextUtils.isEmpty(startHour) || !TimeUtils.isHourValid(Integer.valueOf(startHour)) || Integer.valueOf(startHour) < TimeUtils.getHour()) {
+            timeInvalidFocus(ITEM_START_TIME, mEtBookStartTimeHour);
+            return false;
+        }
+
+        if (TextUtils.isEmpty(startMinute) || !TimeUtils.isMinuteValid(Integer.valueOf(startMinute))) {
+            timeInvalidFocus(ITEM_START_TIME, mEtBookStartTimeMinute);
+            return false;
+        }
 
         if (mBookModel.bookInfo.schtype != SWBooking.BookSchType.RECORD.ordinal()) {
-            return isStartTimeValid;
+            return true;
         }
 
         String endHour = mEtBookEndTimeHour.getText().toString();
         String endMinute = mEtBookEndTimeMinute.getText().toString();
 
-        return isStartTimeValid
-                && !TextUtils.isEmpty(endHour)
-                && !TextUtils.isEmpty(endMinute)
-                && TimeUtils.isHourValid(Integer.valueOf(endHour))
-                && TimeUtils.isMinuteValid(Integer.valueOf(endMinute))
-                && TimeUtils.isBookSecondsValid(Integer.valueOf(startHour), Integer.valueOf(startMinute), Integer.valueOf(endHour), Integer.valueOf(endMinute));
+        if (TextUtils.isEmpty(endHour) || !TimeUtils.isHourValid(Integer.valueOf(endHour)) && Integer.valueOf(endHour) < Integer.valueOf(startHour)) {
+            timeInvalidFocus(ITEM_END_TIME, mEtBookEndTimeHour);
+            return false;
+        }
+
+        if (TextUtils.isEmpty(endMinute) || !TimeUtils.isMinuteValid(Integer.valueOf(endMinute)) ||
+                !TimeUtils.isBookSecondsValid(Integer.valueOf(startHour), Integer.valueOf(startMinute), Integer.valueOf(endHour), Integer.valueOf(endMinute))) {
+            timeInvalidFocus(ITEM_END_TIME, mEtBookEndTimeMinute);
+            return false;
+        }
+
+        return true;
     }
 
     @OnClick(R.id.btn_cancel_book)
@@ -526,22 +571,25 @@ public class BookDialog extends BaseDialogFragment {
     }
 
     private String getBookYearText() {
-        return mBookModel == null ? "" : String.valueOf(mBookModel.bookInfo.year);
+        // weekly和monthly可能调整后会更改，在确定时获取最新的年份
+        return mBookModel == null || mCurrModePosition == BOOK_MODE_WEEKLY || mCurrModePosition == BOOK_MODE_MONTHLY ? "" : String.valueOf(mBookModel.bookInfo.year);
     }
 
     private String getBookMonthText() {
-        return mBookModel == null ? "" : String.valueOf(mBookModel.bookInfo.month);
+        // weekly和monthly可能调整后会更改，在确定时获取最新的月份
+        return mBookModel == null || mCurrModePosition == BOOK_MODE_WEEKLY || mCurrModePosition == BOOK_MODE_MONTHLY ? "" : String.valueOf(mBookModel.bookInfo.month);
     }
 
     private String getBookDayText() {
-        return mBookModel == null ? "" : String.valueOf(mBookModel.bookInfo.day);
+        // weekly和monthly可能调整后会更改，在确定时获取最新的日期
+        return mBookModel == null || mCurrModePosition == BOOK_MODE_WEEKLY || mCurrModePosition == BOOK_MODE_MONTHLY ? "" : String.valueOf(mBookModel.bookInfo.day);
     }
 
     private String getBookDayOfWeekText() {
         if (mBookModel == null) return mBookDateWeeklyArray[0];
 
         int dayOfWeek = TimeUtils.getDayOfWeek(mBookModel.bookInfo.year, mBookModel.bookInfo.month, mBookModel.bookInfo.day);
-        return mBookDateWeeklyArray[dayOfWeek + 1];
+        return mBookDateWeeklyArray[dayOfWeek - 1];
     }
 
     private String getBookDayOfMonthText() {
@@ -697,14 +745,14 @@ public class BookDialog extends BaseDialogFragment {
 //                }).show(getActivity().getSupportFragmentManager(), BookDateWeeklyDialog.TAG);
 //    }
 
-    private boolean isCheckAll(SparseBooleanArray checkMap) {
-        for (int i = 0; i < mBookDateWeeklyArray.length; i++) {
-            if (!checkMap.get(i)) {
-                return false;
-            }
-        }
-        return true;
-    }
+//    private boolean isCheckAll(SparseBooleanArray checkMap) {
+//        for (int i = 0; i < mBookDateWeeklyArray.length; i++) {
+//            if (!checkMap.get(i)) {
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
 
     @Override
     protected boolean onKeyListener(DialogInterface dialog, int keyCode, KeyEvent event) {
@@ -822,7 +870,7 @@ public class BookDialog extends BaseDialogFragment {
 
                 case ITEM_DATE:
                     if (mCurrModePosition == BOOK_MODE_MONTHLY) {
-                        if (--mCurrBookDayOfMonthPosition < 0)
+                        if (--mCurrBookDayOfMonthPosition <= 0)
                             mCurrBookDayOfMonthPosition = mMaxBookDayOfMonth;
                         mTvBookDateMonthly.setText(MessageFormat.format(getStrings(R.string.book_date_day), String.valueOf(mCurrBookDayOfMonthPosition)));
                     }
@@ -1051,6 +1099,37 @@ public class BookDialog extends BaseDialogFragment {
     }
 
     private void notifyEditFocusChange() {
+        dateEditFocus(mEtBookDateYear);
+        startTimeEditFocus(mEtBookStartTimeHour);
+        endTimeEditFocus(mEtBookEndTimeHour);
+    }
+
+    private void dateEditFocus(EditText focusEdit) {
+        updateEditFocusable();
+
+        // 获取焦点延时，防止概率出现requestFocus没有获取到焦点不显示光标问题
+        if (mCurrentSelectItem == ITEM_DATE && mCurrModePosition != BOOK_MODE_WEEKLY) {
+            viewDelayFocus(focusEdit);
+        }
+    }
+
+    private void startTimeEditFocus(EditText focusEdit) {
+        updateEditFocusable();
+
+        if (mCurrentSelectItem == ITEM_START_TIME) {
+            viewDelayFocus(focusEdit);
+        }
+    }
+
+    private void endTimeEditFocus(EditText focusEdit) {
+        updateEditFocusable();
+
+        if (mCurrentSelectItem == ITEM_END_TIME) {
+            viewDelayFocus(focusEdit);
+        }
+    }
+
+    private void updateEditFocusable() {
         if (mCurrModePosition != BOOK_MODE_WEEKLY) {
             mEtBookDateYear.setFocusable(mCurrentSelectItem == ITEM_DATE);
             mEtBookDateMonth.setFocusable(mCurrentSelectItem == ITEM_DATE);
@@ -1062,18 +1141,29 @@ public class BookDialog extends BaseDialogFragment {
 
         mEtBookEndTimeHour.setFocusable(mCurrentSelectItem == ITEM_END_TIME);
         mEtBookEndTimeMinute.setFocusable(mCurrentSelectItem == ITEM_END_TIME);
+    }
 
-        // 获取焦点延时，防止概率出现requestFocus没有获取到焦点不显示光标问题
-        if (mCurrentSelectItem == ITEM_DATE && mCurrModePosition != BOOK_MODE_WEEKLY) {
-            viewDelayFocus(mEtBookDateYear);
-        }
+    private void dateInvalidFocus(EditText focusEdit) {
+        mCurrentSelectItem = ITEM_DATE;
+        mBtnBook.setFocusable(false);
+        mBtnCancelBook.setFocusable(false);
+        bookDateItemFocusChange();
+        dateEditFocus(focusEdit);
+    }
+
+    private void timeInvalidFocus(int focusItemPosition, EditText focusEdit) {
+        mCurrentSelectItem = focusItemPosition;
+        mBtnBook.setFocusable(false);
+        mBtnCancelBook.setFocusable(false);
 
         if (mCurrentSelectItem == ITEM_START_TIME) {
-            viewDelayFocus(mEtBookStartTimeHour);
+            itemChange(ITEM_START_TIME, mItemBookStartTime, null, null, null);
+            startTimeEditFocus(focusEdit);
         }
 
         if (mCurrentSelectItem == ITEM_END_TIME) {
-            viewDelayFocus(mEtBookEndTimeHour);
+            itemChange(ITEM_END_TIME, mItemBookEndTime, null, null, null);
+            endTimeEditFocus(focusEdit);
         }
     }
 

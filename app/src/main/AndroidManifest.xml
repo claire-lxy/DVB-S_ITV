@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:name="com.konkawise.dtv.KonkaApplication"
@@ -69,7 +70,9 @@
             android:name="com.konkawise.dtv.utils.ChannelLockProvider"
             android:authorities="dvbchannellock"
             android:exported="true" />
-        <service android:name="com.konkawise.dtv.service.BookListenerService" />
+
+        <service android:name="com.konkawise.dtv.service.BookService"
+            android:enabled="true"/>
     </application>
 
 </manifest>

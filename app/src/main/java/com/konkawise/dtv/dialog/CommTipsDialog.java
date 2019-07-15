@@ -30,6 +30,7 @@ public class CommTipsDialog extends BaseDialogFragment {
     private String mContent;
     private String mPositive;
     private String mNegative;
+    private float mLineSpacing;
 
     private OnCommPositiveListener mOnPositiveListener;
     private OnCommNegativeListener mOnNegativeListener;
@@ -59,6 +60,7 @@ public class CommTipsDialog extends BaseDialogFragment {
     protected void setup(View view) {
         mTvTitle.setText(mTitle);
         mTvContent.setText(mContent);
+        if (mLineSpacing != 0) mTvContent.setLineSpacing(mLineSpacing, 0);
         mBtnPositive.setText(TextUtils.isEmpty(mPositive) ? getStrings(R.string.yes) : mPositive);
         mBtnNegative.setText(TextUtils.isEmpty(mNegative) ? getStrings(R.string.cancel) : mNegative);
     }
@@ -70,6 +72,11 @@ public class CommTipsDialog extends BaseDialogFragment {
 
     public CommTipsDialog content(String content) {
         this.mContent = TextUtils.isEmpty(content) ? "" : content;
+        return this;
+    }
+
+    public CommTipsDialog lineSpacing(float lineSpacing) {
+        this.mLineSpacing = lineSpacing;
         return this;
     }
 

@@ -1,28 +1,31 @@
 package com.konkawise.dtv.utils;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.text.TextUtils;
 
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.bean.DateModel;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
 
 public class TimeUtils {
-    @SuppressLint("SimpleDateFormat")
-    private static final SimpleDateFormat sFormat = new SimpleDateFormat("yyyy-MM-dd");
     public static final int YEAR = 0;
     public static final int MONTH = 1;
     public static final int DAY = 2;
     public static final int HOUR = 3;
     public static final int MINUTE = 4;
 
+    private static final DecimalFormat sDecimalFormat = new DecimalFormat("00");
+
+    /**
+     * 获取当前年份
+     */
     public static int getYear() {
         return getYear("");
     }
@@ -34,6 +37,9 @@ public class TimeUtils {
         return Integer.valueOf(year);
     }
 
+    /**
+     * 获取当前月份
+     */
     public static int getMonth() {
         return getMonth("");
     }
@@ -45,6 +51,9 @@ public class TimeUtils {
         return Integer.valueOf(month);
     }
 
+    /**
+     * 获取当前日期
+     */
     public static int getDay() {
         return getDay("");
     }
@@ -56,6 +65,9 @@ public class TimeUtils {
         return Integer.valueOf(day);
     }
 
+    /**
+     * 获取当前小时
+     */
     public static int getHour() {
         return getHour("");
     }
@@ -67,6 +79,9 @@ public class TimeUtils {
         return Integer.valueOf(hour);
     }
 
+    /**
+     * 获取当前小时
+     */
     public static int getMinute() {
         return getMinute("");
     }
@@ -78,18 +93,32 @@ public class TimeUtils {
         return Integer.valueOf(minute);
     }
 
+    /**
+     * 根据年月日获取星期几
+     */
     public static int getDayOfWeek(int year, int month, int day) {
-        return getDayOfWeek(year + "-" + month + "-" + day);
+        Calendar instance = Calendar.getInstance();
+        instance.set(Calendar.YEAR, year);
+        instance.set(Calendar.MONTH, month - 1);
+        instance.set(Calendar.DAY_OF_MONTH, day);
+        return instance.get(Calendar.DAY_OF_WEEK);
     }
 
-    public static int getDayOfWeek(String date) {
-        try {
-            Calendar.getInstance().setTime(sFormat.parse(date));
-            return Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return -1;
+    /**
+     * 传递星期几获取当月相同星期的具体日期
+     *
+     * @param targetDayOfWeek 星期，targetDayOfWeek=Calendar.SUNDAY~SATURDAY
+     */
+    public static List<Integer> getDayOfMonthsByDayOfWeek(int year, int month, int targetDayOfWeek) {
+        int maxDayOfMonth = getDayOfMonthByYearAndMonth(year, month);
+        List<Integer> dayOfWeeks = new ArrayList<>();
+        for (int i = 1; i <= maxDayOfMonth; i++) {
+            int dayOfWeek = getDayOfWeek(year, month, i);
+            if (dayOfWeek == targetDayOfWeek) {
+                dayOfWeeks.add(i);
+            }
         }
+        return dayOfWeeks;
     }
 
     public static int getWeekByStr(Context context, String week) {
@@ -113,12 +142,13 @@ public class TimeUtils {
     }
 
     /**
-     * 获取当年某月的天数
+     * 获取当年某月的最大天数
      */
     public static int getDayOfMonthByYearAndMonth(int year, int month) {
-        Calendar.getInstance().set(Calendar.YEAR, year);
-        Calendar.getInstance().set(Calendar.MONTH, month - 1);
-        return Calendar.getInstance().getActualMaximum(Calendar.DAY_OF_MONTH);
+        Calendar instance = Calendar.getInstance();
+        instance.set(Calendar.YEAR, year);
+        instance.set(Calendar.MONTH, month - 1);
+        return instance.getActualMaximum(Calendar.DAY_OF_MONTH);
     }
 
     public static int getTotalSeconds(SysTime_t startTime, SysTime_t endTime) {
@@ -170,8 +200,20 @@ public class TimeUtils {
     public static boolean isBookSecondsValid(int startHour, int startMinute, int endHour, int endMinute) {
         int hour = endHour - startHour;
         if (hour == 0) {
-            return endMinute - startMinute >= 5;
+            return endMinute - startMinute >= 1; // 至少一分钟
         }
         return hour >= 0;
+    }
+
+    /**
+     * 根据秒数获取格式化时分秒
+     *
+     * @return 00:00:00
+     */
+    public static String getDecimalFormatTime(int seconds) {
+        String hour = sDecimalFormat.format(seconds / 3600);
+        String minute = sDecimalFormat.format(seconds % 3600 / 60);
+        String second = sDecimalFormat.format(seconds % 60);
+        return hour + ":" + minute + ":" + second;
     }
 }

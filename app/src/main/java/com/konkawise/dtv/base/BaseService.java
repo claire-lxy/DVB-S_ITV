@@ -8,6 +8,8 @@ import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 
+import com.konkawise.dtv.KonkaApplication;
+
 public abstract class BaseService extends Service {
 
     @Override
@@ -20,6 +22,20 @@ public abstract class BaseService extends Service {
                             NotificationManager.IMPORTANCE_DEFAULT));
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this, getPackageName());
             startForeground(1, builder.build());
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        stopForeground(true);
+        super.onDestroy();
+    }
+
+    public static void bootService(Intent intent) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            KonkaApplication.getContext().startForegroundService(intent);
+        } else {
+            KonkaApplication.getContext().startService(intent);
         }
     }
 

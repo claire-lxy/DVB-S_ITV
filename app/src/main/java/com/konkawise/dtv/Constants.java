@@ -55,9 +55,10 @@ public class Constants {
 
         String INTENT_T2_SETTING = "t2Setting";
 
-        String INTENT_BOOKING_PLAY = "bookingPlay";
-        String INTENT_BOOKING_RECORD = "bookingRecord";
-        String INTENT_BOOKING_PROG_NUM = "bookingProgNum";
+        String INTENT_BOOK_TYPE = "bookType";
+        String INTENT_BOOK_PROG_NUM = "bookProgNum";
+        String INTENT_BOOK_PROG_TYPE = "bookProgType";
+        String INTENT_BOOK_SECONDS = "bookSeconds";
     }
 
     public interface PrefsKey {

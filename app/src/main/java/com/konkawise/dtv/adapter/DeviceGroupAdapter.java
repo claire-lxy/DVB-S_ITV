@@ -5,7 +5,6 @@ import android.content.Context;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.adapter.base.BaseListViewAdapter;
 import com.konkawise.dtv.adapter.base.BaseListViewHolder;
-import com.konkawise.dtv.bean.UsbInfo;
 
 import java.util.List;
 

@@ -198,7 +198,7 @@
     <string name="txt">TXT</string>
     <string name="rate">RATE</string>
     <string name="no_information">Information not available</string>
-    <string name="dialog_pf_detail_title">Service Info</string>
+    <string name="dialog_pf_detail_title">Service Information</string>
     <string name="dialog_pf_no_detail">No detail information!</string>
     <string name="dialog_pf_satellite_name">Satellite Name:{0}</string>
     <string name="dialog_pf_channel_name">Channel Name:{0}</string>
@@ -307,7 +307,7 @@
     <string name="book_monthly">Monthly</string>
     <string name="book_time_once_format">{0}-{1}-{2} {3}:{4}{5}-{6}-{7}-{8} {9}:{10}</string>
     <string name="book_time_once_format_non_endtime">{0}-{1}-{2} {3}:{4}</string>
-    <string name="book_time_daily_format">{0}:{1}-{3}:{4}</string>
+    <string name="book_time_daily_format">{0}:{1}-{2}:{3}</string>
     <string name="book_time_daily_format_non_endtime">{0}:{1}</string>
     <string name="book_time_weekly_or_monthly_format">{0} {1} {2}:{3}-{4}:{5}</string>
     <string name="book_time_weekly_or_monthly_format_non_endtime">{0} {1} {2}:{3}</string>
@@ -322,6 +322,7 @@
     <string name="dialog_book_conflict_title">Conflict Event</string>
     <string name="dialog_book_conflict_content">Do you want to replace the following program?\nBookTime: {0}\nChannelName: {1}\nType: {2}</string>
     <string name="dialog_book_conflict_positive">Replace</string>
+    <string name="dialog_quit_record_content">Program is recording, do you want to stop it?</string>
 
     <!-- Record List -->
     <string name="record_list">Record List</string>
@@ -331,10 +332,13 @@
 
     <string name="toast_invalid_password">Invalid password</string>
     <string name="toast_book_limit">Book Limit</string>
+    <string name="toast_book_invalid">Invalid Value</string>
     <string name="toast_current_password_error">Current password error</string>
     <string name="toast_confirm_password_invalid">Confirm password is incorrect</string>
     <string name="toast_pid_not_empty">parameter should be not empty</string>
-    <string name="toast_program_number_invalid">invalid program number</string>
+    <string name="toast_program_number_invalid">No This Channel</string>
+    <string name="toast_start_record">Start Recording!</string>
+    <string name="toast_stop_record">Record End!</string>
 
     <string name="dialog_try_auto_diseqc">Scanning DiSEqC Port Index {0}.Try [{1}/{2}] times...</string>
     <string name="dialog_auto_diseqc_title">Information</string>

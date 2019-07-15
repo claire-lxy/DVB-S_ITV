@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -27,6 +28,7 @@ import com.konkawise.dtv.adapter.ChannleInfoAdapter;
 import com.konkawise.dtv.adapter.EPGListAdapter;
 import com.konkawise.dtv.annotation.BookConflictType;
 import com.konkawise.dtv.base.BaseActivity;
+import com.konkawise.dtv.bean.BookingModel;
 import com.konkawise.dtv.bean.EpgBookParameterModel;
 import com.konkawise.dtv.bean.HandlerMsgModel;
 import com.konkawise.dtv.dialog.CommCheckItemDialog;
@@ -40,11 +42,13 @@ import com.konkawise.dtv.egphandle.MenuLockEpgHandler;
 import com.konkawise.dtv.egphandle.ParentLockEpgHandler;
 import com.konkawise.dtv.egphandle.PayEpgHandler;
 import com.konkawise.dtv.view.TVListView;
+import com.konkawise.dtv.weaktool.RealTimeHelper;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
 import com.sw.dvblib.SWBooking;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -78,6 +82,9 @@ public class EpgActivity extends BaseActivity {
     @BindView(R.id.lv_prog_list)
     TVListView mLvProgList;
 
+    @BindView(R.id.tv_system_time)
+    TextView mTvSystemTime;
+
     @BindView(R.id.lv_epg_channel)
     TVListView mLvEpgChannel;
 
@@ -104,7 +111,7 @@ public class EpgActivity extends BaseActivity {
 
     @OnItemClick(R.id.lv_epg_channel)
     void clickEpgItem() {
-//        showEpgBookingDialog();
+        showEpgBookingDialog();
     }
 
     @OnItemSelected(R.id.lv_prog_list)
@@ -174,6 +181,8 @@ public class EpgActivity extends BaseActivity {
     private boolean mBookEpg;
 
     private LoadEpgChannelRunnable mLoadEpgChannelRunnable;
+
+    private RealTimeHelper mRealTimeHelper;
 
     private static class EpgMsgHandler extends WeakHandler<EpgActivity> {
         static final int MSG_PLAY_SELECT_PROG = 0;
@@ -261,6 +270,13 @@ public class EpgActivity extends BaseActivity {
         super.onResume();
         // 刷新booking展示
         updateEpgChannel(mCurrentFocusDate);
+        startUpdateRealTime();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mRealTimeHelper.stop();
     }
 
     @Override
@@ -403,21 +419,37 @@ public class EpgActivity extends BaseActivity {
         });
     }
 
-    private void showEpgBookingDialog() {
-        if (mCurrProgSelectPosition >= mProgAdapter.getCount() && mCurrEpgSelectPosition >= mEpgChannelAdapter.getCount()) return;
+    private void startUpdateRealTime() {
+        mRealTimeHelper = new RealTimeHelper(this);
+        mRealTimeHelper.setOnRealTimeListener(new RealTimeHelper.OnRealTimerListener() {
+            @Override
+            public void onRealTimeCallback(String realTime) {
+                if (!TextUtils.isEmpty(realTime)) {
+                    mTvSystemTime.setText(realTime);
+                }
+            }
+        });
+        mRealTimeHelper.start();
+    }
 
-        List<String> epgBookCheckContent = Arrays.asList(isBooked() ? mEpgBookedArray : mEpgBookingArray);
+    private void showEpgBookingDialog() {
+        if (mCurrProgSelectPosition >= mProgAdapter.getCount() && mCurrEpgSelectPosition >= mEpgChannelAdapter.getCount())
+            return;
+
+        PDPMInfo_t progInfo = mProgAdapter.getItem(mCurrProgSelectPosition);
+        EpgEvent_t eventInfo = mEpgChannelAdapter.getItem(mCurrEpgSelectPosition);
+        final HSubforProg_t bookInfo = SWBookingManager.getInstance().progIsSubFored(progInfo.Sat, progInfo.TsID, progInfo.ServID, eventInfo.uiEventId);
+        boolean isBooked = bookInfo != null;
+
+        List<String> epgBookCheckContent = Arrays.asList(isBooked ? mEpgBookedArray : mEpgBookingArray);
         new CommCheckItemDialog()
                 .title(getString(R.string.epg_booking_dialog_title))
                 .content(epgBookCheckContent)
-                .position(epgBookCheckContent.indexOf(getString(isBooked() ? R.string.book_record : R.string.book_play)))
+                .position(getBookPosition(epgBookCheckContent, bookInfo))
                 .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
                     @Override
                     public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
-                        PDPMInfo_t progInfo = mProgAdapter.getItem(mCurrProgSelectPosition);
-                        EpgEvent_t eventInfo = mEpgChannelAdapter.getItem(mCurrEpgSelectPosition);
-
-                        HSubforProg_t bookInfo = SWBookingManager.getInstance().progIsSubFored(progInfo.Sat, progInfo.TsID, progInfo.ServID, eventInfo.uiEventId);
+                        HSubforProg_t newBookInfo = null;
                         if (bookInfo == null) {
                             SysTime_t startTimeInfo = SWTimerManager.getInstance().getStartTime(eventInfo);
                             SysTime_t endTimeInfo = SWTimerManager.getInstance().getEndTime(eventInfo);
@@ -429,16 +461,17 @@ public class EpgActivity extends BaseActivity {
                             parameterModel.endTimeInfo = endTimeInfo;
                             parameterModel.schtype = bookSchType;
                             parameterModel.schway = SWBooking.BookWay.EPG.ordinal();
-                            bookInfo = SWBookingManager.getInstance().newBookProg(parameterModel);
+                            newBookInfo = SWBookingManager.getInstance().newBookProg(parameterModel);
                         }
+                        Log.i(TAG, "new book info = " + newBookInfo);
 
-                        HSubforProg_t conflictBookInfo = SWBookingManager.getInstance().conflictCheck(bookInfo, 0);
+                        HSubforProg_t conflictBookInfo = SWBookingManager.getInstance().conflictCheck(newBookInfo, 0);
                         int conflictType = SWBookingManager.getInstance().getConflictType(conflictBookInfo);
                         switch (conflictType) {
                             case Constants.BOOK_CONFLICT_NONE: // 当前参数的book没有冲突，正常添加删除
                             case Constants.BOOK_CONFLICT_ADD: // 当前参数的book有冲突，如果是添加需要先删除后再添加
                             case Constants.BOOK_CONFLICT_REPLACE: // 当前参数的book有冲突，需要询问替换
-                                bookHandle(conflictType, getBookCheckSchType(checkContent), bookInfo, conflictBookInfo);
+                                bookHandle(conflictType, getBookCheckSchType(checkContent), newBookInfo, conflictBookInfo);
                                 break;
                             case Constants.BOOK_CONFLICT_LIMIT:
                                 Toast.makeText(EpgActivity.this, getString(R.string.toast_book_limit), Toast.LENGTH_SHORT).show();
@@ -451,26 +484,40 @@ public class EpgActivity extends BaseActivity {
     }
 
     private void bookHandle(@BookConflictType int conflictType, int bookSchType, HSubforProg_t bookInfo, HSubforProg_t conflictBookInfo) {
-        if (bookSchType == SWBooking.BookSchType.NONE.ordinal()) {
+        if (bookSchType == SWBooking.BookSchType.NONE.ordinal()) { // 取消book
             SWBookingManager.getInstance().deleteProg(bookInfo);
         } else if (bookSchType == SWBooking.BookSchType.PLAY.ordinal()
-                || bookSchType == SWBooking.BookSchType.RECORD.ordinal()) {
+                || bookSchType == SWBooking.BookSchType.RECORD.ordinal()) { // 添加book
             if (conflictType == Constants.BOOK_CONFLICT_REPLACE) {
-                showReplaceBookDialog(conflictBookInfo, bookInfo);
+                BookingModel conflictBookModel = new BookingModel();
+                conflictBookModel.bookInfo = conflictBookInfo;
+                conflictBookModel.progInfo = SWPDBaseManager.getInstance().getProgInfoByServiceId(conflictBookInfo.servid, conflictBookInfo.tsid, conflictBookInfo.sat);
+
+                BookingModel newBookModel = new BookingModel();
+                newBookModel.bookInfo = bookInfo;
+                newBookModel.progInfo = SWPDBaseManager.getInstance().getProgInfoByServiceId(bookInfo.servid, bookInfo.tsid, bookInfo.sat);
+                showReplaceBookDialog(conflictBookModel, newBookModel);
             } else {
                 SWBookingManager.getInstance().addProg(conflictType, conflictBookInfo, bookInfo);
             }
         }
+        // 刷新列表，等待接口提供EpgEvent_t字段判断显示或隐藏图标
+        // EpgEvent_t eventInfo = mEpgChannelAdapter.getItem(mCurrEpgSelectPosition);
+        // eventInfo.xxx = play/record/none;
+        // mAdapter.updateData(mCurrEpgSelectPosition, eventInfo);
     }
 
-    private void showReplaceBookDialog(HSubforProg_t oldProg, HSubforProg_t newProg) {
+    private void showReplaceBookDialog(BookingModel conflictBookModel, BookingModel newBookModel) {
         new CommTipsDialog()
-                .title(getString(R.string.dialog_title_tips))
-                .content("replace book")
-                .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
+                .title(getString(R.string.dialog_book_conflict_title))
+                .content(MessageFormat.format(getString(R.string.dialog_book_conflict_content),
+                        conflictBookModel.getBookDate(this, BookingModel.BOOK_TIME_SEPARATOR_EMPTY), conflictBookModel.progInfo.Name, conflictBookModel.getBookType(this)))
+                .lineSpacing(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 35, getResources().getDisplayMetrics()))
+                .setOnPositiveListener(getString(R.string.dialog_book_conflict_positive), new OnCommPositiveListener() {
                     @Override
                     public void onPositiveListener() {
-                        SWBookingManager.getInstance().replaceProg(oldProg, newProg);
+                        SWBookingManager.getInstance().replaceProg(conflictBookModel.bookInfo, newBookModel.bookInfo);
+                        // 刷新列表，等待接口提供EpgEvent_t字段判断显示或隐藏图标
                     }
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
@@ -486,13 +533,17 @@ public class EpgActivity extends BaseActivity {
         return -1;
     }
 
-    private boolean isBooked() {
-        if (mCurrProgSelectPosition < mProgAdapter.getCount() && mCurrEpgSelectPosition < mEpgChannelAdapter.getCount()) {
-            PDPMInfo_t progInfo = mProgAdapter.getItem(mCurrProgSelectPosition);
-            EpgEvent_t eventInfo = mEpgChannelAdapter.getItem(mCurrEpgSelectPosition);
-            return SWBookingManager.getInstance().progIsSubFored(progInfo.Sat, progInfo.TsID, progInfo.ServID, eventInfo.uiEventId) != null;
+    private int getBookPosition(List<String> epgBookCheckContent, HSubforProg_t bookInfo) {
+        if (bookInfo == null) {
+            return epgBookCheckContent.indexOf(getString(R.string.book_play));
         }
-        return false;
+        if (bookInfo.schtype == SWBooking.BookSchType.PLAY.ordinal()) {
+            return epgBookCheckContent.indexOf(getString(R.string.book_play));
+        } else if (bookInfo.schtype == SWBooking.BookSchType.RECORD.ordinal()) {
+            return epgBookCheckContent.indexOf(getString(R.string.book_record));
+        } else {
+            return epgBookCheckContent.indexOf(getString(R.string.book_non));
+        }
     }
 
     private void showEnterPasswordDialog() {
@@ -757,10 +808,10 @@ public class EpgActivity extends BaseActivity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-//        if (keyCode == KeyEvent.KEYCODE_PROG_BLUE) {
-//            startActivity(new Intent(this, BookListActivity.class));
-//            return true;
-//        }
+        if (keyCode == KeyEvent.KEYCODE_PROG_BLUE) {
+            startActivity(new Intent(this, BookListActivity.class));
+            return true;
+        }
 
         return super.onKeyDown(keyCode, event);
     }

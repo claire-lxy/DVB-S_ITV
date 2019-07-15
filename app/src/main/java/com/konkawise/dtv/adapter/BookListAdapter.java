@@ -22,8 +22,8 @@ public class BookListAdapter extends BaseListViewAdapter<BookingModel> {
     protected void convert(BaseListViewHolder holder, int position, BookingModel item) {
         holder.setText(R.id.tv_book_num, String.valueOf(position + 1))
                 .setText(R.id.tv_book_channel_name, item.getBookProgName())
-                .setText(R.id.tv_book_date_monthly, item.getBookDate(mContext, BookingModel.BOOK_TIME_SEPARATOR_NEWLINE))
-                .setTextSize(R.id.tv_book_date_monthly, getDateTextSize(item.bookInfo))
+                .setText(R.id.tv_book_date, item.getBookDate(mContext, BookingModel.BOOK_TIME_SEPARATOR_NEWLINE))
+                .setTextSize(R.id.tv_book_date, getDateTextSize(item.bookInfo))
                 .setText(R.id.tv_book_mode, item.getBookMode(mContext))
                 .setText(R.id.tv_book_type, item.getBookType(mContext));
     }

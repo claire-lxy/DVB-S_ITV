@@ -6,7 +6,9 @@ import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Message;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.KeyEvent;
@@ -18,18 +20,21 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.HandlerMsgManager;
 import com.konkawise.dtv.R;
+import com.konkawise.dtv.SWBookingManager;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.SWPSearchManager;
 import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.UIApiManager;
+import com.konkawise.dtv.UsbManager;
 import com.konkawise.dtv.adapter.TvListAdapter;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.bean.HandlerMsgModel;
+import com.konkawise.dtv.bean.UsbInfo;
 import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.CommRemindDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
@@ -41,6 +46,9 @@ import com.konkawise.dtv.dialog.PfDetailDialog;
 import com.konkawise.dtv.dialog.SearchChannelDialog;
 import com.konkawise.dtv.dialog.SearchProgramDialog;
 import com.konkawise.dtv.receiver.VolumeChangeObserver;
+import com.konkawise.dtv.service.BookService;
+import com.konkawise.dtv.utils.TimeUtils;
+import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakRunnable;
@@ -49,6 +57,7 @@ import com.sw.dvblib.SWDVB;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.Timer;
 
 import butterknife.BindView;
@@ -57,15 +66,21 @@ import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
 import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 
 public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolumeChangeListener {
     private static final String TAG = "Topmost";
-    private static final long SMALL_HINT_BOX_DELAY = 1000;
+    private static final long SMALL_HINT_BOX_PERIOD = 1000;
+    private static final long RECORDING_DELAY = 1000;
+    private static final long RECORDING_PERIOD = 1000;
     private static final long TRACK_HIDE_DELAY = 5 * 1000;
     private static final long PLAY_PROG_DELAY = 1000;
     private static final long JUMP_PROG_DELAY = 2500;
+    private static final long RECORD_TIME_HIDE_DELAY = 10 * 1000;
+
+    private static final int KEYCODE_TV_SUBTITLE = 293;
 
     @BindView(R.id.sv_topmost)
     SurfaceView mSurfaceView;
@@ -78,6 +93,12 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
 
     @BindView(R.id.tv_prog_num)
     TextView mTvProgNum;
+
+    @BindView(R.id.ll_recording_layout)
+    ViewGroup mRecordingLayout;
+
+    @BindView(R.id.tv_recording_time)
+    TextView mTvRecordingTime;
 
     @BindView(R.id.tv_satellite_name)
     TextView mTvSatelliteName;
@@ -247,13 +268,17 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         startActivity(new Intent(this, DTVSettingActivity.class));
     }
 
-    private int mNewProgNum = 0;
+    private int mNewProgNum;
     private boolean mLongPressed;
-    private long mLongPressDelayTime = 0;
+    private long mLongPressDelayTime;
 
     private Timer mSmallHintBoxTimer;
     private SmallHintBoxTimerTask mSmallHintBoxTimerTask;
     private SmallHintBox mSmallHintBox;
+
+    private Timer mRecordingTimer;
+    private RecordingTimerTask mRecordingTimerTask;
+    private boolean mRecording;
 
     private ProgHandler mProgHandler;
     private PlayHandler mPlayHandler;
@@ -312,6 +337,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         static final int MSG_SHOW_PROG_NUM = 1;
         static final int MSG_HIDE_TRACK = 2;
         static final int MSG_HIDE_PF_BAR = 3;
+        static final int MSG_HIDE_RECORD_TIME = 4;
 
         ProgHandler(Topmost view) {
             super(view);
@@ -333,6 +359,9 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                     break;
                 case MSG_HIDE_PF_BAR:
                     context.dismissPfBarScanDialog();
+                    break;
+                case MSG_HIDE_RECORD_TIME:
+                    context.mRecordingLayout.setVisibility(View.GONE);
                     break;
             }
         }
@@ -366,6 +395,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     protected void setup() {
         SWDVB.GetInstance(); // 必须先初始化库，否则使用库会出现空指针异常
         mSmallHintBox = new SmallHintBox(this);
+        BookService.bootService(new Intent(this, BookService.class));
 
         initVolumeObserver();
         initHandler();
@@ -394,6 +424,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     protected void onPause() {
         super.onPause();
         cancelSmallHintBoxTimer();
+        cancelRecordingTimer();
     }
 
     @Override
@@ -417,11 +448,92 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         mVolumeChangeObserver.unregisterVolumeReceiver();
     }
 
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleBook();
+    }
+
+    private boolean handleBook() {
+        int bookType = getIntent().getIntExtra(Constants.IntentKey.INTENT_BOOK_TYPE, -1);
+        int recordSeconds = getIntent().getIntExtra(Constants.IntentKey.INTENT_BOOK_SECONDS, -1);
+        int progType = getIntent().getIntExtra(Constants.IntentKey.INTENT_BOOK_PROG_TYPE, -1);
+        int progNum = getIntent().getIntExtra(Constants.IntentKey.INTENT_BOOK_PROG_NUM, -1);
+        if (bookType == BookService.ACTION_BOOKING_PLAY) {
+            if (progType != -1 && progNum != -1) {
+                SWPDBaseManager.getInstance().setCurrProgType(progType, 0);
+                playProg(progNum);
+                return true;
+            }
+        } else if (bookType == BookService.ACTION_BOOKING_RECORD) {
+            Set<UsbInfo> usbInfos = UsbManager.getInstance().getUsbInfos();
+            if (usbInfos == null || usbInfos.isEmpty()) return false;
+
+            if (progType != -1 && progNum != -1 && recordSeconds != -1) {
+                SWPDBaseManager.getInstance().setCurrProgType(progType, 0);
+                playProg(progNum, true);
+                startRecordingTimer(recordSeconds);
+                mRecording = true;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void startRecordingTimer(int recordSeconds) {
+        cancelRecordingTimer();
+        mRecordingTimer = new Timer();
+        mRecordingTimerTask = new RecordingTimerTask(this, recordSeconds);
+        mRecordingTimer.schedule(mRecordingTimerTask, RECORDING_DELAY, RECORDING_PERIOD);
+    }
+
+    private void cancelRecordingTimer() {
+        setRecordFlagStop();
+        if (mRecordingTimer != null) {
+            mRecordingTimer.cancel();
+            mRecordingTimer.purge();
+            mRecordingTimerTask.release();
+            mRecordingTimer = null;
+            mRecordingTimerTask = null;
+        }
+    }
+
+    private void setRecordFlagStop() {
+        mRecording = false;
+    }
+
+    private static class RecordingTimerTask extends WeakTimerTask<Topmost> {
+        private int countDownSeconds;
+        private int recordSeconds;
+
+        RecordingTimerTask(Topmost view, int countDownSeconds) {
+            super(view);
+            this.countDownSeconds = countDownSeconds;
+        }
+
+        @Override
+        protected void runTimer() {
+            Topmost context = mWeakReference.get();
+
+            if (--countDownSeconds <= 0) {
+                context.cancelRecordingTimer();
+            } else {
+                context.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        context.sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
+                        context.mTvRecordingTime.setText(TimeUtils.getDecimalFormatTime(++recordSeconds));
+                    }
+                });
+            }
+        }
+    }
+
     private void startSmallHintBoxTimer() {
         cancelSmallHintBoxTimer();
         mSmallHintBoxTimer = new Timer();
         mSmallHintBoxTimerTask = new SmallHintBoxTimerTask(this);
-        mSmallHintBoxTimer.schedule(mSmallHintBoxTimerTask, 0, SMALL_HINT_BOX_DELAY);
+        mSmallHintBoxTimer.schedule(mSmallHintBoxTimerTask, 0, SMALL_HINT_BOX_PERIOD);
     }
 
     private void cancelSmallHintBoxTimer() {
@@ -434,7 +546,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         }
     }
 
-    private class SmallHintBoxTimerTask extends WeakTimerTask<Topmost> {
+    private static class SmallHintBoxTimerTask extends WeakTimerTask<Topmost> {
 
         SmallHintBoxTimerTask(Topmost view) {
             super(view);
@@ -649,7 +761,10 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
             UIApiManager.getInstance().setSurface(holder.getSurface());
             UIApiManager.getInstance().setWindowSize(0, 0,
                     getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
-            if (SWPDBaseManager.getInstance().getCurrProgInfo() != null) playProg(getCurrentProgNum(), true);
+            if (!handleBook()) {
+                if (SWPDBaseManager.getInstance().getCurrProgInfo() != null)
+                    playProg(getCurrentProgNum(), true);
+            }
         }
 
         @Override
@@ -744,36 +859,35 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
      * 移除通知播放节目msg
      */
     private void removePlayProgMsg() {
-        if (mProgHandler.hasMessages(PlayHandler.MSG_PLAY_PROG)) {
-            HandlerMsgManager.getInstance().removeMessage(mPlayHandler, PlayHandler.MSG_PLAY_PROG);
-        }
+        HandlerMsgManager.getInstance().removeMessage(mPlayHandler, PlayHandler.MSG_PLAY_PROG);
     }
 
     /**
      * 移除隐藏节目台号msg
      */
     private void removeHideProgNumMsg() {
-        if (mProgHandler.hasMessages(ProgHandler.MSG_HIDE_PROG_NUM)) {
-            HandlerMsgManager.getInstance().removeMessage(mProgHandler, ProgHandler.MSG_HIDE_PROG_NUM);
-        }
+        HandlerMsgManager.getInstance().removeMessage(mProgHandler, ProgHandler.MSG_HIDE_PROG_NUM);
     }
 
     /**
      * 移除跳台msg
      */
     private void removeJumpProgMsg() {
-        if (mJumpProgHandler.hasMessages(JumpProgHandler.MSG_JUMP_PROG)) {
-            HandlerMsgManager.getInstance().removeMessage(mJumpProgHandler, JumpProgHandler.MSG_JUMP_PROG);
-        }
+        HandlerMsgManager.getInstance().removeMessage(mJumpProgHandler, JumpProgHandler.MSG_JUMP_PROG);
     }
 
     /**
      * 移除隐藏pfbar msg
      */
     private void removeHidePfBarMsg() {
-        if (mProgHandler.hasMessages(ProgHandler.MSG_HIDE_PF_BAR)) {
-            HandlerMsgManager.getInstance().removeMessage(mProgHandler, ProgHandler.MSG_HIDE_PF_BAR);
-        }
+        HandlerMsgManager.getInstance().removeMessage(mProgHandler, ProgHandler.MSG_HIDE_PF_BAR);
+    }
+
+    /**
+     * 移除隐藏当前录制时长显示msg
+     */
+    private void removeHideRecordTimeMsg() {
+        HandlerMsgManager.getInstance().removeMessage(mProgHandler, ProgHandler.MSG_HIDE_RECORD_TIME);
     }
 
     /**
@@ -795,6 +909,17 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
      */
     private void sendJumpProgMsg(HandlerMsgModel progMsg) {
         HandlerMsgManager.getInstance().sendMessage(mJumpProgHandler, progMsg);
+    }
+
+    /**
+     * 隐藏当前录制时长显示
+     */
+    private void sendHideRecordTimeMsg(HandlerMsgModel msg) {
+        if (mRecordingLayout.getVisibility() != View.VISIBLE && mRecording) {
+            removeHideRecordTimeMsg();
+            mRecordingLayout.setVisibility(View.VISIBLE);
+            HandlerMsgManager.getInstance().sendMessage(mProgHandler, msg);
+        }
     }
 
     /**
@@ -880,7 +1005,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         hideProgNum();
         dismissPfBarScanDialog();
         mJumpProgNumBuilder.delete(0, mJumpProgNumBuilder.length());
-        Toast.makeText(this, getString(R.string.toast_program_number_invalid), Toast.LENGTH_SHORT).show();
+        ToastUtils.showToast(R.string.toast_program_number_invalid);
     }
 
     private void showRadioBackground() {
@@ -1082,6 +1207,32 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
 
+    private void showQuitRecordDialog(KeyEvent event) {
+        new CommTipsDialog()
+                .content(getString(R.string.dialog_quit_record_content))
+                .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
+                    @Override
+                    public void onPositiveListener() {
+                        stopBookRecord(event);
+                    }
+                }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
+    }
+
+    private void stopBookRecord(KeyEvent event) {
+        HSubforProg_t bookProg = SWBookingManager.getInstance().getReadyProgInfo();
+        if (bookProg != null) {
+            SWBookingManager.getInstance().cancelSubForPlay(0, SWBookingManager.getInstance().getCancelBookProg(bookProg));
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && event != null) {
+            dispatchKeyEvent(event);
+        }
+
+        setRecordFlagStop();
+        mRecordingLayout.setVisibility(View.GONE);
+        ToastUtils.showToast(R.string.toast_stop_record);
+    }
+
     private boolean isPfBarShowing() {
         return mPfBarScanDialog != null && mPfBarScanDialog.isShowing();
     }
@@ -1145,6 +1296,9 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         if (!mProgListShow) {
 
             showPfBarScanDialog();
+
+            // 当前处于录制，显示录制时长
+            sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
 
             if (!mLongPressed) {
                 removeHidePfBarMsg();
@@ -1218,7 +1372,6 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         }
 
         // SUB
-        final int KEYCODE_TV_SUBTITLE = 293;
         if (keyCode == KEYCODE_TV_SUBTITLE) {
             return true;
         }
@@ -1278,6 +1431,8 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
 
         // RECORD
         if (keyCode == KeyEvent.KEYCODE_MEDIA_RECORD) {
+            // 当前处于录制，显示录制时长
+            sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
             return true;
         }
 
@@ -1374,11 +1529,17 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         return super.onKeyDown(keyCode, event);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @SuppressLint("RestrictedApi")
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         // 没有节目，不处理节目切换
-        if (mProgListAdapter.getCount() < 0) return super.dispatchKeyEvent(event);
+        if (mProgListAdapter.getCount() <= 0) return super.dispatchKeyEvent(event);
+        // 如果处于booking录制状态，拦截提示退出
+        if (interceptEventWhenRecord(event)) {
+            showQuitRecordDialog(event);
+            return true;
+        }
 
         // 频道列表上下切换
         if (mProgListShow && mProgListAdapter.getCount() > 0) {
@@ -1526,6 +1687,38 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         }
 
         return super.dispatchKeyEvent(event);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private boolean interceptEventWhenRecord(KeyEvent event) {
+        int keyCode = event.getKeyCode();
+        return keyCode != KeyEvent.KEYCODE_TV_TELETEXT &&
+                keyCode != KEYCODE_TV_SUBTITLE &&
+                keyCode != KeyEvent.KEYCODE_MEDIA_AUDIO_TRACK &&
+                keyCode != KeyEvent.KEYCODE_INFO &&
+                keyCode != KeyEvent.KEYCODE_MEDIA_REWIND &&
+                keyCode != KeyEvent.KEYCODE_FORWARD &&
+                keyCode != KeyEvent.KEYCODE_PROG_RED &&
+                keyCode != KeyEvent.KEYCODE_PROG_GREEN &&
+                keyCode != KeyEvent.KEYCODE_PROG_YELLOW &&
+                keyCode != KeyEvent.KEYCODE_PROG_BLUE &&
+                keyCode != KeyEvent.KEYCODE_DPAD_LEFT &&
+                keyCode != KeyEvent.KEYCODE_DPAD_RIGHT &&
+                keyCode != KeyEvent.KEYCODE_DPAD_CENTER &&
+                keyCode != KeyEvent.KEYCODE_VOLUME_MUTE &&
+                keyCode != KeyEvent.KEYCODE_UNKNOWN &&
+                keyCode != KeyEvent.KEYCODE_VOLUME_UP &&
+                keyCode != KeyEvent.KEYCODE_VOLUME_DOWN &&
+                keyCode != KeyEvent.KEYCODE_FORWARD_DEL && mRecording;
+    }
+
+    @Override
+    public boolean onHomeHandleCallback() {
+        if (mRecording) {
+            stopBookRecord(null);
+            return true;
+        }
+        return super.onHomeHandleCallback();
     }
 
     @Override

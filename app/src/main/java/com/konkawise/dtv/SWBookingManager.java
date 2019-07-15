@@ -31,14 +31,23 @@ public class SWBookingManager {
         return SWBookingManagerHolder.INSTANCE;
     }
 
+    /**
+     * 获取有效定时器数量
+     */
     public int getProgNum() {
         return SWBooking.CreateInstance().getProgNum();
     }
 
+    /**
+     * 根据索引号获取定时器
+     */
     public HSubforProg_t getProgInfo(int index) {
         return SWBooking.CreateInstance().getProgInfo(index);
     }
 
+    /**
+     * 添加一个定时器，处理冲突情况下添加定时器前移除旧定时器
+     */
     public void addProg(@BookConflictType int bookConflictType, HSubforProg_t deleteBookProg, HSubforProg_t bookProg) {
         if (bookConflictType == Constants.BOOK_CONFLICT_ADD && deleteBookProg != null) {
             deleteProg(deleteBookProg);
@@ -46,38 +55,67 @@ public class SWBookingManager {
         addProg(bookProg);
     }
 
+    /**
+     * 添加一个定时器
+     */
     public void addProg(HSubforProg_t prog) {
         SWBooking.CreateInstance().addProg(prog);
     }
 
+    /**
+     * 替换一个定时器
+     */
     public void replaceProg(HSubforProg_t oldProg, HSubforProg_t newProg) {
         SWBooking.CreateInstance().replaceProg(oldProg, newProg);
     }
 
+    /**
+     * 删除一个定时器
+     */
     public void deleteProg(HSubforProg_t prog) {
         SWBooking.CreateInstance().deleteProg(prog);
     }
 
+    /**
+     * 检查一个事件是否被预订
+     */
     public HSubforProg_t progIsSubFored(int sat, int tsid, int servid, int eventid) {
         return SWBooking.CreateInstance().progIsSubFored(sat, tsid, servid, eventid);
     }
 
+    /**
+     * 更新数据库，在界面添加删除定时器后，退出界面前应该将数据刷入flash更新
+     */
     public int updateDBase(int speed) {
         return SWBooking.CreateInstance().updateDBase(speed);
     }
 
+    /**
+     * 检查定时器是否有冲突
+     *
+     * @return 返回一个与当前定时器有冲突的定时器
+     */
     public HSubforProg_t conflictCheck(HSubforProg_t prog, int telltype) {
         return SWBooking.CreateInstance().conflictCheck(prog, telltype);
     }
 
+    /**
+     * 取消一个即将播放或预录的操作
+     */
     public int cancelSubForPlay(int keyType, HForplayprog_t prog) {
         return SWBooking.CreateInstance().cancelSubForPlay(keyType, prog);
     }
 
+    /**
+     * 获取即将触发的定时器
+     */
     public HSubforProg_t getReadyProgInfo() {
         return SWBooking.CreateInstance().getReadyProgInfo();
     }
 
+    /**
+     * 获取当前播放或录制的信息
+     */
     public HForplayprog_t getCurrSubForPlay() {
         return SWBooking.CreateInstance().getCurrSubForPlay();
     }

@@ -14,7 +14,7 @@ import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
 public class BookingModel {
     public static final String BOOK_TIME_SEPARATOR_EMPTY = "";
     public static final String BOOK_TIME_SEPARATOR_NEWLINE = "\n";
-    private static final String[] DAY_OF_MONTH_ARRAY = {
+    private static final String[] DAY_OF_WEEK_ARRAY = {
             "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
     };
     public HSubforProg_t bookInfo;
@@ -45,48 +45,89 @@ public class BookingModel {
     public String getBookDate(Context context, String separator) {
         if (bookInfo == null) return "";
 
+        String startYear;
+        String endYear;
+        String startMonth;
+        String endMonth;
+        String startDay;
+        String endDay;
+        String startHour;
+        String startMinute;
+        String endHour;
+        String endMinute;
+        String dayOfWeek;
+        String dayOfMonth;
         if (bookInfo.schtype == SWBooking.BookSchType.RECORD.ordinal()) {
             int[] endDateArr = TimeUtils.getEndDate(bookInfo.year, bookInfo.month, bookInfo.day, bookInfo.hour, bookInfo.minute, bookInfo.lasttime);
             if (endDateArr == null) return "";
 
             if (bookInfo.repeatway == SWBooking.BookRepeatWay.ONCE.ordinal()) {
                 // 2019-6-27 12:00-2019-6-27 14:00
+                startYear = String.valueOf(bookInfo.year);
+                startMonth = String.valueOf(bookInfo.month);
+                startDay = String.valueOf(bookInfo.day);
+                startHour = String.valueOf(bookInfo.hour);
+                startMinute = String.valueOf(bookInfo.minute);
+                endYear = String.valueOf(endDateArr[TimeUtils.YEAR]);
+                endMonth = String.valueOf(endDateArr[TimeUtils.MONTH]);
+                endDay = String.valueOf(endDateArr[TimeUtils.DAY]);
+                endHour = String.valueOf(endDateArr[TimeUtils.HOUR]);
+                endMinute = String.valueOf(endDateArr[TimeUtils.MINUTE]);
                 return MessageFormat.format(context.getString(R.string.book_time_once_format),
-                        bookInfo.year, bookInfo.month, bookInfo.day, bookInfo.hour, bookInfo.minute,
-                        separator, endDateArr[TimeUtils.YEAR], endDateArr[TimeUtils.MONTH], endDateArr[TimeUtils.DAY], endDateArr[TimeUtils.HOUR], endDateArr[TimeUtils.MINUTE]);
+                        startYear, startMonth, startDay, startHour, startMinute,
+                        separator, endYear, endMonth, endDay, endHour, endMinute);
             } else if (bookInfo.repeatway == SWBooking.BookRepeatWay.DAILY.ordinal()) {
                 // 12:00-14:00
-                return MessageFormat.format(context.getString(R.string.book_time_daily_format),
-                        bookInfo.hour, bookInfo.minute, endDateArr[TimeUtils.HOUR], endDateArr[TimeUtils.MINUTE]);
+                startHour = String.valueOf(bookInfo.hour);
+                startMinute = String.valueOf(bookInfo.minute);
+                endHour = String.valueOf(endDateArr[TimeUtils.HOUR]);
+                endMinute = String.valueOf(endDateArr[TimeUtils.MINUTE]);
+                return MessageFormat.format(context.getString(R.string.book_time_daily_format), startHour, startMinute, endHour, endMinute);
             } else if (bookInfo.repeatway == SWBooking.BookRepeatWay.WEEKLY.ordinal()) {
                 // Mon Thu 12:00-14:00
-                return MessageFormat.format(context.getString(R.string.book_time_weekly_or_monthly_format),
-                        DAY_OF_MONTH_ARRAY[TimeUtils.getDayOfWeek(bookInfo.year, bookInfo.month, bookInfo.day) + 1], separator, bookInfo.hour, bookInfo.minute, endDateArr[TimeUtils.HOUR], endDateArr[TimeUtils.MINUTE]);
+                dayOfWeek = DAY_OF_WEEK_ARRAY[TimeUtils.getDayOfWeek(bookInfo.year, bookInfo.month, bookInfo.day) - 1];
+                startHour = String.valueOf(bookInfo.hour);
+                startMinute = String.valueOf(bookInfo.minute);
+                endHour = String.valueOf(endDateArr[TimeUtils.HOUR]);
+                endMinute = String.valueOf(endDateArr[TimeUtils.MINUTE]);
+                return MessageFormat.format(context.getString(R.string.book_time_weekly_or_monthly_format), dayOfWeek, separator, startHour, startMinute, endHour, endMinute);
             } else {
                 // 1th 12:00-14:00
-                return MessageFormat.format(context.getString(R.string.book_time_weekly_or_monthly_format),
-                        MessageFormat.format(context.getString(R.string.book_date_day), String.valueOf(bookInfo.day)),
-                        separator, bookInfo.hour, bookInfo.minute, endDateArr[TimeUtils.HOUR], endDateArr[TimeUtils.MINUTE]);
+                dayOfMonth = MessageFormat.format(context.getString(R.string.book_date_day), String.valueOf(bookInfo.day));
+                startHour = String.valueOf(bookInfo.hour);
+                startMinute = String.valueOf(bookInfo.minute);
+                endHour = String.valueOf(endDateArr[TimeUtils.HOUR]);
+                endMinute = String.valueOf(endDateArr[TimeUtils.MINUTE]);
+                return MessageFormat.format(context.getString(R.string.book_time_weekly_or_monthly_format), dayOfMonth, separator, startHour, startMinute, endHour, endMinute);
             }
         }
 
         if (bookInfo.schtype == SWBooking.BookSchType.PLAY.ordinal() || bookInfo.schtype == SWBooking.BookSchType.NONE.ordinal()) {
             if (bookInfo.repeatway == SWBooking.BookRepeatWay.ONCE.ordinal()) {
                 // 2019-6-27 12:00
-                return MessageFormat.format(context.getString(R.string.book_time_once_format_non_endtime),
-                        bookInfo.year, bookInfo.month, bookInfo.day, bookInfo.hour, bookInfo.minute);
+                startYear = String.valueOf(bookInfo.year);
+                startMonth = String.valueOf(bookInfo.month);
+                startDay = String.valueOf(bookInfo.day);
+                startHour = String.valueOf(bookInfo.hour);
+                startMinute = String.valueOf(bookInfo.minute);
+                return MessageFormat.format(context.getString(R.string.book_time_once_format_non_endtime), startYear, startMonth, startDay, startHour, startMinute);
             } else if (bookInfo.repeatway == SWBooking.BookRepeatWay.DAILY.ordinal()) {
                 // 12:00
-                return MessageFormat.format(context.getString(R.string.book_time_daily_format_non_endtime),
-                        bookInfo.hour, bookInfo.minute);
+                startHour = String.valueOf(bookInfo.hour);
+                startMinute = String.valueOf(bookInfo.minute);
+                return MessageFormat.format(context.getString(R.string.book_time_daily_format_non_endtime), startHour, startMinute);
             } else if (bookInfo.repeatway == SWBooking.BookRepeatWay.WEEKLY.ordinal()) {
                 // Mon Thu 12:00
-                return MessageFormat.format(context.getString(R.string.book_time_weekly_or_monthly_format_non_endtime),
-                        DAY_OF_MONTH_ARRAY[TimeUtils.getDayOfWeek(bookInfo.year, bookInfo.month, bookInfo.day) + 1], separator, bookInfo.hour, bookInfo.minute);
+                dayOfWeek = DAY_OF_WEEK_ARRAY[TimeUtils.getDayOfWeek(bookInfo.year, bookInfo.month, bookInfo.day) - 1];
+                startHour = String.valueOf(bookInfo.hour);
+                startMinute = String.valueOf(bookInfo.minute);
+                return MessageFormat.format(context.getString(R.string.book_time_weekly_or_monthly_format_non_endtime), dayOfWeek, separator, startHour, startMinute);
             } else {
                 // 1th 12:00
-                return MessageFormat.format(context.getString(R.string.book_time_weekly_or_monthly_format_non_endtime),
-                        MessageFormat.format(context.getString(R.string.book_date_day), String.valueOf(bookInfo.day)), separator, bookInfo.hour, bookInfo.minute);
+                dayOfMonth = MessageFormat.format(context.getString(R.string.book_date_day), String.valueOf(bookInfo.day));
+                startHour = String.valueOf(bookInfo.hour);
+                startMinute = String.valueOf(bookInfo.minute);
+                return MessageFormat.format(context.getString(R.string.book_time_weekly_or_monthly_format_non_endtime), dayOfMonth, separator, startHour, startMinute);
             }
         }
 

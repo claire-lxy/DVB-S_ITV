@@ -29,7 +29,7 @@ public class ChannleInfoAdapter extends BaseListViewAdapter<EpgEvent_t> {
         holder.setText(R.id.epg_title, item.memEventName)
                 .setText(R.id.epg_time, new DateModel(startTime, endTime).getFormatHourAndMinute())
                 .setVisibility(R.id.epg_book_type, View.INVISIBLE)
-                .setImageResource(R.id.epg_book_type, R.mipmap.btn_red);
+                .setImageResource(R.id.epg_book_type, R.mipmap.ic_book_play);
         if (new DateModel(startTime, SWTimerManager.getInstance().getSysTime())
                 .isBetween(new DateModel(SWTimerManager.getInstance().getSysTime(), endTime))) {
             holder.setText(R.id.epg_status, mContext.getString(R.string.epg_event_playing));

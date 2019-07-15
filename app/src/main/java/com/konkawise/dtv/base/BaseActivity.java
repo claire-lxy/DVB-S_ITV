@@ -17,7 +17,7 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
 public abstract class BaseActivity extends FragmentActivity
-        implements WeakToolInterface, BaseFragment.FragmentCallback{
+        implements WeakToolInterface, BaseFragment.FragmentCallback, HomeReceiver.OnReceiveHomeHandleListener {
     private HomeReceiver mHomeReceiver;
 
     private Unbinder mUnBinder;
@@ -56,10 +56,15 @@ public abstract class BaseActivity extends FragmentActivity
         intentFilter.addAction(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
         mHomeReceiver = new HomeReceiver();
         registerReceiver(mHomeReceiver, intentFilter);
+
+        mHomeReceiver.registerReceiveHomeHandlerListener(this);
     }
 
     private void unregisterHomeReceiver() {
-        if (mHomeReceiver != null) unregisterReceiver(mHomeReceiver);
+        if (mHomeReceiver != null) {
+            unregisterReceiver(mHomeReceiver);
+            mHomeReceiver.unregisterReceiveHomeHandleListener();
+        }
     }
 
     @Override
@@ -77,6 +82,11 @@ public abstract class BaseActivity extends FragmentActivity
         WeakToolManager.getInstance().removeWeakTool(this);
         if (mUnBinder != null) mUnBinder.unbind();
         super.onDestroy();
+    }
+
+    @Override
+    public boolean onHomeHandleCallback() {
+        return true;
     }
 
     protected abstract int getLayoutId();
