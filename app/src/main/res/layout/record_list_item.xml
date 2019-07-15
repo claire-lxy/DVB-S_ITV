@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ll_root_group2"
     android:layout_width="match_parent"
-    android:layout_height="40dp"
+    android:layout_height="60dp"
     android:gravity="center_vertical"
     android:orientation="horizontal">
 
     <TextView
         android:id="@+id/tv_item_record_channel_num"
         android:layout_width="38dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="40dp"
+        android:layout_height="40dp"
         android:layout_marginLeft="40dp"
+        android:layout_marginStart="40dp"
+        android:gravity="center"
         android:textSize="16sp"
         tools:text="1" />
 
@@ -19,8 +21,8 @@
         android:id="@+id/iv_item_record_select"
         android:layout_width="38dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="34dp"
         android:layout_marginLeft="34dp"
+        android:layout_marginStart="34dp"
         android:src="@mipmap/channel_mannanger_gou"
         android:visibility="invisible"
         tools:ignore="ContentDescription" />
@@ -29,8 +31,8 @@
         android:id="@+id/iv_item_record_lock"
         android:layout_width="38dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="34dp"
         android:layout_marginLeft="34dp"
+        android:layout_marginStart="34dp"
         android:src="@mipmap/channel_edit_lock"
         android:visibility="invisible"
         tools:ignore="ContentDescription" />
@@ -39,8 +41,8 @@
         android:id="@+id/tv_record_prog_name"
         android:layout_width="300dp"
         android:layout_height="match_parent"
-        android:layout_marginStart="14dp"
         android:layout_marginLeft="14dp"
+        android:layout_marginStart="14dp"
         android:ellipsize="marquee"
         android:gravity="center"
         android:singleLine="true"
