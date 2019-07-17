@@ -47,8 +47,8 @@ public class BookService extends BaseService implements WeakToolInterface {
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "book service create");
-        SWDVB.GetInstance();
-        registerBookMsg();
+//        SWDVB.GetInstance();
+//        registerBookMsg();
     }
 
     @Override
