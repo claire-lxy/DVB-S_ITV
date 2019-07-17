@@ -1,5 +1,7 @@
 package com.konkawise.dtv.dialog;
 
+import android.content.DialogInterface;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -166,10 +168,12 @@ public class AutoDiSEqCDialog extends BaseDialogFragment implements WeakToolInte
     }
 
     @Override
-    public void dismiss() {
-        ThreadPoolManager.getInstance().remove(mAutoDiSEqCRunnable);
-        WeakToolManager.getInstance().removeWeakTool(this);
-        super.dismiss();
+    protected boolean onKeyListener(DialogInterface dialog, int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
+            ThreadPoolManager.getInstance().remove(mAutoDiSEqCRunnable);
+            WeakToolManager.getInstance().removeWeakTool(this);
+        }
+        return super.onKeyListener(dialog, keyCode, event);
     }
 
     public AutoDiSEqCDialog setOnAutoDiSEqCResultListener(OnAutoDiSEqCResultListener listener) {

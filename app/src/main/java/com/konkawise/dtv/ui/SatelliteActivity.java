@@ -8,11 +8,14 @@ import android.widget.TextView;
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWPDBaseManager;
+import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.adapter.SatelliteListAdapter;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.SearchProgramDialog;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.view.TVListView;
+import com.konkawise.dtv.weaktool.WeakAsyncTask;
+import com.konkawise.dtv.weaktool.WeakRunnable;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -80,6 +83,8 @@ public class SatelliteActivity extends BaseActivity {
     public static List<SatInfo_t> satList = new ArrayList(); // ScanTVandRadioActivity传递选中的卫星列表
     private int mCurrPosition = 0;
 
+    private UpdateSatParamRunnable mUpdateSatParamRunnable;
+
     @Override
     public int getLayoutId() {
         return R.layout.activity_satellite;
@@ -89,9 +94,33 @@ public class SatelliteActivity extends BaseActivity {
     protected void setup() {
         mTvBottomBarBlue.setVisibility(View.GONE);
 
-        mAdapter = new SatelliteListAdapter(this, SWPDBaseManager.getInstance().getSatList());
+        mAdapter = new SatelliteListAdapter(this, new ArrayList<>());
         mListView.setAdapter(mAdapter);
-        mListView.setSelection(mCurrPosition);
+
+        mUpdateSatParamRunnable = new UpdateSatParamRunnable(this);
+        new LoadSatelliteTask(this).execute();
+    }
+
+    private static class LoadSatelliteTask extends WeakAsyncTask<SatelliteActivity, Void, List<SatInfo_t>> {
+
+        LoadSatelliteTask(SatelliteActivity view) {
+            super(view);
+        }
+
+        @Override
+        protected List<SatInfo_t> backgroundExecute(Void... param) {
+            return SWPDBaseManager.getInstance().getSatList();
+        }
+
+        @Override
+        protected void postExecute(List<SatInfo_t> satList) {
+            if (satList != null && !satList.isEmpty()) {
+                SatelliteActivity context = mWeakReference.get();
+
+                context.mAdapter.updateData(satList);
+                context.mListView.setSelection(context.mCurrPosition);
+            }
+        }
     }
 
     @Override
@@ -163,23 +192,47 @@ public class SatelliteActivity extends BaseActivity {
     }
 
     private void updateUI(int position) {
-        List<SatInfo_t> satelliteList = SWPDBaseManager.getInstance().getSatList();
+        if (mUpdateSatParamRunnable != null) {
+            ThreadPoolManager.getInstance().remove(mUpdateSatParamRunnable);
+            mUpdateSatParamRunnable.position = position;
+            ThreadPoolManager.getInstance().execute(mUpdateSatParamRunnable);
+        }
+    }
 
-        if (satelliteList != null && satelliteList.size() > 0 && (position < satelliteList.size())) {
-            SatInfo_t satInfo_t = satelliteList.get(position);
-            mCurrPosition = satInfo_t.SatIndex;
+    private static class UpdateSatParamRunnable extends WeakRunnable<SatelliteActivity> {
+        int position;
 
-            mTvLnbPower.setText(Utils.getOnorOff(this, satInfo_t.LnbPower));
-            mTvLnb.setText(Utils.getLNB(satInfo_t));
+        UpdateSatParamRunnable(SatelliteActivity view) {
+            super(view);
+        }
 
-            ChannelNew_t channel_t1 = SWPDBaseManager.getInstance().getChannelInfoBySat(satInfo_t.SatIndex, 0);
-            if (channel_t1 != null) {
-                String tpName = channel_t1.Freq + Utils.getVorH(this, channel_t1.Qam) + channel_t1.Symbol;
-                mTvLnbPowerFreq.setText(tpName);
-            } else {
-                mTvLnbPowerFreq.setText("");
+        @Override
+        protected void loadBackground() {
+            SatelliteActivity context = mWeakReference.get();
+
+            List<SatInfo_t> satList = SWPDBaseManager.getInstance().getSatList();
+            if (satList != null && !satList.isEmpty() && position < satList.size()) {
+                SatInfo_t satInfo_t = satList.get(position);
+                ChannelNew_t channel_t1 = SWPDBaseManager.getInstance().getChannelInfoBySat(satInfo_t.SatIndex, 0);
+
+                context.mCurrPosition = satInfo_t.SatIndex;
+
+                context.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        context.mTvLnbPower.setText(Utils.getOnorOff(context, satInfo_t.LnbPower));
+                        context.mTvLnb.setText(Utils.getLNB(satInfo_t));
+                        context.mTvLnbPowerDiseqc.setText(Utils.getDiseqc(satInfo_t, context.getResources().getStringArray(R.array.DISEQC)));
+
+                        if (channel_t1 != null) {
+                            String tpName = channel_t1.Freq + Utils.getVorH(context, channel_t1.Qam) + channel_t1.Symbol;
+                            context.mTvLnbPowerFreq.setText(tpName);
+                        } else {
+                            context.mTvLnbPowerFreq.setText("");
+                        }
+                    }
+                });
             }
-            mTvLnbPowerDiseqc.setText(Utils.getDiseqc(satInfo_t, getResources().getStringArray(R.array.DISEQC)));
         }
     }
 }

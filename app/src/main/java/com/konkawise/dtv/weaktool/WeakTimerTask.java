@@ -22,9 +22,6 @@ public abstract class WeakTimerTask<T extends WeakToolInterface> extends TimerTa
 
     @Override
     public void release() {
-        if (mWeakReference != null) {
-            mWeakReference.clear();
-        }
         cancel();
     }
 

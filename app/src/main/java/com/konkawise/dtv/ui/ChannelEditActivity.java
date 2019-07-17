@@ -8,6 +8,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.konkawise.dtv.R;
@@ -25,7 +26,6 @@ import com.konkawise.dtv.dialog.PIDDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
 import com.konkawise.dtv.weaktool.WeakRunnable;
-import com.sw.dvblib.SWPDBase;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -68,6 +68,9 @@ public class ChannelEditActivity extends BaseActivity {
     @BindView(R.id.lv_channel_list)
     ListView mLvChannelList;
 
+    @BindView(R.id.pb_loading_channel)
+    ProgressBar mPbLoadingChannel;
+
     @BindView(R.id.ll_channel_fav_move)
     LinearLayout mLlChannelFavMove;
 
@@ -104,7 +107,7 @@ public class ChannelEditActivity extends BaseActivity {
     // 存储编辑操作的喜爱分组
     private SparseArray<List<PDPMInfo_t>> mEditFavChannelsMap;
     // 存储编辑操作的pid
-    private SparseArray<int[]> mEditPidMap = new SparseArray<>();
+    private SparseArray<int[]> mEditPidMap = new SparseArray<>(); // key:progNo
     // 存储编辑操作的sortType
     private int mEditSortType = SWPDBaseManager.getInstance().getSortType();
 
@@ -113,6 +116,8 @@ public class ChannelEditActivity extends BaseActivity {
 
     private ChannelEditAdapter mAdapter;
     private int mCurrSelectPosition;
+    private LoadChannelRunnable mLoadChannelRunnable;
+    private List<PDPMInfo_t> mOriginalChannelList = new ArrayList<>();
 
     private boolean mSaveFavorite;
     private boolean mSaveEditChannel;
@@ -122,8 +127,6 @@ public class ChannelEditActivity extends BaseActivity {
     private boolean mShowMore;
     private boolean mFinish;
     private boolean mDataSaved;
-
-    private LoadFavoriteChannelsRunnable mLoadFavoriteChannelsRunnable;
 
     @Override
     protected int getLayoutId() {
@@ -140,23 +143,13 @@ public class ChannelEditActivity extends BaseActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        if (isFinishing()) {
-            SWPDBaseManager.getInstance().setCurrProgType(SWPDBase.SW_WHOLE_GROUP, 0);
-            if (mDataSaved) {
-                EventBus.getDefault().post(new ProgramUpdateEvent(true));
-            }
+        if (isFinishing() && mDataSaved) {
+            EventBus.getDefault().post(new ProgramUpdateEvent(true));
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        ThreadPoolManager.getInstance().remove(mLoadFavoriteChannelsRunnable);
-        super.onDestroy();
-    }
-
     private void initFavoriteChannels() {
-        mLoadFavoriteChannelsRunnable = new LoadFavoriteChannelsRunnable(this);
-        ThreadPoolManager.getInstance().execute(mLoadFavoriteChannelsRunnable);
+        ThreadPoolManager.getInstance().execute(new LoadFavoriteChannelsRunnable(this));
     }
 
     private static class LoadFavoriteChannelsRunnable extends WeakRunnable<ChannelEditActivity> {
@@ -167,31 +160,53 @@ public class ChannelEditActivity extends BaseActivity {
 
         @Override
         protected void loadBackground() {
-            SWPDBaseManager.getInstance().setCurrProgType(SWPDBase.SW_TOTAL_GROUP, 0);
+            ChannelEditActivity context = mWeakReference.get();
             int[] favIndexArray = SWPDBaseManager.getInstance().getFavIndexArray();
             for (int i = 0; i < favIndexArray.length; i++) {
-                mWeakReference.get().mFavChannelsMap.put(i, SWPDBaseManager.getInstance().getCurrGroupProgListByCond(2, favIndexArray[i]));
+                context.mFavChannelsMap.put(i, SWPDBaseManager.getInstance().getFavListByIndex(favIndexArray[i]));
             }
 
-            mWeakReference.get().mEditFavChannelsMap = mWeakReference.get().mFavChannelsMap.clone();
+            context.mEditFavChannelsMap = mWeakReference.get().mFavChannelsMap.clone();
         }
     }
 
     private void initChannelList() {
-        mAdapter = new ChannelEditAdapter(this, getChannelList());
+        mAdapter = new ChannelEditAdapter(this, new ArrayList<>());
         mLvChannelList.setAdapter(mAdapter);
-        mLvChannelList.setSelection(getScrollToPosition());
+
+        updateChannelList();
     }
 
-    private int getScrollToPosition() {
-        List<PDPMInfo_t> progList = SWPDBaseManager.getInstance().getTotalGroupProgList();
-        if (progList == null || progList.isEmpty()) {
-            return 0;
+    private static class LoadChannelRunnable extends WeakRunnable<ChannelEditActivity> {
+        int scrollToProgIndex;
+
+        LoadChannelRunnable(ChannelEditActivity view) {
+            super(view);
         }
 
-        PDPMInfo_t currProgInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
-        for (int i = 0; i < progList.size(); i++) {
-            if (currProgInfo.ProgIndex == progList.get(i).ProgIndex) {
+        @Override
+        protected void loadBackground() {
+            ChannelEditActivity context = mWeakReference.get();
+            List<PDPMInfo_t> channelList = context.getChannelList();
+            context.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    context.mPbLoadingChannel.setVisibility(View.GONE);
+                    if (channelList != null && !channelList.isEmpty()) {
+                        context.mOriginalChannelList.addAll(channelList);
+                        context.mAdapter.updateData(channelList);
+                        context.mLvChannelList.setSelection(context.scrollToPosition(scrollToProgIndex));
+                    }
+                }
+            });
+        }
+    }
+
+    private int scrollToPosition(int targetProgIndex) {
+        if (mAdapter.getCount() <= 0) return 0;
+
+        for (int i = 0; i < mAdapter.getCount(); i++) {
+            if (targetProgIndex == mAdapter.getItem(i).ProgIndex) {
                 return i;
             }
         }
@@ -199,10 +214,20 @@ public class ChannelEditActivity extends BaseActivity {
     }
 
     private void updateChannelList() {
-        List<PDPMInfo_t> channelList = getChannelList();
-        if (channelList != null && !channelList.isEmpty()) {
-            mAdapter.updateData(channelList);
+        if (mLoadChannelRunnable == null) {
+            mLoadChannelRunnable = new LoadChannelRunnable(this);
+            PDPMInfo_t currProgInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
+            if (currProgInfo != null) {
+                mLoadChannelRunnable.scrollToProgIndex = currProgInfo.ProgIndex;
+            }
+        } else {
+            if (mAdapter.getCount() > 0) {
+                mLoadChannelRunnable.scrollToProgIndex = mAdapter.getItem(mCurrSelectPosition).ProgIndex;
+            }
         }
+        mPbLoadingChannel.setVisibility(View.VISIBLE);
+        ThreadPoolManager.getInstance().remove(mLoadChannelRunnable);
+        ThreadPoolManager.getInstance().execute(mLoadChannelRunnable);
     }
 
     private List<SatInfo_t> getSateList() {
@@ -231,9 +256,12 @@ public class ChannelEditActivity extends BaseActivity {
                         if (!mDataSaved && (mSaveFavorite || mSaveEditChannel || mSavePid || mSaveSortType)) {
                             mDataSaved = true;
                         }
-                        resetEdit();
 
-                        if (mFinish) finish();
+                        if (mFinish) {
+                            finish();
+                        } else {
+                            resetEdit();
+                        }
                     }
                 })
                 .setOnNegativeListener("", new OnCommNegativeListener() {
@@ -298,12 +326,14 @@ public class ChannelEditActivity extends BaseActivity {
      * 保存频道编辑，pid
      */
     private void savePid() {
-        List<PDPMInfo_t> channelList = getChannelList();
-        if (channelList != null && !channelList.isEmpty() && mEditPidMap != null && mEditPidMap.size() > 0) {
-            for (int i = 0; i < channelList.size(); i++) {
-                int[] pids = mEditPidMap.get(i);
-                if (pids != null && pids.length == 3) {
-                    SWPDBaseManager.getInstance().setServicePID(i, pids[0], pids[1], pids[2]);
+        if (mAdapter.getCount() > 0) {
+            List<PDPMInfo_t> channelList = mAdapter.getData();
+            if (channelList != null && !channelList.isEmpty() && mEditPidMap != null && mEditPidMap.size() > 0) {
+                for (int i = 0; i < channelList.size(); i++) {
+                    int[] pids = mEditPidMap.get(channelList.get(i).ProgNo);
+                    if (pids != null && pids.length == 3) {
+                        SWPDBaseManager.getInstance().setServicePID(i, pids[0], pids[1], pids[2]);
+                    }
                 }
             }
         }
@@ -547,9 +577,8 @@ public class ChannelEditActivity extends BaseActivity {
     }
 
     private ArrayList<PDPEdit_t> getEditList() {
-        List<PDPMInfo_t> originChannelList = getChannelList();
         List<PDPMInfo_t> channelList = mAdapter.getData();
-        if (originChannelList == null || originChannelList.isEmpty()
+        if (mOriginalChannelList == null || mOriginalChannelList.isEmpty()
                 || channelList == null || channelList.isEmpty()) return null;
 
         ArrayList<PDPEdit_t> editList = new ArrayList<>();
@@ -561,7 +590,7 @@ public class ChannelEditActivity extends BaseActivity {
             editInfo.hideFlag = channelList.get(i).HideFlag;
             editInfo.lockFlag = channelList.get(i).LockFlag;
 
-            boolean isRename = !TextUtils.equals(originChannelList.get(i).Name, channelList.get(i).Name);
+            boolean isRename = !TextUtils.equals(mOriginalChannelList.get(i).Name, channelList.get(i).Name);
             editInfo.nameFlag = isRename ? 1 : 0;
             editInfo.newprogname = isRename ? channelList.get(i).Name : "";
             editList.add(editInfo);
@@ -641,10 +670,11 @@ public class ChannelEditActivity extends BaseActivity {
         if (mAdapter.getCount() <= 0 || mCurrSelectPosition >= mAdapter.getCount()) return;
 
         int[] currPids;
-        if (mEditPidMap.get(mAdapter.getItem(mCurrSelectPosition).ProgNo) != null && mEditPidMap.get(mAdapter.getItem(mCurrSelectPosition).ProgNo).length == 3) {
-            currPids = mEditPidMap.get(mCurrSelectPosition);
+        int progNo = mAdapter.getItem(mCurrSelectPosition).ProgNo;
+        if (mEditPidMap.get(progNo) != null && mEditPidMap.get(progNo).length == 3) {
+            currPids = mEditPidMap.get(progNo);
         } else {
-            currPids = SWPDBaseManager.getInstance().getServicePID(mAdapter.getItem(mCurrSelectPosition).ProgNo);
+            currPids = SWPDBaseManager.getInstance().getServicePID(progNo);
         }
         if (currPids == null) return;
 
@@ -656,10 +686,10 @@ public class ChannelEditActivity extends BaseActivity {
                         if (pids != null && pids.length == 3) {
                             if (currPids.length == 3) {
                                 if (isPidEdit(currPids, pids)) {
-                                    mEditPidMap.put(mCurrSelectPosition, new int[]{pids[0], pids[1], pids[2]});
+                                    mEditPidMap.put(progNo, new int[]{pids[0], pids[1], pids[2]});
                                 }
                             } else {
-                                mEditPidMap.put(mCurrSelectPosition, new int[]{pids[0], pids[1], pids[2]});
+                                mEditPidMap.put(progNo, new int[]{pids[0], pids[1], pids[2]});
                             }
                             recordSaveData(EDIT_SAVE_PID);
                         }

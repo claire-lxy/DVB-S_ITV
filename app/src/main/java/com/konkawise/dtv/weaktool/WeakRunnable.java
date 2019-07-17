@@ -22,9 +22,6 @@ public abstract class WeakRunnable<T extends WeakToolInterface> implements Runna
 
     @Override
     public void release() {
-        if (mWeakReference != null) {
-            mWeakReference.clear();
-        }
         ThreadPoolManager.getInstance().remove(this);
     }
 

@@ -20,7 +20,6 @@ import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.AutoDiSEqCDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.dialog.ScanDialog;
-import com.konkawise.dtv.utils.LogUtils;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
 
@@ -408,7 +407,10 @@ public class EditManualActivity extends BaseActivity {
      * 保存设置的卫星信息
      */
     private void saveSatInfo() {
-        SatInfo_t satInfo_t = SWPDBaseManager.getInstance().getSatList().get(mCurrentSatellite);
+        List<SatInfo_t> satList = getSatList();
+        if (satList == null || satList.isEmpty()) return;
+
+        SatInfo_t satInfo_t = satList.get(mCurrentSatellite);
 
         String lnb = et_edit_lnb_mode.getText().toString();
         if (TextUtils.isEmpty(lnb)) lnb = "0";
@@ -426,13 +428,6 @@ public class EditManualActivity extends BaseActivity {
         satInfo_t.switch_22k = is22kHzOn() ? 1 : 0;
         // LNB POWER
         satInfo_t.LnbPower = isLnbPowerOn() ? 1 : 0;
-
-        LogUtils.e(TAG, "sateCurrent ==" + mCurrentSatellite);
-
-        LogUtils.e(TAG, "satInfoT.LnbPower =" + satInfo_t.LnbPower + ",satInfoT.lnb_low=" + satInfo_t.lnb_low + ",satInfoT.sat_name=" + satInfo_t.sat_name + ",satInfoT.SatIndex=" +
-                satInfo_t.SatIndex + ",satInfoT.diseqc10_pos=" + satInfo_t.diseqc10_pos + ",satInfoT.diseqc10_tone=" + satInfo_t.diseqc10_tone + ",satInfoT.lnb_high=" + satInfo_t.lnb_high +
-                ",satInfoT.switch_22k=" + satInfo_t.switch_22k + ",satInfoT.diseqc12=" + satInfo_t.diseqc12 + ",satInfoT.diseqc12_longitude=" + satInfo_t.diseqc12_longitude +
-                ",satInfoT.Enable=" + satInfo_t.Enable + ",satInfoT.LnbType=" + satInfo_t.LnbType + ",satInfoT.switch_012v=" + satInfo_t.switch_012v);
 
         SWPDBaseManager.getInstance().setSatInfo(mCurrentSatellite, satInfo_t);  //将卫星信息设置到对应的bean类中,保存更改的信息
         mSatList = SWPDBaseManager.getInstance().getSatList(); // 更新卫星列表
@@ -521,7 +516,10 @@ public class EditManualActivity extends BaseActivity {
      * Satellite参数改变
      */
     public void satelliteChange() {
-        tv_blind_satellite.setText(getSatList().get(mCurrentSatellite).sat_name);
+        List<SatInfo_t> satList = getSatList();
+        if (satList == null || satList.isEmpty()) return;
+
+        tv_blind_satellite.setText(satList.get(mCurrentSatellite).sat_name);
 
         mCurrentTp = 0;
         tpChange();
@@ -531,12 +529,12 @@ public class EditManualActivity extends BaseActivity {
         lnbChange();
 
         mCurrentDiseqc = getCurrDiseqc();
-        String diseqc = Utils.getDiseqc(getSatList().get(mCurrentSatellite), mDiseqcArray);
+        String diseqc = Utils.getDiseqc(satList.get(mCurrentSatellite), mDiseqcArray);
         tv_blind_diseqc_mode.setText(TextUtils.isEmpty(diseqc) ? mDiseqcArray[0] : diseqc);
 
-        tv_edit_longitude_mode.setText(Utils.getLongitude(getSatList().get(mCurrentSatellite)));
+        tv_edit_longitude_mode.setText(Utils.getLongitude(satList.get(mCurrentSatellite)));
 
-        tv_blind_lnb_power_mode.setText(getSatList().get(mCurrentSatellite).LnbPower == 1 ?
+        tv_blind_lnb_power_mode.setText(satList.get(mCurrentSatellite).LnbPower == 1 ?
                 getResources().getString(R.string.on) : getResources().getString(R.string.off));
     }
 
@@ -560,7 +558,10 @@ public class EditManualActivity extends BaseActivity {
     }
 
     private int getCurrDiseqc() {
-        String diseqc = Utils.getDiseqc(getSatList().get(mCurrentSatellite), mDiseqcArray);
+        List<SatInfo_t> satList = getSatList();
+        if (satList == null || satList.isEmpty()) return 0;
+
+        String diseqc = Utils.getDiseqc(satList.get(mCurrentSatellite), mDiseqcArray);
         for (int i = 0; i < mDiseqcArray.length; i++) {
             if (diseqc.equals(mDiseqcArray[i])) return i;
         }
@@ -568,7 +569,10 @@ public class EditManualActivity extends BaseActivity {
     }
 
     private int getCurrLnb() {
-        String lnb = Utils.getLNB(getSatList().get(mCurrentSatellite));
+        List<SatInfo_t> satList = getSatList();
+        if (satList == null || satList.isEmpty()) return 0;
+
+        String lnb = Utils.getLNB(satList.get(mCurrentSatellite));
         for (int i = 0; i < mLnbArray.length; i++) {
             if (TextUtils.equals(lnb, mLnbArray[i])) {
                 return i;

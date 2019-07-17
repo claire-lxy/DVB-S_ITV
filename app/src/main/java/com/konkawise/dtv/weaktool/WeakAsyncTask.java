@@ -46,9 +46,7 @@ public abstract class WeakAsyncTask<T extends WeakToolInterface, Param, Result> 
 
     @Override
     public void release() {
-        if (mWeakReference != null) {
-            mWeakReference.clear();
-        }
+        cancel(true);
     }
 
     protected abstract Result backgroundExecute(Param... param);

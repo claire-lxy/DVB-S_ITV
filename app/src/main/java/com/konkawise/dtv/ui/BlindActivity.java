@@ -380,6 +380,8 @@ public class BlindActivity extends BaseActivity {
     }
 
     private int getCurrDiseqc() {
+        if (isSatelliteEmpty()) return 0;
+
         String diseqc = Utils.getDiseqc(getSatList().get(mCurrentSatellite), mDiseqcArray);
         for (int i = 0; i < mDiseqcArray.length; i++) {
             if (diseqc.equals(mDiseqcArray[i])) return i;
@@ -389,6 +391,8 @@ public class BlindActivity extends BaseActivity {
     }
 
     private int getCurrLnb() {
+        if (isSatelliteEmpty()) return 0;
+
         String lnb = Utils.getLNB(getSatList().get(mCurrentSatellite));
         for (int i = 0; i < mLnbArray.length; i++) {
             if (TextUtils.equals(lnb, mLnbArray[i])) {

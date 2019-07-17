@@ -98,21 +98,33 @@
             android:layout_toRightOf="@id/lv_favorite_group"
             android:background="@mipmap/channel_edit_fav_line_bg" />
 
-        <com.konkawise.dtv.view.TVListView
-            android:id="@+id/lv_favorite_channel"
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@id/favorite_channel_title_divider"
-            android:layout_marginEnd="25dp"
-            android:layout_marginRight="25dp"
             android:layout_toEndOf="@id/lv_favorite_group"
-            android:layout_toRightOf="@id/lv_favorite_group"
-            android:divider="@mipmap/channel_edit_fav_line_bg"
-            android:fadeScrollbars="false"
-            android:focusable="false"
-            android:listSelector="@drawable/dvb_btn_selector"
-            android:scrollbarThumbVertical="@mipmap/scroller_bg"
-            android:scrollbarTrackVertical="@mipmap/fav_recycleview_scroll_bg" />
+            android:layout_toRightOf="@id/lv_favorite_group">
+
+            <com.konkawise.dtv.view.TVListView
+                android:id="@+id/lv_favorite_channel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="25dp"
+                android:layout_marginRight="25dp"
+                android:divider="@mipmap/channel_edit_fav_line_bg"
+                android:fadeScrollbars="false"
+                android:focusable="false"
+                android:listSelector="@drawable/dvb_btn_selector"
+                android:scrollbarThumbVertical="@mipmap/scroller_bg"
+                android:scrollbarTrackVertical="@mipmap/fav_recycleview_scroll_bg" />
+
+            <ProgressBar
+                android:id="@+id/pb_loading_favorite"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone" />
+        </FrameLayout>
     </RelativeLayout>
 
     <LinearLayout
@@ -120,8 +132,8 @@
         android:layout_width="match_parent"
         android:layout_height="54dp"
         android:background="@mipmap/right_bottom_background"
-        android:visibility="visible"
-        android:gravity="center">
+        android:gravity="center"
+        android:visibility="visible">
 
         <ImageView
             android:layout_width="@dimen/dp_20"
@@ -145,9 +157,9 @@
         android:layout_height="54dp"
         android:background="@mipmap/tv_and_radio_bg"
         android:focusable="false"
-        android:visibility="gone"
         android:gravity="center_vertical"
         android:orientation="horizontal"
+        android:visibility="gone"
         tools:ignore="DisableBaselineAlignment">
 
         <LinearLayout

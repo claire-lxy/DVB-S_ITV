@@ -24,9 +24,6 @@ public abstract class WeakHandler<T extends WeakToolInterface> extends Handler i
 
     @Override
     public void release() {
-        if (mWeakReference != null) {
-            mWeakReference.clear();
-        }
         removeCallbacksAndMessages(null);
     }
 

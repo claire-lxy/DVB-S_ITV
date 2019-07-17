@@ -5,10 +5,12 @@ import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 
 import com.konkawise.dtv.PreferenceManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWPDBaseManager;
+import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.adapter.FavoriteChannelAdapter;
 import com.konkawise.dtv.adapter.FavoriteGroupAdapter;
 import com.konkawise.dtv.base.BaseActivity;
@@ -17,6 +19,8 @@ import com.konkawise.dtv.dialog.OnCommNegativeListener;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.view.TVListView;
+import com.konkawise.dtv.weaktool.WeakRunnable;
+import com.sw.dvblib.SWPDBase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +51,9 @@ public class FavoriteActivity extends BaseActivity {
     @BindView(R.id.lv_favorite_channel)
     TVListView mLvFavoriteChannel;
 
+    @BindView(R.id.pb_loading_favorite)
+    ProgressBar mPbLoadingFaovrite;
+
     @BindView(R.id.ll_fav_rename)
     LinearLayout mBottomFavRename;
 
@@ -55,16 +62,10 @@ public class FavoriteActivity extends BaseActivity {
 
     @OnItemSelected(R.id.lv_favorite_group)
     void selectGroupItem(int position) {
-        Log.i(TAG, "group item select = " + position);
         mFavoriteGroupIndex = position + 1;
-        if (mFavoriteChannelAdapter == null) {
-            mFavoriteChannelAdapter = new FavoriteChannelAdapter(FavoriteActivity.this, mFavoriteChannelsMap.get(position));
-            mLvFavoriteChannel.setAdapter(mFavoriteChannelAdapter);
-        } else {
-            mFavoriteChannelAdapter.clearSelect();
-            mFavoriteChannelAdapter.updateData(mFavoriteChannelsMap.get(position));
-        }
+        mFavoriteChannelAdapter.clearSelect();
         mFavoriteChannelAdapter.setFocus(mFavoriteChannelFocus);
+        loadFavoriteChannels(position);
     }
 
     @OnFocusChange(R.id.lv_favorite_channel)
@@ -103,6 +104,7 @@ public class FavoriteActivity extends BaseActivity {
     private SparseArray<List<PDPMInfo_t>> mFavoriteChannelsMap = new SparseArray<>();
     private FavoriteGroupAdapter mFavoriteGroupAdapter;
     private FavoriteChannelAdapter mFavoriteChannelAdapter;
+    private LoadFavoriteRunnable mLoadFavoriteRunnable;
 
     // 注意索引是+1的，获取item信息要-1处理
     private int mFavoriteGroupIndex;
@@ -118,21 +120,61 @@ public class FavoriteActivity extends BaseActivity {
 
     @Override
     protected void setup() {
-        SWPDBaseManager.getInstance().setCurrProgType(0, 0);
-        int[] favIndexArray = SWPDBaseManager.getInstance().getFavIndexArray();
-        for (int i = 0; i < favIndexArray.length; i++) {
-            mFavoriteChannelsMap.put(i, SWPDBaseManager.getInstance().getCurrGroupProgListByCond(2, favIndexArray[i]));
-        }
-
+        // 先只获取第一组，显示后再显示再加载其他组
+        SWPDBaseManager.getInstance().setCurrProgType(SWPDBase.SW_WHOLE_GROUP, 0);
         initFavoriteGroup();
+        initFavoriteChannel();
     }
 
     private void initFavoriteGroup() {
-        mFavoriteGroupAdapter = new FavoriteGroupAdapter(this,
-                SWPDBaseManager.getInstance().getFavoriteGroupNameList(mFavoriteChannelsMap.size()));
+        int[] favIndexArray = SWPDBaseManager.getInstance().getFavIndexArray();
+        mFavoriteGroupAdapter = new FavoriteGroupAdapter(this, SWPDBaseManager.getInstance().getFavoriteGroupNameList(favIndexArray.length));
         mLvFavoriteGroup.setAdapter(mFavoriteGroupAdapter);
         mLvFavoriteGroup.setSelection(0);
-        mFavoriteGroupAdapter.setSelectPosition(0);
+    }
+
+    private void initFavoriteChannel() {
+        mFavoriteChannelAdapter = new FavoriteChannelAdapter(this, new ArrayList<>());
+        mLvFavoriteChannel.setAdapter(mFavoriteChannelAdapter);
+
+        loadFavoriteChannels(0);
+    }
+
+    private void loadFavoriteChannels(int favIndex) {
+        if (mLoadFavoriteRunnable == null) {
+            mLoadFavoriteRunnable = new LoadFavoriteRunnable(this);
+        }
+        mPbLoadingFaovrite.setVisibility(View.VISIBLE);
+        ThreadPoolManager.getInstance().remove(mLoadFavoriteRunnable);
+        mLoadFavoriteRunnable.favIndex = favIndex;
+        ThreadPoolManager.getInstance().execute(mLoadFavoriteRunnable);
+    }
+
+    private static class LoadFavoriteRunnable extends WeakRunnable<FavoriteActivity> {
+        int favIndex;
+
+        LoadFavoriteRunnable(FavoriteActivity view) {
+            super(view);
+        }
+
+        @Override
+        protected void loadBackground() {
+            FavoriteActivity context = mWeakReference.get();
+
+            List<PDPMInfo_t> favoriteChannels = context.mFavoriteChannelsMap.get(favIndex);
+            if (favoriteChannels == null) {
+                favoriteChannels = SWPDBaseManager.getInstance().getFavListByIndex(favIndex);
+                context.mFavoriteChannelsMap.put(favIndex, favoriteChannels);
+            }
+            context.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    context.mPbLoadingFaovrite.setVisibility(View.GONE);
+                    context.mFavoriteChannelAdapter.updateData(context.mFavoriteChannelsMap.get(favIndex));
+                    context.mFavoriteGroupAdapter.setSelectPosition(0);
+                }
+            });
+        }
     }
 
     private boolean isMulti() {
@@ -146,13 +188,13 @@ public class FavoriteActivity extends BaseActivity {
                     @Override
                     public void onPositiveListener() {
                         List<PDPMInfo_t> ltRemoves = new ArrayList<>();
-                        if(isMulti())
+                        if (isMulti())
                             ltRemoves = mFavoriteChannelAdapter.getSelectData();
                         else
                             ltRemoves.add(mFavoriteChannelAdapter.getData().get(mFavoriteChannelIndex));
-                        removeFAVChannels(ltRemoves, mFavoriteGroupIndex-1);
+                        removeFAVChannels(ltRemoves, mFavoriteGroupIndex - 1);
                         mFavoriteChannelAdapter.clearSelect();
-                        mFavoriteChannelAdapter.updateData(mFavoriteChannelsMap.get(mFavoriteGroupIndex-1));
+                        mFavoriteChannelAdapter.updateData(mFavoriteChannelsMap.get(mFavoriteGroupIndex - 1));
                     }
                 })
                 .setOnNegativeListener("", new OnCommNegativeListener() {
@@ -183,15 +225,15 @@ public class FavoriteActivity extends BaseActivity {
                             @Override
                             public void setEdit(String name) {
                                 PreferenceManager.getInstance().putString("fav" + (mFavoriteGroupIndex - 1), name);
-                                mFavoriteGroupAdapter.updateFavoriteGroupName(mFavoriteGroupIndex - 1, name);
+                                mFavoriteGroupAdapter.updateData(mFavoriteGroupIndex - 1, name);
                             }
                         }).show(getSupportFragmentManager(), RenameDialog.TAG);
 
             }
         }
 
-        if(keyCode == KeyEvent.KEYCODE_PROG_YELLOW){
-            if(mBottomFavEditChannel.getVisibility() == View.VISIBLE){
+        if (keyCode == KeyEvent.KEYCODE_PROG_YELLOW) {
+            if (mBottomFavEditChannel.getVisibility() == View.VISIBLE) {
                 showDeleteDataDialog();
             }
             return true;
@@ -237,7 +279,7 @@ public class FavoriteActivity extends BaseActivity {
         return favList;
     }
 
-    private void removeFAVChannels(List<PDPMInfo_t> removeList, int position){
+    private void removeFAVChannels(List<PDPMInfo_t> removeList, int position) {
         List<PDPMInfo_t> ltPDPMInfo_t = mFavoriteChannelsMap.get(position);
         ltPDPMInfo_t.removeAll(removeList);
         SWPDBaseManager.getInstance().saveFavorite(mFavoriteChannelsMap);

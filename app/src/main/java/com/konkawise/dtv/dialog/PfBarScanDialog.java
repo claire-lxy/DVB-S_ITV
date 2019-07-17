@@ -31,7 +31,6 @@ import com.sw.dvblib.SWDVB;
 import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.EpgEvent_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
-import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
 
 public class PfBarScanDialog extends BaseDialog implements WeakToolInterface {
     public static final String TAG = "PfBarScanDialog";

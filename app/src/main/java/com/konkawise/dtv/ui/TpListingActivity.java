@@ -13,6 +13,7 @@ import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
+import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.adapter.TpListingAdapter;
 import com.konkawise.dtv.annotation.TpType;
 import com.konkawise.dtv.base.BaseActivity;
@@ -22,6 +23,10 @@ import com.konkawise.dtv.dialog.TpParamDialog;
 import com.konkawise.dtv.dialog.ScanDialog;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
+import com.konkawise.dtv.weaktool.WeakRunnable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnItemSelected;
@@ -88,6 +93,7 @@ public class TpListingActivity extends BaseActivity {
     private int mSelectPosition;
 
     private CheckSignalHelper mCheckSignalHelper;
+    private LoadTpRunnable mLoadTpRunnable;
 
     @Override
     public int getLayoutId() {
@@ -100,7 +106,6 @@ public class TpListingActivity extends BaseActivity {
         initCheckSignal();
         initTpList();
 
-        tv_lnb_tp_power_freq.setText(getTpName());
         tv_tp_id_lnb.setText(getLnb());
         tv_lnb_tp_power_diseqc.setText(getIntent().getStringExtra(Constants.IntentKey.INTENT_DISEQC));
     }
@@ -115,12 +120,6 @@ public class TpListingActivity extends BaseActivity {
     protected void onPause() {
         super.onPause();
         mCheckSignalHelper.stopCheckSignal();
-    }
-
-    @Override
-    protected void onDestroy() {
-        mCheckSignalHelper.stopCheckSignal();
-        super.onDestroy();
     }
 
     private void initBottomBar() {
@@ -146,18 +145,50 @@ public class TpListingActivity extends BaseActivity {
     }
 
     private void initTpList() {
-        mAdapter = new TpListingAdapter(this, SWPDBaseManager.getInstance().getSatChannelInfoList(getIndex()));
+        mAdapter = new TpListingAdapter(this, new ArrayList<>());
         mListView.setAdapter(mAdapter);
-        mListView.setSelection(getIndex());
+        loadTp(getIndex());
     }
 
     private void updateTpList() {
-        updateTpList(0);
+        loadTp(0);
     }
 
     private void updateTpList(int selection) {
-        mAdapter.updateData(SWPDBaseManager.getInstance().getSatChannelInfoList(getIndex()));
-        mListView.setSelection(selection);
+        loadTp(selection);
+    }
+
+    private void loadTp(int position) {
+        if (mLoadTpRunnable == null) {
+            mLoadTpRunnable = new LoadTpRunnable(this);
+        }
+        ThreadPoolManager.getInstance().remove(mLoadTpRunnable);
+        mLoadTpRunnable.position = position;
+        ThreadPoolManager.getInstance().execute(mLoadTpRunnable);
+    }
+
+    private static class LoadTpRunnable extends WeakRunnable<TpListingActivity> {
+        int position;
+
+        LoadTpRunnable(TpListingActivity view) {
+            super(view);
+        }
+
+        @Override
+        protected void loadBackground() {
+            TpListingActivity context = mWeakReference.get();
+            List<ChannelNew_t> satChannelInfoList = SWPDBaseManager.getInstance().getSatChannelInfoList(context.getIndex());
+
+            context.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (satChannelInfoList != null && !satChannelInfoList.isEmpty()) {
+                        context.mAdapter.updateData(satChannelInfoList);
+                        context.mListView.setSelection(position);
+                    }
+                }
+            });
+        }
     }
 
     private int getIndex() {
@@ -171,20 +202,25 @@ public class TpListingActivity extends BaseActivity {
     }
 
     private String getTpName() {
+        if (mAdapter.getCount() <= 0) return "";
+
         ChannelNew_t channel = mAdapter.getItem(mSelectPosition);
         if (channel == null) return "";
         return channel.Freq + Utils.getVorH(this, channel.Qam) + channel.Symbol;
     }
 
     private int getFreq() {
+        if (mAdapter.getCount() <= 0) return 0;
         return mAdapter.getItem(mSelectPosition).Freq;
     }
 
     private int getSymbol() {
+        if (mAdapter.getCount() <= 0) return 0;
         return mAdapter.getItem(mSelectPosition).Symbol;
     }
 
     private int getQam() {
+        if (mAdapter.getCount() <= 0) return 0;
         return mAdapter.getItem(mSelectPosition).Qam;
     }
 
@@ -240,8 +276,8 @@ public class TpListingActivity extends BaseActivity {
     }
 
     private void newTp(String freq, String symbol, String qam) {
-        if (isNewTpParamEmpty(freq, symbol)) return;
-        if (isNewTpFreqSymbolOver(freq, symbol)) {
+        if (isParamEmpty(freq, symbol)) return;
+        if (isParamOver(freq, symbol)) {
             Toast.makeText(this, getResources().getString(R.string.add_failure), Toast.LENGTH_SHORT).show();
             return;
         }
@@ -263,8 +299,8 @@ public class TpListingActivity extends BaseActivity {
     }
 
     private void editTp(String freq, String symbol, String qam) {
-        if (isEditTpParamEmpty(freq, symbol)) return;
-        if (isEditTpFreqSymbolOver(freq, symbol)) {
+        if (isParamEmpty(freq, symbol)) return;
+        if (isParamOver(freq, symbol)) {
             Toast.makeText(this, getResources().getString(R.string.add_failure), Toast.LENGTH_SHORT).show();
             return;
         }
@@ -289,22 +325,6 @@ public class TpListingActivity extends BaseActivity {
             SWPDBaseManager.getInstance().delChannelInfo(channelNew_t);
             updateTpList();
         }
-    }
-
-    private boolean isNewTpParamEmpty(String freq, String symbol) {
-        return isParamEmpty(freq, symbol);
-    }
-
-    private boolean isEditTpParamEmpty(String freq, String symbol) {
-        return isParamEmpty(freq, symbol);
-    }
-
-    private boolean isNewTpFreqSymbolOver(String freq, String symbol) {
-        return isParamOver(freq, symbol);
-    }
-
-    private boolean isEditTpFreqSymbolOver(String freq, String symbol) {
-        return isParamOver(freq, symbol);
     }
 
     private boolean isParamEmpty(String freq, String symbol) {

@@ -1,5 +1,6 @@
 package com.konkawise.dtv.dialog;
 
+import android.content.DialogInterface;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -81,11 +82,13 @@ public class FindChannelDialog extends BaseDialogFragment implements TextWatcher
     }
 
     @Override
-    public void dismiss() {
-        mEtFindChannel.removeTextChangedListener(this);
-        ThreadPoolManager.getInstance().remove(mFindChannelRunnable);
-        WeakToolManager.getInstance().removeWeakTool(this);
-        super.dismiss();
+    protected boolean onKeyListener(DialogInterface dialog, int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
+            mEtFindChannel.removeTextChangedListener(this);
+            ThreadPoolManager.getInstance().remove(mFindChannelRunnable);
+            WeakToolManager.getInstance().removeWeakTool(this);
+        }
+        return super.onKeyListener(dialog, keyCode, event);
     }
 
     @Override
