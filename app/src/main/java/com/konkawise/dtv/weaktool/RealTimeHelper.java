@@ -10,6 +10,7 @@ import java.util.Timer;
 import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
 
 public class RealTimeHelper {
+
     private static final long UPDATE_REAL_TIME_PERIOD = 1000;
     private WeakToolInterface mContext;
     private Timer mRealTimeTimer;
