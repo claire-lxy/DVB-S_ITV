@@ -19,7 +19,7 @@ import com.konkawise.dtv.WeakToolManager;
 import com.konkawise.dtv.base.BaseService;
 import com.konkawise.dtv.bean.BookingModel;
 import com.konkawise.dtv.bean.HandlerMsgModel;
-import com.konkawise.dtv.dialog.BookStandbyDialog;
+import com.konkawise.dtv.dialog.BookReadyDialog;
 import com.konkawise.dtv.dialog.OnCommNegativeListener;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.weaktool.WeakHandler;
@@ -40,12 +40,13 @@ public class BookService extends BaseService implements WeakToolInterface {
     public static final int ACTION_BOOKING_PLAY = 1 << 1;
     public static final int ACTION_BOOKING_RECORD = 1 << 2;
 
-    private BookStandbyDialog mBookStandbyDialog;
+    private BookReadyDialog mBookStandbyDialog;
     private BookCountDownHandler mBookCountDownHandler;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.i(TAG, "book service create");
         SWDVB.GetInstance();
         registerBookMsg();
     }
@@ -60,11 +61,12 @@ public class BookService extends BaseService implements WeakToolInterface {
     public void onDestroy() {
         WeakToolManager.getInstance().removeWeakTool(this);
         SWDVBManager.getInstance().regMsgHandler(null, null);
+//        SWDVBManager.getInstance().unRegMsgHandler(Constants.BOOK_CALLBACK_MSG_ID);
         super.onDestroy();
     }
 
-
     private void registerBookMsg() {
+        // Constants.BOOK_CALLBACK_MSG_ID
         SWDVBManager.getInstance().regMsgHandler(getMainLooper(), new MsgCB() {
             // 预订节目播放倒计时
             @Override
@@ -118,8 +120,8 @@ public class BookService extends BaseService implements WeakToolInterface {
             positive = getString(R.string.dialog_book_standby);
         }
 
-        mBookStandbyDialog = new BookStandbyDialog(this)
-                .content(MessageFormat.format(getString(R.string.dialog_book_content), content, String.valueOf(bookProg.second)))
+        mBookStandbyDialog = new BookReadyDialog(this)
+                .content(MessageFormat.format(getString(R.string.dialog_book_ready_content), content, String.valueOf(bookProg.second)))
                 .channelName(channelName)
                 .mode(mode)
                 .setOnPositiveListener(positive, new OnCommPositiveListener() {
@@ -147,6 +149,20 @@ public class BookService extends BaseService implements WeakToolInterface {
         HandlerMsgManager.getInstance().sendMessage(mBookCountDownHandler, new HandlerMsgModel(BookCountDownHandler.MSG_COUNT_DOWN_SECONDS));
     }
 
+    private void updateBookReadyContent(HSubforProg_t bookInfo, int countDownSecond) {
+        if (mBookStandbyDialog != null && mBookStandbyDialog.isShowing() && bookInfo != null) {
+            String content;
+            if (bookInfo.schtype == SWBooking.BookSchType.RECORD.ordinal()) {
+                content = getString(R.string.dialog_book_record_content);
+            } else if (bookInfo.schtype == SWBooking.BookSchType.PLAY.ordinal()) {
+                content = getString(R.string.dialog_book_play_content);
+            } else {
+                content = getString(R.string.dialog_book_standby_content);
+            }
+            mBookStandbyDialog.updateContent(MessageFormat.format(getString(R.string.dialog_book_ready_content), content, String.valueOf(countDownSecond)));
+        }
+    }
+
     private void dismissBookReadyDialog() {
         if (mBookStandbyDialog != null && mBookStandbyDialog.isShowing()) {
             mBookStandbyDialog.dismiss();
@@ -156,6 +172,7 @@ public class BookService extends BaseService implements WeakToolInterface {
 
     private static class BookCountDownHandler extends WeakHandler<BookService> {
         static final int MSG_COUNT_DOWN_SECONDS = 0;
+        static final long COUNT_DOWN_SECOND_DELAY = 1000;
         private HSubforProg_t bookInfo;
         private int countDownSeconds;
 
@@ -170,11 +187,11 @@ public class BookService extends BaseService implements WeakToolInterface {
             BookService context = mWeakReference.get();
 
             if (msg.what == MSG_COUNT_DOWN_SECONDS) {
-                --countDownSeconds;
+                context.updateBookReadyContent(bookInfo, --countDownSeconds);
                 if (countDownSeconds <= 0) {
                     context.startBook(bookInfo.servid, bookInfo.tsid, bookInfo.sat);
                 } else {
-                    HandlerMsgManager.getInstance().sendMessage(context.mBookCountDownHandler, new HandlerMsgModel(MSG_COUNT_DOWN_SECONDS, 1000));
+                    HandlerMsgManager.getInstance().sendMessage(context.mBookCountDownHandler, new HandlerMsgModel(MSG_COUNT_DOWN_SECONDS, COUNT_DOWN_SECOND_DELAY));
                 }
             }
         }
@@ -189,6 +206,7 @@ public class BookService extends BaseService implements WeakToolInterface {
 
     private void startBook(int servid, int tsid, int sat) {
         removeHandlerMsg();
+        dismissBookReadyDialog();
 
         PDPInfo_t recordProg = SWPDBaseManager.getInstance().getProgInfoByServiceId(servid, tsid, sat);
         HForplayprog_t readyProg = SWBookingManager.getInstance().getCurrSubForPlay();
@@ -198,6 +216,7 @@ public class BookService extends BaseService implements WeakToolInterface {
 
             } else {
                 Intent intent = new Intent();
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.setComponent(new ComponentName(getPackageName(), getPackageName() + ".ui.Topmost"));
                 if (readyProg.schtype == SWBooking.BookSchType.PLAY.ordinal()) {
                     intent.putExtra(Constants.IntentKey.INTENT_BOOK_TYPE, ACTION_BOOKING_PLAY);

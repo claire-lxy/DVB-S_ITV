@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.konkawise.dtv.SWDVBManager;
 import com.sw.dvblib.SWDVB;
 
 public class HomeReceiver extends BroadcastReceiver {
@@ -18,16 +17,11 @@ public class HomeReceiver extends BroadcastReceiver {
         if (mOnReceiveHomeHandleListener != null) {
             boolean handleCallback = mOnReceiveHomeHandleListener.onHomeHandleCallback();
             if (handleCallback) {
-                releaseResource();
+                SWDVB.Destory();
             }
         } else {
-            releaseResource();
+            SWDVB.Destory();
         }
-    }
-
-    private void releaseResource() {
-        SWDVBManager.getInstance().regMsgHandler(null, null); // 主要处理取消booking监听
-        SWDVB.Destory();
     }
 
     public void registerReceiveHomeHandlerListener(OnReceiveHomeHandleListener listener) {

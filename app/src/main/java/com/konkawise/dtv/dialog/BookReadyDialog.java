@@ -13,10 +13,12 @@ import android.widget.TextView;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.base.BaseDialog;
 
+import java.text.MessageFormat;
+
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class BookStandbyDialog extends BaseDialog {
+public class BookReadyDialog extends BaseDialog {
     @BindView(R.id.tv_book_content)
     TextView mTvContent;
 
@@ -35,7 +37,7 @@ public class BookStandbyDialog extends BaseDialog {
     private OnCommPositiveListener mOnPositiveListener;
     private OnCommNegativeListener mOnNegativeListener;
 
-    @OnClick(R.id.btn_comm_dialog_positive)
+    @OnClick(R.id.btn_book_positive)
     void positive() {
         dismiss();
         if (mOnPositiveListener != null) {
@@ -43,7 +45,7 @@ public class BookStandbyDialog extends BaseDialog {
         }
     }
 
-    @OnClick(R.id.btn_comm_dialog_negative)
+    @OnClick(R.id.btn_book_negative)
     void negative() {
         dismiss();
         if (mOnNegativeListener != null) {
@@ -51,7 +53,7 @@ public class BookStandbyDialog extends BaseDialog {
         }
     }
 
-    public BookStandbyDialog(Context context) {
+    public BookReadyDialog(Context context) {
         super(context);
         Window window = getWindow();
         WindowManager.LayoutParams lp = window.getAttributes();
@@ -65,22 +67,22 @@ public class BookStandbyDialog extends BaseDialog {
 
     @Override
     protected int getLayoutId() {
-        return R.layout.dialog_book_standby_layout;
+        return R.layout.dialog_book_ready_layout;
     }
 
-    public BookStandbyDialog content(String content) {
+    public BookReadyDialog content(String content) {
         mTvContent.setText(TextUtils.isEmpty(content) ? "" : content);
         return this;
     }
 
-    public BookStandbyDialog channelName(String channelName) {
+    public BookReadyDialog channelName(String channelName) {
         mTvChannelName.setVisibility(TextUtils.isEmpty(channelName) ? View.GONE : View.VISIBLE);
-        mTvChannelName.setText(TextUtils.isEmpty(channelName) ? "" : channelName);
+        mTvChannelName.setText(TextUtils.isEmpty(channelName) ? "" : MessageFormat.format(getContext().getString(R.string.dialog_book_ready_channel_name), channelName));
         return this;
     }
 
-    public BookStandbyDialog mode(String mode) {
-        mTvMode.setText(TextUtils.isEmpty(mode) ? "" : mode);
+    public BookReadyDialog mode(String mode) {
+        mTvMode.setText(TextUtils.isEmpty(mode) ? "" : MessageFormat.format(getContext().getString(R.string.dialog_book_ready_mode), mode));
         return this;
     }
 
@@ -88,13 +90,13 @@ public class BookStandbyDialog extends BaseDialog {
         mTvContent.setText(content);
     }
 
-    public BookStandbyDialog setOnPositiveListener(String positive, OnCommPositiveListener listener) {
+    public BookReadyDialog setOnPositiveListener(String positive, OnCommPositiveListener listener) {
         mBtnPositive.setText(TextUtils.isEmpty(positive) ? getContext().getString(R.string.yes) : positive);
         this.mOnPositiveListener = listener;
         return this;
     }
 
-    public BookStandbyDialog setOnNegativeListener(String negative, OnCommNegativeListener listener) {
+    public BookReadyDialog setOnNegativeListener(String negative, OnCommNegativeListener listener) {
         mBtnNegative.setText(TextUtils.isEmpty(negative) ? getContext().getString(R.string.cancel) : negative);
         this.mOnNegativeListener = listener;
         return this;

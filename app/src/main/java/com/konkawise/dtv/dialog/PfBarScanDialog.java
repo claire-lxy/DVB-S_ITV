@@ -23,6 +23,7 @@ import com.konkawise.dtv.WeakToolManager;
 import com.konkawise.dtv.base.BaseDialog;
 import com.konkawise.dtv.bean.DateModel;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
+import com.konkawise.dtv.weaktool.RealTimeHelper;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakToolInterface;
 import com.sw.dvblib.SWDVB;
@@ -86,6 +87,7 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface {
     private Context mContext;
     private AudioManager mAudioManager;
     private CheckSignalHelper mCheckSignalHelper;
+    private RealTimeHelper mRealTimeHelper;
 
     @SuppressLint("HandlerLeak")
     private WeakHandler<PfBarScanDialog> sHandler = new WeakHandler<PfBarScanDialog>(this) {
@@ -145,9 +147,29 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface {
         }
     }
 
+    private void startRealTime() {
+        stopRealTime();
+        mRealTimeHelper = new RealTimeHelper(this);
+        mRealTimeHelper.setOnRealTimeListener(new RealTimeHelper.OnRealTimerListener() {
+            @Override
+            public void onRealTimeCallback(String realTime) {
+                mTvTime.setText(realTime);
+            }
+        });
+        mRealTimeHelper.start();
+    }
+
+    private void stopRealTime() {
+        if (mRealTimeHelper != null) {
+            mRealTimeHelper.stop();
+            mRealTimeHelper = null;
+        }
+    }
+
     @Override
     public void dismiss() {
         stopCheckSignal();
+        stopRealTime();
         WeakToolManager.getInstance().removeWeakTool(this);
         super.dismiss();
     }
@@ -185,21 +207,11 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface {
                 SWTimerManager.getInstance().getEndTime(info)).getFormatHourAndMinute() + " " + info.memEventName;
     }
 
-    private void updateTime() {
-        SysTime_t sysTime = SWTimerManager.getInstance().getSysTime();
-        if (sysTime != null) {
-            DateModel dateModel = new DateModel(sysTime, sysTime);
-            String date = sysTime.Year + "-" + sysTime.Month + "-" + sysTime.Day + "  "
-                    + dateModel.getHour(dateModel.getStart()).trim() + dateModel.getMinute(dateModel.getStart()).trim();
-            mTvTime.setText(date);
-        }
-    }
-
     public void updatePfInformation() {
         mTvSoundNum.setText(String.valueOf(mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC)));
         startCheckSignal();
+        startRealTime();
         updateProgInfo();
         updateProgInformation();
-        updateTime();
     }
 }

@@ -23,8 +23,11 @@ import com.konkawise.dtv.dialog.OnCommNegativeListener;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.PIDDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
+import com.konkawise.dtv.event.ProgramUpdateEvent;
 import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.sw.dvblib.SWPDBase;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -118,6 +121,7 @@ public class ChannelEditActivity extends BaseActivity {
     private boolean mSaveData;
     private boolean mShowMore;
     private boolean mFinish;
+    private boolean mDataSaved;
 
     private LoadFavoriteChannelsRunnable mLoadFavoriteChannelsRunnable;
 
@@ -131,6 +135,17 @@ public class ChannelEditActivity extends BaseActivity {
         initFavoriteChannels();
         initChannelList();
         mTvSatelliteName.setText(R.string.all);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (isFinishing()) {
+            SWPDBaseManager.getInstance().setCurrProgType(SWPDBase.SW_WHOLE_GROUP, 0);
+            if (mDataSaved) {
+                EventBus.getDefault().post(new ProgramUpdateEvent(true));
+            }
+        }
     }
 
     @Override
@@ -212,6 +227,10 @@ public class ChannelEditActivity extends BaseActivity {
                         if (mSavePid) savePid();
                         if (mSaveSortType) saveSortType();
 
+                        // 对数据编辑过一次，退出界面时通知topmost刷新频道列表
+                        if (!mDataSaved && (mSaveFavorite || mSaveEditChannel || mSavePid || mSaveSortType)) {
+                            mDataSaved = true;
+                        }
                         resetEdit();
 
                         if (mFinish) finish();

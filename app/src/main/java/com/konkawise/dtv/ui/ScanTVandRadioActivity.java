@@ -20,9 +20,12 @@ import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.CommRemindDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.SearchResultDialog;
+import com.konkawise.dtv.event.ProgramUpdateEvent;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
 import com.sw.dvblib.MsgCB;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,6 +101,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         mCheckSignalHelper.startCheckSignal();
+//        SWDVBManager.getInstance().regMsgHandler(Constants.SCAN_CALLBACK_MSG_ID, Looper.getMainLooper(), new SearchMsgCB());
         SWDVBManager.getInstance().regMsgHandler(Looper.getMainLooper(), new SearchMsgCB());
     }
 
@@ -106,6 +110,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
         super.onPause();
         mCheckSignalHelper.stopCheckSignal();
         SWDVBManager.getInstance().regMsgHandler(null, null);
+//        SWDVBManager.getInstance().unRegMsgHandler(Constants.SCAN_CALLBACK_MSG_ID);
         SWPSearchManager.getInstance().seatchStop(false);
     }
 
@@ -365,9 +370,13 @@ public class ScanTVandRadioActivity extends BaseActivity {
     }
 
     private void showSearchResultDialog() {
+        int tvSize = Integer.valueOf(mTv_new_tv_num.getText().toString());
+        int radioSize = Integer.valueOf(tv_radio_num.getText().toString());
+        EventBus.getDefault().post(new ProgramUpdateEvent(tvSize, radioSize));
+
         new SearchResultDialog()
-                .tvSize(Integer.valueOf(mTv_new_tv_num.getText().toString()))
-                .radioSize(Integer.valueOf(tv_radio_num.getText().toString()))
+                .tvSize(tvSize)
+                .radioSize(radioSize)
                 .setOnConfirmResultListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

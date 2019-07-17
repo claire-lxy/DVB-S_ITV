@@ -40,6 +40,10 @@ public class Constants {
     public static final int DISEQC_C = 2;
     public static final int DISEQC_D = 3;
 
+    // msg callback id
+    public static final int SCAN_CALLBACK_MSG_ID = 0x8001;
+    public static final int BOOK_CALLBACK_MSG_ID = 0x8002;
+
     public interface IntentKey {
         String INTENT_SATELLITE_INDEX = "satelliteIndex";
         String INTENT_SATELLITE_ACTIVITY = "satelliteActivity";

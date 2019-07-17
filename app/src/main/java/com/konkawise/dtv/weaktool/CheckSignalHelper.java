@@ -51,7 +51,7 @@ public class CheckSignalHelper {
                 @Override
                 public void run() {
                     if (mOnCheckSignalListener != null) {
-                        mOnCheckSignalListener.signal(randomStrength, randomQuality);
+                        mOnCheckSignalListener.signal(getValidValue(randomStrength), getValidValue(randomQuality));
                     }
                 }
             });
@@ -66,23 +66,21 @@ public class CheckSignalHelper {
         }
 
         private int getSignalStrength() {
-            int strength = SWPSearchManager.getInstance().getSignalStatus(SWPSearchManager.SIGNAL_STRENGTH);
-            if (strength > 100) {
-                strength = 100;
-            } else if (strength < 0) {
-                strength = 0;
-            }
-            return strength;
+            return getValidValue(SWPSearchManager.getInstance().getSignalStatus(SWPSearchManager.SIGNAL_STRENGTH));
         }
 
         private int getSignalQuality() {
-            int quality = SWPSearchManager.getInstance().getSignalStatus(SWPSearchManager.SIGNAL_QUALITY);
-            if (quality > 100) {
-                quality = 100;
-            } else if (quality < 0) {
-                quality = 0;
+            return getValidValue(SWPSearchManager.getInstance().getSignalStatus(SWPSearchManager.SIGNAL_QUALITY));
+        }
+
+        private int getValidValue(int value) {
+            if (value > 100) {
+                return 100;
+            } else if (value < 0) {
+                return 0;
+            } else {
+                return value;
             }
-            return quality;
         }
     }
 

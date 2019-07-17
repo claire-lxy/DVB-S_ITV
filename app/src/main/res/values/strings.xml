@@ -311,7 +311,9 @@
     <string name="book_time_daily_format_non_endtime">{0}:{1}</string>
     <string name="book_time_weekly_or_monthly_format">{0} {1} {2}:{3}-{4}:{5}</string>
     <string name="book_time_weekly_or_monthly_format_non_endtime">{0} {1} {2}:{3}</string>
-    <string name="dialog_book_content">Will {0} after {1} seconds!</string>
+    <string name="dialog_book_ready_content">Will {0} after {1} seconds!</string>
+    <string name="dialog_book_ready_channel_name">Channel Name: {0}</string>
+    <string name="dialog_book_ready_mode">Mode: {0}</string>
     <string name="dialog_book_standby_content">Standby</string>
     <string name="dialog_book_record_content">Record the following program</string>
     <string name="dialog_book_play_content">Play the following program</string>

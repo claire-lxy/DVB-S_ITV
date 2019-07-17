@@ -22,8 +22,11 @@ import com.konkawise.dtv.bean.BlindTpModel;
 import com.konkawise.dtv.dialog.CommRemindDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.SearchResultDialog;
+import com.konkawise.dtv.event.ProgramUpdateEvent;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
 import com.sw.dvblib.MsgCB;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -101,6 +104,7 @@ public class TpBlindActivity extends BaseActivity {
 
         SWPSearchManager.getInstance().config(SWFtaManager.getInstance().getCurrScanMode(),
                 SWFtaManager.getInstance().getCurrCAS(), SWFtaManager.getInstance().getCurrNetwork());
+//        SWDVBManager.getInstance().regMsgHandler(Constants.SCAN_CALLBACK_MSG_ID, Looper.getMainLooper(), new SearchMsgCB());
         SWDVBManager.getInstance().regMsgHandler(Looper.getMainLooper(), new SearchMsgCB());
         SWFtaManager.getInstance().blindScanStart(getSatelliteIndex());
 
@@ -111,6 +115,7 @@ public class TpBlindActivity extends BaseActivity {
     protected void onPause() {
         super.onPause();
         SWDVBManager.getInstance().regMsgHandler(null, null);
+//        SWDVBManager.getInstance().unRegMsgHandler(Constants.SCAN_CALLBACK_MSG_ID);
         SWPSearchManager.getInstance().seatchStop(false);
         SWFtaManager.getInstance().blindScanStop();
         stopBlindScanProgressTimer();
@@ -358,9 +363,13 @@ public class TpBlindActivity extends BaseActivity {
     }
 
     private void showSearchResultDialog() {
+        int tvSize = Integer.valueOf(mTvTp_num.getText().toString());
+        int radioSize = Integer.valueOf(radio_tp_num.getText().toString());
+        EventBus.getDefault().post(new ProgramUpdateEvent(tvSize, radioSize));
+
         new SearchResultDialog()
-                .tvSize(Integer.valueOf(mTvTp_num.getText().toString()))
-                .radioSize(Integer.valueOf(radio_tp_num.getText().toString()))
+                .tvSize(tvSize)
+                .radioSize(radioSize)
                 .setOnConfirmResultListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

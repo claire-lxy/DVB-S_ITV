@@ -22,4 +22,12 @@ public class SWDVBManager {
     public void regMsgHandler(Looper looper, MsgCB msgCB) {
         SWDVB.GetInstance().regMsgHandler(looper, msgCB);
     }
+
+//    public void regMsgHandler(int callbackId, Looper looper, MsgCB msgCB) {
+//        SWDVB.GetInstance().regMsgHandler(callbackId, looper, msgCB);
+//    }
+//
+//    public void unRegMsgHandler(int callbackId) {
+//        SWDVB.GetInstance().unregisterMsgHandler(callbackId);
+//    }
 }

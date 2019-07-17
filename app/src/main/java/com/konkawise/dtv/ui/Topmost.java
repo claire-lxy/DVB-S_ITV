@@ -45,6 +45,7 @@ import com.konkawise.dtv.dialog.PfBarScanDialog;
 import com.konkawise.dtv.dialog.PfDetailDialog;
 import com.konkawise.dtv.dialog.SearchChannelDialog;
 import com.konkawise.dtv.dialog.SearchProgramDialog;
+import com.konkawise.dtv.event.ProgramUpdateEvent;
 import com.konkawise.dtv.receiver.VolumeChangeObserver;
 import com.konkawise.dtv.service.BookService;
 import com.konkawise.dtv.utils.TimeUtils;
@@ -54,6 +55,10 @@ import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
 import com.sw.dvblib.SWDVB;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -200,7 +205,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     }
 
     private void gotoEpg() {
-        if (getTotalProgNum() <= 0) {
+        if (mProgListAdapter.getCount() <= 0) {
             showEpgSearchDialog();
         } else {
             startActivity(new Intent(this, EpgActivity.class));
@@ -396,6 +401,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         SWDVB.GetInstance(); // 必须先初始化库，否则使用库会出现空指针异常
         mSmallHintBox = new SmallHintBox(this);
         BookService.bootService(new Intent(this, BookService.class));
+        EventBus.getDefault().register(this);
 
         initVolumeObserver();
         initHandler();
@@ -410,12 +416,9 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         super.onResume();
         showSurface();
         updatePfBarInfo();
-        updateSatList();
-        clearProgListCache(); // 更新频道列表前清空缓存
-        updateProgList();
         startSmallHintBoxTimer();
         restoreMenuItem(); // 恢复menu初始item显示
-        if (getTotalProgNum() <= 0) {
+        if (SWPDBaseManager.getInstance().getCurrProgInfo() == null) {
             showSearchChannelDialog();
         }
     }
@@ -424,6 +427,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     protected void onPause() {
         super.onPause();
         cancelSmallHintBoxTimer();
+        setRecordFlagStop();
         cancelRecordingTimer();
     }
 
@@ -446,6 +450,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         dismissPfBarScanDialog();
         dismissPasswordDialog();
         mVolumeChangeObserver.unregisterVolumeReceiver();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -474,6 +479,8 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                 playProg(progNum, true);
                 startRecordingTimer(recordSeconds);
                 mRecording = true;
+
+                sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
                 return true;
             }
         }
@@ -481,14 +488,12 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     }
 
     private void startRecordingTimer(int recordSeconds) {
-        cancelRecordingTimer();
         mRecordingTimer = new Timer();
         mRecordingTimerTask = new RecordingTimerTask(this, recordSeconds);
         mRecordingTimer.schedule(mRecordingTimerTask, RECORDING_DELAY, RECORDING_PERIOD);
     }
 
     private void cancelRecordingTimer() {
-        setRecordFlagStop();
         if (mRecordingTimer != null) {
             mRecordingTimer.cancel();
             mRecordingTimer.purge();
@@ -515,17 +520,19 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         protected void runTimer() {
             Topmost context = mWeakReference.get();
 
-            if (--countDownSeconds <= 0) {
-                context.cancelRecordingTimer();
-            } else {
-                context.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        context.sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
+            context.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (--countDownSeconds <= 0) {
+                        context.cancelRecordingTimer();
+                        context.setRecordFlagStop();
+                        context.mRecordingLayout.setVisibility(View.GONE);
+                        ToastUtils.showToast(R.string.toast_stop_record);
+                    } else {
                         context.mTvRecordingTime.setText(TimeUtils.getDecimalFormatTime(++recordSeconds));
                     }
-                });
-            }
+                }
+            });
         }
     }
 
@@ -639,6 +646,8 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                 return false;
             }
         });
+
+        updateProgList();
     }
 
     /**
@@ -660,6 +669,8 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     }
 
     private static class LoadProgRunnable extends WeakRunnable<Topmost> {
+        static final int MAX_DELAY_LOAD_PROG = 3;
+        private int delayTime;
 
         LoadProgRunnable(Topmost view) {
             super(view);
@@ -668,6 +679,18 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         @Override
         protected void loadBackground() {
             Topmost context = mWeakReference.get();
+            // 等待卫星列表获取完再获取频道列表
+            while (context.mSatList == null || context.mSatList.isEmpty()) {
+                if (delayTime >= MAX_DELAY_LOAD_PROG) break;
+                Log.i(TAG, "waiting load satellite");
+                try {
+                    delayTime++;
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
             List<PDPMInfo_t> progList = context.getProgList();
             if (progList != null && !progList.isEmpty()) {
                 context.runOnUiThread(new Runnable() {
@@ -915,7 +938,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
      * 隐藏当前录制时长显示
      */
     private void sendHideRecordTimeMsg(HandlerMsgModel msg) {
-        if (mRecordingLayout.getVisibility() != View.VISIBLE && mRecording) {
+        if (mRecording) {
             removeHideRecordTimeMsg();
             mRecordingLayout.setVisibility(View.VISIBLE);
             HandlerMsgManager.getInstance().sendMessage(mProgHandler, msg);
@@ -1208,24 +1231,22 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     }
 
     private void showQuitRecordDialog(KeyEvent event) {
-        new CommTipsDialog()
-                .content(getString(R.string.dialog_quit_record_content))
-                .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
-                    @Override
-                    public void onPositiveListener() {
-                        stopBookRecord(event);
-                    }
-                }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            new CommTipsDialog()
+                    .content(getString(R.string.dialog_quit_record_content))
+                    .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
+                        @Override
+                        public void onPositiveListener() {
+                            stopBookRecord();
+                        }
+                    }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
+        }
     }
 
-    private void stopBookRecord(KeyEvent event) {
+    private void stopBookRecord() {
         HSubforProg_t bookProg = SWBookingManager.getInstance().getReadyProgInfo();
         if (bookProg != null) {
             SWBookingManager.getInstance().cancelSubForPlay(0, SWBookingManager.getInstance().getCancelBookProg(bookProg));
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && event != null) {
-            dispatchKeyEvent(event);
         }
 
         setRecordFlagStop();
@@ -1558,15 +1579,21 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
             }
 
             if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT && event.getAction() == KeyEvent.ACTION_DOWN) {
-                if (--mCurrSatPosition < 0) mCurrSatPosition = getSatList().size() - 1;
-                mTvSatelliteName.setText(getSatList().get(mCurrSatPosition).sat_name);
+                List<SatInfo_t> satList = getSatList();
+                if (satList == null || satList.isEmpty()) return super.dispatchKeyEvent(event);
+
+                if (--mCurrSatPosition < 0) mCurrSatPosition = satList.size() - 1;
+                mTvSatelliteName.setText(satList.get(mCurrSatPosition).sat_name);
                 updateProgList();
                 return true;
             }
 
             if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT && event.getAction() == KeyEvent.ACTION_DOWN) {
-                if (++mCurrSatPosition >= getSatList().size()) mCurrSatPosition = 0;
-                mTvSatelliteName.setText(getSatList().get(mCurrSatPosition).sat_name);
+                List<SatInfo_t> satList = getSatList();
+                if (satList == null || satList.isEmpty()) return super.dispatchKeyEvent(event);
+
+                if (++mCurrSatPosition >= satList.size()) mCurrSatPosition = 0;
+                mTvSatelliteName.setText(satList.get(mCurrSatPosition).sat_name);
                 updateProgList();
                 return true;
             }
@@ -1692,7 +1719,8 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private boolean interceptEventWhenRecord(KeyEvent event) {
         int keyCode = event.getKeyCode();
-        return keyCode != KeyEvent.KEYCODE_TV_TELETEXT &&
+        return mRecording &&
+                keyCode != KeyEvent.KEYCODE_TV_TELETEXT &&
                 keyCode != KEYCODE_TV_SUBTITLE &&
                 keyCode != KeyEvent.KEYCODE_MEDIA_AUDIO_TRACK &&
                 keyCode != KeyEvent.KEYCODE_INFO &&
@@ -1709,13 +1737,13 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                 keyCode != KeyEvent.KEYCODE_UNKNOWN &&
                 keyCode != KeyEvent.KEYCODE_VOLUME_UP &&
                 keyCode != KeyEvent.KEYCODE_VOLUME_DOWN &&
-                keyCode != KeyEvent.KEYCODE_FORWARD_DEL && mRecording;
+                keyCode != KeyEvent.KEYCODE_FORWARD_DEL;
     }
 
     @Override
     public boolean onHomeHandleCallback() {
         if (mRecording) {
-            stopBookRecord(null);
+            stopBookRecord();
             return true;
         }
         return super.onHomeHandleCallback();
@@ -1734,6 +1762,16 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     public void onVolumeChange(int volume) {
         if (isPfBarShowing()) {
             mPfBarScanDialog.updateVolume(volume);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onReceiveProgramUpdate(ProgramUpdateEvent event) {
+        Log.i(TAG, "receive program update, tv size = " + event.tvSize + ", radio size = " + event.radioSize);
+        if (event.tvSize != 0 || event.radioSize != 0 || event.isProgramEdit) {
+            updateSatList();
+            clearProgListCache(); // 更新频道列表前清空缓存
+            updateProgList();
         }
     }
 }
