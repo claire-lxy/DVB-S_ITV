@@ -3,12 +3,12 @@ package com.konkawise.dtv.dialog;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.base.BaseDialogFragment;
 import com.konkawise.dtv.utils.EditUtils;
+import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.view.LastInputEditText;
 import com.sw.dvblib.SWFta;
 
@@ -53,10 +53,10 @@ public class SetPasswordDialog extends BaseDialogFragment {
         String confirmPassword = mEt_confirm_Password.getText().toString();
         String password = SWFtaManager.getInstance().getCommPWDInfo(SWFta.E_E2PP.E2P_Password.ordinal());
         if (!currentPassword.equals(password)) {
-            Toast.makeText(getContext(), getStrings(R.string.toast_current_password_error), Toast.LENGTH_LONG).show();
+            ToastUtils.showToast(R.string.toast_current_password_error);
             return false;
         } else if (!newPassword.equals(confirmPassword)) {
-            Toast.makeText(getContext(), getStrings(R.string.toast_confirm_password_invalid), Toast.LENGTH_LONG).show();
+           ToastUtils.showToast(R.string.toast_confirm_password_invalid);
             return false;
         }
 

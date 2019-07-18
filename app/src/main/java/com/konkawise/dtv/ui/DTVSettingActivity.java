@@ -1,11 +1,11 @@
 package com.konkawise.dtv.ui;
 
 import android.content.Intent;
-import android.widget.Toast;
 
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.PasswordDialog;
+import com.konkawise.dtv.utils.ToastUtils;
 
 import butterknife.OnClick;
 
@@ -74,7 +74,7 @@ public class DTVSettingActivity extends BaseActivity {
                             Intent intent = new Intent(DTVSettingActivity.this, ParentalControlActivity.class);
                             startActivity(intent);
                         } else {
-                            Toast.makeText(DTVSettingActivity.this, getString(R.string.toast_invalid_password), Toast.LENGTH_SHORT).show();
+                            ToastUtils.showToast(R.string.toast_invalid_password);
                         }
                     }
                 }).show(getSupportFragmentManager(), PasswordDialog.TAG);

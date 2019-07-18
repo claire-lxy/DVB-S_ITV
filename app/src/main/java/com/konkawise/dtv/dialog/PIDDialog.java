@@ -5,11 +5,11 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.base.BaseDialogFragment;
 import com.konkawise.dtv.utils.EditUtils;
+import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.view.LastInputEditText;
 
 import butterknife.BindView;
@@ -45,7 +45,7 @@ public class PIDDialog extends BaseDialogFragment {
         aPid = edit_text_audio_pid.getText().toString().trim();
         pcrPid = edit_text_pdr_pid.getText().toString().trim();
         if (TextUtils.isEmpty(vPid) || TextUtils.isEmpty(aPid) || TextUtils.isEmpty(pcrPid)) {
-            Toast.makeText(getContext(), getStrings(R.string.toast_pid_not_empty), Toast.LENGTH_SHORT).show();
+            ToastUtils.showToast(R.string.toast_pid_not_empty);
             return;
         }
         if (mOnEditPidListener != null) {

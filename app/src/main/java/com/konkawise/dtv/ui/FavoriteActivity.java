@@ -120,7 +120,6 @@ public class FavoriteActivity extends BaseActivity {
 
     @Override
     protected void setup() {
-        // 先只获取第一组，显示后再显示再加载其他组
         SWPDBaseManager.getInstance().setCurrProgType(SWPDBase.SW_WHOLE_GROUP, 0);
         initFavoriteGroup();
         initFavoriteChannel();

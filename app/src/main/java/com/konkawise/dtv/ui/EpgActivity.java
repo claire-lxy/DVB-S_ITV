@@ -12,7 +12,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.HandlerMsgManager;
@@ -41,6 +40,7 @@ import com.konkawise.dtv.egphandle.EpgHandler;
 import com.konkawise.dtv.egphandle.MenuLockEpgHandler;
 import com.konkawise.dtv.egphandle.ParentLockEpgHandler;
 import com.konkawise.dtv.egphandle.PayEpgHandler;
+import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.view.TVListView;
 import com.konkawise.dtv.weaktool.RealTimeHelper;
 import com.konkawise.dtv.weaktool.WeakHandler;
@@ -474,7 +474,7 @@ public class EpgActivity extends BaseActivity {
                                 bookHandle(conflictType, getBookCheckSchType(checkContent), newBookInfo, conflictBookInfo);
                                 break;
                             case Constants.BOOK_CONFLICT_LIMIT:
-                                Toast.makeText(EpgActivity.this, getString(R.string.toast_book_limit), Toast.LENGTH_SHORT).show();
+                                ToastUtils.showToast(R.string.toast_book_limit);
                                 break;
                         }
 
@@ -581,7 +581,7 @@ public class EpgActivity extends BaseActivity {
                             mPasswordDialog = null;
                             epgItemSelect();
                         } else {
-                            Toast.makeText(EpgActivity.this, getString(R.string.toast_invalid_password), Toast.LENGTH_SHORT).show();
+                            ToastUtils.showToast(R.string.toast_invalid_password);
                         }
                     }
                 });

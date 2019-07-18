@@ -7,7 +7,6 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;
@@ -21,6 +20,7 @@ import com.konkawise.dtv.dialog.CommRemindDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.TpParamDialog;
 import com.konkawise.dtv.dialog.ScanDialog;
+import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
 import com.konkawise.dtv.weaktool.WeakRunnable;
@@ -278,7 +278,7 @@ public class TpListingActivity extends BaseActivity {
     private void newTp(String freq, String symbol, String qam) {
         if (isParamEmpty(freq, symbol)) return;
         if (isParamOver(freq, symbol)) {
-            Toast.makeText(this, getResources().getString(R.string.add_failure), Toast.LENGTH_SHORT).show();
+            ToastUtils.showToast(R.string.add_failure);
             return;
         }
 
@@ -301,7 +301,7 @@ public class TpListingActivity extends BaseActivity {
     private void editTp(String freq, String symbol, String qam) {
         if (isParamEmpty(freq, symbol)) return;
         if (isParamOver(freq, symbol)) {
-            Toast.makeText(this, getResources().getString(R.string.add_failure), Toast.LENGTH_SHORT).show();
+            ToastUtils.showToast(R.string.add_failure);
             return;
         }
 

@@ -16,7 +16,6 @@ import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.ScanDialog;
-import com.konkawise.dtv.utils.LogUtils;
 import com.konkawise.dtv.utils.Utils;
 
 import java.util.List;
@@ -265,13 +264,6 @@ public class BlindActivity extends BaseActivity {
         satInfo_t.switch_22k = is22kHzOn() ? 1 : 0;
         // LNB POWER
         satInfo_t.LnbPower = isLnbPowerOn() ? 1 : 0;
-
-        LogUtils.e(TAG, "sateCurrent ==" + mCurrentSatellite);
-
-        LogUtils.e(TAG, "satInfoT.LnbPower =" + satInfo_t.LnbPower + ",satInfoT.lnb_low=" + satInfo_t.lnb_low + ",satInfoT.sat_name=" + satInfo_t.sat_name + ",satInfoT.SatIndex=" +
-                satInfo_t.SatIndex + ",satInfoT.diseqc10_pos=" + satInfo_t.diseqc10_pos + ",satInfoT.diseqc10_tone=" + satInfo_t.diseqc10_tone + ",satInfoT.lnb_high=" + satInfo_t.lnb_high +
-                ",satInfoT.switch_22k=" + satInfo_t.switch_22k + ",satInfoT.diseqc12=" + satInfo_t.diseqc12 + ",satInfoT.diseqc12_longitude=" + satInfo_t.diseqc12_longitude +
-                ",satInfoT.Enable=" + satInfo_t.Enable + ",satInfoT.LnbType=" + satInfo_t.LnbType + ",satInfoT.switch_012v=" + satInfo_t.switch_012v);
 
         SWPDBaseManager.getInstance().setSatInfo(mCurrentSatellite, satInfo_t);  //将卫星信息设置到对应的bean类中,保存更改的信息
         mSatList = SWPDBaseManager.getInstance().getSatList(); // 更新卫星列表

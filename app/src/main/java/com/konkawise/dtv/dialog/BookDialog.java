@@ -10,7 +10,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;
@@ -20,6 +19,7 @@ import com.konkawise.dtv.bean.BookParameterModel;
 import com.konkawise.dtv.bean.BookingModel;
 import com.konkawise.dtv.utils.EditUtils;
 import com.konkawise.dtv.utils.TimeUtils;
+import com.konkawise.dtv.utils.ToastUtils;
 import com.sw.dvblib.SWBooking;
 
 import java.text.MessageFormat;
@@ -200,7 +200,7 @@ public class BookDialog extends BaseDialogFragment {
     @OnClick(R.id.btn_book)
     void book() {
         if (!isInputValid()) {
-            Toast.makeText(getContext(), getStrings(R.string.toast_book_invalid), Toast.LENGTH_SHORT).show();
+            ToastUtils.showToast(R.string.toast_book_invalid);
             return;
         }
 

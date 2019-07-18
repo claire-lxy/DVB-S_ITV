@@ -192,10 +192,13 @@ public class ChannelEditActivity extends BaseActivity {
                 @Override
                 public void run() {
                     context.mPbLoadingChannel.setVisibility(View.GONE);
+                    context.mOriginalChannelList.clear();
                     if (channelList != null && !channelList.isEmpty()) {
                         context.mOriginalChannelList.addAll(channelList);
                         context.mAdapter.updateData(channelList);
                         context.mLvChannelList.setSelection(context.scrollToPosition(scrollToProgIndex));
+                    } else {
+                        context.mAdapter.updateData(new ArrayList<>());
                     }
                 }
             });

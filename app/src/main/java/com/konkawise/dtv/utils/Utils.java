@@ -60,8 +60,6 @@ public class Utils {
             satInfoT.lnb_low = lnbData;
             satInfoT.lnb_high = 0;
         }
-
-        LogUtils.e("数据satInfo", "  satInfoT.LnbType=" + satInfoT.LnbType + ",satInfoT.lnb_low=" + satInfoT.lnb_low + ", satInfoT.lnb_high" + satInfoT.lnb_high);
     }
 
     public static String getLNB(SatInfo_t satInfo_t) {
@@ -79,8 +77,6 @@ public class Utils {
         } else {
             lnb = satInfo_t.lnb_low + "/" + satInfo_t.lnb_high;
         }
-
-        LogUtils.e("KKDVB_UTILS_LNB", lnb);
         return lnb;
     }
 
@@ -88,7 +84,6 @@ public class Utils {
     public static void setDiesc(SatInfo_t satInfo_t, TextView textView, String[] stringArray) {
         // String[] stringArray = getResources().getStringArray(R.array.DISEQC);
         if ((satInfo_t.diseqc10_pos >= 1) && (satInfo_t.diseqc10_pos < 5)) {
-            //  LogUtils.e("数据22","satInfo_t.diseqc10_pos=="+satInfo_t.diseqc10_pos);
             textView.setText(stringArray[satInfo_t.diseqc10_pos + 2]);
         } else if (satInfo_t.diseqc10_tone == 1) {
 
@@ -98,9 +93,7 @@ public class Utils {
         } else if (satInfo_t.diseqc10_pos == 21) {
             textView.setText(stringArray[stringArray.length - 1]);
         } else {
-            LogUtils.e("Satellite11111", "mDISEQC[ satInfo_t.skewonoff]===" + satInfo_t.skewonoff);
             if (satInfo_t.skewonoff < stringArray.length - 1) {
-                LogUtils.e("Satellite11111", "mDISEQC[ satInfo_t.skewonoff]===" + stringArray[satInfo_t.skewonoff]);
                 textView.setText(stringArray[satInfo_t.skewonoff]);
             }
 

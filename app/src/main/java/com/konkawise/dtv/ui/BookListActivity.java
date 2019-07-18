@@ -5,7 +5,6 @@ import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;
@@ -18,6 +17,7 @@ import com.konkawise.dtv.bean.BookingModel;
 import com.konkawise.dtv.dialog.BookDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
+import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.view.TVListView;
 import com.konkawise.dtv.weaktool.RealTimeHelper;
 import com.konkawise.dtv.weaktool.WeakAsyncTask;
@@ -151,7 +151,7 @@ public class BookListActivity extends BaseActivity {
                                 }
                                 break;
                             case Constants.BOOK_CONFLICT_LIMIT:
-                                Toast.makeText(BookListActivity.this, getString(R.string.toast_book_limit), Toast.LENGTH_SHORT).show();
+                                ToastUtils.showToast(R.string.toast_book_limit);
                                 break;
                             case Constants.BOOK_CONFLICT_ADD: // 当前参数的book有冲突，如果是添加需要先删除后再添加
                                 SWBookingManager.getInstance().addProg(pm.bookConflict, pm.conflictBookProg, pm.bookingModel.bookInfo);
