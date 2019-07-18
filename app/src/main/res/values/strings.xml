@@ -172,6 +172,10 @@
     <string name="edit_satellite_name">Satellite Name</string>
     <string name="edit_favorite_group_name">Group Name</string>
 
+    <!--dialog seek time-->
+    <string name="seek_time_tip">Input the seek time:</string>
+    <string name="input_invalid">Input is invalid!</string>
+
 
     <!-- dialog back -->
     <string name="back_infomation">If you exit, the data will not save.</string>

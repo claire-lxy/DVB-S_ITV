@@ -1,9 +1,12 @@
 package com.konkawise.dtv.ui;
 
+import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;
@@ -65,9 +68,13 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
 
     @OnItemClick(R.id.lv_record_channel_list)
     void onChannelItemClick(int position) {
-        if (mAdapter.getData().get(mCurrRecordPosition).LockFlag == 1) {
-            showPasswordDialog();
-        }
+//        if (mAdapter.getData().get(mCurrRecordPosition).LockFlag == 1) {
+//            showPasswordDialog();
+//        }
+        Intent intent = new Intent();
+        intent.setClass(this, RecordPlayer.class);
+        intent.putExtra("from", RecordPlayer.FROM_RECORD_LIST);
+        startActivity(intent);
     }
 
     private int mCurrDevicePostion = -1;
