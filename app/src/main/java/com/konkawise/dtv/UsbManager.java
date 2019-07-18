@@ -199,6 +199,10 @@ public class UsbManager {
         return null;
     }
 
+    public boolean isUsbExist() {
+        return mUsbInfos != null && !mUsbInfos.isEmpty();
+    }
+
     public interface OnUsbReceiveListener {
         void onUsbReceive(@UsbObserveType int usbObserveType, Set<UsbInfo> usbInfos, UsbInfo currUsbInfo);
     }

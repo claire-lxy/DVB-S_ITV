@@ -19,12 +19,14 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.HandlerMsgManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWBookingManager;
+import com.konkawise.dtv.SWDJAPVRManager;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.SWPSearchManager;
@@ -110,6 +112,9 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
 
     @BindView(R.id.lv_prog_list)
     ListView mProgListView;
+
+    @BindView(R.id.pb_loading_channel)
+    ProgressBar mPbLoadingChannel;
 
     @BindView(R.id.ll_prog_list_menu)
     LinearLayout mProgListMenu;
@@ -283,7 +288,6 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
 
     private Timer mRecordingTimer;
     private RecordingTimerTask mRecordingTimerTask;
-    private boolean mRecording;
 
     private ProgHandler mProgHandler;
     private PlayHandler mPlayHandler;
@@ -471,14 +475,16 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                 return true;
             }
         } else if (bookType == BookService.ACTION_BOOKING_RECORD) {
-            Set<UsbInfo> usbInfos = UsbManager.getInstance().getUsbInfos();
-            if (usbInfos == null || usbInfos.isEmpty()) return false;
+            if (!UsbManager.getInstance().isUsbExist()) {
+                ToastUtils.showToast(R.string.toast_no_storage_device);
+                return false;
+            }
 
             if (progType != -1 && progNum != -1 && recordSeconds != -1) {
                 SWPDBaseManager.getInstance().setCurrProgType(progType, 0);
                 playProg(progNum, true);
                 startRecordingTimer(recordSeconds);
-                mRecording = true;
+                SWBookingManager.getInstance().setRecording(true);
 
                 sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
                 return true;
@@ -504,7 +510,8 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     }
 
     private void setRecordFlagStop() {
-        mRecording = false;
+        SWBookingManager.getInstance().setRecording(false);
+        SWDJAPVRManager.getInstance().setRecording(false);
     }
 
     private static class RecordingTimerTask extends WeakTimerTask<Topmost> {
@@ -524,10 +531,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                 @Override
                 public void run() {
                     if (--countDownSeconds <= 0) {
-                        context.cancelRecordingTimer();
-                        context.setRecordFlagStop();
-                        context.mRecordingLayout.setVisibility(View.GONE);
-                        ToastUtils.showToast(R.string.toast_stop_record);
+                        context.stopRecord();
                     } else {
                         context.mTvRecordingTime.setText(TimeUtils.getDecimalFormatTime(++recordSeconds));
                     }
@@ -655,6 +659,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
      */
     private void updateProgList() {
         if (mLoadProgRunnable != null) {
+            mPbLoadingChannel.setVisibility(View.VISIBLE);
             ThreadPoolManager.getInstance().remove(mLoadProgRunnable);
             ThreadPoolManager.getInstance().execute(mLoadProgRunnable);
         }
@@ -692,18 +697,22 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
             }
 
             List<PDPMInfo_t> progList = context.getProgList();
-            if (progList != null && !progList.isEmpty()) {
-                context.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
+            context.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    context.mPbLoadingChannel.setVisibility(View.GONE);
+                    if (progList != null && !progList.isEmpty()) {
                         context.mProgListAdapter.updateData(progList);
                         PDPMInfo_t progInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
                         if (progInfo != null) {
                             context.updateProgListSelection(progInfo.ProgNo);
                         }
+                    } else {
+                        context.mProgListAdapter.updateData(new ArrayList<>());
                     }
-                });
-            }
+                }
+            });
+
         }
     }
 
@@ -938,7 +947,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
      * 隐藏当前录制时长显示
      */
     private void sendHideRecordTimeMsg(HandlerMsgModel msg) {
-        if (mRecording) {
+        if (isRecording()) {
             removeHideRecordTimeMsg();
             mRecordingLayout.setVisibility(View.VISIBLE);
             HandlerMsgManager.getInstance().sendMessage(mProgHandler, msg);
@@ -1237,18 +1246,26 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                     .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
                         @Override
                         public void onPositiveListener() {
-                            stopBookRecord();
+                            stopRecord();
                         }
                     }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
         }
     }
 
-    private void stopBookRecord() {
-        HSubforProg_t bookProg = SWBookingManager.getInstance().getReadyProgInfo();
-        if (bookProg != null) {
-            SWBookingManager.getInstance().cancelSubForPlay(0, SWBookingManager.getInstance().getCancelBookProg(bookProg));
+    private void stopRecord() {
+        if (SWBookingManager.getInstance().isRecording()) {
+            // cancel
+            if (mRecordingTimerTask != null && mRecordingTimerTask.countDownSeconds > 0) {
+                HSubforProg_t bookProg = SWBookingManager.getInstance().getReadyProgInfo();
+                if (bookProg != null) {
+                    SWBookingManager.getInstance().cancelSubForPlay(0, SWBookingManager.getInstance().getCancelBookProg(bookProg));
+                }
+            }
+        } else if (SWDJAPVRManager.getInstance().isRecording()) {
+            SWDJAPVRManager.getInstance().stopRecord();
         }
 
+        cancelRecordingTimer();
         setRecordFlagStop();
         mRecordingLayout.setVisibility(View.GONE);
         ToastUtils.showToast(R.string.toast_stop_record);
@@ -1417,16 +1434,25 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
 
         // PAUSE
         if (keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) {
+            if (!UsbManager.getInstance().isUsbExist()) {
+                ToastUtils.showToast(R.string.toast_no_storage_device);
+                return true;
+            }
             return true;
         }
 
         // STOP
-        if (keyCode == KeyEvent.KEYCODE_MEDIA_STOP) {
+        if (keyCode == KeyEvent.KEYCODE_MEDIA_STOP && SWDJAPVRManager.getInstance().isRecording()) {
+            stopRecord();
             return true;
         }
 
         // SHIFT
         if (keyCode == KeyEvent.KEYCODE_SHIFT_RIGHT) {
+            if (!UsbManager.getInstance().isUsbExist()) {
+                ToastUtils.showToast(R.string.toast_no_storage_device);
+                return true;
+            }
             return true;
         }
 
@@ -1452,13 +1478,25 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
 
         // RECORD
         if (keyCode == KeyEvent.KEYCODE_MEDIA_RECORD) {
-            // 当前处于录制，显示录制时长
-            sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
+            if (!UsbManager.getInstance().isUsbExist()) {
+                ToastUtils.showToast(R.string.toast_no_storage_device);
+                return true;
+            }
+
+            if (SWBookingManager.getInstance().isRecording()) {
+                showQuitRecordDialog(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_UNKNOWN));
+            } else {
+//                SWDJAPVRManager.getInstance().setRecording(true);
+//                SWDJAPVRManager.getInstance().startRecord();
+//                startRecordingTimer(-1);
+            }
+//            sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
             return true;
         }
 
         // TV/RADIO
         if (keyCode == KeyEvent.KEYCODE_TV_RADIO_SERVICE) {
+            if (isRecording()) stopRecord();
             SWPDBaseManager.getInstance().setCurrProgType(SWPDBaseManager.getInstance().getCurrProgType() == 1 ? 0 : 1, 0);
             updateProgList();
             playProg();
@@ -1719,7 +1757,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private boolean interceptEventWhenRecord(KeyEvent event) {
         int keyCode = event.getKeyCode();
-        return mRecording &&
+        return isRecording() &&
                 keyCode != KeyEvent.KEYCODE_TV_TELETEXT &&
                 keyCode != KEYCODE_TV_SUBTITLE &&
                 keyCode != KeyEvent.KEYCODE_MEDIA_AUDIO_TRACK &&
@@ -1742,11 +1780,15 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
 
     @Override
     public boolean onHomeHandleCallback() {
-        if (mRecording) {
-            stopBookRecord();
+        if (isRecording()) {
+            stopRecord();
             return true;
         }
         return super.onHomeHandleCallback();
+    }
+
+    private boolean isRecording() {
+        return SWBookingManager.getInstance().isRecording() || SWDJAPVRManager.getInstance().isRecording();
     }
 
     @Override

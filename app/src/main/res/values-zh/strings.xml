@@ -341,6 +341,7 @@
     <string name="toast_program_number_invalid">No This Channel</string>
     <string name="toast_start_record">Start Recording!</string>
     <string name="toast_stop_record">Record End!</string>
+    <string name="toast_no_storage_device">No Storage Device!</string>
 
     <string name="dialog_try_auto_diseqc">Scanning DiSEqC Port Index {0}.Try [{1}/{2}] times...</string>
     <string name="dialog_auto_diseqc_title">Information</string>

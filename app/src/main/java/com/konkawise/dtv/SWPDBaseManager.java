@@ -2,6 +2,7 @@ package com.konkawise.dtv;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.SparseArray;
 
 import com.sw.dvblib.SWPDBase;
@@ -299,8 +300,8 @@ public class SWPDBaseManager {
         if (allSatList != null && !allSatList.isEmpty()) {
             int[] favIndexArray = getFavIndexArray();
             for (int favIndex : favIndexArray) {
-                List<PDPMInfo_t> favList = getFavListByIndex(favIndex);
-                if (favList != null && !favList.isEmpty()) {
+                int favProgNum = SWPDBase.CreateInstance().getProgNumOfGroup(SWPDBase.SW_FAV_GROUP, favIndex);
+                if (favProgNum > 0) {
                     SatInfo_t favSatInfo = new SatInfo_t();
                     favSatInfo.SatIndex = favIndex; // 存入favIndex，方便切换时获取对应的喜爱分组频道列表展示
                     favSatInfo.sat_name = getFavoriteGroupNameByIndex(favIndex);

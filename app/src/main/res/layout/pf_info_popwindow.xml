@@ -219,7 +219,7 @@
             android:orientation="vertical">
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="300dp"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="3dp"
                 android:gravity="center_vertical">
@@ -229,12 +229,12 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="@string/i"
-                    android:textSize="11sp" />
+                    android:textSize="12sp" />
 
                 <ProgressBar
                     android:id="@+id/pb_strength"
                     style="@style/pfBar_mProgress_horizontal1"
-                    android:layout_width="236dp"
+                    android:layout_width="230dp"
                     android:layout_height="8dp"
                     android:layout_marginStart="@dimen/dp_6"
                     android:layout_marginLeft="@dimen/dp_6"
@@ -248,12 +248,12 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/dp_10"
                     android:layout_marginLeft="@dimen/dp_10"
-                    android:textSize="11sp"
-                    tools:ignore="SmallSp" />
+                    android:textSize="12sp"
+                    tools:text="90%" />
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="300dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="3dp"
                 android:gravity="center_vertical">
@@ -269,7 +269,7 @@
                 <ProgressBar
                     android:id="@+id/pb_quality"
                     style="@style/pfBar_mProgress_horizontal2"
-                    android:layout_width="236dp"
+                    android:layout_width="230dp"
                     android:layout_height="8dp"
                     android:layout_marginStart="@dimen/sp_6"
                     android:layout_marginLeft="@dimen/sp_6"
@@ -283,11 +283,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/dp_10"
                     android:layout_marginLeft="@dimen/dp_10"
-                    android:textSize="11sp"
-                    tools:ignore="SpUsage" />
+                    android:textSize="12sp"
+                    tools:text="100%" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-
-
 </LinearLayout>

@@ -18,6 +18,7 @@ import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
 
 public class SWBookingManager {
+    private boolean mRecording;
 
     private static class SWBookingManagerHolder {
         private static SWBookingManager INSTANCE = new SWBookingManager();
@@ -209,5 +210,13 @@ public class SWBookingManager {
             }
         }
         return bookList;
+    }
+
+    public void setRecording(boolean recording) {
+        this.mRecording = recording;
+    }
+
+    public boolean isRecording() {
+        return mRecording;
     }
 }
