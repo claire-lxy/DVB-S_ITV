@@ -7,6 +7,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
@@ -27,6 +28,7 @@ import com.konkawise.dtv.HandlerMsgManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWBookingManager;
 import com.konkawise.dtv.SWDJAPVRManager;
+import com.konkawise.dtv.SWDVBManager;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.SWPSearchManager;
@@ -56,6 +58,7 @@ import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
+import com.sw.dvblib.MsgCB;
 import com.sw.dvblib.SWDVB;
 
 import org.greenrobot.eventbus.EventBus;
@@ -329,14 +332,9 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         protected void handleMsg(Message msg) {
             Topmost context = mWeakReference.get();
             if (msg.what == MSG_PLAY_PROG) {
-                if (context.isProgLock()) {
-                    UIApiManager.getInstance().stopPlay(0);
-                    context.showPasswordDialog();
-                } else {
-                    context.dismissPasswordDialog();
-                    SWPDBaseManager.getInstance().setCurrProgNo(msg.arg1);
-                    UIApiManager.getInstance().startPlayProgNo(msg.arg1, 0);
-                }
+                context.dismissPasswordDialog();
+                SWPDBaseManager.getInstance().setCurrProgNo(msg.arg1);
+                UIApiManager.getInstance().startPlayProgNo(msg.arg1, 1);
             }
         }
     }
@@ -418,6 +416,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     @Override
     protected void onResume() {
         super.onResume();
+        SWDVBManager.getInstance().regMsgHandler(Looper.getMainLooper(), new PlayMsgCB());
         showSurface();
         updatePfBarInfo();
         startSmallHintBoxTimer();
@@ -430,6 +429,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     @Override
     protected void onPause() {
         super.onPause();
+        SWDVBManager.getInstance().regMsgHandler(null, null);
         cancelSmallHintBoxTimer();
         setRecordFlagStop();
         cancelRecordingTimer();
@@ -1135,7 +1135,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     }
 
     private void showPasswordDialog() {
-        if (mPasswordDialog != null && mPasswordDialog.getDialog() != null && mPasswordDialog.getDialog().isShowing())
+        if (mPasswordDialog != null && mPasswordDialog.getDialog() != null && mPasswordDialog.isVisible())
             return;
         if (!isProgLock()) return;
 
@@ -1294,8 +1294,8 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     }
 
     private void dismissPasswordDialog() {
-        if (mPasswordDialog != null && mPasswordDialog.getDialog() != null) {
-            mPasswordDialog.getDialog().dismiss();
+        if (mPasswordDialog != null && mPasswordDialog.getDialog() != null && mPasswordDialog.isVisible()) {
+            mPasswordDialog.dismiss();
             mPasswordDialog = null;
         }
     }
@@ -1438,7 +1438,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                 ToastUtils.showToast(R.string.toast_no_storage_device);
                 return true;
             }
-			Intent intent = new Intent();
+            Intent intent = new Intent();
             intent.setClass(this, RecordPlayer.class);
             intent.putExtra("from", RecordPlayer.FROM_TOPMOST);
             startActivity(intent);
@@ -1457,7 +1457,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                 ToastUtils.showToast(R.string.toast_no_storage_device);
                 return true;
             }
-			Intent intent = new Intent();
+            Intent intent = new Intent();
             intent.setClass(this, RecordPlayer.class);
             intent.putExtra("from", RecordPlayer.FROM_TOPMOST);
             startActivity(intent);
@@ -1822,6 +1822,21 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
             updateSatList();
             clearProgListCache(); // 更新频道列表前清空缓存
             updateProgList();
+        }
+    }
+
+    private class PlayMsgCB extends MsgCB {
+        @Override
+        public int ProgPlay_SWAV_ISLOCKED(int type, int progno, int progindex, int home) {
+            Log.i(TAG, "ProgPlay_SWAV_ISLOCKED---type:" + type + " progno:" + progno + " progindex:" + progindex + " home:" + home);
+            showPasswordDialog();
+            return super.ProgPlay_SWAV_ISLOCKED(type, progno, progindex, home);
+        }
+
+        @Override
+        public int ProgPlay_SWAV_ISLOCKTIME(int type, int progno, int progindex) {
+            Log.i(TAG, "ProgPlay_SWAV_ISLOCKTIME---type:" + type + " progno:" + progno + " progindex:" + progindex);
+            return super.ProgPlay_SWAV_ISLOCKTIME(type, progno, progindex);
         }
     }
 }
