@@ -5,6 +5,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
@@ -20,13 +21,12 @@ import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWBookingManager;
 import com.konkawise.dtv.SWDVBManager;
 import com.konkawise.dtv.SWEpgManager;
-import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.SWTimerManager;
 import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.UIApiManager;
-import com.konkawise.dtv.adapter.ChannleInfoAdapter;
-import com.konkawise.dtv.adapter.EPGListAdapter;
+import com.konkawise.dtv.adapter.EpgChannelListAdapter;
+import com.konkawise.dtv.adapter.EpgProgListAdapter;
 import com.konkawise.dtv.annotation.BookConflictType;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.bean.BookingModel;
@@ -36,12 +36,6 @@ import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.PasswordDialog;
-import com.konkawise.dtv.egphandle.EpgHandleCallback;
-import com.konkawise.dtv.egphandle.EpgHandleResult;
-import com.konkawise.dtv.egphandle.EpgHandler;
-import com.konkawise.dtv.egphandle.MenuLockEpgHandler;
-import com.konkawise.dtv.egphandle.ParentLockEpgHandler;
-import com.konkawise.dtv.egphandle.PayEpgHandler;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.view.TVListView;
 import com.konkawise.dtv.weaktool.RealTimeHelper;
@@ -125,7 +119,6 @@ public class EpgActivity extends BaseActivity {
         mCurrProgSelectPosition = position;
         mProgAdapter.setSelectPosition(mCurrProgSelectPosition);
         if (!mPasswordEntered) {
-//            epgHandle();
             epgItemSelect(1);
         } else {
             epgItemSelect(0);
@@ -158,8 +151,8 @@ public class EpgActivity extends BaseActivity {
         }
     }
 
-    private EPGListAdapter mProgAdapter;
-    private ChannleInfoAdapter mEpgChannelAdapter;
+    private EpgProgListAdapter mProgAdapter;
+    private EpgChannelListAdapter mEpgChannelAdapter;
     private EpgMsgHandler mEpgMsgHandler;
     private Timer mUpdateChannelTimer;
 
@@ -170,7 +163,6 @@ public class EpgActivity extends BaseActivity {
      */
     private boolean mPasswordDialogShowing;
     private PasswordDialog mPasswordDialog;
-    private EpgHandler mEpgHandler;
 
     private Button[] mDates;
     private int mCurrProgSelectPosition;
@@ -181,6 +173,8 @@ public class EpgActivity extends BaseActivity {
     private boolean mBookEpg;
 
     private LoadEpgChannelRunnable mLoadEpgChannelRunnable;
+    // 外层key为频道号progNo，内层key为日期id
+    private SparseArray<SparseArray<List<EpgEvent_t>>> mEpgChannelCacheMap = new SparseArray<>();
 
     private RealTimeHelper mRealTimeHelper;
 
@@ -258,7 +252,6 @@ public class EpgActivity extends BaseActivity {
 
         mLoadEpgChannelRunnable = new LoadEpgChannelRunnable(this, R.id.btn_date_0);
 
-        initEpgHandler();
         initCurrentDate();
         initEpgChannelDate();
         initEpgList();
@@ -270,7 +263,6 @@ public class EpgActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         SWDVBManager.getInstance().regMsgHandler(Looper.getMainLooper(), new PlayMsgCB());
-        // 刷新booking展示
         updateEpgChannel(mCurrentFocusDate);
         startUpdateRealTime();
     }
@@ -280,27 +272,20 @@ public class EpgActivity extends BaseActivity {
         super.onPause();
         SWDVBManager.getInstance().regMsgHandler(null, null);
         mRealTimeHelper.stop();
+        UIApiManager.getInstance().stopPlay(0);
     }
 
     @Override
     protected void onDestroy() {
-        // 将booking刷入flash
         if (mBookEpg) SWBookingManager.getInstance().updateDBase(0);
 
         dismissPasswordDialog();
-        removeLoadEpgRunnable();
         if (mUpdateChannelTimer != null) {
             mUpdateChannelTimer.cancel();
             mUpdateChannelTimer.purge();
             mUpdateChannelTimer = null;
         }
         super.onDestroy();
-    }
-
-    private void initEpgHandler() {
-        EpgHandler channelLockEpgHandler = new ParentLockEpgHandler(null);
-        EpgHandler menuLockEpgHandler = new MenuLockEpgHandler(channelLockEpgHandler);
-        mEpgHandler = new PayEpgHandler(menuLockEpgHandler);
     }
 
     private void initCurrentDate() {
@@ -334,7 +319,7 @@ public class EpgActivity extends BaseActivity {
     }
 
     private void initEpgList() {
-        mProgAdapter = new EPGListAdapter(this, new ArrayList<>());
+        mProgAdapter = new EpgProgListAdapter(this, new ArrayList<>());
         mLvProgList.setAdapter(mProgAdapter);
         mLvProgList.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -370,7 +355,7 @@ public class EpgActivity extends BaseActivity {
     }
 
     private void initEpgChannelList() {
-        mEpgChannelAdapter = new ChannleInfoAdapter(this, new ArrayList<>());
+        mEpgChannelAdapter = new EpgChannelListAdapter(this, new ArrayList<>());
         mLvEpgChannel.setAdapter(mEpgChannelAdapter);
 
         mLvEpgChannel.setOnKeyListener(new View.OnKeyListener() {
@@ -404,6 +389,9 @@ public class EpgActivity extends BaseActivity {
                 UIApiManager.getInstance().setSurface(holder.getSurface());
                 UIApiManager.getInstance().setWindowSize(0, 0,
                         getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
+                if (mProgAdapter.getCount() > 0 && mCurrProgSelectPosition < mProgAdapter.getCount()) {
+                    notifyPlayProg(mPasswordEntered ? 0 : 1);
+                }
             }
 
             @Override
@@ -635,28 +623,6 @@ public class EpgActivity extends BaseActivity {
         notifyPlayProg(condition);
     }
 
-    private void epgHandle() {
-        PDPMInfo_t pdpmInfo_t = mProgAdapter.getItem(mCurrProgSelectPosition);
-        mEpgHandler.epgHandle(pdpmInfo_t, new EpgHandleCallback() {
-            @Override
-            public void handleResult(EpgHandleResult epgHandleResult) {
-                if (epgHandleResult.isEpgHandled()) {
-                    // 如果节目是可播放的，当前对话框在显示，取消显示
-                    dismissPasswordDialog();
-
-                    epgItemSelect(0);
-                } else {
-                    if (epgHandleResult.getEpgHandleType() == EpgHandleResult.PARENT_LOCK_EPG) {
-                        if (mPasswordDialog == null) {
-                            UIApiManager.getInstance().stopPlay(0);
-                            showEnterPasswordDialog();
-                        }
-                    }
-                }
-            }
-        });
-    }
-
     private void updateDateFocus() {
         for (int i = 0; i < mDates.length; i++) {
             if (i == mCurrentFocusDate) {
@@ -679,22 +645,17 @@ public class EpgActivity extends BaseActivity {
         reloadEpgChannel(id);
     }
 
-    private void removeLoadEpgRunnable() {
-        if (mLoadEpgChannelRunnable != null) {
-            ThreadPoolManager.getInstance().remove(mLoadEpgChannelRunnable);
-        }
-    }
-
     private void reloadEpgChannel(int id) {
-        removeLoadEpgRunnable();
-
-        if (mLoadEpgChannelRunnable != null) {
-            mLoadEpgChannelRunnable.updateId(id);
+        if (mLoadEpgChannelRunnable != null && mProgAdapter.getCount() > 0 && mCurrProgSelectPosition < mProgAdapter.getCount()) {
+            ThreadPoolManager.getInstance().remove(mLoadEpgChannelRunnable);
+            mLoadEpgChannelRunnable.progNo = mProgAdapter.getItem(mCurrProgSelectPosition).ProgNo;
+            mLoadEpgChannelRunnable.focusBtnId = id;
             ThreadPoolManager.getInstance().execute(mLoadEpgChannelRunnable);
         }
     }
 
     private static class LoadEpgChannelRunnable extends WeakRunnable<EpgActivity> {
+        int progNo;
         int focusBtnId;
 
         LoadEpgChannelRunnable(EpgActivity view, int focusBtnId) {
@@ -702,20 +663,33 @@ public class EpgActivity extends BaseActivity {
             this.focusBtnId = focusBtnId;
         }
 
-        void updateId(int id) {
-            focusBtnId = id;
-        }
-
         @Override
         protected void loadBackground() {
             EpgActivity context = mWeakReference.get();
-            List<EpgEvent_t> epgBookingList = UIApiManager.getInstance().getCurrProgSchInfo(context.getFocusDateIndex(focusBtnId));
+
+            SparseArray<List<EpgEvent_t>> epgChannelMap = context.mEpgChannelCacheMap.get(progNo);
+            if (epgChannelMap == null) {
+                epgChannelMap = new SparseArray<>();
+                List<EpgEvent_t> epgChannelList = UIApiManager.getInstance().getCurrProgSchInfo(context.getFocusDateIndex(focusBtnId));
+                if (epgChannelList == null) epgChannelList = new ArrayList<>();
+                epgChannelMap.put(focusBtnId, epgChannelList);
+                context.mEpgChannelCacheMap.put(progNo, epgChannelMap);
+            } else {
+                List<EpgEvent_t> epgChannelList = epgChannelMap.get(focusBtnId);
+                if (epgChannelList == null) {
+                    epgChannelList = UIApiManager.getInstance().getCurrProgSchInfo(context.getFocusDateIndex(focusBtnId));
+                    if (epgChannelList == null) epgChannelList = new ArrayList<>();
+                    epgChannelMap.put(focusBtnId, epgChannelList);
+                }
+            }
+
             context.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (epgBookingList != null) {
+                    List<EpgEvent_t> epgChannelList = context.mEpgChannelCacheMap.get(progNo).get(focusBtnId);
+                    if (epgChannelList != null && !epgChannelList.isEmpty()) {
                         context.notifyHideEpgLoading(new HandlerMsgModel(EpgMsgHandler.MSG_HIDE_EPG_LOADING)); // 有数据，epg加载隐藏
-                        context.mEpgChannelAdapter.updateData(epgBookingList);
+                        context.mEpgChannelAdapter.updateData(epgChannelList);
                     } else {
                         context.mEpgChannelAdapter.updateData(new ArrayList<>());
                     }

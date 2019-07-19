@@ -15,10 +15,10 @@ import vendor.konka.hardware.dtvmanager.V1_0.EpgEvent_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
 
 
-public class ChannleInfoAdapter extends BaseListViewAdapter<EpgEvent_t> {
+public class EpgChannelListAdapter extends BaseListViewAdapter<EpgEvent_t> {
 
-    public ChannleInfoAdapter(Context context, List<EpgEvent_t> datas) {
-        super(context, datas, R.layout.channel_info_item);
+    public EpgChannelListAdapter(Context context, List<EpgEvent_t> datas) {
+        super(context, datas, R.layout.epg_channel_list_item);
     }
 
     @Override

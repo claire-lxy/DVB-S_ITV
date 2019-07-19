@@ -4,9 +4,7 @@ import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;

@@ -11,12 +11,12 @@ import java.util.List;
 
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 
-public class EPGListAdapter extends BaseListViewAdapter<PDPMInfo_t> {
+public class EpgProgListAdapter extends BaseListViewAdapter<PDPMInfo_t> {
     private int mSelectPosition;
     private boolean mFocus;
 
-    public EPGListAdapter(Context context, List<PDPMInfo_t> datas) {
-        super(context, datas, R.layout.epg_listview_item);
+    public EpgProgListAdapter(Context context, List<PDPMInfo_t> datas) {
+        super(context, datas, R.layout.epg_prog_list_item);
     }
 
     @Override
