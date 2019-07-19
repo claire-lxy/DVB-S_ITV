@@ -58,7 +58,7 @@ public class UIApiManager {
     public void startPlayProgNo(int progNo, int condition) {
 //        UIAPI.CreateInstance().startPlayProgNo(progNo, condition);
         SWPDBaseManager.getInstance().setCurrProgNo(progNo);
-        SWFta.CreateInstance().nowPlayCurrProg(0);
+        SWFta.CreateInstance().nowPlayCurrProg(condition);
 
     }
 

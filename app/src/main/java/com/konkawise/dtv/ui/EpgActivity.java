@@ -1,6 +1,7 @@
 package com.konkawise.dtv.ui;
 
 import android.content.Intent;
+import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
@@ -17,6 +18,7 @@ import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.HandlerMsgManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWBookingManager;
+import com.konkawise.dtv.SWDVBManager;
 import com.konkawise.dtv.SWEpgManager;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
@@ -46,6 +48,7 @@ import com.konkawise.dtv.weaktool.RealTimeHelper;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
+import com.sw.dvblib.MsgCB;
 import com.sw.dvblib.SWBooking;
 
 import java.text.MessageFormat;
@@ -122,9 +125,10 @@ public class EpgActivity extends BaseActivity {
         mCurrProgSelectPosition = position;
         mProgAdapter.setSelectPosition(mCurrProgSelectPosition);
         if (!mPasswordEntered) {
-            epgHandle();
+//            epgHandle();
+            epgItemSelect(1);
         } else {
-            epgItemSelect();
+            epgItemSelect(0);
         }
     }
 
@@ -158,12 +162,8 @@ public class EpgActivity extends BaseActivity {
     private ChannleInfoAdapter mEpgChannelAdapter;
     private EpgMsgHandler mEpgMsgHandler;
     private Timer mUpdateChannelTimer;
-    /**
-     * 如果开启了MenuLock但能进入Epg，说明已经输入过密码，不再需要再输入密码，mPasswordEntered=true
-     * 如果没有开启MenuLock，但开启了ParentLock，遇到添加了ParentLock的Epg则需要输入一次密码
-     * 如果MenuLock和ParentLock都没有开启，默认为已输入密码mPasswordEntered=true
-     */
-    private boolean mPasswordEntered = true;
+
+    private boolean mPasswordEntered = false;
     /**
      * 创建dialog前ListView的item会回调onItemSelect()调用egpHandle()
      * 添加标志位防止setOnKeyListener时同时回调监听到遥控器上下按键
@@ -199,9 +199,10 @@ public class EpgActivity extends BaseActivity {
             EpgActivity context = mWeakReference.get();
             switch (msg.what) {
                 case MSG_PLAY_SELECT_PROG:
+                    int conditon = msg.arg1;
                     int ProgNo = context.mProgAdapter.getItem(context.mCurrProgSelectPosition).ProgNo;
                     SWPDBaseManager.getInstance().setCurrProgNo(ProgNo);
-                    UIApiManager.getInstance().startPlayProgNo(ProgNo, 0);
+                    UIApiManager.getInstance().startPlayProgNo(ProgNo, conditon);
                     break;
                 case MSG_PROG_CHANGE_LOAD:
                     context.updateEpgChannel(msg.arg1);
@@ -268,6 +269,7 @@ public class EpgActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        SWDVBManager.getInstance().regMsgHandler(Looper.getMainLooper(), new PlayMsgCB());
         // 刷新booking展示
         updateEpgChannel(mCurrentFocusDate);
         startUpdateRealTime();
@@ -276,6 +278,7 @@ public class EpgActivity extends BaseActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        SWDVBManager.getInstance().regMsgHandler(null, null);
         mRealTimeHelper.stop();
     }
 
@@ -298,10 +301,6 @@ public class EpgActivity extends BaseActivity {
         EpgHandler channelLockEpgHandler = new ParentLockEpgHandler(null);
         EpgHandler menuLockEpgHandler = new MenuLockEpgHandler(channelLockEpgHandler);
         mEpgHandler = new PayEpgHandler(menuLockEpgHandler);
-
-        mPasswordEntered = SWFtaManager.getInstance().isOpenParentLock();
-        // 如果开启了MenuLock，遇到需要ParentLock的Epg就不再需要再输入密码了
-        mPasswordEntered = SWFtaManager.getInstance().isOpenMenuLock();
     }
 
     private void initCurrentDate() {
@@ -548,6 +547,8 @@ public class EpgActivity extends BaseActivity {
 
     private void showEnterPasswordDialog() {
         // 对话框显示，监听遥控器上下按键让用户可以切换到没有ParentLock的节目时取消弹框
+        if (mPasswordDialog != null && mPasswordDialog.isVisible())
+            return;
         mPasswordDialog = new PasswordDialog()
                 .setOnKeyListener(new PasswordDialog.OnKeyListener() {
                     @Override
@@ -579,7 +580,7 @@ public class EpgActivity extends BaseActivity {
                         if (isValid) {
                             mPasswordEntered = true;
                             mPasswordDialog = null;
-                            epgItemSelect();
+                            epgItemSelect(0);
                         } else {
                             ToastUtils.showToast(R.string.toast_invalid_password);
                         }
@@ -597,7 +598,7 @@ public class EpgActivity extends BaseActivity {
     }
 
     private void dismissPasswordDialog() {
-        if (mPasswordDialog != null && mPasswordDialog.getDialog().isShowing()) {
+        if (mPasswordDialog != null && mPasswordDialog.isVisible()) {
             mPasswordDialog.dismiss();
             mPasswordDialog = null;
         }
@@ -609,7 +610,6 @@ public class EpgActivity extends BaseActivity {
             mCurrProgSelectPosition = mProgAdapter.getCount() - 1;
         }
         epgListFocus();
-        notifyProgChange();
     }
 
     private void lastSelectEpgItem() {
@@ -618,7 +618,6 @@ public class EpgActivity extends BaseActivity {
             mCurrProgSelectPosition = 0;
         }
         epgListFocus();
-        notifyProgChange();
     }
 
     private void epgListFocus() {
@@ -627,12 +626,13 @@ public class EpgActivity extends BaseActivity {
         mProgAdapter.setSelectPosition(mCurrProgSelectPosition);
     }
 
-    private void epgItemSelect() {
+    private void epgItemSelect(int condition) {
+        dismissPasswordDialog();
         mCurrentFocusDate = 0;
         updateDateFocus();
 
         notifyProgChange();
-        notifyPlayProg();
+        notifyPlayProg(condition);
     }
 
     private void epgHandle() {
@@ -644,7 +644,7 @@ public class EpgActivity extends BaseActivity {
                     // 如果节目是可播放的，当前对话框在显示，取消显示
                     dismissPasswordDialog();
 
-                    epgItemSelect();
+                    epgItemSelect(0);
                 } else {
                     if (epgHandleResult.getEpgHandleType() == EpgHandleResult.PARENT_LOCK_EPG) {
                         if (mPasswordDialog == null) {
@@ -788,10 +788,10 @@ public class EpgActivity extends BaseActivity {
     /**
      * 发送消息通知切换频道播放
      */
-    private void notifyPlayProg() {
+    private void notifyPlayProg(int condition) {
         HandlerMsgManager.getInstance().removeMessage(mEpgMsgHandler, EpgMsgHandler.MSG_PLAY_SELECT_PROG);
         HandlerMsgManager.getInstance().sendMessage(mEpgMsgHandler,
-                new HandlerMsgModel(EpgMsgHandler.MSG_PLAY_SELECT_PROG, EPG_CHANGE_PLAY_PROG_DELAY));
+                new HandlerMsgModel(EpgMsgHandler.MSG_PLAY_SELECT_PROG, condition, EPG_CHANGE_PLAY_PROG_DELAY));
     }
 
     /**
@@ -814,5 +814,20 @@ public class EpgActivity extends BaseActivity {
         }
 
         return super.onKeyDown(keyCode, event);
+    }
+
+    private class PlayMsgCB extends MsgCB {
+        @Override
+        public int ProgPlay_SWAV_ISLOCKED(int type, int progno, int progindex, int home) {
+            Log.i(TAG, "ProgPlay_SWAV_ISLOCKED---type:" + type + " progno:" + progno + " progindex:" + progindex + " home:" + home);
+            showEnterPasswordDialog();
+            return super.ProgPlay_SWAV_ISLOCKED(type, progno, progindex, home);
+        }
+
+        @Override
+        public int ProgPlay_SWAV_ISLOCKTIME(int type, int progno, int progindex) {
+            Log.i(TAG, "ProgPlay_SWAV_ISLOCKTIME---type:" + type + " progno:" + progno + " progindex:" + progindex);
+            return super.ProgPlay_SWAV_ISLOCKTIME(type, progno, progindex);
+        }
     }
 }
