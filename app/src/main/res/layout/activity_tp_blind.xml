@@ -131,7 +131,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/dp_5"
-                    android:layout_marginLeft="@dimen/dp_5" />
+                    android:layout_marginLeft="@dimen/dp_5"
+                    android:text="0"/>
 
                 <TextView
                     android:id="@+id/radio_tp"
@@ -148,7 +149,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="@dimen/dp_5"
                     android:layout_marginLeft="@dimen/dp_5"
-                    android:visibility="invisible" />
+                    android:visibility="invisible"
+                    android:text="0"/>
             </LinearLayout>
 
             <LinearLayout
