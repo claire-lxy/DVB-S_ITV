@@ -13,4 +13,6 @@
     <color name="dialog_bg">#000000</color>
 
     <color name="color_4D4D4D">#4D4D4D</color>
+
+    <color name="holo_red_light">@android:color/holo_red_light</color>
 </resources>

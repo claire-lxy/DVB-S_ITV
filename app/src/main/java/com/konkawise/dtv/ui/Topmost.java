@@ -1438,6 +1438,10 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                 ToastUtils.showToast(R.string.toast_no_storage_device);
                 return true;
             }
+			Intent intent = new Intent();
+            intent.setClass(this, RecordPlayer.class);
+            intent.putExtra("from", RecordPlayer.FROM_TOPMOST);
+            startActivity(intent);
             return true;
         }
 
@@ -1453,6 +1457,10 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                 ToastUtils.showToast(R.string.toast_no_storage_device);
                 return true;
             }
+			Intent intent = new Intent();
+            intent.setClass(this, RecordPlayer.class);
+            intent.putExtra("from", RecordPlayer.FROM_TOPMOST);
+            startActivity(intent);
             return true;
         }
 

@@ -65,6 +65,10 @@
         <activity android:name="com.konkawise.dtv.ui.T2ManualSearchActivity" />
         <activity android:name="com.konkawise.dtv.ui.PVRSettingActivity" />
         <activity android:name="com.konkawise.dtv.ui.RecordListActivity" />
+        <activity
+            android:name="com.konkawise.dtv.ui.RecordPlayer"
+            android:windowSoftInputMode="adjustUnspecified|stateHidden"
+            android:configChanges="orientation|keyboardHidden" />
 
         <provider
             android:name="com.konkawise.dtv.utils.ChannelLockProvider"

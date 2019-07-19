@@ -173,6 +173,10 @@
     <string name="edit_satellite_name">卫星名称</string>
     <string name="edit_favorite_group_name">喜爱分组名称</string>
 
+    <!--dialog seek time-->
+    <string name="seek_time_tip">Input the seek time:</string>
+    <string name="input_invalid">Input is invalid!</string>
+
     <!--dialog_save_or_cancel.xml-->
 
     <!-- dialog back -->
