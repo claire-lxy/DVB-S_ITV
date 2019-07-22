@@ -5,11 +5,16 @@
     <string name="topmost_no_signal">Interrupt Signal</string>
     <string name="topmost_program_empty">The program list is empty. Please search</string>
 
-    <string name="scan_tp_tv">TV：</string>
+    <string name="scan_tp_tv">TV: </string>
 
-    <string name="audio_track_left">The left channel</string>
-    <string name="audio_track_right">The right channel</string>
+    <string name="audio">Audio</string>
+    <string name="audio_track">Audio Track</string>
+    <string name="audio_language">Audio Language</string>
     <string name="audio_track_stereo">Stereo</string>
+    <string name="audio_track_left_simple">Left</string>
+    <string name="audio_track_right_simple">Right</string>
+    <string name="audio_track_left">The Left Channel</string>
+    <string name="audio_track_right">The Right Channel</string>
 
     <string name="epg_event_playing">Playing</string>
     <string name="dialog_favorite_title">Favorite Type</string>
@@ -69,6 +74,7 @@
 
     <!--DVB setting-->
     <string name="general_setting">General Settings</string>
+    <string name="t2_setting">T/T2 Settings</string>
     <string name="subtitles_setting">Subtitle Display</string>
     <string name="timeout">P/F Bar Timeout</string>
     <string name="aspect_ratio_mode">Aspect Ratio Mode</string>
@@ -76,9 +82,18 @@
     <string name="first_audio_language">First Audio Language</string>
     <string name="second_audio_language">Second Audio Language</string>
     <string name="language">English</string>
-    <string name="teletext">Teletext Language</string>
+    <string name="teletext_language">Teletext Language</string>
     <string name="subtitle_language">Subtitle Language</string>
     <string name="switch_channel_block">Blank</string>
+    <string name="scart">SCART</string>
+    <string name="scart_mode_rgb">RGB</string>
+    <string name="scart_mode_cvbs">CVBS</string>
+    <string name="auto_start">Auto Start</string>
+
+    <!--sub/txt-->
+    <string name="subtitle">Subtitle</string>
+    <string name="teletext">Teletext</string>
+    <string name="default_off">off</string>
 
     <!--TV-->
     <string name="tv">TV</string>

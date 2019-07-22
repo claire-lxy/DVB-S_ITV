@@ -69,6 +69,7 @@
             android:name="com.konkawise.dtv.ui.RecordPlayer"
             android:windowSoftInputMode="adjustUnspecified|stateHidden"
             android:configChanges="orientation|keyboardHidden" />
+        <activity android:name="com.konkawise.dtv.ui.T2SettingsActivity" />
 
         <provider
             android:name="com.konkawise.dtv.utils.ChannelLockProvider"

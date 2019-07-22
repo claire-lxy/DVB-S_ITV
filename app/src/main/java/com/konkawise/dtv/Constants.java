@@ -40,6 +40,10 @@ public class Constants {
     public static final int DISEQC_C = 2;
     public static final int DISEQC_D = 3;
 
+    public static final String SUBTITLE_NAME = "subtitleName";
+    public static final String SUBTITLE_ORG_TYPE = "subtitleOrgType";
+    public static final String SUBTITLE_TYPE = "subtitleType";
+
     // msg callback id
     public static final int SCAN_CALLBACK_MSG_ID = 0x8001;
     public static final int BOOK_CALLBACK_MSG_ID = 0x8002;
@@ -68,5 +72,7 @@ public class Constants {
     public interface PrefsKey {
         // language
         String LOCALE_TYPE = "localeType";
+
+        String FIRST_LAUNCH = "firstLaunch";
     }
 }

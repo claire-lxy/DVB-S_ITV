@@ -286,4 +286,15 @@
         <item>4</item>
     </integer-array>
 
+    <string-array name="scart">
+        <item>@string/scart_mode_rgb</item>
+        <item>@string/scart_mode_cvbs</item>
+    </string-array>
+
+    <string-array name="audio_track">
+        <item>@string/audio_track_stereo</item>
+        <item>@string/audio_track_left_simple</item>
+        <item>@string/audio_track_right_simple</item>
+    </string-array>
+
 </resources>

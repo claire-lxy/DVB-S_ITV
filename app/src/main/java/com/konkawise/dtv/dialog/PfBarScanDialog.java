@@ -174,7 +174,7 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface {
     }
 
     public void updateVolume(int volume) {
-        mTvSoundNum.setText(String.valueOf(volume));
+//      mTvSoundNum.setText(String.valueOf(volume));
     }
 
     private void updateProgInfo() {
@@ -185,6 +185,7 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface {
             mTvSubtitleNum.setText(String.valueOf(SWFtaManager.getInstance().getSubtitleNum(currProgInfo.ServID)));
             mTvTeletxtNum.setText(String.valueOf(SWFtaManager.getInstance().getTeletxtNum(currProgInfo.ServID)));
             mTvRateNum.setText("0");
+            mTvSoundNum.setText(String.valueOf(currProgInfo.audioDB.audioName.size()));
 
             mIvProgFav.setVisibility(currProgInfo.FavFlag == 1 ? View.VISIBLE : View.INVISIBLE);
             mIvProgLock.setVisibility(currProgInfo.LockFlag == 1 ? View.VISIBLE : View.INVISIBLE);
@@ -207,7 +208,7 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface {
     }
 
     public void updatePfInformation() {
-        mTvSoundNum.setText(String.valueOf(mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC)));
+//      mTvSoundNum.setText(String.valueOf(mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC)));
         startCheckSignal();
         startRealTime();
         updateProgInfo();

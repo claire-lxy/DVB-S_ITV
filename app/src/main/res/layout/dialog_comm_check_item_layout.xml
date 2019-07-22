@@ -23,5 +23,6 @@
         android:id="@+id/lv_content"
         android:layout_width="match_parent"
         android:layout_height="196dp"
+        android:layout_marginBottom="10dp"
         android:listSelector="@drawable/dvb_btn_selector" />
 </LinearLayout>

@@ -20,6 +20,7 @@ import butterknife.OnClick;
  * 更新描述    ${TODO}
  */
 public class DTVSettingActivity extends BaseActivity {
+
     @OnClick(R.id.rl_general_settings)
     void generalSetting() {
 //        new InstallationSelectDialog().setOnInstallationSelectListener(new InstallationSelectDialog.OnInstallationSelectListener() {
@@ -33,6 +34,11 @@ public class DTVSettingActivity extends BaseActivity {
         Intent intent = new Intent(this, GeneralSettingsActivity.class);
         startActivity(intent);
     }
+
+	@OnClick(R.id.rl_t2_settings)
+	void t2Setting() {
+		startActivity(new Intent(this, T2SettingsActivity.class));
+	}
 
     @OnClick(R.id.rl_parental_control)
     void parentalControl() {

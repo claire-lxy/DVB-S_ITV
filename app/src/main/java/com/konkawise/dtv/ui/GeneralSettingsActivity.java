@@ -6,7 +6,6 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.base.BaseActivity;
@@ -21,19 +20,31 @@ import butterknife.BindView;
 import butterknife.OnClick;
 
 public class GeneralSettingsActivity extends BaseActivity {
+
     private static final String TAG = "KKDVB_" + GeneralSettingsActivity.class.getSimpleName();
     private static final int ITEM_ANTENNA_POWER = 1;
     private static final int ITEM_AREA_SETTING = 2;
     private static final int ITEM_LCN = 3;
-    private static final int ITEM_SUBTITLE_DISPLAY = 4;
-    private static final int ITEM_PFBAR_TIMEOUT = 5;
-    private static final int ITEM_ASPECT_RATIO = 6;
-    private static final int ITEM_SWITCH_CHANNEL = 7;
-    private static final int ITEM_FIRST_AUDIO_LANGUAGE = 8;
-    private static final int ITEM_SECOND_AUDIO_LANGUAGE = 9;
-    private static final int ITEM_TELETEXT_LANGUAGE = 10;
-    private static final int ITEM_SUBTITLE_LANGUAGE = 11;
+    private static final int ITEM_SCART = 4;
+    private static final int ITEM_SUBTITLE_DISPLAY = 5;
+    private static final int ITEM_PFBAR_TIMEOUT = 6;
+    private static final int ITEM_ASPECT_RATIO = 7;
+    private static final int ITEM_SWITCH_CHANNEL = 8;
+    private static final int ITEM_FIRST_AUDIO_LANGUAGE = 9;
+    private static final int ITEM_SECOND_AUDIO_LANGUAGE = 10;
+    private static final int ITEM_TELETEXT_LANGUAGE = 11;
+    private static final int ITEM_SUBTITLE_LANGUAGE = 12;
+    private static final int ITEM_AUTO_START = 13;
 
+    @BindView(R.id.iv_scart_left)
+    ImageView mIvScartLeft;
+
+    @BindView(R.id.tv_scart)
+    TextView mTvScart;
+
+    @BindView(R.id.iv_scart_right)
+    ImageView mIvScartRight;
+    
     @BindView(R.id.item_antenna_power)
     RelativeLayout mItemAntennaPower;
 
@@ -142,6 +153,18 @@ public class GeneralSettingsActivity extends BaseActivity {
     @BindView(R.id.iv_subtitle_language_right)
     ImageView mIvSubtitleLanguageRight;
 
+    @BindView(R.id.iv_auto_start_left)
+    ImageView mIvAutoStartLeft;
+
+    @BindView(R.id.tv_auto_start)
+    TextView mTvAutoStart;
+
+    @BindView(R.id.iv_auto_start_right)
+    ImageView mIvAutoStartRight;
+
+    @BindArray(R.array.scart)
+    String[] mScartArray;
+    
     @BindArray(R.array.antenna_power)
     String[] mAntennaPowerArray;
 
@@ -163,6 +186,11 @@ public class GeneralSettingsActivity extends BaseActivity {
     @BindArray(R.array.language)
     String[] mLanguageArray;
 
+    @OnClick(R.id.item_scart)
+    void scart() {
+        showGeneralSettingDialog(getString(R.string.scart), Arrays.asList(mScartArray), scartPosition);
+    }
+    
     @OnClick(R.id.item_antenna_power)
     void antennaPower() {
         showGeneralSettingDialog(getString(R.string.antenna_power), Arrays.asList(mGeneralSwitchArray), antennaPowerPosition);
@@ -210,7 +238,7 @@ public class GeneralSettingsActivity extends BaseActivity {
 
     @OnClick(R.id.item_teletext_language)
     void teletextLanguage() {
-        showGeneralSettingDialog(getString(R.string.teletext), Arrays.asList(mLanguageArray), teletextLanguagePosition);
+        showGeneralSettingDialog(getString(R.string.teletext_language), Arrays.asList(mLanguageArray), teletextLanguagePosition);
     }
 
     @OnClick(R.id.item_subtitle_language)
@@ -218,7 +246,13 @@ public class GeneralSettingsActivity extends BaseActivity {
         showGeneralSettingDialog(getString(R.string.subtitle_language), Arrays.asList(mLanguageArray), subtitleLanguagePosition);
     }
 
-    private int mCurrentSelectItem = ITEM_SUBTITLE_DISPLAY;
+    @OnClick(R.id.item_auto_start)
+    void autoStart() {
+         showGeneralSettingDialog(getString(R.string.auto_start), Arrays.asList(mGeneralSwitchArray), autoStartPosition);
+    }
+    
+    private int mCurrentSelectItem = ITEM_SCART;
+    private int scartPosition;
     private int antennaPowerPosition;
     private int areaSettingPosition;
     private int lcnPosition;
@@ -230,6 +264,7 @@ public class GeneralSettingsActivity extends BaseActivity {
     private int secondAudioLanguagePosition;
     private int teletextLanguagePosition;
     private int subtitleLanguagePosition;
+    private int autoStartPosition;
 
     private int[] arrayPfBarTime = new int[]{5, 8, 10};
 
@@ -248,6 +283,8 @@ public class GeneralSettingsActivity extends BaseActivity {
             mTvAreaSetting.setText(mAreaSettingArray[areaSettingPosition]);
             mTvLcn.setText(mGeneralSwitchArray[lcnPosition]);
         }
+
+        mTvScart.setText(mScartArray[scartPosition]);
         mTvSubtitleDisplay.setText(mGeneralSwitchArray[subtitleDisplayPosition]);
         mTvPfTimeout.setText(mPfTimeoutArray[pfTimeoutPosition]);
         mTvAspectRadio.setText(mAspectRatioModeArray[aspectRatioPosition]);
@@ -256,6 +293,7 @@ public class GeneralSettingsActivity extends BaseActivity {
         mTvSecondAudioLanguage.setText(mLanguageArray[secondAudioLanguagePosition]);
         mTvTeletextLanguage.setText(mLanguageArray[teletextLanguagePosition]);
         mTvSubtitleLanguage.setText(mLanguageArray[subtitleLanguagePosition]);
+        mTvAutoStart.setText(mGeneralSwitchArray[autoStartPosition]);
     }
 
     private void initIntent() {
@@ -267,10 +305,12 @@ public class GeneralSettingsActivity extends BaseActivity {
     }
 
     private boolean isT2Setting() {
-        return getIntent().getBooleanExtra(Constants.IntentKey.INTENT_T2_SETTING, false);
+//        return getIntent().getBooleanExtra(Constants.IntentKey.INTENT_T2_SETTING, false);
+        return false;
     }
 
     private void initData() {
+        scartPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_TV_SCART.ordinal()));
         antennaPowerPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_AntennaPower.ordinal()));
         subtitleDisplayPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleDisplay.ordinal()));
         pfTimeoutPosition = getSelectPosition(new int[]{5, 8, 10},SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_PD_dispalytime.ordinal()));
@@ -280,6 +320,7 @@ public class GeneralSettingsActivity extends BaseActivity {
         secondAudioLanguagePosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_AudioLanguage1.ordinal()));
         teletextLanguagePosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_cLanguage.ordinal()));
         subtitleLanguagePosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleLanguage.ordinal()));
+        autoStartPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_ShowSubtitle.ordinal()));
     }
 
     private int getSelectPosition(int[] datas, int value) {
@@ -300,6 +341,12 @@ public class GeneralSettingsActivity extends BaseActivity {
                     @Override
                     public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
                         switch (mCurrentSelectItem) {
+                            case ITEM_SCART:
+                                mTvScart.setText(checkContent);
+                                scartPosition = Arrays.asList(mScartArray).indexOf(checkContent);
+                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_TV_SCART.ordinal(), scartPosition);
+                                SWFta.CreateInstance().setRGBorCVBS(scartPosition);
+                                break;
                             case ITEM_ANTENNA_POWER:
                                 mTvAntennaPower.setText(checkContent);
                                 antennaPowerPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
@@ -353,6 +400,11 @@ public class GeneralSettingsActivity extends BaseActivity {
                                 subtitleLanguagePosition = Arrays.asList(mLanguageArray).indexOf(checkContent);
                                 SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleLanguage.ordinal(), subtitleLanguagePosition);
                                 break;
+                            case ITEM_AUTO_START:
+                                mTvAutoStart.setText(checkContent);
+                                autoStartPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
+                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_ShowSubtitle.ordinal(), autoStartPosition);
+                                break;
                             default:
                                 break;
                         }
@@ -375,11 +427,13 @@ public class GeneralSettingsActivity extends BaseActivity {
                     case ITEM_SECOND_AUDIO_LANGUAGE:
                     case ITEM_TELETEXT_LANGUAGE:
                     case ITEM_SUBTITLE_LANGUAGE:
+                    case ITEM_AUTO_START:
                         mCurrentSelectItem--;
                         break;
                 }
             } else {
                 switch (mCurrentSelectItem) {
+					case ITEM_SUBTITLE_DISPLAY:
                     case ITEM_PFBAR_TIMEOUT:
                     case ITEM_ASPECT_RATIO:
                     case ITEM_SWITCH_CHANNEL:
@@ -387,6 +441,7 @@ public class GeneralSettingsActivity extends BaseActivity {
                     case ITEM_SECOND_AUDIO_LANGUAGE:
                     case ITEM_TELETEXT_LANGUAGE:
                     case ITEM_SUBTITLE_LANGUAGE:
+                    case ITEM_AUTO_START:
                         mCurrentSelectItem--;
                         break;
                 }
@@ -413,6 +468,7 @@ public class GeneralSettingsActivity extends BaseActivity {
                 }
             } else {
                 switch (mCurrentSelectItem) {
+                    case ITEM_SCART:
                     case ITEM_SUBTITLE_DISPLAY:
                     case ITEM_PFBAR_TIMEOUT:
                     case ITEM_ASPECT_RATIO:
@@ -420,6 +476,7 @@ public class GeneralSettingsActivity extends BaseActivity {
                     case ITEM_FIRST_AUDIO_LANGUAGE:
                     case ITEM_SECOND_AUDIO_LANGUAGE:
                     case ITEM_TELETEXT_LANGUAGE:
+                    case ITEM_SUBTITLE_LANGUAGE:
                         mCurrentSelectItem++;
                         break;
                 }
@@ -430,6 +487,14 @@ public class GeneralSettingsActivity extends BaseActivity {
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
             switch (mCurrentSelectItem) {
+                case ITEM_SCART:
+                    if (--scartPosition < 0)
+                        scartPosition = mScartArray.length - 1;
+                    mTvScart.setText(mScartArray[scartPosition]);
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_TV_SCART.ordinal(), scartPosition);
+                    SWFta.CreateInstance().setRGBorCVBS(scartPosition);
+                    break;
+
                 case ITEM_ANTENNA_POWER:
                     if (--antennaPowerPosition < 0)
                         antennaPowerPosition = mGeneralSwitchArray.length - 1;
@@ -501,11 +566,27 @@ public class GeneralSettingsActivity extends BaseActivity {
                     mTvSubtitleLanguage.setText(mLanguageArray[subtitleLanguagePosition]);
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleLanguage.ordinal(), subtitleLanguagePosition);
                     break;
+
+				case ITEM_AUTO_START:
+					if (--autoStartPosition < 0)
+						autoStartPosition = mGeneralSwitchArray.length - 1;
+					mTvAutoStart.setText(mGeneralSwitchArray[autoStartPosition]);
+					SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleDisplay.ordinal(), autoStartPosition);
+					break;
             }
         }
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
             switch (mCurrentSelectItem) {
+
+				case ITEM_SCART:
+					if (++scartPosition > mScartArray.length - 1)
+						scartPosition = 0;
+					mTvScart.setText(mScartArray[scartPosition]);
+					SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_TV_SCART.ordinal(), scartPosition);
+					SWFta.CreateInstance().setRGBorCVBS(scartPosition);
+					break;
+
                 case ITEM_ANTENNA_POWER:
                     if (++antennaPowerPosition > mGeneralSwitchArray.length - 1)
                         antennaPowerPosition = 0;
@@ -577,6 +658,13 @@ public class GeneralSettingsActivity extends BaseActivity {
                     mTvSubtitleLanguage.setText(mLanguageArray[subtitleLanguagePosition]);
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleLanguage.ordinal(), subtitleLanguagePosition);
                     break;
+
+				case ITEM_AUTO_START:
+					if (++autoStartPosition > mGeneralSwitchArray.length - 1)
+						autoStartPosition = 0;
+					mTvAutoStart.setText(mGeneralSwitchArray[autoStartPosition]);
+					SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleDisplay.ordinal(), autoStartPosition);
+					break;
             }
         }
 
@@ -587,6 +675,7 @@ public class GeneralSettingsActivity extends BaseActivity {
         antennaPowerItemFocusChange();
         areaSettingItemFocusChange();
         lcnItemFocusChange();
+		itemChange(ITEM_SCART, mIvScartLeft, mIvScartRight, mTvScart);
         itemChange(ITEM_SUBTITLE_DISPLAY, mIvSubtitleDisplayLeft, mIvSubtitleDisplayRight, mTvSubtitleDisplay);
         itemChange(ITEM_PFBAR_TIMEOUT, mIvPfTimeoutLeft, mIvPfTimeoutRight, mTvPfTimeout);
         itemChange(ITEM_ASPECT_RATIO, mIvAspectRadioLeft, mIvAspectRadioRight, mTvAspectRadio);
@@ -595,6 +684,7 @@ public class GeneralSettingsActivity extends BaseActivity {
         itemChange(ITEM_SECOND_AUDIO_LANGUAGE, mIvSecondAudioLanguageLeft, mIvSecondAudioLanguageRight, mTvSecondAudioLanguage);
         itemChange(ITEM_TELETEXT_LANGUAGE, mIvTeletextLanguageLeft, mIvTeletextLanguageRight, mTvTeletextLanguage);
         itemChange(ITEM_SUBTITLE_LANGUAGE, mIvSubtitleLanguageLeft, mIvSubtitleLanguageRight, mTvSubtitleLanguage);
+		itemChange(ITEM_AUTO_START, mIvAutoStartLeft, mIvAutoStartRight, mTvAutoStart);
     }
 
     private void antennaPowerItemFocusChange() {

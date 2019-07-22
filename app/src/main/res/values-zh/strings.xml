@@ -7,6 +7,11 @@
 
     <string name="scan_tp_tv">TV：</string>
 
+    <string name="audio">Audio</string>
+    <string name="audio_track">Audio Track</string>
+    <string name="audio_language">Audio Language</string>
+    <string name="audio_track_left_simple">左声道</string>
+    <string name="audio_track_right_simple">右声道</string>
     <string name="audio_track_left">左声道</string>
     <string name="audio_track_right">右声道</string>
     <string name="audio_track_stereo">立体声</string>
@@ -69,6 +74,7 @@
 
     <!--DVB setting-->
     <string name="general_setting">General Setting</string>
+	<string name="t2_setting">T/T2 Settings</string>
     <string name="subtitles_setting">Subtitle Display</string>
     <string name="timeout">P/F Bar Timeout</string>
     <string name="aspect_ratio_mode">Aspect ratio mode</string>
@@ -76,9 +82,18 @@
     <string name="first_audio_language">First Audio Language</string>
     <string name="second_audio_language">Second Audio Language</string>
     <string name="language">English</string>
-    <string name="teletext">Teletext Language</string>
+    <string name="teletext_language">Teletext Language</string>
     <string name="subtitle_language">Subtitle Language</string>
     <string name="switch_channel_block">Blank</string>
+	<string name="scart">SCART</string>
+    <string name="scart_mode_rgb">RGB</string>
+    <string name="scart_mode_cvbs">CVBS</string>
+    <string name="auto_start">Auto Start</string>
+
+    <!--sub/txt-->
+    <string name="subtitle">Subtitle</string>
+    <string name="teletext">Teletext</string>
+    <string name="default_off">off</string>
 
     <!--TV-->
     <string name="tv">电视</string>
