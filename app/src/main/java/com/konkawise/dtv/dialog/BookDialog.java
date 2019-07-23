@@ -36,6 +36,8 @@ import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
 public class BookDialog extends BaseDialogFragment {
     public static final String TAG = "BookDialog";
 
+    private static final String DEFAULT_TIME = "00";
+
     private static final int ITEM_BUTTON_FOCUS = -1;
     private static final int ITEM_TYPE = 1;
     private static final int ITEM_MODE = 2;
@@ -132,17 +134,17 @@ public class BookDialog extends BaseDialogFragment {
     @BindView(R.id.iv_book_date_weekly_right)
     ImageView mIvBookDateWeeklyRight;
 
-    @BindView(R.id.rl_book_date_monthly)
-    ViewGroup mItemBookDateMonthly;
+//    @BindView(R.id.rl_book_date_monthly)
+//    ViewGroup mItemBookDateMonthly;
 
-    @BindView(R.id.iv_book_date_monthly_left)
-    ImageView mIvBookDateMonthlyLeft;
+//    @BindView(R.id.iv_book_date_monthly_left)
+//    ImageView mIvBookDateMonthlyLeft;
 
-    @BindView(R.id.tv_book_date_monthly)
-    TextView mTvBookDateMonthly;
-
-    @BindView(R.id.iv_book_date_monthly_right)
-    ImageView mIvBookDateMonthlyRight;
+//    @BindView(R.id.tv_book_date_monthly)
+//    TextView mTvBookDateMonthly;
+//
+//    @BindView(R.id.iv_book_date_monthly_right)
+//    ImageView mIvBookDateMonthlyRight;
 
     @BindView(R.id.ll_book_date_edit)
     ViewGroup mItemBookDateEdit;
@@ -227,6 +229,12 @@ public class BookDialog extends BaseDialogFragment {
             mBookModel.bookInfo.day = startTime.Day;
             mBookModel.bookInfo.hour = startTime.Hour;
             mBookModel.bookInfo.minute = startTime.Minute;
+
+            mBookModel.bookInfo.tsid = mBookModel.progInfo.Freq;
+            mBookModel.bookInfo.servid = mBookModel.progInfo.ServID;
+            // 需要添加默认值，否则接口调用会出现崩溃情况
+            mBookModel.bookInfo.name = SWBookingManager.DEFAULT_BOOK_CONTENT;
+            mBookModel.bookInfo.content = SWBookingManager.DEFAULT_BOOK_CONTENT;
 
             switch (mCurrModePosition) {
                 case BOOK_MODE_WEEKLY:
@@ -400,7 +408,7 @@ public class BookDialog extends BaseDialogFragment {
         if (!hasFocus) {
             String startHour = mEtBookStartTimeHour.getText().toString();
             if (TextUtils.isEmpty(startHour)) {
-                mEtBookStartTimeHour.setText("0");
+                mEtBookStartTimeHour.setText(DEFAULT_TIME);
             }
         }
     }
@@ -410,7 +418,7 @@ public class BookDialog extends BaseDialogFragment {
         if (!hasFocus) {
             String startMinute = mEtBookStartTimeMinute.getText().toString();
             if (TextUtils.isEmpty(startMinute)) {
-                mEtBookStartTimeMinute.setText("0");
+                mEtBookStartTimeMinute.setText(DEFAULT_TIME);
             }
         }
     }
@@ -420,7 +428,7 @@ public class BookDialog extends BaseDialogFragment {
         if (!hasFocus) {
             String endHour = mEtBookEndTimeHour.getText().toString();
             if (TextUtils.isEmpty(endHour)) {
-                mEtBookEndTimeHour.setText("0");
+                mEtBookEndTimeHour.setText(DEFAULT_TIME);
             }
         }
     }
@@ -430,7 +438,7 @@ public class BookDialog extends BaseDialogFragment {
         if (!hasFocus) {
             String endMinute = mEtBookEndTimeMinute.getText().toString();
             if (TextUtils.isEmpty(endMinute)) {
-                mEtBookEndTimeMinute.setText("0");
+                mEtBookEndTimeMinute.setText(DEFAULT_TIME);
             }
         }
     }
@@ -490,8 +498,8 @@ public class BookDialog extends BaseDialogFragment {
         mTvBookDateWeekly.setText(getBookDayOfWeekText());
         mCurrBookDayOfWeekPosition = getPosition(mTvBookDateWeekly.getText().toString(), mBookDateWeeklyArray);
 
-        mTvBookDateMonthly.setText(getBookDayOfMonthText());
-        mCurrBookDayOfMonthPosition = mBookModel == null ? 1 : mBookModel.bookInfo.day;
+//        mTvBookDateMonthly.setText(getBookDayOfMonthText());
+//        mCurrBookDayOfMonthPosition = mBookModel == null ? 1 : mBookModel.bookInfo.day;
 
         mEtBookStartTimeHour.setText(getBookStartHourText());
         mEtBookStartTimeMinute.setText(getBookStartMinuteText());
@@ -507,8 +515,6 @@ public class BookDialog extends BaseDialogFragment {
 
         mEtBookEndTimeHour.setOnKeyListener(new EditKeyListener(mEtBookEndTimeHour, mEtBookEndTimeMinute, mEtBookEndTimeMinute));
         mEtBookEndTimeMinute.setOnKeyListener(new EditKeyListener(mEtBookEndTimeMinute, mEtBookEndTimeHour, mEtBookEndTimeHour));
-
-        initBookEdit();
 
         notifyItemFocusChange();
         notifyBookDateItemChange();
@@ -572,17 +578,17 @@ public class BookDialog extends BaseDialogFragment {
 
     private String getBookYearText() {
         // weekly和monthly可能调整后会更改，在确定时获取最新的年份
-        return mBookModel == null || mCurrModePosition == BOOK_MODE_WEEKLY || mCurrModePosition == BOOK_MODE_MONTHLY ? "" : String.valueOf(mBookModel.bookInfo.year);
+        return mBookModel == null || mCurrModePosition == BOOK_MODE_WEEKLY || mCurrModePosition == BOOK_MODE_MONTHLY ? String.valueOf(TimeUtils.getYear()) : String.valueOf(mBookModel.bookInfo.year);
     }
 
     private String getBookMonthText() {
         // weekly和monthly可能调整后会更改，在确定时获取最新的月份
-        return mBookModel == null || mCurrModePosition == BOOK_MODE_WEEKLY || mCurrModePosition == BOOK_MODE_MONTHLY ? "" : String.valueOf(mBookModel.bookInfo.month);
+        return mBookModel == null || mCurrModePosition == BOOK_MODE_WEEKLY || mCurrModePosition == BOOK_MODE_MONTHLY ? String.valueOf(TimeUtils.getMonth()) : String.valueOf(mBookModel.bookInfo.month);
     }
 
     private String getBookDayText() {
         // weekly和monthly可能调整后会更改，在确定时获取最新的日期
-        return mBookModel == null || mCurrModePosition == BOOK_MODE_WEEKLY || mCurrModePosition == BOOK_MODE_MONTHLY ? "" : String.valueOf(mBookModel.bookInfo.day);
+        return mBookModel == null || mCurrModePosition == BOOK_MODE_WEEKLY || mCurrModePosition == BOOK_MODE_MONTHLY ? String.valueOf(TimeUtils.getDay()) : String.valueOf(mBookModel.bookInfo.day);
     }
 
     private String getBookDayOfWeekText() {
@@ -600,15 +606,15 @@ public class BookDialog extends BaseDialogFragment {
     }
 
     private String getBookStartHourText() {
-        return mBookModel == null ? "" : String.valueOf(mBookModel.bookInfo.hour);
+        return mBookModel == null ? String.valueOf(TimeUtils.getHour()) : String.valueOf(mBookModel.bookInfo.hour);
     }
 
     private String getBookStartMinuteText() {
-        return mBookModel == null ? "" : String.valueOf(mBookModel.bookInfo.minute);
+        return mBookModel == null ? String.valueOf(TimeUtils.getMinute() + 1) : String.valueOf(mBookModel.bookInfo.minute);
     }
 
     private String getBookEndHourText() {
-        if (mBookModel == null) return "";
+        if (mBookModel == null) return String.valueOf(TimeUtils.getHour());
         int[] endDateArr = TimeUtils.getEndDate(mBookModel.bookInfo.year, mBookModel.bookInfo.month, mBookModel.bookInfo.day,
                 mBookModel.bookInfo.hour, mBookModel.bookInfo.minute, mBookModel.bookInfo.lasttime);
         if (endDateArr == null) return "";
@@ -616,7 +622,7 @@ public class BookDialog extends BaseDialogFragment {
     }
 
     private String getBookEndMinuteText() {
-        if (mBookModel == null) return "";
+        if (mBookModel == null) return String.valueOf(TimeUtils.getMinute() + 1);
         int[] endDateArr = TimeUtils.getEndDate(mBookModel.bookInfo.year, mBookModel.bookInfo.month, mBookModel.bookInfo.day,
                 mBookModel.bookInfo.hour, mBookModel.bookInfo.minute, mBookModel.bookInfo.lasttime);
         if (endDateArr == null) return "";
@@ -630,21 +636,6 @@ public class BookDialog extends BaseDialogFragment {
             }
         }
         return 0;
-    }
-
-    private void initBookEdit() {
-        if (mBookModel == null) {
-            mEtBookDateYear.setText(String.valueOf(TimeUtils.getYear()));
-            mEtBookDateMonth.setText(String.valueOf(TimeUtils.getMonth()));
-            mEtBookDateDay.setText(String.valueOf(TimeUtils.getDay()));
-            mEtBookStartTimeHour.setText(String.valueOf(TimeUtils.getHour()));
-            mEtBookStartTimeMinute.setText(String.valueOf(TimeUtils.getMinute()));
-
-            if (mCurrTypePosition == BOOK_TYPE_RECORD) {
-                mEtBookEndTimeHour.setText(String.valueOf(TimeUtils.getHour()));
-                mEtBookEndTimeMinute.setText(String.valueOf(TimeUtils.getMinute()));
-            }
-        }
     }
 
     private class EditKeyListener implements View.OnKeyListener {
@@ -869,11 +860,11 @@ public class BookDialog extends BaseDialogFragment {
                     break;
 
                 case ITEM_DATE:
-                    if (mCurrModePosition == BOOK_MODE_MONTHLY) {
-                        if (--mCurrBookDayOfMonthPosition <= 0)
-                            mCurrBookDayOfMonthPosition = mMaxBookDayOfMonth;
-                        mTvBookDateMonthly.setText(MessageFormat.format(getStrings(R.string.book_date_day), String.valueOf(mCurrBookDayOfMonthPosition)));
-                    }
+//                    if (mCurrModePosition == BOOK_MODE_MONTHLY) {
+//                        if (--mCurrBookDayOfMonthPosition <= 0)
+//                            mCurrBookDayOfMonthPosition = mMaxBookDayOfMonth;
+//                        mTvBookDateMonthly.setText(MessageFormat.format(getStrings(R.string.book_date_day), String.valueOf(mCurrBookDayOfMonthPosition)));
+//                    }
 
                     if (mCurrModePosition == BOOK_MODE_WEEKLY) {
                         if (--mCurrBookDayOfWeekPosition < 0)
@@ -913,11 +904,11 @@ public class BookDialog extends BaseDialogFragment {
                     break;
 
                 case ITEM_DATE:
-                    if (mCurrModePosition == BOOK_MODE_MONTHLY) {
-                        if (++mCurrBookDayOfMonthPosition > mMaxBookDayOfMonth)
-                            mCurrBookDayOfMonthPosition = 1;
-                        mTvBookDateMonthly.setText(MessageFormat.format(getStrings(R.string.book_date_day), String.valueOf(mCurrBookDayOfMonthPosition)));
-                    }
+//                    if (mCurrModePosition == BOOK_MODE_MONTHLY) {
+//                        if (++mCurrBookDayOfMonthPosition > mMaxBookDayOfMonth)
+//                            mCurrBookDayOfMonthPosition = 1;
+//                        mTvBookDateMonthly.setText(MessageFormat.format(getStrings(R.string.book_date_day), String.valueOf(mCurrBookDayOfMonthPosition)));
+//                    }
 
                     if (mCurrModePosition == BOOK_MODE_WEEKLY) {
                         if (++mCurrBookDayOfWeekPosition >= mBookDateWeeklyArray.length)
@@ -1027,7 +1018,7 @@ public class BookDialog extends BaseDialogFragment {
         if (mCurrModePosition == BOOK_MODE_ONCE) {
             mItemBookDate.setVisibility(View.VISIBLE);
             mItemBookDateEdit.setVisibility(View.VISIBLE);
-            mItemBookDateMonthly.setVisibility(View.GONE);
+//            mItemBookDateMonthly.setVisibility(View.GONE);
 //            mTvBookDateWeekly.setVisibility(View.GONE);
             mItemBookDateWeekly.setVisibility(View.GONE);
             mTvBookDateTitle.setText(getStrings(R.string.book_date));
@@ -1040,7 +1031,7 @@ public class BookDialog extends BaseDialogFragment {
         if (mCurrModePosition == BOOK_MODE_WEEKLY) {
             mItemBookDate.setVisibility(View.VISIBLE);
             mItemBookDateEdit.setVisibility(View.GONE);
-            mItemBookDateMonthly.setVisibility(View.GONE);
+//            mItemBookDateMonthly.setVisibility(View.GONE);
 //            mTvBookDateWeekly.setVisibility(View.VISIBLE);
             mItemBookDateWeekly.setVisibility(View.VISIBLE);
             mTvBookDateTitle.setText(getStrings(R.string.book_week));
@@ -1051,9 +1042,9 @@ public class BookDialog extends BaseDialogFragment {
             mItemBookDateEdit.setVisibility(View.GONE);
 //            mTvBookDateWeekly.setVisibility(View.GONE);
             mItemBookDateWeekly.setVisibility(View.GONE);
-            mItemBookDateMonthly.setVisibility(View.VISIBLE);
+//            mItemBookDateMonthly.setVisibility(View.VISIBLE);
             mTvBookDateTitle.setText(getStrings(R.string.book_day));
-            mTvBookDateMonthly.setText(MessageFormat.format(getStrings(R.string.book_date_day), String.valueOf(mCurrBookDayOfMonthPosition)));
+//            mTvBookDateMonthly.setText(MessageFormat.format(getStrings(R.string.book_date_day), String.valueOf(mCurrBookDayOfMonthPosition)));
         }
     }
 
@@ -1083,9 +1074,9 @@ public class BookDialog extends BaseDialogFragment {
 
     private void bookDateItemFocusChange() {
         itemChange(ITEM_DATE, mItemBookDate, null, null, null);
-        if (mCurrModePosition == BOOK_MODE_MONTHLY) {
-            itemChange(ITEM_DATE, null, mIvBookDateMonthlyLeft, mIvBookDateMonthlyRight, mTvBookDateMonthly);
-        }
+//        if (mCurrModePosition == BOOK_MODE_MONTHLY) {
+//            itemChange(ITEM_DATE, null, mIvBookDateMonthlyLeft, mIvBookDateMonthlyRight, mTvBookDateMonthly);
+//        }
 
         if (mCurrModePosition == BOOK_MODE_WEEKLY) {
             itemChange(ITEM_DATE, null, mIvBookDateWeeklyLeft, mIvBookDateWeeklyRight, mTvBookDateWeekly);

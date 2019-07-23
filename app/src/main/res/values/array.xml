@@ -201,7 +201,7 @@
         <item>@string/book_once</item>
         <item>@string/book_daily</item>
         <item>@string/book_weekly</item>
-        <item>@string/book_monthly</item>
+        <!--<item>@string/book_monthly</item>-->
     </string-array>
 
     <string-array name="book_channel_type">

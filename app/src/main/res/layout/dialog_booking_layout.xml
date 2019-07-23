@@ -309,42 +309,42 @@
         </RelativeLayout>
 
         <!-- monthly -->
-        <RelativeLayout
-            android:id="@+id/rl_book_date_monthly"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:visibility="gone">
+        <!--<RelativeLayout-->
+            <!--android:id="@+id/rl_book_date_monthly"-->
+            <!--android:layout_width="0dp"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_gravity="center_vertical"-->
+            <!--android:layout_weight="1"-->
+            <!--android:visibility="gone">-->
 
-            <ImageView
-                android:id="@+id/iv_book_date_monthly_left"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
-                android:layout_centerVertical="true"
-                android:src="@drawable/triangle_left"
-                android:visibility="invisible"
-                tools:ignore="ContentDescription" />
+            <!--<ImageView-->
+                <!--android:id="@+id/iv_book_date_monthly_left"-->
+                <!--android:layout_width="@dimen/dp_8"-->
+                <!--android:layout_height="@dimen/dp_8"-->
+                <!--android:layout_centerVertical="true"-->
+                <!--android:src="@drawable/triangle_left"-->
+                <!--android:visibility="invisible"-->
+                <!--tools:ignore="ContentDescription" />-->
 
-            <TextView
-                android:id="@+id/tv_book_date_monthly"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/dp_12"
-                android:layout_marginRight="@dimen/dp_12"
-                android:gravity="center" />
+            <!--<TextView-->
+                <!--android:id="@+id/tv_book_date_monthly"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:layout_marginLeft="@dimen/dp_12"-->
+                <!--android:layout_marginRight="@dimen/dp_12"-->
+                <!--android:gravity="center" />-->
 
-            <ImageView
-                android:id="@+id/iv_book_date_monthly_right"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:src="@drawable/triangle_right"
-                android:visibility="invisible"
-                tools:ignore="ContentDescription" />
-        </RelativeLayout>
+            <!--<ImageView-->
+                <!--android:id="@+id/iv_book_date_monthly_right"-->
+                <!--android:layout_width="@dimen/dp_8"-->
+                <!--android:layout_height="@dimen/dp_8"-->
+                <!--android:layout_alignParentEnd="true"-->
+                <!--android:layout_alignParentRight="true"-->
+                <!--android:layout_centerVertical="true"-->
+                <!--android:src="@drawable/triangle_right"-->
+                <!--android:visibility="invisible"-->
+                <!--tools:ignore="ContentDescription" />-->
+        <!--</RelativeLayout>-->
 
         <!-- date -->
         <LinearLayout
