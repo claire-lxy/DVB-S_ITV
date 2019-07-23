@@ -3,6 +3,7 @@ package com.konkawise.dtv.ui;
 import android.content.Intent;
 import android.os.Looper;
 import android.os.Message;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseArray;
@@ -36,14 +37,15 @@ import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.PasswordDialog;
+import com.konkawise.dtv.utils.TimeUtils;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.view.TVListView;
 import com.konkawise.dtv.weaktool.RealTimeHelper;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
-import com.sw.dvblib.MsgCB;
 import com.sw.dvblib.SWBooking;
+import com.sw.dvblib.msg.cb.AVMsgCB;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -142,6 +144,7 @@ public class EpgActivity extends BaseActivity {
             if (mDateIds[i] == v.getId()) {
                 mCurrentFocusDate = i;
                 updateDateFocus();
+                updateCurrentDate();
                 break;
             }
         }
@@ -177,6 +180,8 @@ public class EpgActivity extends BaseActivity {
     private SparseArray<SparseArray<List<EpgEvent_t>>> mEpgChannelCacheMap = new SparseArray<>();
 
     private RealTimeHelper mRealTimeHelper;
+
+    private AVMsgCB mPlayMsgCB = new PlayMsgCB();
 
     private static class EpgMsgHandler extends WeakHandler<EpgActivity> {
         static final int MSG_PLAY_SELECT_PROG = 0;
@@ -232,7 +237,15 @@ public class EpgActivity extends BaseActivity {
             context.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    context.showLoadingEpg();
+                    SparseArray<List<EpgEvent_t>> epgChannelListMap = context.mEpgChannelCacheMap.get(pdpm.ProgNo);
+                    if (epgChannelListMap != null) {
+                        List<EpgEvent_t> epgChannelList = epgChannelListMap.get(context.mCurrentFocusDate);
+                        if (epgChannelList == null || epgChannelList.isEmpty()) {
+                            context.showLoadingEpg();
+                        }
+                    } else {
+                        context.showLoadingEpg();
+                    }
                 }
             });
         }
@@ -262,7 +275,7 @@ public class EpgActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        SWDVBManager.getInstance().regMsgHandler(Looper.getMainLooper(), new PlayMsgCB());
+        SWDVBManager.getInstance().regMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, Looper.getMainLooper(), mPlayMsgCB);
         updateEpgChannel(mCurrentFocusDate);
         startUpdateRealTime();
     }
@@ -270,9 +283,9 @@ public class EpgActivity extends BaseActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        SWDVBManager.getInstance().regMsgHandler(null, null);
+        SWDVBManager.getInstance().unRegMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, mPlayMsgCB);
         mRealTimeHelper.stop();
-        UIApiManager.getInstance().stopPlay(0);
+        UIApiManager.getInstance().stopPlay(0); // 跳转或销毁界面要停止播放
     }
 
     @Override
@@ -292,6 +305,26 @@ public class EpgActivity extends BaseActivity {
         SysTime_t sysTime = SWTimerManager.getInstance().getSysTime();
         if (sysTime != null) {
             String date = sysTime.Year + "-" + sysTime.Month + "-" + sysTime.Day;
+            mTvCurrentDate.setText(date);
+        }
+    }
+
+    private void updateCurrentDate() {
+        SysTime_t sysTime = SWTimerManager.getInstance().getSysTime();
+        if (sysTime != null) {
+            int maxDayOfMonth = TimeUtils.getDayOfMonthByYearAndMonth(sysTime.Year, sysTime.Month);
+            int year = sysTime.Year;
+            int month = sysTime.Month;
+            int day = sysTime.Day + mCurrentFocusDate;
+            if (day > maxDayOfMonth) {
+                day = 1;
+                month++;
+                if (month > 12) {
+                    month = 1;
+                    year++;
+                }
+            }
+            String date = year + "-" + month + "-" + day;
             mTvCurrentDate.setText(date);
         }
     }
@@ -419,14 +452,23 @@ public class EpgActivity extends BaseActivity {
         mRealTimeHelper.start();
     }
 
+    /**
+     * Epg book对话框
+     */
     private void showEpgBookingDialog() {
         if (mCurrProgSelectPosition >= mProgAdapter.getCount() && mCurrEpgSelectPosition >= mEpgChannelAdapter.getCount())
             return;
 
         PDPMInfo_t progInfo = mProgAdapter.getItem(mCurrProgSelectPosition);
         EpgEvent_t eventInfo = mEpgChannelAdapter.getItem(mCurrEpgSelectPosition);
+
+        if (SWTimerManager.getInstance().isProgramPlaying(eventInfo)) {
+            ToastUtils.showToast(R.string.toast_program_playing);
+            return;
+        }
+
         final HSubforProg_t bookInfo = SWBookingManager.getInstance().progIsSubFored(progInfo.Sat, progInfo.TsID, progInfo.ServID, eventInfo.uiEventId);
-        boolean isBooked = bookInfo != null;
+        boolean isBooked = bookInfo != null && (bookInfo.schtype == SWBooking.BookSchType.PLAY.ordinal() || bookInfo.schtype == SWBooking.BookSchType.RECORD.ordinal());
 
         List<String> epgBookCheckContent = Arrays.asList(isBooked ? mEpgBookedArray : mEpgBookingArray);
         new CommCheckItemDialog()
@@ -436,11 +478,11 @@ public class EpgActivity extends BaseActivity {
                 .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
                     @Override
                     public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
-                        HSubforProg_t newBookInfo = null;
-                        if (bookInfo == null) {
+                        HSubforProg_t newBookInfo;
+                        int bookSchType = getBookCheckSchType(checkContent);
+                        if (!isBooked) {
                             SysTime_t startTimeInfo = SWTimerManager.getInstance().getStartTime(eventInfo);
                             SysTime_t endTimeInfo = SWTimerManager.getInstance().getEndTime(eventInfo);
-                            int bookSchType = getBookCheckSchType(checkContent);
                             EpgBookParameterModel parameterModel = new EpgBookParameterModel();
                             parameterModel.progInfo = progInfo;
                             parameterModel.eventInfo = eventInfo;
@@ -449,10 +491,14 @@ public class EpgActivity extends BaseActivity {
                             parameterModel.schtype = bookSchType;
                             parameterModel.schway = SWBooking.BookWay.EPG.ordinal();
                             newBookInfo = SWBookingManager.getInstance().newBookProg(parameterModel);
+                        } else {
+                            newBookInfo = bookInfo;
+                            newBookInfo.schtype = bookSchType;
                         }
                         Log.i(TAG, "new book info = " + newBookInfo);
 
                         HSubforProg_t conflictBookInfo = SWBookingManager.getInstance().conflictCheck(newBookInfo, 0);
+                        Log.i(TAG, "conflict book info = " + conflictBookInfo);
                         int conflictType = SWBookingManager.getInstance().getConflictType(conflictBookInfo);
                         switch (conflictType) {
                             case Constants.BOOK_CONFLICT_NONE: // 当前参数的book没有冲突，正常添加删除
@@ -473,6 +519,7 @@ public class EpgActivity extends BaseActivity {
     private void bookHandle(@BookConflictType int conflictType, int bookSchType, HSubforProg_t bookInfo, HSubforProg_t conflictBookInfo) {
         if (bookSchType == SWBooking.BookSchType.NONE.ordinal()) { // 取消book
             SWBookingManager.getInstance().deleteProg(bookInfo);
+            updateItemBookTag(bookSchType);
         } else if (bookSchType == SWBooking.BookSchType.PLAY.ordinal()
                 || bookSchType == SWBooking.BookSchType.RECORD.ordinal()) { // 添加book
             if (conflictType == Constants.BOOK_CONFLICT_REPLACE) {
@@ -483,18 +530,15 @@ public class EpgActivity extends BaseActivity {
                 BookingModel newBookModel = new BookingModel();
                 newBookModel.bookInfo = bookInfo;
                 newBookModel.progInfo = SWPDBaseManager.getInstance().getProgInfoByServiceId(bookInfo.servid, bookInfo.tsid, bookInfo.sat);
-                showReplaceBookDialog(conflictBookModel, newBookModel);
+                showReplaceBookDialog(bookSchType, conflictBookModel, newBookModel);
             } else {
                 SWBookingManager.getInstance().addProg(conflictType, conflictBookInfo, bookInfo);
+                updateItemBookTag(bookSchType);
             }
         }
-        // 刷新列表，等待接口提供EpgEvent_t字段判断显示或隐藏图标
-        // EpgEvent_t eventInfo = mEpgChannelAdapter.getItem(mCurrEpgSelectPosition);
-        // eventInfo.xxx = play/record/none;
-        // mAdapter.updateData(mCurrEpgSelectPosition, eventInfo);
     }
 
-    private void showReplaceBookDialog(BookingModel conflictBookModel, BookingModel newBookModel) {
+    private void showReplaceBookDialog(int bookSchType, BookingModel conflictBookModel, BookingModel newBookModel) {
         new CommTipsDialog()
                 .title(getString(R.string.dialog_book_conflict_title))
                 .content(MessageFormat.format(getString(R.string.dialog_book_conflict_content),
@@ -504,9 +548,45 @@ public class EpgActivity extends BaseActivity {
                     @Override
                     public void onPositiveListener() {
                         SWBookingManager.getInstance().replaceProg(conflictBookModel.bookInfo, newBookModel.bookInfo);
-                        // 刷新列表，等待接口提供EpgEvent_t字段判断显示或隐藏图标
+                        updateItemBookTag(bookSchType);
                     }
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
+    }
+
+    /**
+     * 更新Epg book标志图标
+     */
+    private void updateItemBookTag(int bookSchType) {
+        if (mEpgChannelAdapter.getCount() > 0) {
+            EpgEvent_t item = mEpgChannelAdapter.getItem(mCurrEpgSelectPosition);
+            if (item != null) {
+                if (bookSchType == SWBooking.BookSchType.NONE.ordinal()) {
+                    item.schtype = (byte) SWBooking.BookSchType.NONE.ordinal();
+                } else if (bookSchType == SWBooking.BookSchType.PLAY.ordinal()) {
+                    item.schtype = (byte) SWBooking.BookSchType.PLAY.ordinal();
+                } else if (bookSchType == SWBooking.BookSchType.RECORD.ordinal()) {
+                    item.schtype = (byte) SWBooking.BookSchType.RECORD.ordinal();
+                }
+                mEpgChannelAdapter.updateData(mCurrEpgSelectPosition, item);
+            }
+        }
+
+        clearEpgChannelCache();
+    }
+
+    /**
+     * 清空频道当天缓存，切换日期时重新加载或1分钟后自动重新刷新加载
+     */
+    private void clearEpgChannelCache() {
+        if (mProgAdapter.getCount() > 0 && mEpgChannelCacheMap.size() > 0) {
+            SparseArray<List<EpgEvent_t>> map = mEpgChannelCacheMap.get(mProgAdapter.getItem(mCurrProgSelectPosition).ProgNo);
+            if (map != null) {
+                List<EpgEvent_t> epgChannelList = map.get(mCurrentFocusDate);
+                if (epgChannelList != null && !epgChannelList.isEmpty()) {
+                    epgChannelList.clear();
+                }
+            }
+        }
     }
 
     private int getBookCheckSchType(String checkContent) {
@@ -520,6 +600,9 @@ public class EpgActivity extends BaseActivity {
         return -1;
     }
 
+    /**
+     * Epg book对话框根据book内容获取选中索引
+     */
     private int getBookPosition(List<String> epgBookCheckContent, HSubforProg_t bookInfo) {
         if (bookInfo == null) {
             return epgBookCheckContent.indexOf(getString(R.string.book_play));
@@ -597,7 +680,7 @@ public class EpgActivity extends BaseActivity {
         if (mCurrProgSelectPosition >= mProgAdapter.getCount()) {
             mCurrProgSelectPosition = mProgAdapter.getCount() - 1;
         }
-        epgListFocus();
+        progListFocus();
     }
 
     private void lastSelectEpgItem() {
@@ -605,15 +688,21 @@ public class EpgActivity extends BaseActivity {
         if (mCurrProgSelectPosition < 0) {
             mCurrProgSelectPosition = 0;
         }
-        epgListFocus();
+        progListFocus();
     }
 
-    private void epgListFocus() {
+    /**
+     * 频道列表设置焦点
+     */
+    private void progListFocus() {
         mLvProgList.requestFocus();
         mLvProgList.setSelection(mCurrProgSelectPosition);
         mProgAdapter.setSelectPosition(mCurrProgSelectPosition);
     }
 
+    /**
+     * 切换频道
+     */
     private void epgItemSelect(int condition) {
         dismissPasswordDialog();
         mCurrentFocusDate = 0;
@@ -623,6 +712,9 @@ public class EpgActivity extends BaseActivity {
         notifyPlayProg(condition);
     }
 
+    /**
+     * 更新日期焦点背景
+     */
     private void updateDateFocus() {
         for (int i = 0; i < mDates.length; i++) {
             if (i == mCurrentFocusDate) {
@@ -639,6 +731,9 @@ public class EpgActivity extends BaseActivity {
         }
     }
 
+    /**
+     * 根据日期id刷新Epg Channel列表
+     */
     private void updateEpgChannel(int id) {
         clearDateFocus();
 
@@ -676,7 +771,7 @@ public class EpgActivity extends BaseActivity {
                 context.mEpgChannelCacheMap.put(progNo, epgChannelMap);
             } else {
                 List<EpgEvent_t> epgChannelList = epgChannelMap.get(focusBtnId);
-                if (epgChannelList == null) {
+                if (epgChannelList == null || epgChannelList.isEmpty()) {
                     epgChannelList = UIApiManager.getInstance().getCurrProgSchInfo(context.getFocusDateIndex(focusBtnId));
                     if (epgChannelList == null) epgChannelList = new ArrayList<>();
                     epgChannelMap.put(focusBtnId, epgChannelList);
@@ -783,14 +878,24 @@ public class EpgActivity extends BaseActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_PROG_BLUE) {
-            startActivity(new Intent(this, BookListActivity.class));
+            startActivityForResult(new Intent(this, BookListActivity.class), Constants.RequestCode.REQUEST_CODE_EPG_BOOK);
             return true;
         }
 
         return super.onKeyDown(keyCode, event);
     }
 
-    private class PlayMsgCB extends MsgCB {
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Constants.RequestCode.REQUEST_CODE_EPG_BOOK && data != null &&
+                data.getBooleanExtra(Constants.IntentKey.INTENT_BOOK_UPDATE, false)) {
+            mEpgChannelCacheMap.clear();
+            updateEpgChannel(mCurrentFocusDate);
+        }
+    }
+
+    private class PlayMsgCB extends AVMsgCB {
         @Override
         public int ProgPlay_SWAV_ISLOCKED(int type, int progno, int progindex, int home) {
             Log.i(TAG, "ProgPlay_SWAV_ISLOCKED---type:" + type + " progno:" + progno + " progindex:" + progindex + " home:" + home);

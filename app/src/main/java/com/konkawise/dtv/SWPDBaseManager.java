@@ -2,7 +2,6 @@ package com.konkawise.dtv;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.SparseArray;
 
 import com.sw.dvblib.SWPDBase;

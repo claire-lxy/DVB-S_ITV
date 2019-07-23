@@ -23,7 +23,7 @@ import com.konkawise.dtv.dialog.SearchResultDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
-import com.sw.dvblib.MsgCB;
+import com.sw.dvblib.msg.cb.SearchMsgCB;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -82,6 +82,8 @@ public class ScanTVandRadioActivity extends BaseActivity {
 
     private CheckSignalHelper mCheckSignalHelper;
 
+    private SearchMsgCB mSearchMsgCB = new TvAndRadioSearchMsgCB();
+
     @Override
     public int getLayoutId() {
         return R.layout.activity_scan_tv_and_radio;
@@ -101,16 +103,14 @@ public class ScanTVandRadioActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         mCheckSignalHelper.startCheckSignal();
-//        SWDVBManager.getInstance().regMsgHandler(Constants.SCAN_CALLBACK_MSG_ID, Looper.getMainLooper(), new SearchMsgCB());
-        SWDVBManager.getInstance().regMsgHandler(Looper.getMainLooper(), new SearchMsgCB());
+        SWDVBManager.getInstance().regMsgHandler(Constants.SCAN_CALLBACK_MSG_ID, Looper.getMainLooper(), mSearchMsgCB);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         mCheckSignalHelper.stopCheckSignal();
-        SWDVBManager.getInstance().regMsgHandler(null, null);
-//        SWDVBManager.getInstance().unRegMsgHandler(Constants.SCAN_CALLBACK_MSG_ID);
+        SWDVBManager.getInstance().unRegMsgHandler(Constants.SCAN_CALLBACK_MSG_ID, mSearchMsgCB);
         SWPSearchManager.getInstance().seatchStop(false);
     }
 
@@ -239,7 +239,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
         return super.onKeyDown(keyCode, event);
     }
 
-    private class SearchMsgCB extends MsgCB {
+    private class TvAndRadioSearchMsgCB extends SearchMsgCB {
 
         private void onUpdateSearchProgress(int step, int max_step) {
             int bf = step * 100 / max_step;

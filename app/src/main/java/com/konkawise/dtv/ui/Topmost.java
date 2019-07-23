@@ -39,7 +39,6 @@ import com.konkawise.dtv.UsbManager;
 import com.konkawise.dtv.adapter.TvListAdapter;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.bean.HandlerMsgModel;
-import com.konkawise.dtv.bean.UsbInfo;
 import com.konkawise.dtv.dialog.AudioDialog;
 import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.CommRemindDialog;
@@ -62,8 +61,8 @@ import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
-import com.sw.dvblib.MsgCB;
 import com.sw.dvblib.SWDVB;
+import com.sw.dvblib.msg.cb.AVMsgCB;
 import com.sw.dvblib.SWFta;
 
 import org.greenrobot.eventbus.EventBus;
@@ -74,7 +73,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.Timer;
 
 import butterknife.BindView;
@@ -83,7 +81,6 @@ import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
 import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
-import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HSubtitle_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HTeletext_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
@@ -169,6 +166,9 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
 
     @BindView(R.id.item_clear_channel)
     TextView mItemClearChannel;
+
+    @BindView(R.id.item_factory_reset)
+    TextView mItemFactoryReset;
 
     @BindView(R.id.item_dtv_setting)
     TextView mItemDtvSetting;
@@ -285,6 +285,23 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         }
     }
 
+    @OnClick(R.id.item_factory_reset)
+    void factoryReset() {
+        if (SWFtaManager.getInstance().isOpenMenuLock() && !mPasswordEntered) {
+            showPasswordDialog(new PasswordDialog.OnPasswordInputListener() {
+                @Override
+                public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
+                    if (isValid) {
+                        mPasswordEntered = true;
+                        showFactoryResetDialog();
+                    }
+                }
+            });
+        } else {
+            showFactoryResetDialog();
+        }
+    }
+
     @OnClick(R.id.item_dtv_setting)
     void dtvSetting() {
         startActivity(new Intent(this, DTVSettingActivity.class));
@@ -323,13 +340,15 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     private int mCurrSatPosition;
     private List<SatInfo_t> mSatList;
     // 所有卫星的频道列表缓存
-    private List<PDPMInfo_t> mAllSatProgList = new ArrayList<>();
+    private List<PDPMInfo_t> mAllSatProgListCache = new ArrayList<>();
     // 喜爱分组频道列表缓存
-    private SparseArray<List<PDPMInfo_t>> mFavoriteProgListMap = new SparseArray<>();
+    private SparseArray<List<PDPMInfo_t>> mFavoriteProgListCacheMap = new SparseArray<>();
     // 对应卫星索引的频道列表缓存
-    private SparseArray<List<PDPMInfo_t>> mSatProgListMap = new SparseArray<>();
+    private SparseArray<List<PDPMInfo_t>> mSatProgListCacheMap = new SparseArray<>();
     private LoadProgRunnable mLoadProgRunnable;
     private LoadSatRunnable mLoadSatRunnable;
+
+    private AVMsgCB mAvMsgCB = new PlayMsgCB();
 
     private static class PlayHandler extends WeakHandler<Topmost> {
         static final int MSG_PLAY_PROG = 0;
@@ -421,23 +440,18 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         initProgList();
         initSurfaceView();
         showRadioBackground();
+        checkLaunchSettingPassword();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        SWDVBManager.getInstance().regMsgHandler(Looper.getMainLooper(), new PlayMsgCB());
+        SWDVBManager.getInstance().regMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, Looper.getMainLooper(), mAvMsgCB);
         showSurface();
         updatePfBarInfo();
         startSmallHintBoxTimer();
         restoreMenuItem(); // 恢复menu初始item显示
-		
-		if(PreferenceManager.getInstance().getBoolean(Constants.PrefsKey.FIRST_LAUNCH) == false) {
-			Log.i(TAG, "first launch");
-			showFirstLaunchDialog();
-			return;
-		}
-		
+
         if (SWPDBaseManager.getInstance().getCurrProgInfo() == null) {
             showSearchChannelDialog();
         }
@@ -446,10 +460,13 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     @Override
     protected void onPause() {
         super.onPause();
-        SWDVBManager.getInstance().regMsgHandler(null, null);
+        SWDVBManager.getInstance().unRegMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, mAvMsgCB);
         cancelSmallHintBoxTimer();
         setRecordFlagStop();
         cancelRecordingTimer();
+        if (isFinishing()) {
+            SWDVB.Destory();
+        }
     }
 
     @Override
@@ -477,7 +494,9 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        setIntent(intent);
         handleBook();
+        setIntent(new Intent()); // 处理完后要重置为空，防止其他界面返回或跳转到Topmost使用上一个book跳转的intent
     }
 
     private boolean handleBook() {
@@ -485,6 +504,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         int recordSeconds = getIntent().getIntExtra(Constants.IntentKey.INTENT_BOOK_SECONDS, -1);
         int progType = getIntent().getIntExtra(Constants.IntentKey.INTENT_BOOK_PROG_TYPE, -1);
         int progNum = getIntent().getIntExtra(Constants.IntentKey.INTENT_BOOK_PROG_NUM, -1);
+        Log.i(TAG, "bookType = " + bookType + ", recordSeconds = " + recordSeconds + ", progType = " + progType + ", progNum = " + progNum);
         if (bookType == BookService.ACTION_BOOKING_PLAY) {
             if (progType != -1 && progNum != -1) {
                 SWPDBaseManager.getInstance().setCurrProgType(progType, 0);
@@ -502,6 +522,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                 playProg(progNum, true);
                 startRecordingTimer(recordSeconds);
                 SWBookingManager.getInstance().setRecording(true);
+                SWDJAPVRManager.getInstance().startRecord();
 
                 sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
                 return true;
@@ -574,7 +595,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         }
     }
 
-    private static class SmallHintBoxTimerTask extends WeakTimerTask<Topmost> {
+    private class SmallHintBoxTimerTask extends WeakTimerTask<Topmost> {
 
         SmallHintBoxTimerTask(Topmost view) {
             super(view);
@@ -582,20 +603,20 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
 
         @Override
         protected void runTimer() {
-//            final boolean hasSignal = hasSignal();
-//            runOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    mSmallHintBox.hintBox(SmallHintBox.CHECK_TYPE_SIGNAL, hasSignal);
-//                }
-//            });
+            final boolean hasSignal = hasSignal();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mSmallHintBox.hintBox(SmallHintBox.CHECK_TYPE_SIGNAL, hasSignal);
+                }
+            });
         }
-    }
 
-    private boolean hasSignal() {
-        int strength = SWPSearchManager.getInstance().getSignalStatus(SWPSearchManager.SIGNAL_STRENGTH);
-        int quality = SWPSearchManager.getInstance().getSignalStatus(SWPSearchManager.SIGNAL_QUALITY);
-        return strength > 0 || quality > 0;
+        private boolean hasSignal() {
+            int strength = SWPSearchManager.getInstance().getSignalStatus(SWPSearchManager.SIGNAL_STRENGTH);
+            int quality = SWPSearchManager.getInstance().getSignalStatus(SWPSearchManager.SIGNAL_QUALITY);
+            return strength > 0 || quality > 0;
+        }
     }
 
     private void initVolumeObserver() {
@@ -835,30 +856,30 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
      */
     private List<PDPMInfo_t> getProgList() {
         if (mCurrSatPosition == 0) {
-            if (mAllSatProgList.isEmpty()) {
+            if (mAllSatProgListCache.isEmpty()) {
                 List<PDPMInfo_t> totalProgList = SWPDBaseManager.getInstance().getWholeGroupProgList();
                 if (totalProgList != null && !totalProgList.isEmpty()) {
-                    mAllSatProgList.addAll(totalProgList);
+                    mAllSatProgListCache.addAll(totalProgList);
                 }
             }
-            return mAllSatProgList;
+            return mAllSatProgListCache;
         } else {
             List<SatInfo_t> allSatList = SWPDBaseManager.getInstance().getAllSatList(this);
             if (allSatList != null && !allSatList.isEmpty()) {
                 int satIndex = getSatList().get(mCurrSatPosition).SatIndex;
                 // 当前卫星索引比添加了All的卫星索引还大，说明有喜爱分组，获取喜爱分组频道列表
                 if (mCurrSatPosition > allSatList.size() - 1) {
-                    List<PDPMInfo_t> favoriteProgList = mFavoriteProgListMap.get(satIndex); // 这里的SatIndex是存储喜爱分组的索引
+                    List<PDPMInfo_t> favoriteProgList = mFavoriteProgListCacheMap.get(satIndex); // 这里的SatIndex是存储喜爱分组的索引
                     if (favoriteProgList == null || favoriteProgList.isEmpty()) {
                         favoriteProgList = SWPDBaseManager.getInstance().getFavListByIndex(satIndex);
-                        mFavoriteProgListMap.put(satIndex, favoriteProgList);
+                        mFavoriteProgListCacheMap.put(satIndex, favoriteProgList);
                     }
                     return favoriteProgList;
                 } else {
-                    List<PDPMInfo_t> progList = mSatProgListMap.get(satIndex);
+                    List<PDPMInfo_t> progList = mSatProgListCacheMap.get(satIndex);
                     if (progList == null || progList.isEmpty()) {
                         progList = SWPDBaseManager.getInstance().getCurrGroupProgListByCond(1, satIndex);
-                        mSatProgListMap.put(satIndex, progList);
+                        mSatProgListCacheMap.put(satIndex, progList);
                     }
                     return progList;
                 }
@@ -868,9 +889,9 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     }
 
     private void clearProgListCache() {
-        mAllSatProgList.clear();
-        mFavoriteProgListMap.clear();
-        mSatProgListMap.clear();
+        mAllSatProgListCache.clear();
+        mFavoriteProgListCacheMap.clear();
+        mSatProgListCacheMap.clear();
     }
 
     /**
@@ -1061,6 +1082,12 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         mIvRadioBackground.setVisibility(SWPDBaseManager.getInstance().getCurrProgType() == 1 ? View.VISIBLE : View.INVISIBLE);
     }
 
+    private void checkLaunchSettingPassword() {
+        if (!PreferenceManager.getInstance().getBoolean(Constants.PrefsKey.FIRST_LAUNCH)) {
+            showFirstLaunchDialog();
+        }
+    }
+
     private boolean isProgLock() {
         return SWPDBaseManager.getInstance().isProgLock() && SWFtaManager.getInstance().isOpenParentLock();
     }
@@ -1184,13 +1211,13 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
 
     private void showPasswordDialog(PasswordDialog.OnPasswordInputListener passwordInputListener,
                                     PasswordDialog.OnControlArrowKeyListener controlArrowKeyListener) {
-        if (mPasswordDialog == null) {
-            mPasswordDialog = new PasswordDialog();
-        }
+        mPasswordDialog = new PasswordDialog();
         // 每次创建对话框都需要重置一次listener，防止一直持有上一个listener导致回调错误
         mPasswordDialog.setOnPasswordInputListener(passwordInputListener);
         mPasswordDialog.setOnControlArrowKeyListener(controlArrowKeyListener);
-        mPasswordDialog.show(getSupportFragmentManager(), PasswordDialog.TAG);
+        if (!mPasswordDialog.isAdded() && !mPasswordDialog.isVisible() && !mPasswordDialog.isRemoving()) {
+            mPasswordDialog.show(getSupportFragmentManager(), PasswordDialog.TAG);
+        }
     }
 
     private void showInstallationSelectDialog() {
@@ -1214,13 +1241,23 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     }
 
     private void showClearChannelDialog() {
-        new CommTipsDialog().title(getString(R.string.clear_prog_date)).content(getString(R.string.are_you_sure_clear_prog_data))
+        new CommTipsDialog().title(getString(R.string.clear_channel)).content(getString(R.string.are_you_sure_clear_prog_data))
                 .setOnPositiveListener("", new OnCommPositiveListener() {
                     @Override
                     public void onPositiveListener() {
                         SWFtaManager.getInstance().clearChannel();
                         mCurrSatPosition = 0;
                         mProgListAdapter.clearData(); // 同步清空频道列表
+                    }
+                }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
+    }
+
+    private void showFactoryResetDialog() {
+        new CommTipsDialog().title(getString(R.string.factory_reset)).content(getString(R.string.factory_reset_content))
+                .setOnPositiveListener("", new OnCommPositiveListener() {
+                    @Override
+                    public void onPositiveListener() {
+                        SWFtaManager.getInstance().factoryReset();
                     }
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
@@ -1250,122 +1287,113 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                     @Override
                     public void onPositiveListener() {
                         UIApiManager.getInstance().stopPlay(0);
-                        SWDVB.Destory();
                         finish();
                     }
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
-	
-	private void showSubtitleDialog() {
-    	if(SWPDBaseManager.getInstance().getCurrProgInfo() == null)
-    		return;
 
-		int currSubtitle = 0;
-		int serviceid = SWPDBaseManager.getInstance().getCurrProgInfo().ServID;
-		int num = SWFta.CreateInstance().getSubtitleNum(serviceid);
-		Log.i(TAG, "serviceid : "+serviceid+"  subtitle : "+num);
-		final int[] pids = new int[num];
-		List subtitles = new ArrayList<HashMap<String, Object>>();
-		HashMap off = new HashMap<String, Object>();
-		off.put(Constants.SUBTITLE_NAME, "OFF");
-		subtitles.add(off);
-		for(int index=0; index<num; index++) {
-			HSubtitle_t subtitle = SWFta.CreateInstance().getSubtitleInfo(serviceid, index);
-			Log.i(TAG, "subtitle "+index+" used = "+subtitle.used);
-			if(subtitle.used != 0) {
-				HashMap map = new HashMap<String, Object>();
-				map.put(Constants.SUBTITLE_NAME, subtitle.Name);
-				map.put(Constants.SUBTITLE_ORG_TYPE, subtitle.OrgType == 0);
-				map.put(Constants.SUBTITLE_TYPE, (subtitle.Type >= 0x20 && subtitle.Type <= 0x24) || subtitle.Type == 0x05);
-				subtitles.add(map);
-				if(SWFta.CreateInstance().getCurSubtitleInfo(serviceid).Name.equals(subtitle.Name))
-					currSubtitle = index;
-				Log.i(TAG, "subtitle["+index+"] : "+subtitle.Name);
-			}
-		}
+    private void showSubtitleDialog() {
+        if (SWPDBaseManager.getInstance().getCurrProgInfo() == null) return;
 
-		new SubtitleDialog()
-				.title(getString(R.string.subtitle))
-				.content(subtitles)
-				.position(currSubtitle)
-				.setOnDismissListener(new SubtitleDialog.OnDismissListener() {
-					@Override
-					public void onDismiss(SubtitleDialog dialog, int position, String checkContent) {
-						if(position > 0)
-							SWFta.CreateInstance().openSubtitle(pids[position - 1]);
-					}
-				}).show(getSupportFragmentManager(), SubtitleDialog.TAG);
-	}
+        int currSubtitle = 0;
+        int serviceid = SWPDBaseManager.getInstance().getCurrProgInfo().ServID;
+        int num = SWFta.CreateInstance().getSubtitleNum(serviceid);
+        final int[] pids = new int[num];
+        List subtitles = new ArrayList<HashMap<String, Object>>();
+        HashMap off = new HashMap<String, Object>();
+        off.put(Constants.SUBTITLE_NAME, "OFF");
+        subtitles.add(off);
+        for (int index = 0; index < num; index++) {
+            HSubtitle_t subtitle = SWFta.CreateInstance().getSubtitleInfo(serviceid, index);
+            if (subtitle.used != 0) {
+                HashMap map = new HashMap<String, Object>();
+                map.put(Constants.SUBTITLE_NAME, subtitle.Name);
+                map.put(Constants.SUBTITLE_ORG_TYPE, subtitle.OrgType == 0);
+                map.put(Constants.SUBTITLE_TYPE, (subtitle.Type >= 0x20 && subtitle.Type <= 0x24) || subtitle.Type == 0x05);
+                subtitles.add(map);
+                if (SWFta.CreateInstance().getCurSubtitleInfo(serviceid).Name.equals(subtitle.Name))
+                    currSubtitle = index;
+            }
+        }
 
-	private void showTeletextDialog() {
-    	if(SWPDBaseManager.getInstance().getCurrProgInfo() == null)
-    		return;
+        new SubtitleDialog()
+                .title(getString(R.string.subtitle))
+                .content(subtitles)
+                .position(currSubtitle)
+                .setOnDismissListener(new SubtitleDialog.OnDismissListener() {
+                    @Override
+                    public void onDismiss(SubtitleDialog dialog, int position, String checkContent) {
+                        if (position > 0)
+                            SWFta.CreateInstance().openSubtitle(pids[position - 1]);
+                    }
+                }).show(getSupportFragmentManager(), SubtitleDialog.TAG);
+    }
 
-		int currTeleText = 0;
-		int serviceid = SWPDBaseManager.getInstance().getCurrProgInfo().ServID;
-		int num = SWFta.CreateInstance().getTeletxtNum(serviceid);
-		Log.i(TAG, "teletext : "+num);
-		final int[] pids = new int[num];
-		String[] teletextNames = new String[num+1];
-		teletextNames[0] = "OFF";
-		for(int index=0; index<num; index++) {
-			HTeletext_t teletext = SWFta.CreateInstance().getTeletextInfo(serviceid, index);
-			if(teletext.used != 0) {
-				teletextNames[index + 1] = teletext.Name;
-				pids[index] = teletext.Pid;
-			}
-		}
+    private void showTeletextDialog() {
+        if (SWPDBaseManager.getInstance().getCurrProgInfo() == null) return;
 
-		new TeletextDialog()
-				.title(getString(R.string.teletext))
-				.content(Arrays.asList(teletextNames))
-				.position(currTeleText)
-				.setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
-					@Override
-					public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
-						if(position > 0)
-							SWFta.CreateInstance().openTeletext(pids[position - 1]);
-					}
-				}).show(getSupportFragmentManager(), "teletext");
-	}
+        int currTeleText = 0;
+        int serviceid = SWPDBaseManager.getInstance().getCurrProgInfo().ServID;
+        int num = SWFta.CreateInstance().getTeletxtNum(serviceid);
+        final int[] pids = new int[num];
+        String[] teletextNames = new String[num + 1];
+        teletextNames[0] = "OFF";
+        for (int index = 0; index < num; index++) {
+            HTeletext_t teletext = SWFta.CreateInstance().getTeletextInfo(serviceid, index);
+            if (teletext.used != 0) {
+                teletextNames[index + 1] = teletext.Name;
+                pids[index] = teletext.Pid;
+            }
+        }
 
-	private void showAudioDialog() {
-    	if(SWPDBaseManager.getInstance().getCurrProgInfo() == null)
-    		return;
+        new TeletextDialog()
+                .title(getString(R.string.teletext))
+                .content(Arrays.asList(teletextNames))
+                .position(currTeleText)
+                .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
+                    @Override
+                    public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
+                        if (position > 0)
+                            SWFta.CreateInstance().openTeletext(pids[position - 1]);
+                    }
+                }).show(getSupportFragmentManager(), "teletext");
+    }
 
-		new AudioDialog().title(getString(R.string.audio)).show(getSupportFragmentManager(), AudioDialog.TAG);
-	}
+    private void showAudioDialog() {
+        if (SWPDBaseManager.getInstance().getCurrProgInfo() == null) return;
 
-	private void showFirstLaunchDialog() {
-		mFirstLaunchDialog = new PasswordDialog();
-		mFirstLaunchDialog.setOnPasswordInputListener(new PasswordDialog.OnPasswordInputListener() {
-			@Override
-			public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
-				if(isValid) {
-					PreferenceManager.getInstance().putBoolean(Constants.PrefsKey.FIRST_LAUNCH, true);
-					dismissPasswordDialog();
+        new AudioDialog().title(getString(R.string.audio)).show(getSupportFragmentManager(), AudioDialog.TAG);
+    }
 
-					if (SWPDBaseManager.getInstance().getCurrProgInfo() == null) {
-						showSearchChannelDialog();
-					}
-				}
-			}
-		});
-		mFirstLaunchDialog.setOnKeyListener(new PasswordDialog.OnKeyListener() {
-			@Override
-			public boolean onKeyListener(PasswordDialog dialog, int keyCode, KeyEvent event) {
-				if(keyCode == KeyEvent.KEYCODE_BACK) {
-					UIApiManager.getInstance().stopPlay(0);
-					SWDVB.Destory();
-					finish();
-					return true;
-				}
-				return false;
-			}
-		});
-		mFirstLaunchDialog.show(getSupportFragmentManager(), Constants.PrefsKey.FIRST_LAUNCH);
-	}
-	
+    private void showFirstLaunchDialog() {
+        mFirstLaunchDialog = new PasswordDialog();
+        mFirstLaunchDialog.setOnPasswordInputListener(new PasswordDialog.OnPasswordInputListener() {
+            @Override
+            public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
+                if (isValid) {
+                    PreferenceManager.getInstance().putBoolean(Constants.PrefsKey.FIRST_LAUNCH, true);
+                    dismissPasswordDialog();
+
+                    if (SWPDBaseManager.getInstance().getCurrProgInfo() == null) {
+                        showSearchChannelDialog();
+                    }
+                }
+            }
+        });
+        mFirstLaunchDialog.setOnKeyListener(new PasswordDialog.OnKeyListener() {
+            @Override
+            public boolean onKeyListener(PasswordDialog dialog, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_BACK) {
+                    UIApiManager.getInstance().stopPlay(0);
+                    finish();
+                    return true;
+                }
+                return false;
+            }
+        });
+        mFirstLaunchDialog.show(getSupportFragmentManager(), Constants.PrefsKey.FIRST_LAUNCH);
+    }
+
     private void showQuitRecordDialog(KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             new CommTipsDialog()
@@ -1380,17 +1408,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     }
 
     private void stopRecord() {
-        if (SWBookingManager.getInstance().isRecording()) {
-            // cancel
-            if (mRecordingTimerTask != null && mRecordingTimerTask.countDownSeconds > 0) {
-                HSubforProg_t bookProg = SWBookingManager.getInstance().getReadyProgInfo();
-                if (bookProg != null) {
-                    SWBookingManager.getInstance().cancelSubForPlay(0, SWBookingManager.getInstance().getCancelBookProg(bookProg));
-                }
-            }
-        } else if (SWDJAPVRManager.getInstance().isRecording()) {
-            SWDJAPVRManager.getInstance().stopRecord();
-        }
+        SWDJAPVRManager.getInstance().stopRecord();
 
         cancelRecordingTimer();
         setRecordFlagStop();
@@ -1492,6 +1510,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         mItemChannelEdit.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
         mItemChannelFavorite.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
         mItemClearChannel.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
+        mItemFactoryReset.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
         mItemDtvSetting.setVisibility(isShowChannelManage ? View.GONE : View.VISIBLE);
     }
 
@@ -1516,6 +1535,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         mItemChannelEdit.setVisibility(View.GONE);
         mItemChannelFavorite.setVisibility(View.GONE);
         mItemClearChannel.setVisibility(View.GONE);
+        mItemFactoryReset.setVisibility(View.GONE);
         mItemDtvSetting.setVisibility(View.VISIBLE);
     }
 
@@ -1603,11 +1623,11 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
             if (SWBookingManager.getInstance().isRecording()) {
                 showQuitRecordDialog(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_UNKNOWN));
             } else {
-//                SWDJAPVRManager.getInstance().setRecording(true);
-//                SWDJAPVRManager.getInstance().startRecord();
-//                startRecordingTimer(-1);
+                SWDJAPVRManager.getInstance().setRecording(true);
+                SWDJAPVRManager.getInstance().startRecord();
+                startRecordingTimer(-1);
             }
-//            sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
+            sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
             return true;
         }
 
@@ -1683,23 +1703,23 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
             recordJumpPlayProgNum(9);
             return true;
         }
-		
-		if(keyCode == KeyEvent.KEYCODE_TV_TELETEXT) {
-			showTeletextDialog();
-			return true;
-		}
 
-		// keycode=293 can't be caught, so use F3.
-		if(keyCode == KeyEvent.KEYCODE_F3) {
-			showSubtitleDialog();
-			return true;
-		}
+        if (keyCode == KeyEvent.KEYCODE_TV_TELETEXT) {
+            showTeletextDialog();
+            return true;
+        }
 
-		if(keyCode == KeyEvent.KEYCODE_MEDIA_AUDIO_TRACK) {
-			showAudioDialog();
-			return true;
-		}
-		
+        // keycode=293 can't be caught, so use F3.
+        if (keyCode == KeyEvent.KEYCODE_F3) {
+            showSubtitleDialog();
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_MEDIA_AUDIO_TRACK) {
+            showAudioDialog();
+            return true;
+        }
+
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (mMenuShow) {
                 toggleMenu();
@@ -1950,7 +1970,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         }
     }
 
-    private class PlayMsgCB extends MsgCB {
+    private class PlayMsgCB extends AVMsgCB {
         @Override
         public int ProgPlay_SWAV_ISLOCKED(int type, int progno, int progindex, int home) {
             Log.i(TAG, "ProgPlay_SWAV_ISLOCKED---type:" + type + " progno:" + progno + " progindex:" + progindex + " home:" + home);

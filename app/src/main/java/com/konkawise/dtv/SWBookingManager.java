@@ -1,6 +1,7 @@
 package com.konkawise.dtv;
 
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import com.konkawise.dtv.annotation.BookConflictType;
 import com.konkawise.dtv.bean.BookingModel;
@@ -18,6 +19,7 @@ import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
 
 public class SWBookingManager {
+    public static final String DEFAULT_BOOK_CONTENT = "book";
     private boolean mRecording;
 
     private static class SWBookingManagerHolder {
@@ -166,6 +168,11 @@ public class SWBookingManager {
             SysTime_t startTime = SWTimerManager.getInstance().getStartTime(parameterModel.eventInfo);
             SysTime_t endTime = SWTimerManager.getInstance().getEndTime(parameterModel.eventInfo);
             newBookProg.lasttime = new DateModel(startTime, endTime).getBetweenSeconds();
+            newBookProg.name = TextUtils.isEmpty(parameterModel.eventInfo.memEventName) ? DEFAULT_BOOK_CONTENT : parameterModel.eventInfo.memEventName;
+            newBookProg.content = TextUtils.isEmpty(parameterModel.eventInfo.memEventDesc) ? DEFAULT_BOOK_CONTENT : parameterModel.eventInfo.memEventDesc;
+        } else {
+            newBookProg.name = DEFAULT_BOOK_CONTENT;
+            newBookProg.content = DEFAULT_BOOK_CONTENT;
         }
         return newBookProg;
     }

@@ -121,6 +121,7 @@
     <string name="blind_scan">Blind Scan</string>
     <string name="epg">EPG</string>
     <string name="clear_channel">Clear Channel</string>
+    <string name="factory_reset">Factory Reset</string>
     <string name="Channel_management">Channel Manager</string>
     <string name="dtv_setting">DTV Setting</string>
 
@@ -208,9 +209,8 @@
 
     <string name="select">Select</string>
 
-    <!--fragment_clear_search.xml-->
-    <string name="clear_prog_date">Clear prog date</string>
-    <string name="are_you_sure_clear_prog_data">Are you sure clear prog data?</string>
+    <string name="are_you_sure_clear_prog_data">Do you really want to Clear Channels?</string>
+    <string name="factory_reset_content">Do you want to reset all data and setting?</string>
 
     <!--pf_info_popwindow.xmll-->
     <string name="sub">SUB</string>
@@ -361,6 +361,7 @@
     <string name="toast_start_record">Start Recording!</string>
     <string name="toast_stop_record">Record End!</string>
     <string name="toast_no_storage_device">No Storage Device!</string>
+    <string name="toast_program_playing">Program is playing!</string>
 
     <string name="dialog_try_auto_diseqc">Scanning DiSEqC Port Index {0}.Try [{1}/{2}] times...</string>
     <string name="dialog_auto_diseqc_title">Information</string>

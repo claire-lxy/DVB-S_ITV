@@ -1,7 +1,9 @@
 package com.konkawise.dtv.ui;
 
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.widget.TextView;
@@ -128,8 +130,7 @@ public class BookListActivity extends BaseActivity {
 
     private void showBookDialog(String title, final int bookingType) {
         List<PDPInfo_t> progList = getProgList(bookingType);
-        if (bookingType == Constants.BOOK_TYPE_EDIT && (progList == null || progList.isEmpty()))
-            return;
+        if (progList == null || progList.isEmpty()) return;
 
         new BookDialog()
                 .title(title)
@@ -243,15 +244,17 @@ public class BookListActivity extends BaseActivity {
     }
 
     private void showDeleteBookDialog() {
+        if (mAdapter.getCount() < 0) return;
+
         new CommTipsDialog().title(getString(R.string.delete_book_title))
                 .content(getString(R.string.delete_book_content))
                 .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
                     @Override
                     public void onPositiveListener() {
-                        if (mAdapter.getCount() > 0) {
-                            SWBookingManager.getInstance().deleteProg(mAdapter.getItem(mCurrSelectPosition).bookInfo);
-                            mAdapter.removeData(mCurrSelectPosition);
-                        }
+                        SWBookingManager.getInstance().deleteProg(mAdapter.getItem(mCurrSelectPosition).bookInfo);
+                        mAdapter.removeData(mCurrSelectPosition);
+
+                        mBook = true;
                     }
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
@@ -285,6 +288,14 @@ public class BookListActivity extends BaseActivity {
                 mLvBookList.setSelection(mAdapter.getCount() - 1);
                 return true;
             }
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            Intent intent = new Intent();
+            intent.putExtra(Constants.IntentKey.INTENT_BOOK_UPDATE, mBook);
+            setResult(Constants.RequestCode.REQUEST_CODE_EPG_BOOK, intent);
+            finish();
+            return true;
         }
 
         return super.onKeyDown(keyCode, event);

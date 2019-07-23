@@ -150,6 +150,18 @@
             android:visibility="gone" />
 
         <TextView
+            android:id="@+id/item_factory_reset"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:background="@drawable/dvb_btn_selector"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:paddingLeft="40dp"
+            android:text="@string/factory_reset"
+            android:textSize="15sp"
+            android:visibility="gone" />
+
+        <TextView
             android:id="@+id/item_dtv_setting"
             android:layout_width="match_parent"
             android:layout_height="36dp"

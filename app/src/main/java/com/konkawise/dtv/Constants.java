@@ -45,8 +45,9 @@ public class Constants {
     public static final String SUBTITLE_TYPE = "subtitleType";
 
     // msg callback id
-    public static final int SCAN_CALLBACK_MSG_ID = 0x8001;
-    public static final int BOOK_CALLBACK_MSG_ID = 0x8002;
+    public static final int SCAN_CALLBACK_MSG_ID = 0x8001; // 频道扫描消息回调通道id
+    public static final int BOOK_CALLBACK_MSG_ID = 0x8002; // book消息回调通道id
+    public static final int LOCK_CALLBACK_MSG_ID = 0x8003; // 频道锁消息回调通道id
 
     public interface IntentKey {
         String INTENT_SATELLITE_INDEX = "satelliteIndex";
@@ -67,6 +68,12 @@ public class Constants {
         String INTENT_BOOK_PROG_NUM = "bookProgNum";
         String INTENT_BOOK_PROG_TYPE = "bookProgType";
         String INTENT_BOOK_SECONDS = "bookSeconds";
+
+        String INTENT_BOOK_UPDATE = "bookUpdate";
+    }
+
+    public interface RequestCode {
+        int REQUEST_CODE_EPG_BOOK = 1;
     }
 
     public interface PrefsKey {

@@ -147,4 +147,11 @@ public class SWFtaManager {
     public ScanProgress_t blindScanProgress() {
         return SWFta.CreateInstance().blindScanProgress();
     }
+
+    /**
+     * 恢复出厂设置
+     */
+    public void factoryReset() {
+        SWFta.CreateInstance().factoryReset(0);
+    }
 }

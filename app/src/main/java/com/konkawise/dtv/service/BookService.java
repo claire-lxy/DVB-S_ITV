@@ -12,6 +12,7 @@ import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.HandlerMsgManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWBookingManager;
+import com.konkawise.dtv.SWDJAPVRManager;
 import com.konkawise.dtv.SWDVBManager;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
@@ -22,11 +23,11 @@ import com.konkawise.dtv.bean.HandlerMsgModel;
 import com.konkawise.dtv.dialog.BookReadyDialog;
 import com.konkawise.dtv.dialog.OnCommNegativeListener;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
+import com.konkawise.dtv.dialog.QuitRecordingDialog;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakToolInterface;
-import com.sw.dvblib.MsgCB;
 import com.sw.dvblib.SWBooking;
-import com.sw.dvblib.SWDVB;
+import com.sw.dvblib.msg.cb.TimeMsgCB;
 
 import java.text.MessageFormat;
 
@@ -41,78 +42,84 @@ public class BookService extends BaseService implements WeakToolInterface {
     public static final int ACTION_BOOKING_RECORD = 1 << 2;
 
     private BookReadyDialog mBookStandbyDialog;
+    private QuitRecordingDialog mQuitRecordingDialog;
     private BookCountDownHandler mBookCountDownHandler;
+    private TimeMsgCB mTimeMsgCB = new BookMsgCB();
 
     @Override
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "book service create");
-//        SWDVB.GetInstance();
-//        registerBookMsg();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "book service start");
+        registerBookMsg();
         return Service.START_STICKY;
     }
 
     @Override
     public void onDestroy() {
+        Log.i(TAG, "book service destroy");
         WeakToolManager.getInstance().removeWeakTool(this);
-        SWDVBManager.getInstance().regMsgHandler(null, null);
-//        SWDVBManager.getInstance().unRegMsgHandler(Constants.BOOK_CALLBACK_MSG_ID);
+        SWDVBManager.getInstance().unRegMsgHandler(Constants.BOOK_CALLBACK_MSG_ID, mTimeMsgCB);
         super.onDestroy();
     }
 
     private void registerBookMsg() {
-        // Constants.BOOK_CALLBACK_MSG_ID
-        SWDVBManager.getInstance().regMsgHandler(getMainLooper(), new MsgCB() {
-            // 预订节目播放倒计时
-            @Override
-            public int Timer_ITIS_SUBFORTIME(int id) {
-                showBookReadyDialog();
-                return super.Timer_ITIS_SUBFORTIME(id);
-            }
+        SWDVBManager.getInstance().regMsgHandler(Constants.BOOK_CALLBACK_MSG_ID, getMainLooper(), mTimeMsgCB);
+    }
 
-            // 预录节目倒计时
-            @Override
-            public int Timer_ITIS_SUBFORRECTIME(int id) {
-                showBookReadyDialog();
-                return super.Timer_ITIS_SUBFORRECTIME(id);
-            }
+    private class BookMsgCB extends TimeMsgCB {
+        // 预订节目播放倒计时
+        @Override
+        public int Timer_ITIS_SUBFORTIME(int id) {
+            Log.i(TAG, "预订节目播放倒计时");
+            showBookReadyDialog();
+            return 0;
+        }
 
-            // 开始预订节目播放
-            @Override
-            public int Timer_ITIS_TIMETOPLAY(int type, int id, int sat, int tsid, int servid, int evtid) {
-                startBook(servid, tsid, sat);
-                return super.Timer_ITIS_TIMETOPLAY(type, id, sat, tsid, servid, evtid);
-            }
+        // 预录节目倒计时
+        @Override
+        public int Timer_ITIS_SUBFORRECTIME(int id) {
+            Log.i(TAG, "预录节目倒计时");
+            showBookReadyDialog();
+            return 0;
+        }
 
-            // 开始预录节目
-            @Override
-            public int Timer_ITIS_TIMETOREC(int type, int id, int sat, int tsid, int servid, int evtid) {
-                startBook(servid, tsid, sat);
-                return super.Timer_ITIS_TIMETOREC(type, id, sat, tsid, servid, evtid);
-            }
-        });
+        // 开始预订节目播放
+        @Override
+        public int Timer_ITIS_TIMETOPLAY(int type, int id, int sat, int tsid, int servid, int evtid) {
+            Log.i(TAG, "开始预订节目播放");
+            bookReady();
+            return 0;
+        }
+
+        // 开始预录节目
+        @Override
+        public int Timer_ITIS_TIMETOREC(int type, int id, int sat, int tsid, int servid, int evtid) {
+            Log.i(TAG, "开始预录节目");
+            bookReady();
+            return 0;
+        }
     }
 
     private void showBookReadyDialog() {
-        HSubforProg_t bookProg = SWBookingManager.getInstance().getReadyProgInfo();
-        if (bookProg == null) return;
-        PDPInfo_t progInfo = SWPDBaseManager.getInstance().getProgInfoByServiceId(bookProg.servid, bookProg.tsid, bookProg.sat);
+        HSubforProg_t bookInfo = SWBookingManager.getInstance().getReadyProgInfo();
+        if (bookInfo == null) return;
+        PDPInfo_t progInfo = SWPDBaseManager.getInstance().getProgInfoByServiceId(bookInfo.servid, bookInfo.tsid, bookInfo.sat);
         if (progInfo == null) return;
 
-        BookingModel bookingModel = new BookingModel(bookProg, progInfo);
+        BookingModel bookingModel = new BookingModel(bookInfo, progInfo);
         String channelName = bookingModel.getBookChannelName();
         String mode = bookingModel.getBookMode(this);
         String content;
         String positive;
-        if (bookProg.schtype == SWBooking.BookSchType.RECORD.ordinal()) {
+        if (bookInfo.schtype == SWBooking.BookSchType.RECORD.ordinal()) {
             content = getString(R.string.dialog_book_record_content);
             positive = getString(R.string.dialog_book_record);
-        } else if (bookProg.schtype == SWBooking.BookSchType.PLAY.ordinal()) {
+        } else if (bookInfo.schtype == SWBooking.BookSchType.PLAY.ordinal()) {
             content = getString(R.string.dialog_book_play_content);
             positive = getString(R.string.dialog_book_play);
         } else {
@@ -121,7 +128,7 @@ public class BookService extends BaseService implements WeakToolInterface {
         }
 
         mBookStandbyDialog = new BookReadyDialog(this)
-                .content(MessageFormat.format(getString(R.string.dialog_book_ready_content), content, String.valueOf(bookProg.second)))
+                .content(MessageFormat.format(getString(R.string.dialog_book_ready_content), content, String.valueOf(60)))
                 .channelName(channelName)
                 .mode(mode)
                 .setOnPositiveListener(positive, new OnCommPositiveListener() {
@@ -129,7 +136,12 @@ public class BookService extends BaseService implements WeakToolInterface {
                     public void onPositiveListener() {
                         dismissBookReadyDialog();
                         removeHandlerMsg();
-                        startBook(bookProg.servid, bookProg.tsid, bookProg.sat);
+                        if (SWDJAPVRManager.getInstance().isRecording()) {
+                            showQuitRecordingDialog();
+                        } else {
+                            SWBookingManager.getInstance().cancelSubForPlay(4, SWBookingManager.getInstance().getCancelBookProg(bookInfo)); // 取消定时器防止到点回调消息过来
+                            bookReady(bookInfo);
+                        }
                     }
                 })
                 .setOnNegativeListener(getString(R.string.dialog_book_cancel), new OnCommNegativeListener() {
@@ -137,7 +149,7 @@ public class BookService extends BaseService implements WeakToolInterface {
                     public void onNegativeListener() {
                         dismissBookReadyDialog();
                         removeHandlerMsg();
-                        SWBookingManager.getInstance().cancelSubForPlay(0, SWBookingManager.getInstance().getCancelBookProg(bookProg));
+                        SWBookingManager.getInstance().cancelSubForPlay(4, SWBookingManager.getInstance().getCancelBookProg(bookInfo));
                     }
                 });
         if (mBookStandbyDialog.getWindow() != null) {
@@ -145,8 +157,31 @@ public class BookService extends BaseService implements WeakToolInterface {
                     WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY : WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
         }
         mBookStandbyDialog.show();
-        mBookCountDownHandler = new BookCountDownHandler(this, bookProg);
+        mBookCountDownHandler = new BookCountDownHandler(this, bookInfo);
         HandlerMsgManager.getInstance().sendMessage(mBookCountDownHandler, new HandlerMsgModel(BookCountDownHandler.MSG_COUNT_DOWN_SECONDS));
+    }
+
+    private void showQuitRecordingDialog() {
+        mQuitRecordingDialog = new QuitRecordingDialog(this);
+        mQuitRecordingDialog.content(getString(R.string.dialog_quit_record_content))
+                .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
+                    @Override
+                    public void onPositiveListener() {
+                        dismissQuitRecordingDialog();
+                        SWDJAPVRManager.getInstance().stopRecord();
+
+                        HSubforProg_t bookProg = SWBookingManager.getInstance().getReadyProgInfo();
+                        if (bookProg != null) {
+                            bookReady(bookProg);
+                        }
+                    }
+                })
+                .setOnNegativeListener("", new OnCommNegativeListener() {
+                    @Override
+                    public void onNegativeListener() {
+                        dismissQuitRecordingDialog();
+                    }
+                }).show();
     }
 
     private void updateBookReadyContent(HSubforProg_t bookInfo, int countDownSecond) {
@@ -170,6 +205,13 @@ public class BookService extends BaseService implements WeakToolInterface {
         }
     }
 
+    private void dismissQuitRecordingDialog() {
+        if (mQuitRecordingDialog != null && mQuitRecordingDialog.isShowing()) {
+            mQuitRecordingDialog.dismiss();
+            mQuitRecordingDialog = null;
+        }
+    }
+
     private static class BookCountDownHandler extends WeakHandler<BookService> {
         static final int MSG_COUNT_DOWN_SECONDS = 0;
         static final long COUNT_DOWN_SECOND_DELAY = 1000;
@@ -179,7 +221,7 @@ public class BookService extends BaseService implements WeakToolInterface {
         BookCountDownHandler(BookService view, HSubforProg_t bookInfo) {
             super(view);
             this.bookInfo = bookInfo;
-            this.countDownSeconds = bookInfo.second;
+            this.countDownSeconds = 60;
         }
 
         @Override
@@ -189,7 +231,7 @@ public class BookService extends BaseService implements WeakToolInterface {
             if (msg.what == MSG_COUNT_DOWN_SECONDS) {
                 context.updateBookReadyContent(bookInfo, --countDownSeconds);
                 if (countDownSeconds <= 0) {
-                    context.startBook(bookInfo.servid, bookInfo.tsid, bookInfo.sat);
+                    context.bookReady();
                 } else {
                     HandlerMsgManager.getInstance().sendMessage(context.mBookCountDownHandler, new HandlerMsgModel(MSG_COUNT_DOWN_SECONDS, COUNT_DOWN_SECOND_DELAY));
                 }
@@ -204,33 +246,48 @@ public class BookService extends BaseService implements WeakToolInterface {
         }
     }
 
-    private void startBook(int servid, int tsid, int sat) {
+    /**
+     * 立即跳转执行预录或播放
+     */
+    private void bookReady(HSubforProg_t bookInfo) {
+        if (bookInfo != null) {
+            startBook(bookInfo.schtype, bookInfo.lasttime);
+        }
+    }
+
+    /**
+     * 接收消息到点执行预录或播放
+     */
+    private void bookReady() {
+        HForplayprog_t readyBookInfo = SWBookingManager.getInstance().getCurrSubForPlay();
+        if (readyBookInfo != null) {
+            startBook(readyBookInfo.schtype, readyBookInfo.lasttime);
+        }
+    }
+
+    private void startBook(int schtype, int lasttime) {
         removeHandlerMsg();
         dismissBookReadyDialog();
 
-        PDPInfo_t recordProg = SWPDBaseManager.getInstance().getProgInfoByServiceId(servid, tsid, sat);
-        HForplayprog_t readyProg = SWBookingManager.getInstance().getCurrSubForPlay();
-        if (readyProg != null && recordProg != null) {
-            // 进入待机
-            if (readyProg.schtype == SWBooking.BookSchType.NONE.ordinal()) {
+        // 进入待机
+        if (schtype == SWBooking.BookSchType.NONE.ordinal()) {
 
-            } else {
-                Intent intent = new Intent();
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.setComponent(new ComponentName(getPackageName(), getPackageName() + ".ui.Topmost"));
-                if (readyProg.schtype == SWBooking.BookSchType.PLAY.ordinal()) {
-                    intent.putExtra(Constants.IntentKey.INTENT_BOOK_TYPE, ACTION_BOOKING_PLAY);
-                } else if (readyProg.schtype == SWBooking.BookSchType.RECORD.ordinal()) {
-                    intent.putExtra(Constants.IntentKey.INTENT_BOOK_TYPE, ACTION_BOOKING_RECORD);
-                    intent.putExtra(Constants.IntentKey.INTENT_BOOK_SECONDS, readyProg.lasttime);
-                }
+        } else {
+            Intent intent = new Intent();
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setComponent(new ComponentName(getPackageName(), getPackageName() + ".ui.Topmost"));
+            if (schtype == SWBooking.BookSchType.PLAY.ordinal()) {
+                intent.putExtra(Constants.IntentKey.INTENT_BOOK_TYPE, ACTION_BOOKING_PLAY);
+            } else if (schtype == SWBooking.BookSchType.RECORD.ordinal()) {
+                intent.putExtra(Constants.IntentKey.INTENT_BOOK_TYPE, ACTION_BOOKING_RECORD);
+                intent.putExtra(Constants.IntentKey.INTENT_BOOK_SECONDS, lasttime);
+            }
 
-                HPDPPlayInfo_t playInfo = SWFtaManager.getInstance().getCurrPlayInfo(0);
-                if (playInfo != null) {
-                    intent.putExtra(Constants.IntentKey.INTENT_BOOK_PROG_TYPE, playInfo.Progtype);
-                    intent.putExtra(Constants.IntentKey.INTENT_BOOK_PROG_NUM, playInfo.Progno);
-                    startActivity(intent);
-                }
+            HPDPPlayInfo_t playInfo = SWFtaManager.getInstance().getCurrPlayInfo(0);
+            if (playInfo != null) {
+                intent.putExtra(Constants.IntentKey.INTENT_BOOK_PROG_TYPE, playInfo.Progtype);
+                intent.putExtra(Constants.IntentKey.INTENT_BOOK_PROG_NUM, playInfo.Progno);
+                startActivity(intent);
             }
         }
     }

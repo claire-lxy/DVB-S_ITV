@@ -24,7 +24,7 @@ import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.SearchResultDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
-import com.sw.dvblib.MsgCB;
+import com.sw.dvblib.msg.cb.SearchMsgCB;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -88,6 +88,8 @@ public class TpBlindActivity extends BaseActivity {
     private Timer mBlindScanProgressTimer;
     private BlindScanProgressTimerTask mBlindScanProgressTimerTask;
 
+    private SearchMsgCB mSearchMsgCB = new BlindSearchMsgCB();
+
     @Override
     public int getLayoutId() {
         return R.layout.activity_tp_blind;
@@ -104,8 +106,7 @@ public class TpBlindActivity extends BaseActivity {
 
         SWPSearchManager.getInstance().config(SWFtaManager.getInstance().getCurrScanMode(),
                 SWFtaManager.getInstance().getCurrCAS(), SWFtaManager.getInstance().getCurrNetwork());
-//        SWDVBManager.getInstance().regMsgHandler(Constants.SCAN_CALLBACK_MSG_ID, Looper.getMainLooper(), new SearchMsgCB());
-        SWDVBManager.getInstance().regMsgHandler(Looper.getMainLooper(), new SearchMsgCB());
+        SWDVBManager.getInstance().regMsgHandler(Constants.SCAN_CALLBACK_MSG_ID, Looper.getMainLooper(), mSearchMsgCB);
         SWFtaManager.getInstance().blindScanStart(getSatelliteIndex());
 
         startBlindScanProgressTimer();
@@ -114,8 +115,7 @@ public class TpBlindActivity extends BaseActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        SWDVBManager.getInstance().regMsgHandler(null, null);
-//        SWDVBManager.getInstance().unRegMsgHandler(Constants.SCAN_CALLBACK_MSG_ID);
+        SWDVBManager.getInstance().unRegMsgHandler(Constants.SCAN_CALLBACK_MSG_ID, mSearchMsgCB);
         SWPSearchManager.getInstance().seatchStop(false);
         SWFtaManager.getInstance().blindScanStop();
         stopBlindScanProgressTimer();
@@ -199,7 +199,7 @@ public class TpBlindActivity extends BaseActivity {
         }
     }
 
-    private class SearchMsgCB extends MsgCB {
+    private class BlindSearchMsgCB extends SearchMsgCB {
 
         @Override
         public int PSearch_PROG_ONETSFAIL(int AllNum, int CurrIndex, int Sat,

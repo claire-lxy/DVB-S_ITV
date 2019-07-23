@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.konkawise.dtv.R;
+import com.konkawise.dtv.SWTimerManager;
 import com.konkawise.dtv.bean.DateModel;
 
 import java.text.DecimalFormat;
@@ -32,7 +33,10 @@ public class TimeUtils {
 
     public static int getYear(String year) {
         if (TextUtils.isEmpty(year)) {
-            return new Date().getYear() + 1900;
+            SysTime_t sysTime_t = SWTimerManager.getInstance().getSysTime();
+            if (sysTime_t != null) {
+                return sysTime_t.Year;
+            }
         }
         return Integer.valueOf(year);
     }
@@ -46,7 +50,10 @@ public class TimeUtils {
 
     public static int getMonth(String month) {
         if (TextUtils.isEmpty(month)) {
-            return new Date().getMonth() + 1;
+            SysTime_t sysTime_t = SWTimerManager.getInstance().getSysTime();
+            if (sysTime_t != null) {
+                return sysTime_t.Month;
+            }
         }
         return Integer.valueOf(month);
     }
@@ -60,7 +67,10 @@ public class TimeUtils {
 
     public static int getDay(String day) {
         if (TextUtils.isEmpty(day)) {
-            return new Date().getDate();
+            SysTime_t sysTime_t = SWTimerManager.getInstance().getSysTime();
+            if (sysTime_t != null) {
+                return sysTime_t.Day;
+            }
         }
         return Integer.valueOf(day);
     }
@@ -74,7 +84,10 @@ public class TimeUtils {
 
     public static int getHour(String hour) {
         if (TextUtils.isEmpty(hour)) {
-            return new Date().getHours();
+            SysTime_t sysTime_t = SWTimerManager.getInstance().getSysTime();
+            if (sysTime_t != null) {
+                return sysTime_t.Hour;
+            }
         }
         return Integer.valueOf(hour);
     }
@@ -88,7 +101,10 @@ public class TimeUtils {
 
     public static int getMinute(String minute) {
         if (TextUtils.isEmpty(minute)) {
-            return new Date().getMinutes();
+            SysTime_t sysTime_t = SWTimerManager.getInstance().getSysTime();
+            if (sysTime_t != null) {
+                return sysTime_t.Minute;
+            }
         }
         return Integer.valueOf(minute);
     }
