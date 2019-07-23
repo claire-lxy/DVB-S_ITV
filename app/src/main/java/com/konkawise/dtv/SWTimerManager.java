@@ -1,5 +1,6 @@
 package com.konkawise.dtv;
 
+import com.konkawise.dtv.bean.DateModel;
 import com.sw.dvblib.SWTimer;
 
 import vendor.konka.hardware.dtvmanager.V1_0.EpgEvent_t;
@@ -18,6 +19,13 @@ public class SWTimerManager {
 
     public static SWTimerManager getInstance() {
         return SWTimerManagerHolder.INSTANCE;
+    }
+
+    public boolean isProgramPlaying(EpgEvent_t epgEvent_t) {
+        SysTime_t startTime = getStartTime(epgEvent_t);
+        SysTime_t endTime = getEndTime(epgEvent_t);
+        SysTime_t currTime = getSysTime();
+        return new DateModel(startTime, currTime).isBetween(new DateModel(currTime, endTime));
     }
 
     /**

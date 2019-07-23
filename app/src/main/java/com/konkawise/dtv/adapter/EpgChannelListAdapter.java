@@ -8,6 +8,7 @@ import com.konkawise.dtv.SWTimerManager;
 import com.konkawise.dtv.adapter.base.BaseListViewAdapter;
 import com.konkawise.dtv.adapter.base.BaseListViewHolder;
 import com.konkawise.dtv.bean.DateModel;
+import com.sw.dvblib.SWBooking;
 
 import java.util.List;
 
@@ -28,10 +29,10 @@ public class EpgChannelListAdapter extends BaseListViewAdapter<EpgEvent_t> {
 
         holder.setText(R.id.epg_title, item.memEventName)
                 .setText(R.id.epg_time, new DateModel(startTime, endTime).getFormatHourAndMinute())
-                .setVisibility(R.id.epg_book_type, View.INVISIBLE)
-                .setImageResource(R.id.epg_book_type, R.mipmap.ic_book_play);
-        if (new DateModel(startTime, SWTimerManager.getInstance().getSysTime())
-                .isBetween(new DateModel(SWTimerManager.getInstance().getSysTime(), endTime))) {
+                .setVisibility(R.id.epg_book_type, item.schtype == SWBooking.BookSchType.PLAY.ordinal()
+                        || item.schtype == SWBooking.BookSchType.RECORD.ordinal() ? View.VISIBLE : View.INVISIBLE)
+                .setImageResource(R.id.epg_book_type, item.schtype == SWBooking.BookSchType.PLAY.ordinal() ? R.mipmap.ic_book_play : R.mipmap.ic_book_record);
+        if (SWTimerManager.getInstance().isProgramPlaying(item)) {
             holder.setText(R.id.epg_status, mContext.getString(R.string.epg_event_playing));
         } else {
             holder.setText(R.id.epg_status, "");
