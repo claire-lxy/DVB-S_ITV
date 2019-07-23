@@ -449,7 +449,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         SWDVBManager.getInstance().regMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, Looper.getMainLooper(), mAvMsgCB);
         showSurface();
         updatePfBarInfo();
-        startSmallHintBoxTimer();
+//        startSmallHintBoxTimer();
         restoreMenuItem(); // 恢复menu初始item显示
 
         if (SWPDBaseManager.getInstance().getCurrProgInfo() == null) {
