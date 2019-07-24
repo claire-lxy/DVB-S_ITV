@@ -13,6 +13,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.konkawise.dtv.R;
+import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.base.BaseDialogFragment;
 import com.sw.dvblib.SWFta;
@@ -67,10 +68,10 @@ public class AudioDialog extends BaseDialogFragment {
     protected void setup(View view) {
         mTv_title.setText(mTitle);
 
-        audioTrackPosition = SWFta.CreateInstance().getCurrProgParam(SWFta.OSDFTA_TRACK);
+        audioTrackPosition = SWFtaManager.getInstance().getCurrProgParam(SWFta.OSDFTA_TRACK);
         mTvAudioTrack.setText(mAudioTrackArray[audioTrackPosition]);
 
-        audioLanguagePosition = SWFta.CreateInstance().getCurrProgParam(SWFta.OSDFTA_AUDIO);
+        audioLanguagePosition = SWFtaManager.getInstance().getCurrProgParam(SWFta.OSDFTA_AUDIO);
 		ArrayList<String> audioNameList = SWPDBaseManager.getInstance().getCurrProgInfo().audioDB.audioName;
 		mAudioLanguageArray = new String[audioNameList.size()];
         for(int i=0, j=1; i<audioNameList.size(); i++) {
@@ -146,7 +147,7 @@ public class AudioDialog extends BaseDialogFragment {
 						if (--audioTrackPosition < 0)
 							audioTrackPosition = mAudioTrackArray.length - 1;
 						mTvAudioTrack.setText(mAudioTrackArray[audioTrackPosition]);
-						SWFta.CreateInstance().setCurrProgParam(SWFta.OSDFTA_TRACK, audioTrackPosition);
+						SWFtaManager.getInstance().setCurrProgParam(SWFta.OSDFTA_TRACK, audioTrackPosition);
 						break;
 
 					case ITEM_AUDIO_LANGUAGE:
@@ -155,7 +156,7 @@ public class AudioDialog extends BaseDialogFragment {
 						if (--audioLanguagePosition < 0)
 							audioLanguagePosition = mAudioLanguageArray.length - 1;
 						mTvAudioLanguage.setText(mAudioLanguageArray[audioLanguagePosition]);
-						SWFta.CreateInstance().setCurrProgParam(SWFta.OSDFTA_AUDIO, audioLanguagePosition);
+						SWFtaManager.getInstance().setCurrProgParam(SWFta.OSDFTA_AUDIO, audioLanguagePosition);
 						break;
 				}
 			}
@@ -166,7 +167,7 @@ public class AudioDialog extends BaseDialogFragment {
 						if (++audioTrackPosition > mAudioTrackArray.length - 1)
 							audioTrackPosition = 0;
 						mTvAudioTrack.setText(mAudioTrackArray[audioTrackPosition]);
-						SWFta.CreateInstance().setCurrProgParam(SWFta.OSDFTA_TRACK, audioTrackPosition);
+						SWFtaManager.getInstance().setCurrProgParam(SWFta.OSDFTA_TRACK, audioTrackPosition);
 						break;
 
 					case ITEM_AUDIO_LANGUAGE:
@@ -175,7 +176,7 @@ public class AudioDialog extends BaseDialogFragment {
 						if (++audioLanguagePosition > mAudioLanguageArray.length - 1)
 							audioLanguagePosition = 0;
 						mTvAudioLanguage.setText(mAudioLanguageArray[audioLanguagePosition]);
-						SWFta.CreateInstance().setCurrProgParam(SWFta.OSDFTA_AUDIO, audioLanguagePosition);
+						SWFtaManager.getInstance().setCurrProgParam(SWFta.OSDFTA_AUDIO, audioLanguagePosition);
 						break;
 				}
 			}

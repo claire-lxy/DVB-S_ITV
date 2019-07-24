@@ -3,7 +3,6 @@ package com.konkawise.dtv.ui;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.widget.TextView;

@@ -3,6 +3,8 @@ package com.konkawise.dtv;
 import com.sw.dvblib.SWFta;
 
 import vendor.konka.hardware.dtvmanager.V1_0.HPDPPlayInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HSubtitle_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HTeletext_t;
 import vendor.konka.hardware.dtvmanager.V1_0.ScanProgress_t;
 
 public class SWFtaManager {
@@ -108,10 +110,68 @@ public class SWFtaManager {
     }
 
     /**
+     * 获取Subtitle信息
+     */
+    public HSubtitle_t getSubtitleInfo(int serviceid, int index) {
+        return SWFta.CreateInstance().getSubtitleInfo(serviceid, index);
+    }
+
+    /**
+     * 获取当前Subtitle信息
+     */
+    public HSubtitle_t getCurSubtitleInfo(int serviceid) {
+        return SWFta.CreateInstance().getCurSubtitleInfo(serviceid);
+    }
+
+    /**
+     * 开启Subtitle
+     */
+    public void openSubtitle(int pid) {
+        SWFta.CreateInstance().openSubtitle(pid);
+    }
+
+    /**
      * 获取Teletext数量
      */
-    public int getTeletxtNum(int serviceid) {
+    public int getTeletextNum(int serviceid) {
         return SWFta.CreateInstance().getTeletxtNum(serviceid);
+    }
+
+    /**
+     * 获取Teletext信息
+     */
+    public HTeletext_t getTeletextInfo(int serviceid, int index) {
+        return SWFta.CreateInstance().getTeletextInfo(serviceid, index);
+    }
+
+    /**
+     * 开启Teletext
+     */
+    public void openTeletext(int pid) {
+        SWFta.CreateInstance().openTeletext(pid);
+    }
+
+    /**
+     * 根据type获取当前频道音轨参数
+     *
+     * @param type SWFta.OSDFTA_TRACK or SWFta.OSDFTA_AUDIO
+     */
+    public int getCurrProgParam(int type) {
+        return SWFta.CreateInstance().getCurrProgParam(type);
+    }
+
+    /**
+     * 设置频道音轨参数
+     */
+    public void setCurrProgParam(int type, int value) {
+        SWFta.CreateInstance().setCurrProgParam(type, value);
+    }
+
+    /**
+     * 设置SCART
+     */
+    public void setRGBorCVBS(int param) {
+        SWFta.CreateInstance().setRGBorCVBS(param);
     }
 
     /**

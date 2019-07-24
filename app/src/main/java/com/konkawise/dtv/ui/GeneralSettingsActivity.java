@@ -3,7 +3,6 @@ package com.konkawise.dtv.ui;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.konkawise.dtv.R;
@@ -22,19 +21,16 @@ import butterknife.OnClick;
 public class GeneralSettingsActivity extends BaseActivity {
 
     private static final String TAG = "KKDVB_" + GeneralSettingsActivity.class.getSimpleName();
-    private static final int ITEM_ANTENNA_POWER = 1;
-    private static final int ITEM_AREA_SETTING = 2;
-    private static final int ITEM_LCN = 3;
-    private static final int ITEM_SCART = 4;
-    private static final int ITEM_SUBTITLE_DISPLAY = 5;
-    private static final int ITEM_PFBAR_TIMEOUT = 6;
-    private static final int ITEM_ASPECT_RATIO = 7;
-    private static final int ITEM_SWITCH_CHANNEL = 8;
-    private static final int ITEM_FIRST_AUDIO_LANGUAGE = 9;
-    private static final int ITEM_SECOND_AUDIO_LANGUAGE = 10;
-    private static final int ITEM_TELETEXT_LANGUAGE = 11;
-    private static final int ITEM_SUBTITLE_LANGUAGE = 12;
-    private static final int ITEM_AUTO_START = 13;
+    private static final int ITEM_SCART = 1;
+    private static final int ITEM_SUBTITLE_DISPLAY = 2;
+    private static final int ITEM_PFBAR_TIMEOUT = 3;
+    private static final int ITEM_ASPECT_RATIO = 4;
+    private static final int ITEM_SWITCH_CHANNEL = 5;
+    private static final int ITEM_FIRST_AUDIO_LANGUAGE = 6;
+    private static final int ITEM_SECOND_AUDIO_LANGUAGE = 7;
+    private static final int ITEM_TELETEXT_LANGUAGE = 8;
+    private static final int ITEM_SUBTITLE_LANGUAGE = 9;
+    private static final int ITEM_AUTO_START = 10;
 
     @BindView(R.id.iv_scart_left)
     ImageView mIvScartLeft;
@@ -44,42 +40,6 @@ public class GeneralSettingsActivity extends BaseActivity {
 
     @BindView(R.id.iv_scart_right)
     ImageView mIvScartRight;
-    
-    @BindView(R.id.item_antenna_power)
-    RelativeLayout mItemAntennaPower;
-
-    @BindView(R.id.iv_antenna_power_left)
-    ImageView mIvAntennaPowerLeft;
-
-    @BindView(R.id.tv_antenna_power)
-    TextView mTvAntennaPower;
-
-    @BindView(R.id.iv_antenna_power_right)
-    ImageView mIvAntennaPowerRight;
-
-    @BindView(R.id.item_area_setting)
-    RelativeLayout mItemAreaSetting;
-
-    @BindView(R.id.iv_area_setting_left)
-    ImageView mIvAreaSettingLeft;
-
-    @BindView(R.id.tv_area_setting)
-    TextView mTvAreaSetting;
-
-    @BindView(R.id.iv_area_setting_right)
-    ImageView mIvAreaSettingRight;
-
-    @BindView(R.id.item_lcn)
-    RelativeLayout mItemLcn;
-
-    @BindView(R.id.iv_lcn_left)
-    ImageView mIvLcnLeft;
-
-    @BindView(R.id.tv_lcn)
-    TextView mTvLcn;
-
-    @BindView(R.id.iv_lcn_right)
-    ImageView mIvLcnRight;
 
     @BindView(R.id.iv_subtitle_display_left)
     ImageView mIvSubtitleDisplayLeft;
@@ -164,12 +124,6 @@ public class GeneralSettingsActivity extends BaseActivity {
 
     @BindArray(R.array.scart)
     String[] mScartArray;
-    
-    @BindArray(R.array.antenna_power)
-    String[] mAntennaPowerArray;
-
-    @BindArray(R.array.area_setting)
-    String[] mAreaSettingArray;
 
     @BindArray(R.array.pfbar_time)
     String[] mPfTimeoutArray;
@@ -191,21 +145,6 @@ public class GeneralSettingsActivity extends BaseActivity {
         showGeneralSettingDialog(getString(R.string.scart), Arrays.asList(mScartArray), scartPosition);
     }
     
-    @OnClick(R.id.item_antenna_power)
-    void antennaPower() {
-        showGeneralSettingDialog(getString(R.string.antenna_power), Arrays.asList(mGeneralSwitchArray), antennaPowerPosition);
-    }
-
-    @OnClick(R.id.item_area_setting)
-    void areaSetting() {
-        showGeneralSettingDialog(getString(R.string.area_setting), Arrays.asList(mAreaSettingArray), areaSettingPosition);
-    }
-
-    @OnClick(R.id.item_lcn)
-    void lcn() {
-        showGeneralSettingDialog(getString(R.string.lcn), Arrays.asList(mGeneralSwitchArray), lcnPosition);
-    }
-
     @OnClick(R.id.item_subtitle_display)
     void subtitleDisplay() {
         showGeneralSettingDialog(getString(R.string.subtitles_setting), Arrays.asList(mGeneralSwitchArray), subtitleDisplayPosition);
@@ -253,9 +192,6 @@ public class GeneralSettingsActivity extends BaseActivity {
     
     private int mCurrentSelectItem = ITEM_SCART;
     private int scartPosition;
-    private int antennaPowerPosition;
-    private int areaSettingPosition;
-    private int lcnPosition;
     private int subtitleDisplayPosition;
     private int pfTimeoutPosition;
     private int aspectRatioPosition;
@@ -275,14 +211,7 @@ public class GeneralSettingsActivity extends BaseActivity {
 
     @Override
     protected void setup() {
-        initIntent();
         initData();
-
-        if (isT2Setting()) {
-            mTvAntennaPower.setText(mGeneralSwitchArray[antennaPowerPosition]);
-            mTvAreaSetting.setText(mAreaSettingArray[areaSettingPosition]);
-            mTvLcn.setText(mGeneralSwitchArray[lcnPosition]);
-        }
 
         mTvScart.setText(mScartArray[scartPosition]);
         mTvSubtitleDisplay.setText(mGeneralSwitchArray[subtitleDisplayPosition]);
@@ -296,22 +225,8 @@ public class GeneralSettingsActivity extends BaseActivity {
         mTvAutoStart.setText(mGeneralSwitchArray[autoStartPosition]);
     }
 
-    private void initIntent() {
-        if (isT2Setting()) {
-            mItemAntennaPower.setVisibility(View.VISIBLE);
-            mItemAreaSetting.setVisibility(View.VISIBLE);
-            mItemLcn.setVisibility(View.VISIBLE);
-        }
-    }
-
-    private boolean isT2Setting() {
-//        return getIntent().getBooleanExtra(Constants.IntentKey.INTENT_T2_SETTING, false);
-        return false;
-    }
-
     private void initData() {
         scartPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_TV_SCART.ordinal()));
-        antennaPowerPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_AntennaPower.ordinal()));
         subtitleDisplayPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleDisplay.ordinal()));
         pfTimeoutPosition = getSelectPosition(new int[]{5, 8, 10},SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_PD_dispalytime.ordinal()));
         aspectRatioPosition = getSelectPosition(new int[]{0, 1, 2}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_ScreenRatio.ordinal()));
@@ -345,20 +260,7 @@ public class GeneralSettingsActivity extends BaseActivity {
                                 mTvScart.setText(checkContent);
                                 scartPosition = Arrays.asList(mScartArray).indexOf(checkContent);
                                 SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_TV_SCART.ordinal(), scartPosition);
-                                SWFta.CreateInstance().setRGBorCVBS(scartPosition);
-                                break;
-                            case ITEM_ANTENNA_POWER:
-                                mTvAntennaPower.setText(checkContent);
-                                antennaPowerPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AntennaPower.ordinal(), antennaPowerPosition);
-                                break;
-                            case ITEM_AREA_SETTING:
-                                mTvAreaSetting.setText(checkContent);
-                                areaSettingPosition = Arrays.asList(mAreaSettingArray).indexOf(checkContent);
-                                break;
-                            case ITEM_LCN:
-                                mTvLcn.setText(checkContent);
-                                lcnPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
+                                SWFtaManager.getInstance().setRGBorCVBS(scartPosition);
                                 break;
                             case ITEM_SUBTITLE_DISPLAY:
                                 mTvSubtitleDisplay.setText(checkContent);
@@ -415,71 +317,36 @@ public class GeneralSettingsActivity extends BaseActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP) {
-            if (isT2Setting()) {
-                switch (mCurrentSelectItem) {
-                    case ITEM_AREA_SETTING:
-                    case ITEM_LCN:
-                    case ITEM_SUBTITLE_DISPLAY:
-                    case ITEM_PFBAR_TIMEOUT:
-                    case ITEM_ASPECT_RATIO:
-                    case ITEM_SWITCH_CHANNEL:
-                    case ITEM_FIRST_AUDIO_LANGUAGE:
-                    case ITEM_SECOND_AUDIO_LANGUAGE:
-                    case ITEM_TELETEXT_LANGUAGE:
-                    case ITEM_SUBTITLE_LANGUAGE:
-                    case ITEM_AUTO_START:
-                        mCurrentSelectItem--;
-                        break;
-                }
-            } else {
-                switch (mCurrentSelectItem) {
-					case ITEM_SUBTITLE_DISPLAY:
-                    case ITEM_PFBAR_TIMEOUT:
-                    case ITEM_ASPECT_RATIO:
-                    case ITEM_SWITCH_CHANNEL:
-                    case ITEM_FIRST_AUDIO_LANGUAGE:
-                    case ITEM_SECOND_AUDIO_LANGUAGE:
-                    case ITEM_TELETEXT_LANGUAGE:
-                    case ITEM_SUBTITLE_LANGUAGE:
-                    case ITEM_AUTO_START:
-                        mCurrentSelectItem--;
-                        break;
-                }
+            switch (mCurrentSelectItem) {
+                case ITEM_SUBTITLE_DISPLAY:
+                case ITEM_PFBAR_TIMEOUT:
+                case ITEM_ASPECT_RATIO:
+                case ITEM_SWITCH_CHANNEL:
+                case ITEM_FIRST_AUDIO_LANGUAGE:
+                case ITEM_SECOND_AUDIO_LANGUAGE:
+                case ITEM_TELETEXT_LANGUAGE:
+                case ITEM_SUBTITLE_LANGUAGE:
+                case ITEM_AUTO_START:
+                    mCurrentSelectItem--;
+                    break;
             }
 
             itemFocusChange();
         }
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN) {
-            if (isT2Setting()) {
-                switch (mCurrentSelectItem) {
-                    case ITEM_ANTENNA_POWER:
-                    case ITEM_AREA_SETTING:
-                    case ITEM_LCN:
-                    case ITEM_SUBTITLE_DISPLAY:
-                    case ITEM_PFBAR_TIMEOUT:
-                    case ITEM_ASPECT_RATIO:
-                    case ITEM_SWITCH_CHANNEL:
-                    case ITEM_FIRST_AUDIO_LANGUAGE:
-                    case ITEM_SECOND_AUDIO_LANGUAGE:
-                    case ITEM_TELETEXT_LANGUAGE:
-                        mCurrentSelectItem++;
-                        break;
-                }
-            } else {
-                switch (mCurrentSelectItem) {
-                    case ITEM_SCART:
-                    case ITEM_SUBTITLE_DISPLAY:
-                    case ITEM_PFBAR_TIMEOUT:
-                    case ITEM_ASPECT_RATIO:
-                    case ITEM_SWITCH_CHANNEL:
-                    case ITEM_FIRST_AUDIO_LANGUAGE:
-                    case ITEM_SECOND_AUDIO_LANGUAGE:
-                    case ITEM_TELETEXT_LANGUAGE:
-                    case ITEM_SUBTITLE_LANGUAGE:
-                        mCurrentSelectItem++;
-                        break;
-                }
+            switch (mCurrentSelectItem) {
+                case ITEM_SCART:
+                case ITEM_SUBTITLE_DISPLAY:
+                case ITEM_PFBAR_TIMEOUT:
+                case ITEM_ASPECT_RATIO:
+                case ITEM_SWITCH_CHANNEL:
+                case ITEM_FIRST_AUDIO_LANGUAGE:
+                case ITEM_SECOND_AUDIO_LANGUAGE:
+                case ITEM_TELETEXT_LANGUAGE:
+                case ITEM_SUBTITLE_LANGUAGE:
+                    mCurrentSelectItem++;
+                    break;
             }
 
             itemFocusChange();
@@ -492,24 +359,7 @@ public class GeneralSettingsActivity extends BaseActivity {
                         scartPosition = mScartArray.length - 1;
                     mTvScart.setText(mScartArray[scartPosition]);
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_TV_SCART.ordinal(), scartPosition);
-                    SWFta.CreateInstance().setRGBorCVBS(scartPosition);
-                    break;
-
-                case ITEM_ANTENNA_POWER:
-                    if (--antennaPowerPosition < 0)
-                        antennaPowerPosition = mGeneralSwitchArray.length - 1;
-                    mTvAntennaPower.setText(mGeneralSwitchArray[antennaPowerPosition]);
-                    break;
-
-                case ITEM_AREA_SETTING:
-                    if (--areaSettingPosition < 0)
-                        areaSettingPosition = mAreaSettingArray.length - 1;
-                    mTvAreaSetting.setText(mAreaSettingArray[areaSettingPosition]);
-                    break;
-
-                case ITEM_LCN:
-                    if (--lcnPosition < 0) lcnPosition = mGeneralSwitchArray.length - 1;
-                    mTvLcn.setText(mGeneralSwitchArray[lcnPosition]);
+                    SWFtaManager.getInstance().setRGBorCVBS(scartPosition);
                     break;
 
                 case ITEM_SUBTITLE_DISPLAY:
@@ -578,31 +428,13 @@ public class GeneralSettingsActivity extends BaseActivity {
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
             switch (mCurrentSelectItem) {
-
 				case ITEM_SCART:
 					if (++scartPosition > mScartArray.length - 1)
 						scartPosition = 0;
 					mTvScart.setText(mScartArray[scartPosition]);
 					SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_TV_SCART.ordinal(), scartPosition);
-					SWFta.CreateInstance().setRGBorCVBS(scartPosition);
+                    SWFtaManager.getInstance().setRGBorCVBS(scartPosition);
 					break;
-
-                case ITEM_ANTENNA_POWER:
-                    if (++antennaPowerPosition > mGeneralSwitchArray.length - 1)
-                        antennaPowerPosition = 0;
-                    mTvAntennaPower.setText(mGeneralSwitchArray[antennaPowerPosition]);
-                    break;
-
-                case ITEM_AREA_SETTING:
-                    if (++areaSettingPosition > mAreaSettingArray.length - 1)
-                        areaSettingPosition = 0;
-                    mTvAreaSetting.setText(mAreaSettingArray[areaSettingPosition]);
-                    break;
-
-                case ITEM_LCN:
-                    if (++lcnPosition > mSwitchChannelModeArray.length - 1) lcnPosition = 0;
-                    mTvLcn.setText(mGeneralSwitchArray[lcnPosition]);
-                    break;
 
                 case ITEM_SUBTITLE_DISPLAY:
                     if (++subtitleDisplayPosition > mGeneralSwitchArray.length - 1)
@@ -672,9 +504,6 @@ public class GeneralSettingsActivity extends BaseActivity {
     }
 
     private void itemFocusChange() {
-        antennaPowerItemFocusChange();
-        areaSettingItemFocusChange();
-        lcnItemFocusChange();
 		itemChange(ITEM_SCART, mIvScartLeft, mIvScartRight, mTvScart);
         itemChange(ITEM_SUBTITLE_DISPLAY, mIvSubtitleDisplayLeft, mIvSubtitleDisplayRight, mTvSubtitleDisplay);
         itemChange(ITEM_PFBAR_TIMEOUT, mIvPfTimeoutLeft, mIvPfTimeoutRight, mTvPfTimeout);
@@ -685,24 +514,6 @@ public class GeneralSettingsActivity extends BaseActivity {
         itemChange(ITEM_TELETEXT_LANGUAGE, mIvTeletextLanguageLeft, mIvTeletextLanguageRight, mTvTeletextLanguage);
         itemChange(ITEM_SUBTITLE_LANGUAGE, mIvSubtitleLanguageLeft, mIvSubtitleLanguageRight, mTvSubtitleLanguage);
 		itemChange(ITEM_AUTO_START, mIvAutoStartLeft, mIvAutoStartRight, mTvAutoStart);
-    }
-
-    private void antennaPowerItemFocusChange() {
-        if (isT2Setting()) {
-            itemChange(ITEM_ANTENNA_POWER, mIvAntennaPowerLeft, mIvAntennaPowerRight, mTvAntennaPower);
-        }
-    }
-
-    private void areaSettingItemFocusChange() {
-        if (isT2Setting()) {
-            itemChange(ITEM_AREA_SETTING, mIvAreaSettingLeft, mIvAreaSettingRight, mTvAreaSetting);
-        }
-    }
-
-    private void lcnItemFocusChange() {
-        if (isT2Setting()) {
-            itemChange(ITEM_LCN, mIvLcnLeft, mIvLcnRight, mTvLcn);
-        }
     }
 
     private void itemChange(int selectItem, ImageView ivLeft, ImageView ivRight, TextView textView) {

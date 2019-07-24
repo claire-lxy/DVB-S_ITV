@@ -183,7 +183,7 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface {
             mTvProgNum.setText(String.valueOf(currProgInfo.PShowNo));
             mTvProgName.setText(currProgInfo.Name);
             mTvSubtitleNum.setText(String.valueOf(SWFtaManager.getInstance().getSubtitleNum(currProgInfo.ServID)));
-            mTvTeletxtNum.setText(String.valueOf(SWFtaManager.getInstance().getTeletxtNum(currProgInfo.ServID)));
+            mTvTeletxtNum.setText(String.valueOf(SWFtaManager.getInstance().getTeletextNum(currProgInfo.ServID)));
             mTvRateNum.setText("0");
             mTvSoundNum.setText(String.valueOf(currProgInfo.audioDB.audioName.size()));
 

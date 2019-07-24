@@ -63,7 +63,6 @@ import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
 import com.sw.dvblib.SWDVB;
 import com.sw.dvblib.msg.cb.AVMsgCB;
-import com.sw.dvblib.SWFta;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -327,7 +326,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     private PfDetailDialog mPfDetailDialog;
     private PasswordDialog mPasswordDialog;
     private SearchChannelDialog mSearchChannelDialog;
-    private PasswordDialog mFirstLaunchDialog;
+    private PasswordDialog mSettingPasswordDialog;
 
     private boolean mProgListShow;
     private boolean mMenuShow;
@@ -1084,7 +1083,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
 
     private void checkLaunchSettingPassword() {
         if (!PreferenceManager.getInstance().getBoolean(Constants.PrefsKey.FIRST_LAUNCH)) {
-            showFirstLaunchDialog();
+            showSettingPasswordDialog();
         }
     }
 
@@ -1297,21 +1296,21 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
 
         int currSubtitle = 0;
         int serviceid = SWPDBaseManager.getInstance().getCurrProgInfo().ServID;
-        int num = SWFta.CreateInstance().getSubtitleNum(serviceid);
+        int num = SWFtaManager.getInstance().getSubtitleNum(serviceid);
         final int[] pids = new int[num];
         List subtitles = new ArrayList<HashMap<String, Object>>();
         HashMap off = new HashMap<String, Object>();
         off.put(Constants.SUBTITLE_NAME, "OFF");
         subtitles.add(off);
         for (int index = 0; index < num; index++) {
-            HSubtitle_t subtitle = SWFta.CreateInstance().getSubtitleInfo(serviceid, index);
+            HSubtitle_t subtitle = SWFtaManager.getInstance().getSubtitleInfo(serviceid, index);
             if (subtitle.used != 0) {
                 HashMap map = new HashMap<String, Object>();
                 map.put(Constants.SUBTITLE_NAME, subtitle.Name);
                 map.put(Constants.SUBTITLE_ORG_TYPE, subtitle.OrgType == 0);
                 map.put(Constants.SUBTITLE_TYPE, (subtitle.Type >= 0x20 && subtitle.Type <= 0x24) || subtitle.Type == 0x05);
                 subtitles.add(map);
-                if (SWFta.CreateInstance().getCurSubtitleInfo(serviceid).Name.equals(subtitle.Name))
+                if (SWFtaManager.getInstance().getCurSubtitleInfo(serviceid).Name.equals(subtitle.Name))
                     currSubtitle = index;
             }
         }
@@ -1324,7 +1323,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                     @Override
                     public void onDismiss(SubtitleDialog dialog, int position, String checkContent) {
                         if (position > 0)
-                            SWFta.CreateInstance().openSubtitle(pids[position - 1]);
+                            SWFtaManager.getInstance().openSubtitle(pids[position - 1]);
                     }
                 }).show(getSupportFragmentManager(), SubtitleDialog.TAG);
     }
@@ -1334,12 +1333,12 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
 
         int currTeleText = 0;
         int serviceid = SWPDBaseManager.getInstance().getCurrProgInfo().ServID;
-        int num = SWFta.CreateInstance().getTeletxtNum(serviceid);
+        int num = SWFtaManager.getInstance().getTeletextNum(serviceid);
         final int[] pids = new int[num];
         String[] teletextNames = new String[num + 1];
         teletextNames[0] = "OFF";
         for (int index = 0; index < num; index++) {
-            HTeletext_t teletext = SWFta.CreateInstance().getTeletextInfo(serviceid, index);
+            HTeletext_t teletext = SWFtaManager.getInstance().getTeletextInfo(serviceid, index);
             if (teletext.used != 0) {
                 teletextNames[index + 1] = teletext.Name;
                 pids[index] = teletext.Pid;
@@ -1354,7 +1353,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                     @Override
                     public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
                         if (position > 0)
-                            SWFta.CreateInstance().openTeletext(pids[position - 1]);
+                            SWFtaManager.getInstance().openTeletext(pids[position - 1]);
                     }
                 }).show(getSupportFragmentManager(), "teletext");
     }
@@ -1365,14 +1364,14 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         new AudioDialog().title(getString(R.string.audio)).show(getSupportFragmentManager(), AudioDialog.TAG);
     }
 
-    private void showFirstLaunchDialog() {
-        mFirstLaunchDialog = new PasswordDialog();
-        mFirstLaunchDialog.setOnPasswordInputListener(new PasswordDialog.OnPasswordInputListener() {
+    private void showSettingPasswordDialog() {
+        mSettingPasswordDialog = new PasswordDialog();
+        mSettingPasswordDialog.setOnPasswordInputListener(new PasswordDialog.OnPasswordInputListener() {
             @Override
             public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
                 if (isValid) {
                     PreferenceManager.getInstance().putBoolean(Constants.PrefsKey.FIRST_LAUNCH, true);
-                    dismissPasswordDialog();
+                    dismissSettingPasswordDialog();
 
                     if (SWPDBaseManager.getInstance().getCurrProgInfo() == null) {
                         showSearchChannelDialog();
@@ -1380,10 +1379,11 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                 }
             }
         });
-        mFirstLaunchDialog.setOnKeyListener(new PasswordDialog.OnKeyListener() {
+        mSettingPasswordDialog.setOnKeyListener(new PasswordDialog.OnKeyListener() {
             @Override
             public boolean onKeyListener(PasswordDialog dialog, int keyCode, KeyEvent event) {
                 if (keyCode == KeyEvent.KEYCODE_BACK) {
+                    dismissSettingPasswordDialog();
                     UIApiManager.getInstance().stopPlay(0);
                     finish();
                     return true;
@@ -1391,7 +1391,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                 return false;
             }
         });
-        mFirstLaunchDialog.show(getSupportFragmentManager(), Constants.PrefsKey.FIRST_LAUNCH);
+        mSettingPasswordDialog.show(getSupportFragmentManager(), Constants.PrefsKey.FIRST_LAUNCH);
     }
 
     private void showQuitRecordDialog(KeyEvent event) {
@@ -1442,6 +1442,13 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         if (mPasswordDialog != null && mPasswordDialog.getDialog() != null && mPasswordDialog.isVisible()) {
             mPasswordDialog.dismiss();
             mPasswordDialog = null;
+        }
+    }
+
+    private void dismissSettingPasswordDialog() {
+        if (mSettingPasswordDialog != null && mSettingPasswordDialog.getDialog() != null && mSettingPasswordDialog.isVisible()) {
+            mSettingPasswordDialog.dismiss();
+            mSettingPasswordDialog = null;
         }
     }
 
