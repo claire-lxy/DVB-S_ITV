@@ -12,7 +12,8 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -67,9 +68,9 @@ dependencies {
     implementation "org.greenrobot:eventbus:$rootProject.eventBusVersion"
     implementation files('libs/swdvb.jar')
 
-//    // leakcanary
-//    debugImplementation "com.squareup.leakcanary:leakcanary-android:$rootProject.leakCanaryVersion"
-//    releaseImplementation "com.squareup.leakcanary:leakcanary-android-no-op:$rootProject.leakCanaryVersion"
-//    // Optional, if you use support library fragments:
-//    debugImplementation "com.squareup.leakcanary:leakcanary-support-fragment:$rootProject.leakCanaryVersion"
+    // leakcanary
+    debugImplementation "com.squareup.leakcanary:leakcanary-android:$rootProject.leakCanaryVersion"
+    releaseImplementation "com.squareup.leakcanary:leakcanary-android-no-op:$rootProject.leakCanaryVersion"
+    // Optional, if you use support library fragments:
+    debugImplementation "com.squareup.leakcanary:leakcanary-support-fragment:$rootProject.leakCanaryVersion"
 }
