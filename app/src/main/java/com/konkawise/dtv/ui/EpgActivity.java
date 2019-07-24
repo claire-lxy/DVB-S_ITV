@@ -37,6 +37,7 @@ import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.PasswordDialog;
+import com.konkawise.dtv.event.BookUpdateEvent;
 import com.konkawise.dtv.utils.TimeUtils;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.view.TVListView;
@@ -46,6 +47,10 @@ import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
 import com.sw.dvblib.SWBooking;
 import com.sw.dvblib.msg.cb.AVMsgCB;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -142,7 +147,7 @@ public class EpgActivity extends BaseActivity {
         mDateButtonFocus = hasFocus;
         for (int i = 0; i < mDateIds.length; i++) {
             if (mDateIds[i] == v.getId()) {
-                mCurrentFocusDate = i;
+                mCurrentFocusDateIndex = i;
                 updateDateFocus();
                 updateCurrentDate();
                 break;
@@ -150,7 +155,7 @@ public class EpgActivity extends BaseActivity {
         }
 
         if (hasFocus) {
-            updateEpgChannel(v.getId());
+            updateEpgChannel(mCurrentFocusDateIndex);
         }
     }
 
@@ -170,10 +175,8 @@ public class EpgActivity extends BaseActivity {
     private Button[] mDates;
     private int mCurrProgSelectPosition;
     private int mCurrEpgSelectPosition;
-    private int mCurrentFocusDate;
+    private int mCurrentFocusDateIndex;
     private boolean mDateButtonFocus;
-
-    private boolean mBookEpg;
 
     private LoadEpgChannelRunnable mLoadEpgChannelRunnable;
     // 外层key为频道号progNo，内层key为日期id
@@ -231,21 +234,14 @@ public class EpgActivity extends BaseActivity {
             if (null == pdpm) return;
             SWEpgManager.getInstance().sentDataReq(pdpm.Sat, pdpm.TsID, pdpm.ServID);
 
-            context.notifyProgChange(new HandlerMsgModel(EpgMsgHandler.MSG_PROG_CHANGE_LOAD, context.mCurrentFocusDate, RELOAD_CHANNEL_DELAY), true);
+            context.notifyProgChange(new HandlerMsgModel(EpgMsgHandler.MSG_PROG_CHANGE_LOAD, context.mCurrentFocusDateIndex, RELOAD_CHANNEL_DELAY), true);
             context.notifyUpdateDate();
 
             context.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    SparseArray<List<EpgEvent_t>> epgChannelListMap = context.mEpgChannelCacheMap.get(pdpm.ProgNo);
-                    if (epgChannelListMap != null) {
-                        List<EpgEvent_t> epgChannelList = epgChannelListMap.get(context.mCurrentFocusDate);
-                        if (epgChannelList == null || epgChannelList.isEmpty()) {
-                            context.showLoadingEpg();
-                        }
-                    } else {
-                        context.showLoadingEpg();
-                    }
+                    context.mEpgChannelCacheMap.clear();
+                    context.showLoadingEpg();
                 }
             });
         }
@@ -260,11 +256,10 @@ public class EpgActivity extends BaseActivity {
     protected void setup() {
         SWPDBaseManager.getInstance().setCurrProgType(0, 0);
         mEpgMsgHandler = new EpgMsgHandler(this);
-        mUpdateChannelTimer = new Timer();
-        mUpdateChannelTimer.schedule(new UpdateEpgChannelTimerTask(this), 0, RELOAD_CHANNEL_PERIOD);
-
         mLoadEpgChannelRunnable = new LoadEpgChannelRunnable(this, R.id.btn_date_0);
+        EventBus.getDefault().register(this);
 
+        initUpdateEpgChannelTimer();
         initCurrentDate();
         initEpgChannelDate();
         initEpgList();
@@ -276,7 +271,6 @@ public class EpgActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         SWDVBManager.getInstance().regMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, Looper.getMainLooper(), mPlayMsgCB);
-        updateEpgChannel(mCurrentFocusDate);
         startUpdateRealTime();
     }
 
@@ -290,15 +284,23 @@ public class EpgActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
-        if (mBookEpg) SWBookingManager.getInstance().updateDBase(0);
-
         dismissPasswordDialog();
+        cancelUpdateEpgChannelTimer();
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
+    }
+
+    private void initUpdateEpgChannelTimer() {
+        mUpdateChannelTimer = new Timer();
+        mUpdateChannelTimer.schedule(new UpdateEpgChannelTimerTask(this), 0, RELOAD_CHANNEL_PERIOD);
+    }
+
+    private void cancelUpdateEpgChannelTimer() {
         if (mUpdateChannelTimer != null) {
             mUpdateChannelTimer.cancel();
             mUpdateChannelTimer.purge();
             mUpdateChannelTimer = null;
         }
-        super.onDestroy();
     }
 
     private void initCurrentDate() {
@@ -315,7 +317,7 @@ public class EpgActivity extends BaseActivity {
             int maxDayOfMonth = TimeUtils.getDayOfMonthByYearAndMonth(sysTime.Year, sysTime.Month);
             int year = sysTime.Year;
             int month = sysTime.Month;
-            int day = sysTime.Day + mCurrentFocusDate;
+            int day = sysTime.Day + mCurrentFocusDateIndex;
             if (day > maxDayOfMonth) {
                 day = 1;
                 month++;
@@ -388,24 +390,26 @@ public class EpgActivity extends BaseActivity {
     }
 
     private void initEpgChannelList() {
-        mEpgChannelAdapter = new EpgChannelListAdapter(this, new ArrayList<>());
-        mLvEpgChannel.setAdapter(mEpgChannelAdapter);
+        if (mEpgChannelAdapter == null) {
+            mEpgChannelAdapter = new EpgChannelListAdapter(this, new ArrayList<>());
+            mLvEpgChannel.setAdapter(mEpgChannelAdapter);
+        }
 
         mLvEpgChannel.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int keycode, KeyEvent event) {
                 if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP) {
-                    mLvEpgChannel.setNextFocusUpId(mDateIds[mCurrentFocusDate]);
+                    mLvEpgChannel.setNextFocusUpId(mDateIds[mCurrentFocusDateIndex]);
                 } else if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
-                    if (mCurrentFocusDate == 0) {
+                    if (mCurrentFocusDateIndex == 0) {
                         mLvProgList.requestFocus();
                     } else {
-                        mDates[--mCurrentFocusDate].requestFocus();
+                        mDates[--mCurrentFocusDateIndex].requestFocus();
                     }
                     return true;
                 } else if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
-                    if (mCurrentFocusDate < mDates.length - 1) {
-                        mDates[++mCurrentFocusDate].requestFocus();
+                    if (mCurrentFocusDateIndex < mDates.length - 1) {
+                        mDates[++mCurrentFocusDateIndex].requestFocus();
                     }
                     return true;
                 }
@@ -498,7 +502,6 @@ public class EpgActivity extends BaseActivity {
                         Log.i(TAG, "new book info = " + newBookInfo);
 
                         HSubforProg_t conflictBookInfo = SWBookingManager.getInstance().conflictCheck(newBookInfo, 0);
-                        Log.i(TAG, "conflict book info = " + conflictBookInfo);
                         int conflictType = SWBookingManager.getInstance().getConflictType(conflictBookInfo);
                         switch (conflictType) {
                             case Constants.BOOK_CONFLICT_NONE: // 当前参数的book没有冲突，正常添加删除
@@ -511,7 +514,7 @@ public class EpgActivity extends BaseActivity {
                                 break;
                         }
 
-                        mBookEpg = true;
+                        SWBookingManager.getInstance().updateDBase(0);
                     }
                 }).show(getSupportFragmentManager(), CommCheckItemDialog.TAG);
     }
@@ -557,7 +560,7 @@ public class EpgActivity extends BaseActivity {
      * 更新Epg book标志图标
      */
     private void updateItemBookTag(int bookSchType) {
-        if (mEpgChannelAdapter.getCount() > 0) {
+        if (mProgAdapter.getCount() > 0 && mEpgChannelAdapter.getCount() > 0) {
             EpgEvent_t item = mEpgChannelAdapter.getItem(mCurrEpgSelectPosition);
             if (item != null) {
                 if (bookSchType == SWBooking.BookSchType.NONE.ordinal()) {
@@ -568,22 +571,27 @@ public class EpgActivity extends BaseActivity {
                     item.schtype = (byte) SWBooking.BookSchType.RECORD.ordinal();
                 }
                 mEpgChannelAdapter.updateData(mCurrEpgSelectPosition, item);
+
+                updateEpgChannelCache(item.schtype);
             }
         }
-
-        clearEpgChannelCache();
     }
 
     /**
-     * 清空频道当天缓存，切换日期时重新加载或1分钟后自动重新刷新加载
+     * Epg book更改，缓存同步更新
      */
-    private void clearEpgChannelCache() {
-        if (mProgAdapter.getCount() > 0 && mEpgChannelCacheMap.size() > 0) {
-            SparseArray<List<EpgEvent_t>> map = mEpgChannelCacheMap.get(mProgAdapter.getItem(mCurrProgSelectPosition).ProgNo);
-            if (map != null) {
-                List<EpgEvent_t> epgChannelList = map.get(mCurrentFocusDate);
-                if (epgChannelList != null && !epgChannelList.isEmpty()) {
-                    epgChannelList.clear();
+    private void updateEpgChannelCache(int schType) {
+        int progNo = mProgAdapter.getItem(mCurrProgSelectPosition).ProgNo;
+        SparseArray<List<EpgEvent_t>> epgChannelMap = mEpgChannelCacheMap.get(progNo);
+        if (epgChannelMap != null && epgChannelMap.size() > 0) {
+            List<EpgEvent_t> epgChannelList = epgChannelMap.get(mCurrentFocusDateIndex);
+            if (epgChannelList != null && !epgChannelList.isEmpty() && mCurrEpgSelectPosition < epgChannelList.size()) {
+                EpgEvent_t epgEvent = epgChannelList.get(mCurrEpgSelectPosition);
+                if (epgEvent != null) {
+                    epgEvent.schtype = (byte) schType;
+                    epgChannelList.set(mCurrEpgSelectPosition, epgEvent);
+                    epgChannelMap.put(mCurrentFocusDateIndex, epgChannelList);
+                    mEpgChannelCacheMap.put(progNo, epgChannelMap);
                 }
             }
         }
@@ -705,7 +713,7 @@ public class EpgActivity extends BaseActivity {
      */
     private void epgItemSelect(int condition) {
         dismissPasswordDialog();
-        mCurrentFocusDate = 0;
+        mCurrentFocusDateIndex = 0;
         updateDateFocus();
 
         notifyProgChange();
@@ -717,7 +725,7 @@ public class EpgActivity extends BaseActivity {
      */
     private void updateDateFocus() {
         for (int i = 0; i < mDates.length; i++) {
-            if (i == mCurrentFocusDate) {
+            if (i == mCurrentFocusDateIndex) {
                 mDates[i].setTextColor(getResources().getColor(R.color.epg_text_select));
                 if (!mDates[i].isFocused()) {
                     mDates[i].setBackgroundColor(getResources().getColor(R.color.channel_edit_gray));
@@ -734,28 +742,25 @@ public class EpgActivity extends BaseActivity {
     /**
      * 根据日期id刷新Epg Channel列表
      */
-    private void updateEpgChannel(int id) {
+    private void updateEpgChannel(int focusDateIndex) {
         clearDateFocus();
 
-        reloadEpgChannel(id);
-    }
-
-    private void reloadEpgChannel(int id) {
         if (mLoadEpgChannelRunnable != null && mProgAdapter.getCount() > 0 && mCurrProgSelectPosition < mProgAdapter.getCount()) {
+            showLoadingEpg();
             ThreadPoolManager.getInstance().remove(mLoadEpgChannelRunnable);
             mLoadEpgChannelRunnable.progNo = mProgAdapter.getItem(mCurrProgSelectPosition).ProgNo;
-            mLoadEpgChannelRunnable.focusBtnId = id;
+            mLoadEpgChannelRunnable.focusDateIndex = focusDateIndex;
             ThreadPoolManager.getInstance().execute(mLoadEpgChannelRunnable);
         }
     }
 
     private static class LoadEpgChannelRunnable extends WeakRunnable<EpgActivity> {
         int progNo;
-        int focusBtnId;
+        int focusDateIndex;
 
         LoadEpgChannelRunnable(EpgActivity view, int focusBtnId) {
             super(view);
-            this.focusBtnId = focusBtnId;
+            this.focusDateIndex = focusBtnId;
         }
 
         @Override
@@ -765,23 +770,29 @@ public class EpgActivity extends BaseActivity {
             SparseArray<List<EpgEvent_t>> epgChannelMap = context.mEpgChannelCacheMap.get(progNo);
             if (epgChannelMap == null) {
                 epgChannelMap = new SparseArray<>();
-                List<EpgEvent_t> epgChannelList = UIApiManager.getInstance().getCurrProgSchInfo(context.getFocusDateIndex(focusBtnId));
+                List<EpgEvent_t> epgChannelList = UIApiManager.getInstance().getCurrProgSchInfo(context.getFocusDateIndex(focusDateIndex));
                 if (epgChannelList == null) epgChannelList = new ArrayList<>();
-                epgChannelMap.put(focusBtnId, epgChannelList);
+                epgChannelMap.put(focusDateIndex, epgChannelList);
                 context.mEpgChannelCacheMap.put(progNo, epgChannelMap);
             } else {
-                List<EpgEvent_t> epgChannelList = epgChannelMap.get(focusBtnId);
-                if (epgChannelList == null || epgChannelList.isEmpty()) {
-                    epgChannelList = UIApiManager.getInstance().getCurrProgSchInfo(context.getFocusDateIndex(focusBtnId));
+                List<EpgEvent_t> epgChannelList = epgChannelMap.get(focusDateIndex);
+                if (epgChannelList == null) {
+                    epgChannelList = UIApiManager.getInstance().getCurrProgSchInfo(context.getFocusDateIndex(focusDateIndex));
                     if (epgChannelList == null) epgChannelList = new ArrayList<>();
-                    epgChannelMap.put(focusBtnId, epgChannelList);
+                    epgChannelMap.put(focusDateIndex, epgChannelList);
                 }
             }
 
             context.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    List<EpgEvent_t> epgChannelList = context.mEpgChannelCacheMap.get(progNo).get(focusBtnId);
+                    context.hideLoadingEpg();
+                    if (context.mEpgChannelAdapter == null) {
+                        context.mEpgChannelAdapter = new EpgChannelListAdapter(context, new ArrayList<>());
+                        context.mLvEpgChannel.setAdapter(context.mEpgChannelAdapter);
+                    }
+
+                    List<EpgEvent_t> epgChannelList = context.mEpgChannelCacheMap.get(progNo).get(focusDateIndex);
                     if (epgChannelList != null && !epgChannelList.isEmpty()) {
                         context.notifyHideEpgLoading(new HandlerMsgModel(EpgMsgHandler.MSG_HIDE_EPG_LOADING)); // 有数据，epg加载隐藏
                         context.mEpgChannelAdapter.updateData(epgChannelList);
@@ -891,7 +902,7 @@ public class EpgActivity extends BaseActivity {
         if (requestCode == Constants.RequestCode.REQUEST_CODE_EPG_BOOK && data != null &&
                 data.getBooleanExtra(Constants.IntentKey.INTENT_BOOK_UPDATE, false)) {
             mEpgChannelCacheMap.clear();
-            updateEpgChannel(mCurrentFocusDate);
+            updateEpgChannel(mCurrentFocusDateIndex);
         }
     }
 
@@ -908,5 +919,11 @@ public class EpgActivity extends BaseActivity {
             Log.i(TAG, "ProgPlay_SWAV_ISLOCKTIME---type:" + type + " progno:" + progno + " progindex:" + progindex);
             return super.ProgPlay_SWAV_ISLOCKTIME(type, progno, progindex);
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onBookUpdate(BookUpdateEvent event) {
+        mEpgChannelCacheMap.clear();
+        updateEpgChannel(mCurrentFocusDateIndex);
     }
 }

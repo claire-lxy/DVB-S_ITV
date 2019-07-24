@@ -252,8 +252,8 @@ public class BookDialog extends BaseDialogFragment {
                                 isFound = false;
                                 break;
                             } else {
-                                // 如果有日期大于当前日期，开始日期就是这一天
-                                if (dayOfMonth > currDayOfMonth) {
+                                // 如果有日期大于等于当前日期，开始日期就是这一天
+                                if (dayOfMonth >= currDayOfMonth) {
                                     startTime.Day = endTime.Day = dayOfMonth;
                                     mBookModel.bookInfo.day = startTime.Day;
                                     break;
@@ -336,12 +336,12 @@ public class BookDialog extends BaseDialogFragment {
             return false;
         }
 
-        if (TextUtils.isEmpty(month) || Integer.valueOf(month) < TimeUtils.getMonth() || !TimeUtils.isMonthValid(Integer.valueOf(month))) {
+        if (TextUtils.isEmpty(month) || !TimeUtils.isMonthValid(Integer.valueOf(month))) {
             dateInvalidFocus(mEtBookDateMonth);
             return false;
         }
 
-        if (TextUtils.isEmpty(day) || Integer.valueOf(day) < TimeUtils.getDay() || Integer.valueOf(day) > TimeUtils.getDayOfMonthByYearAndMonth(Integer.valueOf(year), Integer.valueOf(month))) {
+        if (TextUtils.isEmpty(day) || Integer.valueOf(day) > TimeUtils.getDayOfMonthByYearAndMonth(Integer.valueOf(year), Integer.valueOf(month))) {
             dateInvalidFocus(mEtBookDateDay);
             return false;
         }
@@ -363,11 +363,24 @@ public class BookDialog extends BaseDialogFragment {
 
     private boolean isHourAndMinuteValid() {
         if (mBookModel == null) return false;
-
+       
         String startHour = mEtBookStartTimeHour.getText().toString();
         String startMinute = mEtBookStartTimeMinute.getText().toString();
 
-        if (TextUtils.isEmpty(startHour) || !TimeUtils.isHourValid(Integer.valueOf(startHour)) || Integer.valueOf(startHour) < TimeUtils.getHour()) {
+        // 如果是Daily和Weekly，只需要时间点不为空和结束小时不小于开始小时即可
+        // 如果年、月、日比当前大，只需要处理时间点是否为空和有效即可
+        boolean dateOverCurrent = true;
+        if (mBookModel.bookInfo.repeatway == SWBooking.BookRepeatWay.ONCE.ordinal()) {
+            String yearStr = mEtBookDateYear.getText().toString();
+            String monthStr = mEtBookDateMonth.getText().toString();
+            String dayStr = mEtBookDateDay.getText().toString();
+            int year = TextUtils.isEmpty(yearStr) ? TimeUtils.getYear() : Integer.valueOf(yearStr);
+            int month = TextUtils.isEmpty(monthStr) ? TimeUtils.getMonth() : Integer.valueOf(monthStr);
+            int day = TextUtils.isEmpty(dayStr) ? TimeUtils.getDay() : Integer.valueOf(dayStr);
+            dateOverCurrent = year > TimeUtils.getYear() || month > TimeUtils.getMonth() || day > TimeUtils.getDay();
+        }
+
+        if (TextUtils.isEmpty(startHour) || !TimeUtils.isHourValid(Integer.valueOf(startHour)) || (!dateOverCurrent && Integer.valueOf(startHour) < TimeUtils.getHour())) {
             timeInvalidFocus(ITEM_START_TIME, mEtBookStartTimeHour);
             return false;
         }

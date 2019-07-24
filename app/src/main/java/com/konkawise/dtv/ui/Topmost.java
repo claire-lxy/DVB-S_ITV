@@ -90,7 +90,6 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     private static final long SMALL_HINT_BOX_PERIOD = 1000;
     private static final long RECORDING_DELAY = 1000;
     private static final long RECORDING_PERIOD = 1000;
-    private static final long TRACK_HIDE_DELAY = 5 * 1000;
     private static final long PLAY_PROG_DELAY = 1000;
     private static final long JUMP_PROG_DELAY = 2500;
     private static final long RECORD_TIME_HIDE_DELAY = 10 * 1000;
@@ -102,9 +101,6 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
 
     @BindView(R.id.iv_radio_bg)
     ImageView mIvRadioBackground;
-
-    @BindView(R.id.tv_track)
-    TextView mTvTrack;
 
     @BindView(R.id.tv_prog_num)
     TextView mTvProgNum;
@@ -197,12 +193,11 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
 
     @OnClick(R.id.item_installation)
     void installation() {
-//        if (isShowInstallation()) {
-//            showInstallationSelectDialog();
-//        } else {
-//            toggleInstallationItem();
-//        }
-        toggleInstallationItem();
+        if (isShowInstallation()) {
+            showInstallationSelectDialog();
+        } else {
+            toggleInstallationItem();
+        }
     }
 
     @OnClick(R.id.item_manual_installation)
@@ -370,9 +365,8 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     private static class ProgHandler extends WeakHandler<Topmost> {
         static final int MSG_HIDE_PROG_NUM = 0;
         static final int MSG_SHOW_PROG_NUM = 1;
-        static final int MSG_HIDE_TRACK = 2;
-        static final int MSG_HIDE_PF_BAR = 3;
-        static final int MSG_HIDE_RECORD_TIME = 4;
+        static final int MSG_HIDE_PF_BAR = 2;
+        static final int MSG_HIDE_RECORD_TIME = 3;
 
         ProgHandler(Topmost view) {
             super(view);
@@ -388,9 +382,6 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                 case MSG_SHOW_PROG_NUM:
                     context.showProgNum(context.getCurrentProgShowNum());
                     context.showPfInfo();
-                    break;
-                case MSG_HIDE_TRACK:
-                    context.mTvTrack.setVisibility(View.INVISIBLE);
                     break;
                 case MSG_HIDE_PF_BAR:
                     context.dismissPfBarScanDialog();
@@ -655,14 +646,6 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
      */
     private void hideProgNum() {
         sendProgMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_PROG_NUM));
-    }
-
-    /**
-     * 显示声道
-     */
-    private void showTrack() {
-        mTvTrack.setVisibility(View.VISIBLE);
-        sendProgMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_TRACK, TRACK_HIDE_DELAY));
     }
 
     private void initSatList() {
@@ -1171,8 +1154,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                     @Override
                     public void onPositiveListener() {
                         mItemInstallation.requestFocus();
-//                        showInstallationSelectDialog();
-                        toggleInstallationItem();
+                        showInstallationSelectDialog();
                     }
                 }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
     }
@@ -1298,14 +1280,14 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         int serviceid = SWPDBaseManager.getInstance().getCurrProgInfo().ServID;
         int num = SWFtaManager.getInstance().getSubtitleNum(serviceid);
         final int[] pids = new int[num];
-        List subtitles = new ArrayList<HashMap<String, Object>>();
-        HashMap off = new HashMap<String, Object>();
+        List<HashMap<String, Object>> subtitles = new ArrayList<>();
+        HashMap<String, Object> off = new HashMap<>();
         off.put(Constants.SUBTITLE_NAME, "OFF");
         subtitles.add(off);
         for (int index = 0; index < num; index++) {
             HSubtitle_t subtitle = SWFtaManager.getInstance().getSubtitleInfo(serviceid, index);
             if (subtitle.used != 0) {
-                HashMap map = new HashMap<String, Object>();
+                HashMap<String, Object> map = new HashMap<>();
                 map.put(Constants.SUBTITLE_NAME, subtitle.Name);
                 map.put(Constants.SUBTITLE_ORG_TYPE, subtitle.OrgType == 0);
                 map.put(Constants.SUBTITLE_TYPE, (subtitle.Type >= 0x20 && subtitle.Type <= 0x24) || subtitle.Type == 0x05);

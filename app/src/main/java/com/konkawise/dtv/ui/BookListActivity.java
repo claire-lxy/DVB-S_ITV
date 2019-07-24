@@ -3,6 +3,7 @@ package com.konkawise.dtv.ui;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.widget.TextView;
@@ -18,10 +19,16 @@ import com.konkawise.dtv.bean.BookingModel;
 import com.konkawise.dtv.dialog.BookDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
+import com.konkawise.dtv.event.BookUpdateEvent;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.view.TVListView;
 import com.konkawise.dtv.weaktool.RealTimeHelper;
 import com.konkawise.dtv.weaktool.WeakAsyncTask;
+import com.sw.dvblib.SWBooking;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -60,6 +67,8 @@ public class BookListActivity extends BaseActivity {
 
     @Override
     protected void setup() {
+        EventBus.getDefault().register(this);
+
         mAdapter = new BookListAdapter(this, new ArrayList<>());
         mLvBookList.setAdapter(mAdapter);
 
@@ -87,8 +96,13 @@ public class BookListActivity extends BaseActivity {
                 mLoadBookingTask.release();
                 mLoadBookingTask = null;
             }
-            if (mBook) SWBookingManager.getInstance().updateDBase(0);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
     }
 
     private void startUpdateRealTime() {
@@ -143,10 +157,11 @@ public class BookListActivity extends BaseActivity {
 
                         switch (pm.bookConflict) {
                             case Constants.BOOK_CONFLICT_NONE: // 当前参数的book没有冲突，正常添加
-                                SWBookingManager.getInstance().addProg(pm.bookingModel.bookInfo);
                                 if (bookingType == Constants.BOOK_TYPE_ADD) {
+                                    SWBookingManager.getInstance().addProg(pm.bookingModel.bookInfo);
                                     mAdapter.addData(mAdapter.getCount(), pm.bookingModel);
                                 } else {
+                                    SWBookingManager.getInstance().replaceProg(mAdapter.getItem(mCurrSelectPosition).bookInfo, pm.bookingModel.bookInfo);
                                     mAdapter.updateData(mCurrSelectPosition, pm.bookingModel);
                                 }
                                 break;
@@ -170,6 +185,7 @@ public class BookListActivity extends BaseActivity {
                         }
 
                         mBook = true;
+                        SWBookingManager.getInstance().updateDBase(0);
                     }
                 }).show(getSupportFragmentManager(), BookDialog.TAG);
     }
@@ -254,6 +270,7 @@ public class BookListActivity extends BaseActivity {
                         mAdapter.removeData(mCurrSelectPosition);
 
                         mBook = true;
+                        SWBookingManager.getInstance().updateDBase(0);
                     }
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
@@ -298,5 +315,15 @@ public class BookListActivity extends BaseActivity {
         }
 
         return super.onKeyDown(keyCode, event);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onBookUpdate(BookUpdateEvent event) {
+        if (event.bookInfo != null) {
+            int position = findConflictBookProgPosition(event.bookInfo);
+            if (event.bookInfo.repeatway == SWBooking.BookRepeatWay.ONCE.ordinal()) {
+                mAdapter.removeData(position);
+            }
+        }
     }
 }

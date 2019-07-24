@@ -1,7 +1,11 @@
 package com.konkawise.dtv.dialog;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.text.TextUtils;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -48,6 +52,14 @@ public class QuitRecordingDialog extends BaseDialog {
 
     public QuitRecordingDialog(Context context) {
         super(context);
+        Window window = getWindow();
+        WindowManager.LayoutParams lp = window.getAttributes();
+        lp.width = (int) (context.getResources().getDisplayMetrics().widthPixels * 0.5);
+        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        window.setAttributes(lp);
+        setCanceledOnTouchOutside(false);
+        setCancelable(false);
+        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
     }
 
     @Override
