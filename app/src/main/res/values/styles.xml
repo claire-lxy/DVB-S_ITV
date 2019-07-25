@@ -3,19 +3,25 @@
     <style name="mProgress_horizontal1">
         <item name="android:indeterminateOnly">false</item>
         <item name="android:progressDrawable">@drawable/progressbar_horizontal_1</item>
-        <item name="android:indeterminateDrawable">@android:drawable/progress_indeterminate_horizontal</item>
+        <item name="android:indeterminateDrawable">
+            @android:drawable/progress_indeterminate_horizontal
+        </item>
     </style>
 
     <style name="pfBar_mProgress_horizontal1">
         <item name="android:indeterminateOnly">false</item>
         <item name="android:progressDrawable">@drawable/pfbar_progressbar_horizontal_1</item>
-        <item name="android:indeterminateDrawable">@android:drawable/progress_indeterminate_horizontal</item>
+        <item name="android:indeterminateDrawable">
+            @android:drawable/progress_indeterminate_horizontal
+        </item>
     </style>
 
     <style name="pfBar_mProgress_horizontal2">
         <item name="android:indeterminateOnly">false</item>
         <item name="android:progressDrawable">@drawable/pfbar_progressbar_horizontal_2</item>
-        <item name="android:indeterminateDrawable">@android:drawable/progress_indeterminate_horizontal</item>
+        <item name="android:indeterminateDrawable">
+            @android:drawable/progress_indeterminate_horizontal
+        </item>
     </style>
 
     <style name="konka_dvb_dialog" parent="@android:style/Theme.Dialog">
@@ -31,6 +37,73 @@
     <!--favdialog  checkBox-->
     <style name="CustomCheckboxTheme" parent="@android:style/Widget.CompoundButton.CheckBox">
         <item name="android:button">@drawable/checkbox_style</item>
+    </style>
+
+    <style name="ItemEntranceStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">30dp</item>
+        <item name="android:layout_marginLeft">200dp</item>
+        <item name="android:layout_marginRight">200dp</item>
+        <item name="android:background">@drawable/dvb_btn_fragment_selector</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="TitleStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_centerHorizontal">true</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TitleDividerStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1px</item>
+        <item name="android:background">#c0bfbf</item>
+    </style>
+
+    <style name="ItemGroupStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginLeft">244dp</item>
+        <item name="android:layout_marginRight">244dp</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:padding">5dp</item>
+    </style>
+
+    <style name="ItemTitleStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginLeft">20dp</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="ItemArrowLeftStyle">
+        <item name="android:layout_width">14dp</item>
+        <item name="android:layout_height">14dp</item>
+        <item name="android:layout_centerVertical">true</item>
+        <item name="android:src">@drawable/triangle_left</item>
+    </style>
+
+    <style name="ItemContentStyle">
+        <item name="android:layout_width">130dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_centerVertical">true</item>
+        <item name="android:layout_marginLeft">12dp</item>
+        <item name="android:layout_marginRight">12dp</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="ItemArrowRightStyle">
+        <item name="android:layout_width">14dp</item>
+        <item name="android:layout_height">14dp</item>
+        <item name="android:layout_alignParentRight">true</item>
+        <item name="android:layout_centerVertical">true</item>
+        <item name="android:layout_marginRight">20dp</item>
+        <item name="android:src">@drawable/triangle_right</item>
     </style>
 
 </resources>

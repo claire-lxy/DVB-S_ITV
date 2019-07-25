@@ -14,137 +14,78 @@
 
         <TextView
             android:id="@+id/pvr_setting_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            style="@style/TitleStyle"
             android:layout_marginTop="22dp"
-            android:gravity="center"
-            android:text="@string/pvr_settings"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:text="@string/pvr_settings" />
 
         <View
             android:id="@+id/pvr_setting_title_divider"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
+            style="@style/TitleDividerStyle"
             android:layout_below="@id/pvr_setting_title"
-            android:layout_marginTop="18dp"
-            android:background="#c0bfbf" />
+            android:layout_marginTop="18dp" />
 
         <!-- TimeShift Length -->
         <RelativeLayout
             android:id="@+id/item_time_shift_length"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            style="@style/ItemGroupStyle"
             android:layout_below="@id/pvr_setting_title_divider"
-            android:layout_marginLeft="244dp"
             android:layout_marginTop="30dp"
-            android:layout_marginRight="244dp"
-            android:background="@drawable/dvb_btn_fragment_selector"
-            android:focusable="true"
-            android:clickable="true"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="8dp">
+            android:background="@drawable/dvb_btn_fragment_selector">
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginLeft="20dp"
+                style="@style/ItemTitleStyle"
                 android:text="@string/time_shift_length"
-                android:textSize="15sp"
                 tools:ignore="RelativeOverlap" />
 
             <ImageView
                 android:id="@+id/iv_time_shift_length_left"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
-                android:layout_centerVertical="true"
+                style="@style/ItemArrowLeftStyle"
                 android:layout_toStartOf="@+id/tv_time_shift_length"
                 android:layout_toLeftOf="@+id/tv_time_shift_length"
-                android:src="@drawable/triangle_left"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_time_shift_length"
-                android:layout_width="130dp"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="@dimen/dp_12"
-                android:layout_marginRight="@dimen/dp_12"
+                style="@style/ItemContentStyle"
                 android:layout_toStartOf="@+id/iv_time_shift_length_right"
                 android:layout_toLeftOf="@+id/iv_time_shift_length_right"
-                android:background="@drawable/btn_red_bg_shape"
-                android:gravity="center" />
+                android:background="@drawable/btn_red_bg_shape" />
 
             <ImageView
                 android:id="@+id/iv_time_shift_length_right"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="20dp"
-                android:layout_marginRight="20dp"
-                android:src="@drawable/triangle_right"
+                style="@style/ItemArrowRightStyle"
                 tools:ignore="ContentDescription" />
         </RelativeLayout>
 
         <!-- Record Length -->
         <RelativeLayout
             android:id="@+id/item_record_length"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            style="@style/ItemGroupStyle"
             android:layout_below="@id/item_time_shift_length"
-            android:layout_marginLeft="244dp"
-            android:layout_marginRight="244dp"
-            android:background="@drawable/dvb_btn_fragment_selector"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="8dp">
+            android:background="@drawable/dvb_btn_fragment_selector">
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginLeft="20dp"
+                style="@style/ItemTitleStyle"
                 android:text="@string/record_length"
-                android:textSize="15sp"
                 tools:ignore="RelativeOverlap" />
 
             <ImageView
                 android:id="@+id/iv_record_length_left"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
-                android:layout_centerVertical="true"
+                style="@style/ItemArrowLeftStyle"
                 android:layout_toStartOf="@+id/tv_record_length"
                 android:layout_toLeftOf="@+id/tv_record_length"
-                android:src="@drawable/triangle_left"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_record_length"
-                android:layout_width="130dp"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="@dimen/dp_12"
-                android:layout_marginRight="@dimen/dp_12"
+                style="@style/ItemContentStyle"
                 android:layout_toStartOf="@+id/iv_record_length_right"
-                android:layout_toLeftOf="@+id/iv_record_length_right"
-                android:gravity="center" />
+                android:layout_toLeftOf="@+id/iv_record_length_right" />
 
             <ImageView
                 android:id="@+id/iv_record_length_right"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="20dp"
-                android:layout_marginRight="20dp"
-                android:src="@drawable/triangle_right"
+                style="@style/ItemArrowRightStyle"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
         </RelativeLayout>
@@ -152,58 +93,32 @@
         <!-- Record Type -->
         <RelativeLayout
             android:id="@+id/item_record_type"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            style="@style/ItemGroupStyle"
             android:layout_below="@id/item_record_length"
-            android:layout_marginLeft="244dp"
-            android:layout_marginRight="244dp"
-            android:background="@drawable/dvb_btn_fragment_selector"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="8dp">
+            android:background="@drawable/dvb_btn_fragment_selector">
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginLeft="20dp"
+                style="@style/ItemTitleStyle"
                 android:text="@string/record_type"
-                android:textSize="15sp"
                 tools:ignore="RelativeOverlap" />
 
             <ImageView
                 android:id="@+id/iv_record_type_left"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
-                android:layout_centerVertical="true"
+                style="@style/ItemArrowLeftStyle"
                 android:layout_toStartOf="@+id/tv_record_type"
                 android:layout_toLeftOf="@+id/tv_record_type"
-                android:src="@drawable/triangle_left"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_record_type"
-                android:layout_width="130dp"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="@dimen/dp_12"
-                android:layout_marginRight="@dimen/dp_12"
+                style="@style/ItemContentStyle"
                 android:layout_toStartOf="@+id/iv_record_type_right"
-                android:layout_toLeftOf="@+id/iv_record_type_right"
-                android:gravity="center" />
+                android:layout_toLeftOf="@+id/iv_record_type_right" />
 
             <ImageView
                 android:id="@+id/iv_record_type_right"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="20dp"
-                android:layout_marginRight="20dp"
-                android:src="@drawable/triangle_right"
+                style="@style/ItemArrowRightStyle"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
         </RelativeLayout>
@@ -211,59 +126,33 @@
         <!-- Device Name -->
         <RelativeLayout
             android:id="@+id/item_device_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            style="@style/ItemGroupStyle"
             android:layout_below="@id/item_record_type"
-            android:layout_marginLeft="244dp"
-            android:layout_marginRight="244dp"
-            android:background="@drawable/dvb_btn_fragment_selector"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="8dp">
+            android:background="@drawable/dvb_btn_fragment_selector">
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginLeft="20dp"
+                style="@style/ItemTitleStyle"
                 android:text="@string/device_name"
-                android:textSize="15sp"
                 tools:ignore="RelativeOverlap" />
 
             <ImageView
                 android:id="@+id/iv_device_name_left"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
-                android:layout_centerVertical="true"
+                style="@style/ItemArrowLeftStyle"
                 android:layout_toStartOf="@+id/tv_device_name"
                 android:layout_toLeftOf="@+id/tv_device_name"
-                android:src="@drawable/triangle_left"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_device_name"
-                android:layout_width="130dp"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="@dimen/dp_12"
-                android:layout_marginRight="@dimen/dp_12"
+                style="@style/ItemContentStyle"
                 android:layout_toStartOf="@+id/iv_device_name_right"
                 android:layout_toLeftOf="@+id/iv_device_name_right"
-                android:gravity="center"
                 android:text="@string/device_none" />
 
             <ImageView
                 android:id="@+id/iv_device_name_right"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="20dp"
-                android:layout_marginRight="20dp"
-                android:src="@drawable/triangle_right"
+                style="@style/ItemArrowRightStyle"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
         </RelativeLayout>
@@ -271,59 +160,33 @@
         <!-- Device Format -->
         <RelativeLayout
             android:id="@+id/item_device_format"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            style="@style/ItemGroupStyle"
             android:layout_below="@id/item_device_name"
-            android:layout_marginLeft="244dp"
-            android:layout_marginRight="244dp"
             android:background="@drawable/dvb_btn_fragment_selector"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="8dp"
             android:visibility="gone">
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginLeft="20dp"
+                style="@style/ItemTitleStyle"
                 android:text="@string/device_format"
-                android:textSize="15sp"
                 tools:ignore="RelativeOverlap" />
 
             <ImageView
                 android:id="@+id/iv_device_format_left"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
-                android:layout_centerVertical="true"
+                style="@style/ItemArrowLeftStyle"
                 android:layout_toStartOf="@+id/tv_device_format"
                 android:layout_toLeftOf="@+id/tv_device_format"
-                android:src="@drawable/triangle_left"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_device_format"
-                android:layout_width="130dp"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="@dimen/dp_12"
-                android:layout_marginRight="@dimen/dp_12"
+                style="@style/ItemContentStyle"
                 android:layout_toStartOf="@+id/iv_device_format_right"
-                android:layout_toLeftOf="@+id/iv_device_format_right"
-                android:gravity="center" />
+                android:layout_toLeftOf="@+id/iv_device_format_right" />
 
             <ImageView
                 android:id="@+id/iv_device_format_right"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="20dp"
-                android:layout_marginRight="20dp"
-                android:src="@drawable/triangle_right"
+                style="@style/ItemArrowRightStyle"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
         </RelativeLayout>
@@ -334,13 +197,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/item_device_format"
+            android:layout_marginStart="264dp"
             android:layout_marginLeft="264dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:padding="8dp"
             android:visibility="gone"
-            tools:text="File System: FAT32"
-            android:layout_marginStart="264dp" />
+            tools:text="File System: FAT32" />
 
         <!-- Free Space -->
         <TextView
@@ -348,13 +211,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/tv_device_file_system"
+            android:layout_marginStart="264dp"
             android:layout_marginLeft="264dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:padding="8dp"
             android:visibility="gone"
-            tools:text="Free Space:  9.0G"
-            android:layout_marginStart="264dp" />
+            tools:text="Free Space:  9.0G" />
 
         <!-- Total Capacity -->
         <TextView
@@ -362,13 +225,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/tv_device_free_space"
+            android:layout_marginStart="264dp"
             android:layout_marginLeft="264dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:padding="8dp"
             android:visibility="gone"
-            tools:text="Total Capacity:  14G"
-            android:layout_marginStart="264dp" />
+            tools:text="Total Capacity:  14G" />
 
         <include
             layout="@layout/bottom_bar_select_item"

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -16,17 +17,22 @@
             android:id="@+id/iv_player_handler"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginTop="30dp"
+            android:layout_marginEnd="30dp"
             android:layout_marginRight="30dp"
-            android:layout_marginTop="30dp" />
+            tools:ignore="ContentDescription" />
 
         <TextView
             android:id="@+id/tv_seek_num"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignTop="@id/iv_player_handler"
+            android:layout_marginEnd="10dp"
             android:layout_marginRight="10dp"
+            android:layout_toStartOf="@id/iv_player_handler"
             android:layout_toLeftOf="@id/iv_player_handler"
             android:text="*2"
             android:textColor="@color/holo_red_light"
@@ -37,8 +43,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_marginBottom="50dp"
+            android:layout_marginStart="16dp"
             android:layout_marginLeft="16dp"
+            android:layout_marginBottom="50dp"
             android:text="1.zing"
             android:textSize="30sp" />
 
@@ -49,26 +56,25 @@
             android:layout_alignParentBottom="true"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingBottom="16dp"
             android:paddingLeft="20dp"
-            android:paddingRight="20dp">
+            android:paddingRight="20dp"
+            android:paddingBottom="16dp">
 
             <TextView
                 android:id="@+id/tv_current_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="00:00:00"
-                android:textColor="@color/white"
-                android:textSize="10sp" />
+                android:textColor="@color/white" />
 
             <SeekBar
                 android:id="@+id/sb_progress"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:focusable="false"
                 android:maxHeight="2dp"
                 android:minHeight="2dp"
-                android:focusable="false"
                 android:progressDrawable="@drawable/seekbar"
                 android:thumb="@drawable/seekbar_thum_nor" />
 
@@ -77,10 +83,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="00:00:00"
-                android:textColor="@color/white"
-                android:textSize="10sp" />
+                android:textColor="@color/white" />
         </LinearLayout>
-
     </RelativeLayout>
-
 </FrameLayout>

@@ -45,14 +45,14 @@ public class T2ManualSearchActivity extends BaseActivity {
     @BindView(R.id.iv_bandwidth_right)
     ImageView mIvBandWidthRight;
 
-    @BindView(R.id.tv_signal_percent)
-    TextView mTvSignalPercent;
+    @BindView(R.id.tv_progress_strength)
+    TextView mTvStrengthProgress;
 
-    @BindView(R.id.pb_signal)
-    ProgressBar mPbSignal;
+    @BindView(R.id.pb_strength)
+    ProgressBar mPbStrength;
 
-    @BindView(R.id.tv_quality_percent)
-    TextView mTvQualityPercent;
+    @BindView(R.id.tv_progress_quality)
+    TextView mTvQualityProgress;
 
     @BindView(R.id.pb_quality)
     ProgressBar mPbQuality;
@@ -73,11 +73,11 @@ public class T2ManualSearchActivity extends BaseActivity {
             @Override
             public void signal(int strength, int quality) {
                 String strengthPercent = strength + "%";
-                mTvSignalPercent.setText(strengthPercent);
-                mPbSignal.setProgress(strength);
+                mTvStrengthProgress.setText(strengthPercent);
+                mPbStrength.setProgress(strength);
 
                 String qualityPercent = quality + "%";
-                mTvQualityPercent.setText(qualityPercent);
+                mTvQualityProgress.setText(qualityPercent);
                 mPbQuality.setProgress(quality);
             }
         });

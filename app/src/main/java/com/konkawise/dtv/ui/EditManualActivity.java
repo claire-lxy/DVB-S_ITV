@@ -3,11 +3,12 @@ package com.konkawise.dtv.ui;
 import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -42,107 +43,104 @@ public class EditManualActivity extends BaseActivity {
     private static final int ITEM_22K = 5;
     private static final int ITEM_LNB_POWER = 6;
 
-    @BindView(R.id.imageview_blind_satellite_left)
-    ImageView mImageview_blind_satellite_left;
+    @BindView(R.id.item_satellite)
+    ViewGroup mItemSatellite;
 
-    @BindView(R.id.tv_blind_satellite)
-    TextView tv_blind_satellite;
+    @BindView(R.id.iv_satellite_left)
+    ImageView mIvSatelliteLeft;
 
-    @BindView(R.id.imageview_blind_satellite_right)
-    ImageView imageview_blind_satellite_right;
+    @BindView(R.id.tv_satellite)
+    TextView mTvSatellite;
 
-    @BindView(R.id.ll_blind_satellite)
-    LinearLayout mLl_blind_satellite;
+    @BindView(R.id.iv_satellite_right)
+    ImageView mIvSatelliteRight;
 
-    @BindView(R.id.imageview_edit_tp_left)
-    ImageView mImageview_edit_tp_left;
+    @BindView(R.id.item_tp)
+    ViewGroup mItemTp;
 
-    @BindView(R.id.tv_edit_tp_mode)
-    TextView tv_edit_tp_mode;
+    @BindView(R.id.iv_tp_left)
+    ImageView mIvTpLeft;
 
-    @BindView(R.id.imageview_edit_tp_right)
-    ImageView imageview_edit_tp_right;
+    @BindView(R.id.tv_tp)
+    TextView mTvTp;
 
-    @BindView(R.id.ll_tp)
-    LinearLayout mLl_tp;
+    @BindView(R.id.iv_tp_right)
+    ImageView mIvTpRight;
 
-    @BindView(R.id.imageview_blind_lnb_left)
-    ImageView imageview_blind_lnb_left;
+    @BindView(R.id.item_lnb)
+    ViewGroup mItemLnb;
 
-    @BindView(R.id.tv_blind_lnb_mode)
-    TextView tv_blind_lnb_mode;
+    @BindView(R.id.iv_lnb_left)
+    ImageView mIvLnbLeft;
 
-    @BindView(R.id.et_edit_lnb_mode)
-    EditText et_edit_lnb_mode;
+    @BindView(R.id.tv_lnb)
+    TextView mTvLnb;
 
-    @BindView(R.id.rl_edit_lnb_mode)
-    RelativeLayout rl_edit_lnb_mode;
+    @BindView(R.id.et_lnb)
+    EditText mEtLnb;
 
-    @BindView(R.id.imageview_blind_lnb_right)
-    ImageView imageview_blind_lnb_right;
+    @BindView(R.id.iv_lnb_right)
+    ImageView mIvLnbRight;
 
-    @BindView(R.id.ll_blind_satellite_lnb)
-    LinearLayout ll_blind_satellite_lnb;
+    @BindView(R.id.item_diseqc)
+    ViewGroup mItemDiSEqC;
 
-    @BindView(R.id.imageview_blind_diseqc_left)
-    ImageView imageview_blind_diseqc_left;
+    @BindView(R.id.iv_diseqc_left)
+    ImageView mIvDiSEqCLeft;
 
-    @BindView(R.id.tv_blind_diseqc_mode)
-    TextView tv_blind_diseqc_mode;
+    @BindView(R.id.tv_diseqc)
+    TextView mTvDiSEqC;
 
-    @BindView(R.id.imageview_blind_diseqc_right)
-    ImageView imageview_blind_diseqc_right;
+    @BindView(R.id.iv_diseqc_right)
+    ImageView mIvDiSEqCRight;
 
-    @BindView(R.id.ll_diseqc_blind_satellite)
-    LinearLayout ll_diseqc_blind_satellite;
+    @BindView(R.id.item_longitude)
+    ViewGroup mItemLongitude;
 
-    @BindView(R.id.imageview_edit_longitude_left)
-    ImageView imageview_edit_longitude_left;
+    @BindView(R.id.iv_longitude_left)
+    ImageView mIvLongitudeLeft;
 
-    @BindView(R.id.tv_edit_longitude_mode)
-    TextView tv_edit_longitude_mode;
+    @BindView(R.id.tv_longitude)
+    TextView mTvLongitude;
 
-    @BindView(R.id.imageview_edit_longitude_right)
-    ImageView imageview_edit_longitude_right;
+    @BindView(R.id.iv_longitude_right)
+    ImageView mIvLongitudeRight;
 
-    @BindView(R.id.ll_longitude)
-    LinearLayout mLl_longitude;
+    @BindView(R.id.item_22khz)
+    ViewGroup mItem22khz;
 
-    @BindView(R.id.imageview_blind_khz_left)
-    ImageView imageview_blind_khz_left;
+    @BindView(R.id.iv_22khz_left)
+    ImageView mIv22khzLeft;
 
-    @BindView(R.id.tv_blind_khz_mode)
-    TextView tv_blind_khz_mode;
+    @BindView(R.id.tv_22khz)
+    TextView mTv22khz;
 
-    @BindView(R.id.imageview_blind_khz_right)
-    ImageView imageview_blind_khz_right;
+    @BindView(R.id.iv_22khz_right)
+    ImageView mIv22khzRight;
 
-    @BindView(R.id.ll_blind_22khz)
-    LinearLayout ll_blind_22khz;
+    @BindView(R.id.item_lnb_power)
+    ViewGroup mItemLnbPower;
 
-    @BindView(R.id.imageview_blind_lnb_power_left)
-    ImageView imageview_blind_lnb_power_left;
+    @BindView(R.id.iv_lnb_power_left)
+    ImageView mIvLnbPowerLeft;
 
-    @BindView(R.id.tv_blind_lnb_power_mode)
-    TextView tv_blind_lnb_power_mode;
+    @BindView(R.id.tv_lnb_power)
+    TextView mTvLnbPower;
 
-    @BindView(R.id.imageview_blind_lnb_power_right)
-    ImageView imageview_blind_lnb_power_right;
+    @BindView(R.id.iv_lnb_power_right)
+    ImageView mIvLnbPowerRight;
 
-    @BindView(R.id.ll_blind_lnb_power)
-    LinearLayout ll_blind_lnb_power;
+    @BindView(R.id.tv_progress_strength)
+    TextView mTvStrengthProgress;
 
-    @BindView(R.id.tv_edit_progress_i)
-    TextView mTv_edit_progress_i;
+    @BindView(R.id.pb_strength)
+    ProgressBar mPbStrength;
 
-    @BindView(R.id.progress_edit_i)
-    ProgressBar progress_edit_i;
+    @BindView(R.id.tv_progress_quality)
+    TextView mTvQualityProgress;
 
-    @BindView(R.id.tv_edit_progress_q)
-    TextView mTv_edit_progress_q;
-
-    @BindView(R.id.progress_edit_q)
-    ProgressBar progress_edit_q;
+    @BindView(R.id.pb_quality)
+    ProgressBar mPbQuality;
 
     @BindView(R.id.tv_bottom_bar_green)
     TextView mTvBottomBarGreen;
@@ -154,7 +152,7 @@ public class EditManualActivity extends BaseActivity {
     String[] mLnbArray;
 
     @BindArray(R.array.DISEQC)
-    String[] mDiseqcArray;
+    String[] mDiSEqCArray;
 
     private int mCurrentSelectItem = ITEM_SATELLITE;
     private int mCurrentSatellite;
@@ -204,12 +202,12 @@ public class EditManualActivity extends BaseActivity {
             @Override
             public void signal(int strength, int quality) {
                 String strengthPercent = strength + "%";
-                mTv_edit_progress_i.setText(strengthPercent);
-                progress_edit_i.setProgress(strength);
+                mTvStrengthProgress.setText(strengthPercent);
+                mPbStrength.setProgress(strength);
 
                 String qualityPercent = quality + "%";
-                mTv_edit_progress_q.setText(qualityPercent);
-                progress_edit_q.setProgress(quality);
+                mTvQualityProgress.setText(qualityPercent);
+                mPbQuality.setProgress(quality);
             }
         });
     }
@@ -273,11 +271,11 @@ public class EditManualActivity extends BaseActivity {
                     if (--mCurrentLnb < 0) mCurrentLnb = mLnbArray.length - 1;
                     lnbChange();
 
-                    if (mCurrentLnb == 0) et_edit_lnb_mode.requestFocus();
-                    else tv_blind_lnb_mode.requestFocus();
+                    if (mCurrentLnb == 0) mEtLnb.requestFocus();
+                    else mTvLnb.requestFocus();
                     break;
                 case ITEM_DISEQC:
-                    if (--mCurrentDiseqc < 0) mCurrentDiseqc = mDiseqcArray.length - 1;
+                    if (--mCurrentDiseqc < 0) mCurrentDiseqc = mDiSEqCArray.length - 1;
                     diseqcChange();
                     break;
                 case ITEM_22K:
@@ -304,11 +302,11 @@ public class EditManualActivity extends BaseActivity {
                     if (++mCurrentLnb > mLnbArray.length - 1) mCurrentLnb = 0;
                     lnbChange();
 
-                    if (mCurrentLnb == 0) et_edit_lnb_mode.requestFocus();
-                    else tv_blind_lnb_mode.requestFocus();
+                    if (mCurrentLnb == 0) mEtLnb.requestFocus();
+                    else mTvLnb.requestFocus();
                     break;
                 case ITEM_DISEQC:
-                    if (++mCurrentDiseqc > mDiseqcArray.length - 1) mCurrentDiseqc = 0;
+                    if (++mCurrentDiseqc > mDiSEqCArray.length - 1) mCurrentDiseqc = 0;
                     diseqcChange();
                     break;
                 case ITEM_22K:
@@ -338,11 +336,11 @@ public class EditManualActivity extends BaseActivity {
         }
         //马达功能
         if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_YELLOW) {
-            Intent intent=new Intent(EditManualActivity.this,MotorActivity.class);
-            intent.putExtra("edit",tv_blind_satellite.getText());
-            intent.putExtra("tpname",tv_edit_tp_mode.getText());
-            intent.putExtra("currntTp",mCurrentTp);
-            intent.putExtra("currnt",mCurrentSatellite);
+            Intent intent = new Intent(EditManualActivity.this, MotorActivity.class);
+            intent.putExtra("edit", mTvSatellite.getText());
+            intent.putExtra("tpname", mTvTp.getText());
+            intent.putExtra("currntTp", mCurrentTp);
+            intent.putExtra("currnt", mCurrentSatellite);
             startActivity(intent);
         }
 
@@ -397,7 +395,7 @@ public class EditManualActivity extends BaseActivity {
                     @Override
                     public void setEdit(String name) {
                         if (name != null && name.length() > 0) {
-                            tv_blind_satellite.setText(name);
+                            mTvSatellite.setText(name);
                         }
                     }
                 }).show(getSupportFragmentManager(), RenameDialog.TAG);
@@ -412,7 +410,7 @@ public class EditManualActivity extends BaseActivity {
 
         SatInfo_t satInfo_t = satList.get(mCurrentSatellite);
 
-        String lnb = et_edit_lnb_mode.getText().toString();
+        String lnb = mEtLnb.getText().toString();
         if (TextUtils.isEmpty(lnb)) lnb = "0";
         Utils.satLNB(satInfo_t, mCurrentLnb, mCurrentLnb == 0 ? Integer.parseInt(lnb) : 0);
         if (mCurrentLnb == 0) {
@@ -420,10 +418,10 @@ public class EditManualActivity extends BaseActivity {
         }
 
         // Sat
-        satInfo_t.sat_name = tv_blind_satellite.getText().toString();
+        satInfo_t.sat_name = mTvSatellite.getText().toString();
         satInfo_t.SatIndex = mCurrentSatellite;
         // diseqc
-        Utils.setDescNum(satInfo_t, mCurrentDiseqc, mDiseqcArray);
+        Utils.setDescNum(satInfo_t, mCurrentDiseqc, mDiSEqCArray);
         // 22KHZ
         satInfo_t.switch_22k = is22kHzOn() ? 1 : 0;
         // LNB POWER
@@ -439,22 +437,33 @@ public class EditManualActivity extends BaseActivity {
     private void tpChange() {
         getTpList();
         if (mTpList == null || mTpList.size() == 0) {
-            tv_edit_tp_mode.setText("");
+            mTvTp.setText("");
             return;
         }
         ChannelNew_t channel = getTpList().get(mCurrentTp);
         String tpName = channel.Freq + Utils.getVorH(this, channel.Qam) + channel.Symbol;
-        tv_edit_tp_mode.setText(tpName);
+        mTvTp.setText(tpName);
     }
 
     /**
      * Lnb参数修改
      */
     private void lnbChange() {
-        rl_edit_lnb_mode.setVisibility(mCurrentLnb == 0 ? View.VISIBLE : View.GONE);
-        et_edit_lnb_mode.setText(mLnbArray[0]);
-        tv_blind_lnb_mode.setVisibility(mCurrentLnb == 0 ? View.GONE : View.VISIBLE);
-        tv_blind_lnb_mode.setText(mLnbArray[mCurrentLnb]);
+        mEtLnb.setVisibility(mCurrentLnb == 0 ? View.VISIBLE : View.GONE);
+        mEtLnb.setText(mLnbArray[0]);
+        mTvLnb.setVisibility(mCurrentLnb == 0 ? View.GONE : View.VISIBLE);
+        mTvLnb.setText(mLnbArray[mCurrentLnb]);
+        RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) mIvLnbLeft.getLayoutParams();
+        if (lp != null) {
+            if (mCurrentLnb == 0) {
+                lp.addRule(RelativeLayout.LEFT_OF, 0);
+                lp.leftMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 255, getResources().getDisplayMetrics());
+            } else {
+                lp.addRule(RelativeLayout.LEFT_OF, R.id.tv_lnb);
+                lp.leftMargin = 0;
+            }
+            mIvLnbLeft.setLayoutParams(lp);
+        }
 
         notify22kChange();
     }
@@ -463,7 +472,7 @@ public class EditManualActivity extends BaseActivity {
      * Diseqc参数修改
      */
     private void diseqcChange() {
-        tv_blind_diseqc_mode.setText(mDiseqcArray[mCurrentDiseqc]);
+        mTvDiSEqC.setText(mDiSEqCArray[mCurrentDiseqc]);
     }
 
     /**
@@ -472,11 +481,11 @@ public class EditManualActivity extends BaseActivity {
     private void notify22kChange() {
         hz22KItemFocusChange();
         recordLastFocusable22KHz();
-        tv_blind_khz_mode.setFocusable(!is22KHzUnFocusable());
+        mTv22khz.setFocusable(!is22KHzUnFocusable());
         if (is22KHzUnFocusable()) {
-            tv_blind_khz_mode.setText(getResources().getString(R.string.auto));
+            mTv22khz.setText(getResources().getString(R.string.auto));
         } else {
-            tv_blind_khz_mode.setText(mLastFocusable22KHz);
+            mTv22khz.setText(mLastFocusable22KHz);
         }
     }
 
@@ -484,11 +493,11 @@ public class EditManualActivity extends BaseActivity {
      * 22KHz参数修改
      */
     private void hz22KChange() {
-        tv_blind_khz_mode.setText(getResources().getString(is22kHzOn() ? R.string.off : R.string.on));
+        mTv22khz.setText(getResources().getString(is22kHzOn() ? R.string.off : R.string.on));
     }
 
     private boolean is22kHzOn() {
-        return TextUtils.equals(tv_blind_khz_mode.getText().toString(), getResources().getString(R.string.on));
+        return TextUtils.equals(mTv22khz.getText().toString(), getResources().getString(R.string.on));
     }
 
     private boolean is22KHzUnFocusable() {
@@ -496,7 +505,7 @@ public class EditManualActivity extends BaseActivity {
     }
 
     private void recordLastFocusable22KHz() {
-        String current22KHz = tv_blind_khz_mode.getText().toString();
+        String current22KHz = mTv22khz.getText().toString();
         if (TextUtils.equals(current22KHz, getResources().getString(R.string.auto))) return;
         mLastFocusable22KHz = current22KHz;
     }
@@ -505,11 +514,11 @@ public class EditManualActivity extends BaseActivity {
      * LnbPower参数修改
      */
     private void lnbPowerChange() {
-        tv_blind_lnb_power_mode.setText(getResources().getString(isLnbPowerOn() ? R.string.off : R.string.on));
+        mTvLnbPower.setText(getResources().getString(isLnbPowerOn() ? R.string.off : R.string.on));
     }
 
     private boolean isLnbPowerOn() {
-        return TextUtils.equals(tv_blind_lnb_power_mode.getText().toString(), getResources().getString(R.string.on));
+        return TextUtils.equals(mTvLnbPower.getText().toString(), getResources().getString(R.string.on));
     }
 
     /**
@@ -519,7 +528,7 @@ public class EditManualActivity extends BaseActivity {
         List<SatInfo_t> satList = getSatList();
         if (satList == null || satList.isEmpty()) return;
 
-        tv_blind_satellite.setText(satList.get(mCurrentSatellite).sat_name);
+        mTvSatellite.setText(satList.get(mCurrentSatellite).sat_name);
 
         mCurrentTp = 0;
         tpChange();
@@ -529,12 +538,12 @@ public class EditManualActivity extends BaseActivity {
         lnbChange();
 
         mCurrentDiseqc = getCurrDiseqc();
-        String diseqc = Utils.getDiseqc(satList.get(mCurrentSatellite), mDiseqcArray);
-        tv_blind_diseqc_mode.setText(TextUtils.isEmpty(diseqc) ? mDiseqcArray[0] : diseqc);
+        String diseqc = Utils.getDiseqc(satList.get(mCurrentSatellite), mDiSEqCArray);
+        mTvDiSEqC.setText(TextUtils.isEmpty(diseqc) ? mDiSEqCArray[0] : diseqc);
 
-        tv_edit_longitude_mode.setText(Utils.getLongitude(satList.get(mCurrentSatellite)));
+        mTvLongitude.setText(Utils.getLongitude(satList.get(mCurrentSatellite)));
 
-        tv_blind_lnb_power_mode.setText(satList.get(mCurrentSatellite).LnbPower == 1 ?
+        mTvLnbPower.setText(satList.get(mCurrentSatellite).LnbPower == 1 ?
                 getResources().getString(R.string.on) : getResources().getString(R.string.off));
     }
 
@@ -561,9 +570,9 @@ public class EditManualActivity extends BaseActivity {
         List<SatInfo_t> satList = getSatList();
         if (satList == null || satList.isEmpty()) return 0;
 
-        String diseqc = Utils.getDiseqc(satList.get(mCurrentSatellite), mDiseqcArray);
-        for (int i = 0; i < mDiseqcArray.length; i++) {
-            if (diseqc.equals(mDiseqcArray[i])) return i;
+        String diseqc = Utils.getDiseqc(satList.get(mCurrentSatellite), mDiSEqCArray);
+        for (int i = 0; i < mDiSEqCArray.length; i++) {
+            if (diseqc.equals(mDiSEqCArray[i])) return i;
         }
         return 0;
     }
@@ -591,53 +600,52 @@ public class EditManualActivity extends BaseActivity {
     }
 
     private void satelliteItemFocusChange() {
-        mLl_blind_satellite.setBackgroundResource(mCurrentSelectItem == ITEM_SATELLITE ? R.drawable.btn_translate_bg_select_shape : 0);
-        mImageview_blind_satellite_left.setVisibility(mCurrentSelectItem == ITEM_SATELLITE ? View.VISIBLE : View.INVISIBLE);
-        imageview_blind_satellite_right.setVisibility(mCurrentSelectItem == ITEM_SATELLITE ? View.VISIBLE : View.INVISIBLE);
-        tv_blind_satellite.setBackgroundResource(mCurrentSelectItem == ITEM_SATELLITE ? R.drawable.btn_red_bg_shape : 0);
+        mItemSatellite.setBackgroundResource(mCurrentSelectItem == ITEM_SATELLITE ? R.drawable.btn_translate_bg_select_shape : 0);
+        mIvSatelliteLeft.setVisibility(mCurrentSelectItem == ITEM_SATELLITE ? View.VISIBLE : View.INVISIBLE);
+        mIvSatelliteRight.setVisibility(mCurrentSelectItem == ITEM_SATELLITE ? View.VISIBLE : View.INVISIBLE);
+        mTvSatellite.setBackgroundResource(mCurrentSelectItem == ITEM_SATELLITE ? R.drawable.btn_red_bg_shape : 0);
     }
 
     private void tpItemFocusChange() {
-        mLl_tp.setBackgroundResource(mCurrentSelectItem == ITEM_TP ? R.drawable.btn_translate_bg_select_shape : 0);
-        mImageview_edit_tp_left.setVisibility(mCurrentSelectItem == ITEM_TP ? View.VISIBLE : View.INVISIBLE);
-        imageview_edit_tp_right.setVisibility(mCurrentSelectItem == ITEM_TP ? View.VISIBLE : View.INVISIBLE);
-        tv_edit_tp_mode.setBackgroundResource(mCurrentSelectItem == ITEM_TP ? R.drawable.btn_red_bg_shape : 0);
+        mItemTp.setBackgroundResource(mCurrentSelectItem == ITEM_TP ? R.drawable.btn_translate_bg_select_shape : 0);
+        mIvTpLeft.setVisibility(mCurrentSelectItem == ITEM_TP ? View.VISIBLE : View.INVISIBLE);
+        mIvTpRight.setVisibility(mCurrentSelectItem == ITEM_TP ? View.VISIBLE : View.INVISIBLE);
+        mTvTp.setBackgroundResource(mCurrentSelectItem == ITEM_TP ? R.drawable.btn_red_bg_shape : 0);
     }
 
     private void lnbItemFocusChange() {
-        ll_blind_satellite_lnb.setBackgroundResource(mCurrentSelectItem == ITEM_LNB ? R.drawable.btn_translate_bg_select_shape : 0);
-        imageview_blind_lnb_left.setVisibility(mCurrentSelectItem == ITEM_LNB ? View.VISIBLE : View.INVISIBLE);
-        imageview_blind_lnb_right.setVisibility(mCurrentSelectItem == ITEM_LNB ? View.VISIBLE : View.INVISIBLE);
-        tv_blind_lnb_mode.setBackgroundResource(mCurrentSelectItem == ITEM_LNB ? R.drawable.btn_red_bg_shape : 0);
-        rl_edit_lnb_mode.setBackgroundResource(mCurrentSelectItem == ITEM_LNB ? R.drawable.btn_red_bg_shape : 0);
+        mItemLnb.setBackgroundResource(mCurrentSelectItem == ITEM_LNB ? R.drawable.btn_translate_bg_select_shape : 0);
+        mIvLnbLeft.setVisibility(mCurrentSelectItem == ITEM_LNB ? View.VISIBLE : View.INVISIBLE);
+        mIvLnbRight.setVisibility(mCurrentSelectItem == ITEM_LNB ? View.VISIBLE : View.INVISIBLE);
+        mTvLnb.setBackgroundResource(mCurrentSelectItem == ITEM_LNB ? R.drawable.btn_red_bg_shape : 0);
     }
 
     private void diseqcItemFocusChange() {
-        ll_diseqc_blind_satellite.setBackgroundResource(mCurrentSelectItem == ITEM_DISEQC ? R.drawable.btn_translate_bg_select_shape : 0);
-        imageview_blind_diseqc_left.setVisibility(mCurrentSelectItem == ITEM_DISEQC ? View.VISIBLE : View.INVISIBLE);
-        imageview_blind_diseqc_right.setVisibility(mCurrentSelectItem == ITEM_DISEQC ? View.VISIBLE : View.INVISIBLE);
-        tv_blind_diseqc_mode.setBackgroundResource(mCurrentSelectItem == ITEM_DISEQC ? R.drawable.btn_red_bg_shape : 0);
+        mItemDiSEqC.setBackgroundResource(mCurrentSelectItem == ITEM_DISEQC ? R.drawable.btn_translate_bg_select_shape : 0);
+        mIvDiSEqCLeft.setVisibility(mCurrentSelectItem == ITEM_DISEQC ? View.VISIBLE : View.INVISIBLE);
+        mIvDiSEqCRight.setVisibility(mCurrentSelectItem == ITEM_DISEQC ? View.VISIBLE : View.INVISIBLE);
+        mTvDiSEqC.setBackgroundResource(mCurrentSelectItem == ITEM_DISEQC ? R.drawable.btn_red_bg_shape : 0);
     }
 
     private void hz22KItemFocusChange() {
         if (is22KHzUnFocusable()) {
-            ll_blind_22khz.setBackgroundColor(getResources().getColor(R.color.dialog_bg));
-            imageview_blind_khz_left.setVisibility(View.INVISIBLE);
-            imageview_blind_khz_right.setVisibility(View.INVISIBLE);
-            tv_blind_khz_mode.setBackgroundColor(0);
-            tv_blind_khz_mode.setText(getResources().getString(R.string.auto));
+            mItem22khz.setBackgroundColor(getResources().getColor(R.color.dialog_bg));
+            mIv22khzLeft.setVisibility(View.INVISIBLE);
+            mIv22khzRight.setVisibility(View.INVISIBLE);
+            mTv22khz.setBackgroundColor(0);
+            mTv22khz.setText(getResources().getString(R.string.auto));
         } else {
-            ll_blind_22khz.setBackgroundResource(mCurrentSelectItem == ITEM_22K ? R.drawable.btn_translate_bg_select_shape : 0);
-            imageview_blind_khz_left.setVisibility(mCurrentSelectItem == ITEM_22K ? View.VISIBLE : View.INVISIBLE);
-            imageview_blind_khz_right.setVisibility(mCurrentSelectItem == ITEM_22K ? View.VISIBLE : View.INVISIBLE);
-            tv_blind_khz_mode.setBackgroundResource(mCurrentSelectItem == ITEM_22K ? R.drawable.btn_red_bg_shape : 0);
+            mItem22khz.setBackgroundResource(mCurrentSelectItem == ITEM_22K ? R.drawable.btn_translate_bg_select_shape : 0);
+            mIv22khzLeft.setVisibility(mCurrentSelectItem == ITEM_22K ? View.VISIBLE : View.INVISIBLE);
+            mIv22khzRight.setVisibility(mCurrentSelectItem == ITEM_22K ? View.VISIBLE : View.INVISIBLE);
+            mTv22khz.setBackgroundResource(mCurrentSelectItem == ITEM_22K ? R.drawable.btn_red_bg_shape : 0);
         }
     }
 
     private void lnbPowerItemFocusChange() {
-        ll_blind_lnb_power.setBackgroundResource(mCurrentSelectItem == ITEM_LNB_POWER ? R.drawable.btn_translate_bg_select_shape : 0);
-        imageview_blind_lnb_power_left.setVisibility(mCurrentSelectItem == ITEM_LNB_POWER ? View.VISIBLE : View.INVISIBLE);
-        imageview_blind_lnb_power_right.setVisibility(mCurrentSelectItem == ITEM_LNB_POWER ? View.VISIBLE : View.INVISIBLE);
-        tv_blind_lnb_power_mode.setBackgroundResource(mCurrentSelectItem == ITEM_LNB_POWER ? R.drawable.btn_red_bg_shape : 0);
+        mItemLnbPower.setBackgroundResource(mCurrentSelectItem == ITEM_LNB_POWER ? R.drawable.btn_translate_bg_select_shape : 0);
+        mIvLnbPowerLeft.setVisibility(mCurrentSelectItem == ITEM_LNB_POWER ? View.VISIBLE : View.INVISIBLE);
+        mIvLnbPowerRight.setVisibility(mCurrentSelectItem == ITEM_LNB_POWER ? View.VISIBLE : View.INVISIBLE);
+        mTvLnbPower.setBackgroundResource(mCurrentSelectItem == ITEM_LNB_POWER ? R.drawable.btn_red_bg_shape : 0);
     }
 }

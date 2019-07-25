@@ -3,370 +3,212 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@mipmap/background">
+    android:background="@mipmap/background"
+    android:orientation="vertical">
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="68dp"
-        android:layout_marginBottom="58dp"
+        android:layout_marginTop="70dp"
+        android:layout_marginBottom="70dp"
         android:background="@mipmap/right_background">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+        <TextView
+            android:id="@+id/blind_select_title"
+            style="@style/TitleStyle"
+            android:layout_marginTop="22dp"
+            android:text="@string/blindscan_select" />
+
+        <View
+            android:id="@+id/blind_select_title_divider"
+            style="@style/TitleDividerStyle"
+            android:layout_below="@id/blind_select_title"
+            android:layout_marginTop="18dp" />
+
+        <!-- Satellite -->
+        <RelativeLayout
+            android:id="@+id/item_satellite"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/blind_select_title_divider"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/btn_translate_bg_select_shape">
 
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="22dp"
-                android:gravity="center_horizontal"
-                android:text="@string/blindscan_select"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                style="@style/ItemTitleStyle"
+                android:text="@string/satellite_blind"
+                tools:ignore="RelativeOverlap" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="18dp"
-                android:background="#c0bfbf" />
+            <ImageView
+                android:id="@+id/iv_satellite_left"
+                style="@style/ItemArrowLeftStyle"
+                android:layout_toStartOf="@+id/tv_satellite"
+                android:layout_toLeftOf="@+id/tv_satellite"
+                tools:ignore="ContentDescription" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
+            <TextView
+                android:id="@+id/tv_satellite"
+                style="@style/ItemContentStyle"
+                android:layout_toStartOf="@+id/iv_satellite_right"
+                android:layout_toLeftOf="@+id/iv_satellite_right"
+                android:background="@drawable/btn_red_bg_shape"
+                tools:text="Asiasat 5(ku)" />
 
-                <!--Satellite-->
-                <LinearLayout
-                    android:id="@+id/ll_blind_satellite"
-                    android:layout_width="match_parent"
-                    android:layout_height="28dp"
-                    android:layout_marginLeft="244dp"
-                    android:layout_marginTop="56dp"
-                    android:layout_marginRight="244dp"
-                    android:background="@drawable/btn_translate_bg_select_shape"
-                    android:gravity="center">
+            <ImageView
+                android:id="@+id/iv_satellite_right"
+                style="@style/ItemArrowRightStyle"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
 
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:paddingLeft="20dp"
-                        android:text="@string/satellite_blind"
-                        android:textSize="17sp" />
+        <!-- LNB -->
+        <RelativeLayout
+            android:id="@+id/item_lnb"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/item_satellite">
 
-                    <RelativeLayout
-                        android:layout_width="0dp"
-                        android:layout_height="20dp"
-                        android:layout_marginEnd="20dp"
-                        android:layout_marginRight="20dp"
-                        android:layout_weight="1">
+            <TextView
+                style="@style/ItemTitleStyle"
+                android:text="@string/lnb"
+                tools:ignore="RelativeOverlap" />
 
-                        <ImageView
-                            android:id="@+id/imageview_blind_satellite_left"
-                            android:layout_width="@dimen/dp_8"
-                            android:layout_height="@dimen/dp_8"
-                            android:layout_centerVertical="true"
-                            android:src="@drawable/triangle_left"
-                            tools:ignore="ContentDescription" />
+            <ImageView
+                android:id="@+id/iv_lnb_left"
+                style="@style/ItemArrowLeftStyle"
+                android:layout_toLeftOf="@+id/tv_lnb"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
 
-                        <TextView
-                            android:id="@+id/tv_blind_satellite"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_centerVertical="true"
-                            android:layout_marginLeft="@dimen/dp_12"
-                            android:layout_marginRight="@dimen/dp_12"
-                            android:background="@drawable/btn_red_bg_shape"
-                            android:focusable="true"
-                            android:gravity="center"
-                            android:text="@string/all" />
+            <TextView
+                android:id="@+id/tv_lnb"
+                style="@style/ItemContentStyle"
+                android:layout_toStartOf="@+id/iv_lnb_right"
+                android:layout_toLeftOf="@+id/iv_lnb_right" />
 
-                        <ImageView
-                            android:id="@+id/imageview_blind_satellite_right"
-                            android:layout_width="@dimen/dp_8"
-                            android:layout_height="@dimen/dp_8"
-                            android:layout_alignParentEnd="true"
-                            android:layout_alignParentRight="true"
-                            android:layout_centerVertical="true"
-                            android:src="@drawable/triangle_right"
-                            tools:ignore="ContentDescription" />
-                    </RelativeLayout>
-                </LinearLayout>
+            <EditText
+                android:id="@+id/et_lnb"
+                android:layout_width="130dp"
+                android:layout_height="20dp"
+                android:layout_centerVertical="true"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="12dp"
+                android:layout_marginRight="12dp"
+                android:layout_toStartOf="@+id/iv_lnb_right"
+                android:layout_toLeftOf="@+id/iv_lnb_right"
+                android:background="@drawable/btn_red_bg_shape"
+                android:digits="0123456789"
+                android:focusable="true"
+                android:gravity="center"
+                android:inputType="number"
+                android:maxLength="4"
+                android:visibility="gone"
+                tools:ignore="Autofill,LabelFor"
+                tools:text="0" />
 
-                <!--LNB-->
-                <LinearLayout
-                    android:id="@+id/ll_blind_satellite_lnb"
-                    android:layout_width="match_parent"
-                    android:layout_height="28dp"
-                    android:layout_marginLeft="244dp"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginRight="244dp"
-                    android:gravity="center">
+            <ImageView
+                android:id="@+id/iv_lnb_right"
+                style="@style/ItemArrowRightStyle"
+                android:src="@drawable/triangle_right"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
 
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:paddingLeft="20dp"
-                        android:text="@string/lnb"
-                        android:textSize="17sp" />
+        <!-- DiSEqC -->
+        <RelativeLayout
+            android:id="@+id/item_diseqc"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/item_lnb">
 
-                    <RelativeLayout
-                        android:layout_width="0dp"
-                        android:layout_height="20dp"
-                        android:layout_marginEnd="20dp"
-                        android:layout_marginRight="20dp"
-                        android:layout_weight="1">
+            <TextView
+                style="@style/ItemTitleStyle"
+                android:text="@string/diseqc_1_x"
+                tools:ignore="RelativeOverlap" />
 
-                        <ImageView
-                            android:id="@+id/imageview_blind_lnb_left"
-                            android:layout_width="@dimen/dp_8"
-                            android:layout_height="@dimen/dp_8"
-                            android:layout_centerVertical="true"
-                            android:src="@drawable/triangle_left"
-                            android:visibility="invisible"
-                            tools:ignore="ContentDescription" />
+            <ImageView
+                android:id="@+id/iv_diseqc_left"
+                style="@style/ItemArrowLeftStyle"
+                android:layout_toStartOf="@+id/tv_diseqc"
+                android:layout_toLeftOf="@+id/tv_diseqc"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
 
-                        <TextView
-                            android:id="@+id/tv_blind_lnb_mode"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_centerVertical="true"
-                            android:layout_marginLeft="@dimen/dp_12"
-                            android:layout_marginRight="@dimen/dp_12"
-                            android:focusable="true"
-                            android:gravity="center"
-                            android:text="@string/lnb_5150" />
+            <TextView
+                android:id="@+id/tv_diseqc"
+                style="@style/ItemContentStyle"
+                android:layout_toStartOf="@+id/iv_diseqc_right"
+                android:layout_toLeftOf="@+id/iv_diseqc_right" />
 
-                        <RelativeLayout
-                            android:id="@+id/rl_edit_lnb_mode"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="@dimen/dp_12"
-                            android:layout_marginRight="@dimen/dp_12"
-                            android:visibility="gone">
+            <ImageView
+                android:id="@+id/iv_diseqc_right"
+                style="@style/ItemArrowRightStyle"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
 
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_centerInParent="true">
+        <!-- 22KHz -->
+        <RelativeLayout
+            android:id="@+id/item_22khz"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/item_diseqc">
 
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_gravity="center_vertical"
-                                    android:text="user"
-                                    android:textSize="@dimen/sp_10" />
+            <TextView
+                style="@style/ItemTitleStyle"
+                android:text="@string/freq_22KHz"
+                tools:ignore="RelativeOverlap" />
 
-                                <EditText
-                                    android:id="@+id/et_edit_lnb_mode"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_gravity="center_vertical"
-                                    android:background="@null"
-                                    android:digits="0 1 2 3 4 5 6 7 8 9"
-                                    android:focusable="true"
-                                    android:gravity="center"
-                                    android:hint="0"
-                                    android:maxLength="4"
-                                    android:textSize="@dimen/sp_10"
-                                    tools:ignore="Autofill,TextFields" />
-                            </LinearLayout>
-                        </RelativeLayout>
+            <ImageView
+                android:id="@+id/iv_22khz_left"
+                style="@style/ItemArrowLeftStyle"
+                android:layout_toStartOf="@+id/tv_22khz"
+                android:layout_toLeftOf="@+id/tv_22khz"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
 
-                        <ImageView
-                            android:id="@+id/imageview_blind_lnb_right"
-                            android:layout_width="@dimen/dp_8"
-                            android:layout_height="@dimen/dp_8"
-                            android:layout_alignParentEnd="true"
-                            android:layout_alignParentRight="true"
-                            android:layout_centerVertical="true"
-                            android:src="@drawable/triangle_right"
-                            android:visibility="invisible"
-                            tools:ignore="ContentDescription" />
-                    </RelativeLayout>
-                </LinearLayout>
+            <TextView
+                android:id="@+id/tv_22khz"
+                style="@style/ItemContentStyle"
+                android:layout_toStartOf="@+id/iv_22khz_right"
+                android:layout_toLeftOf="@+id/iv_22khz_right"
+                android:text="@string/off" />
 
-                <!--Diseqc 1.X -->
-                <LinearLayout
-                    android:id="@+id/ll_diseqc_blind_satellite"
-                    android:layout_width="match_parent"
-                    android:layout_height="28dp"
-                    android:layout_marginLeft="244dp"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginRight="244dp"
-                    android:gravity="center">
+            <ImageView
+                android:id="@+id/iv_22khz_right"
+                style="@style/ItemArrowRightStyle"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
 
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:paddingLeft="20dp"
-                        android:text="@string/diseqc_1_x"
-                        android:textSize="17sp" />
+        <!-- LNB Power -->
+        <RelativeLayout
+            android:id="@+id/item_lnb_power"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/item_22khz">
 
-                    <RelativeLayout
-                        android:layout_width="0dp"
-                        android:layout_height="20dp"
-                        android:layout_marginEnd="20dp"
-                        android:layout_marginRight="20dp"
-                        android:layout_weight="1">
+            <TextView
+                style="@style/ItemTitleStyle"
+                android:text="@string/lnb_power"
+                tools:ignore="RelativeOverlap" />
 
-                        <ImageView
-                            android:id="@+id/imageview_blind_diseqc_left"
-                            android:layout_width="@dimen/dp_8"
-                            android:layout_height="@dimen/dp_8"
-                            android:layout_centerVertical="true"
-                            android:src="@drawable/triangle_left"
-                            android:visibility="invisible"
-                            tools:ignore="ContentDescription" />
+            <ImageView
+                android:id="@+id/iv_lnb_power_left"
+                style="@style/ItemArrowLeftStyle"
+                android:layout_toStartOf="@+id/tv_lnb_power"
+                android:layout_toLeftOf="@+id/tv_lnb_power"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
 
-                        <TextView
-                            android:id="@+id/tv_blind_diseqc_mode"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_centerVertical="true"
-                            android:layout_marginLeft="@dimen/dp_12"
-                            android:layout_marginRight="@dimen/dp_12"
-                            android:focusable="true"
-                            android:gravity="center"
-                            android:text="@string/diseqc_d" />
+            <TextView
+                android:id="@+id/tv_lnb_power"
+                style="@style/ItemContentStyle"
+                android:layout_toStartOf="@+id/iv_lnb_power_right"
+                android:layout_toLeftOf="@+id/iv_lnb_power_right" />
 
-                        <ImageView
-                            android:id="@+id/imageview_blind_diseqc_right"
-                            android:layout_width="@dimen/dp_8"
-                            android:layout_height="@dimen/dp_8"
-                            android:layout_alignParentEnd="true"
-                            android:layout_alignParentRight="true"
-                            android:layout_centerVertical="true"
-                            android:src="@drawable/triangle_right"
-                            android:visibility="invisible"
-                            tools:ignore="ContentDescription" />
-                    </RelativeLayout>
-                </LinearLayout>
+            <ImageView
+                android:id="@+id/iv_lnb_power_right"
+                style="@style/ItemArrowRightStyle"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
 
-                <!--22KHz:-->
-                <LinearLayout
-                    android:id="@+id/ll_blind_22khz"
-                    android:layout_width="match_parent"
-                    android:layout_height="28dp"
-                    android:layout_marginLeft="244dp"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginRight="244dp"
-                    android:gravity="center">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:paddingLeft="20dp"
-                        android:text="@string/freq_22KHz"
-                        android:textSize="17sp" />
-
-                    <RelativeLayout
-                        android:layout_width="0dp"
-                        android:layout_height="20dp"
-                        android:layout_marginEnd="20dp"
-                        android:layout_marginRight="20dp"
-                        android:layout_weight="1">
-
-                        <ImageView
-                            android:id="@+id/imageview_blind_khz_left"
-                            android:layout_width="@dimen/dp_8"
-                            android:layout_height="@dimen/dp_8"
-                            android:layout_centerVertical="true"
-                            android:src="@drawable/triangle_left"
-                            android:visibility="invisible"
-                            tools:ignore="ContentDescription" />
-
-                        <TextView
-                            android:id="@+id/tv_blind_khz_mode"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_centerVertical="true"
-                            android:layout_marginLeft="@dimen/dp_12"
-                            android:layout_marginRight="@dimen/dp_12"
-                            android:focusable="true"
-                            android:gravity="center"
-                            android:text="@string/off" />
-
-                        <ImageView
-                            android:id="@+id/imageview_blind_khz_right"
-                            android:layout_width="@dimen/dp_8"
-                            android:layout_height="@dimen/dp_8"
-                            android:layout_alignParentEnd="true"
-                            android:layout_alignParentRight="true"
-                            android:layout_centerVertical="true"
-                            android:src="@drawable/triangle_right"
-                            android:visibility="invisible"
-                            tools:ignore="ContentDescription" />
-                    </RelativeLayout>
-                </LinearLayout>
-
-                <!--Lnb Power-->
-                <LinearLayout
-                    android:id="@+id/ll_blind_lnb_power"
-                    android:layout_width="match_parent"
-                    android:layout_height="28dp"
-                    android:layout_marginLeft="244dp"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginRight="244dp"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:paddingLeft="20dp"
-                        android:text="@string/lnb_power"
-                        android:textSize="17sp" />
-
-                    <RelativeLayout
-                        android:layout_width="0dp"
-                        android:layout_height="20dp"
-                        android:layout_marginEnd="20dp"
-                        android:layout_marginRight="20dp"
-                        android:layout_weight="1">
-
-                        <ImageView
-                            android:id="@+id/imageview_blind_lnb_power_left"
-                            android:layout_width="@dimen/dp_8"
-                            android:layout_height="@dimen/dp_8"
-                            android:layout_centerVertical="true"
-                            android:src="@drawable/triangle_left"
-                            android:visibility="invisible"
-                            tools:ignore="ContentDescription" />
-
-                        <TextView
-                            android:id="@+id/tv_blind_lnb_power_mode"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_centerVertical="true"
-                            android:layout_marginLeft="@dimen/dp_12"
-                            android:layout_marginRight="@dimen/dp_12"
-                            android:focusable="true"
-                            android:gravity="center"
-                            android:text="@string/on" />
-
-                        <ImageView
-                            android:id="@+id/imageview_blind_lnb_power_right"
-                            android:layout_width="@dimen/dp_8"
-                            android:layout_height="@dimen/dp_8"
-                            android:layout_alignParentEnd="true"
-                            android:layout_alignParentRight="true"
-                            android:layout_centerVertical="true"
-                            android:src="@drawable/triangle_right"
-                            android:visibility="invisible"
-                            tools:ignore="ContentDescription" />
-                    </RelativeLayout>
-                </LinearLayout>
-            </LinearLayout>
-        </LinearLayout>
-
-        <!--底部导航条-->
+        <!-- BottomBar -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="56dp"
@@ -387,7 +229,7 @@
                 android:text="@string/blind_scan"
                 android:textSize="15sp" />
 
-            <!--PageUp/Down-->
+            <!-- PageUp/Down -->
             <LinearLayout
                 android:layout_width="42dp"
                 android:layout_height="20dp"
@@ -395,7 +237,7 @@
                 android:layout_marginLeft="64dp"
                 android:background="@drawable/btn_translate_bg_shape"
                 android:gravity="center_vertical"
-                android:padding="@dimen/dp_3">
+                android:padding="3dp">
 
                 <ImageView
                     android:layout_width="8dp"
@@ -414,14 +256,14 @@
 
             <TextView
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/dp_15"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
                 android:layout_marginLeft="6dp"
                 android:gravity="center"
                 android:text="@string/up_down"
                 android:textSize="15sp" />
 
-            <!--Back-->
+            <!-- Back -->
             <TextView
                 android:layout_width="42dp"
                 android:layout_height="20dp"

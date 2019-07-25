@@ -11,144 +11,101 @@
         android:background="@mipmap/right_background"
         android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_horizontal"
-            android:orientation="vertical">
+        <TextView
+            android:id="@+id/dtv_setting_title"
+            style="@style/TitleStyle"
+            android:layout_marginTop="22dp"
+            android:text="@string/preference_settings" />
+
+        <View
+            android:id="@+id/dtv_setting_title_divider"
+            style="@style/TitleDividerStyle"
+            android:layout_below="@id/dtv_setting_title"
+            android:layout_marginTop="18dp" />
+
+        <!-- General Setting -->
+        <RelativeLayout
+            android:id="@+id/rl_general_settings"
+            style="@style/ItemEntranceStyle"
+            android:layout_below="@id/dtv_setting_title_divider"
+            android:layout_marginTop="50dp">
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="22dp"
-                android:gravity="center_horizontal"
-                android:text="@string/preference_settings"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:text="@string/general_setting"
+                android:textSize="@dimen/sp_12" />
+        </RelativeLayout>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="18dp"
-                android:background="#c0bfbf" />
+        <!-- T2 Setting -->
+        <RelativeLayout
+            android:id="@+id/rl_t2_settings"
+            style="@style/ItemEntranceStyle"
+            android:layout_below="@id/rl_general_settings"
+            android:layout_marginTop="10dp">
 
-            <!-- General Setting -->
-            <RelativeLayout
-                android:id="@+id/rl_general_settings"
-                android:layout_width="match_parent"
-                android:layout_height="30dp"
-                android:layout_marginLeft="200dp"
-                android:layout_marginTop="50dp"
-                android:layout_marginRight="200dp"
-                android:background="@drawable/dvb_btn_fragment_selector"
-                android:focusable="true"
-                android:gravity="center">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/t2_setting"
+                android:textSize="@dimen/sp_12" />
+        </RelativeLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/general_setting"
-                    android:textSize="@dimen/sp_12" />
-            </RelativeLayout>
+        <!-- Parental Control -->
+        <RelativeLayout
+            android:id="@+id/rl_parental_control"
+            style="@style/ItemEntranceStyle"
+            android:layout_below="@id/rl_t2_settings"
+            android:layout_marginTop="10dp">
 
-            <!-- General Setting -->
-            <RelativeLayout
-                android:id="@+id/rl_t2_settings"
-                android:layout_width="match_parent"
-                android:layout_height="30dp"
-                android:layout_marginLeft="200dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginRight="200dp"
-                android:background="@drawable/dvb_btn_fragment_selector"
-                android:focusable="true"
-                android:gravity="center">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/parental_control"
+                android:textSize="@dimen/sp_12" />
+        </RelativeLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/t2_setting"
-                    android:textSize="@dimen/sp_12" />
-            </RelativeLayout>
+        <!-- PVR Setting -->
+        <RelativeLayout
+            android:id="@+id/rl_pvr_settings"
+            style="@style/ItemEntranceStyle"
+            android:layout_below="@id/rl_parental_control"
+            android:layout_marginTop="10dp">
 
-            <!-- Parental Control -->
-            <RelativeLayout
-                android:id="@+id/rl_parental_control"
-                android:layout_width="match_parent"
-                android:layout_height="30dp"
-                android:layout_marginLeft="200dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginRight="200dp"
-                android:background="@drawable/dvb_btn_fragment_selector"
-                android:focusable="true"
-                android:gravity="center">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/pvr_settings"
+                android:textSize="@dimen/sp_12" />
+        </RelativeLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/parental_control"
-                    android:textSize="@dimen/sp_12" />
-            </RelativeLayout>
+        <!-- Book List -->
+        <RelativeLayout
+            android:id="@+id/rl_book_list"
+            style="@style/ItemEntranceStyle"
+            android:layout_below="@id/rl_pvr_settings"
+            android:layout_marginTop="10dp">
 
-            <!-- PVR Setting -->
-            <RelativeLayout
-                android:id="@+id/rl_pvr_settings"
-                android:layout_width="match_parent"
-                android:layout_height="30dp"
-                android:layout_marginLeft="200dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginRight="200dp"
-                android:background="@drawable/dvb_btn_fragment_selector"
-                android:focusable="true"
-                android:gravity="center"
-                android:visibility="visible">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/book_list"
+                android:textSize="@dimen/sp_12" />
+        </RelativeLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/pvr_settings"
-                    android:textSize="@dimen/sp_12" />
-            </RelativeLayout>
+        <!-- Record List -->
+        <RelativeLayout
+            android:id="@+id/rl_record_list"
+            style="@style/ItemEntranceStyle"
+            android:layout_below="@id/rl_book_list"
+            android:layout_marginTop="10dp">
 
-            <!-- Book List -->
-            <RelativeLayout
-                android:id="@+id/rl_book_list"
-                android:layout_width="match_parent"
-                android:layout_height="30dp"
-                android:layout_marginLeft="200dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginRight="200dp"
-                android:background="@drawable/dvb_btn_fragment_selector"
-                android:focusable="true"
-                android:gravity="center"
-                android:visibility="visible">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/book_list"
-                    android:textSize="@dimen/sp_12" />
-            </RelativeLayout>
-
-            <!-- Record List -->
-            <RelativeLayout
-                android:id="@+id/rl_record_list"
-                android:layout_width="match_parent"
-                android:layout_height="30dp"
-                android:layout_marginLeft="200dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginRight="200dp"
-                android:background="@drawable/dvb_btn_fragment_selector"
-                android:focusable="true"
-                android:gravity="center"
-                android:visibility="visible">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/record_list"
-                    android:textSize="@dimen/sp_12" />
-            </RelativeLayout>
-        </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/record_list"
+                android:textSize="@dimen/sp_12" />
+        </RelativeLayout>
 
         <include
             layout="@layout/bottom_bar_select_item"

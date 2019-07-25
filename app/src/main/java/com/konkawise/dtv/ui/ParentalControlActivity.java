@@ -19,11 +19,6 @@ import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-/**
- * @Author Waiho
- * @Time 2019-3-21 20:39
- * @Desc ${TODD}
- */
 public class ParentalControlActivity extends BaseActivity {
     private static final String TAG = "KKDVB_" + ParentalControlActivity.class.getSimpleName();
     private static final int ITEM_MENU_LOCK = 1;
@@ -31,32 +26,32 @@ public class ParentalControlActivity extends BaseActivity {
     private static final int ITEM_CONTROL_AGE = 3;
     private static final int ITEM_SET_PASSWORD = 4;
 
-    @BindView(R.id.iv_menu_left)
-    ImageView mIv_menu_left;
+    @BindView(R.id.iv_menu_lock_left)
+    ImageView mIvMenuLockLeft;
 
     @BindView(R.id.tv_menu_lock)
-    TextView mTv_menu_lock;
+    TextView mTvMenuLock;
 
-    @BindView(R.id.iv_menu_right)
-    ImageView mIv_menu_right;
+    @BindView(R.id.iv_menu_lock_right)
+    ImageView mIvMenuLockRight;
 
-    @BindView(R.id.iv_channel_left)
-    ImageView mIv_channel_left;
+    @BindView(R.id.iv_channel_lock_left)
+    ImageView mIvChannelLockLeft;
 
     @BindView(R.id.tv_channel_lock)
-    TextView mTv_channel_lock;
+    TextView mTvChannelLock;
 
-    @BindView(R.id.iv_channel_right)
-    ImageView mIv_channel_right;
+    @BindView(R.id.iv_channel_lock_right)
+    ImageView mIvChannelLockRight;
 
-    @BindView(R.id.iv_age_left)
-    ImageView mIv_age_left;
+    @BindView(R.id.iv_control_age_left)
+    ImageView mTvControlAgeLeft;
 
     @BindView(R.id.tv_control_age)
-    TextView mTv_control_age;
+    TextView mTvControlAge;
 
-    @BindView(R.id.iv_age_right)
-    ImageView mIv_age_right;
+    @BindView(R.id.iv_control_age_right)
+    ImageView mIvControlAgeRight;
 
     @BindArray(R.array.general_switch)
     String[] mGeneralSwitch;
@@ -64,17 +59,17 @@ public class ParentalControlActivity extends BaseActivity {
     @BindArray(R.array.parental_control_age)
     String[] mControlAge;
 
-    @OnClick(R.id.rl_menu_lock)
+    @OnClick(R.id.item_menu_lock)
     void menuLock() {
         showCheckItemDialog(getResources().getString(R.string.menu_lock), Arrays.asList(mGeneralSwitch), menuLockPosition);
     }
 
-    @OnClick(R.id.rl_channel_lock)
+    @OnClick(R.id.item_channel_lock)
     void channelLock() {
         showCheckItemDialog(getResources().getString(R.string.channel_lock2), Arrays.asList(mGeneralSwitch), channelLockPosition);
     }
 
-    @OnClick(R.id.rl_control_age)
+    @OnClick(R.id.item_control_age)
     void controlAge() {
         showCheckItemDialog(getResources().getString(R.string.control_age), Arrays.asList(mControlAge), controlAgePosition);
     }
@@ -97,9 +92,9 @@ public class ParentalControlActivity extends BaseActivity {
     @Override
     protected void setup() {
         initData();
-        mTv_menu_lock.setText(mGeneralSwitch[menuLockPosition]);
-        mTv_channel_lock.setText(mGeneralSwitch[channelLockPosition]);
-        mTv_control_age.setText(mControlAge[controlAgePosition]);
+        mTvMenuLock.setText(mGeneralSwitch[menuLockPosition]);
+        mTvChannelLock.setText(mGeneralSwitch[channelLockPosition]);
+        mTvControlAge.setText(mControlAge[controlAgePosition]);
     }
 
     private void initData() {
@@ -132,17 +127,17 @@ public class ParentalControlActivity extends BaseActivity {
                     public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
                         switch (position) {
                             case ITEM_MENU_LOCK:
-                                mTv_menu_lock.setText(checkContent);
+                                mTvMenuLock.setText(checkContent);
                                 menuLockPosition = Arrays.asList(mGeneralSwitch).indexOf(checkContent);
                                 SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_cMenuLock.ordinal(), menuLockPosition);
                                 break;
                             case ITEM_CHANNEL_LOCK:
-                                mTv_channel_lock.setText(checkContent);
+                                mTvChannelLock.setText(checkContent);
                                 channelLockPosition = Arrays.asList(mGeneralSwitch).indexOf(checkContent);
                                 SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_cParentLock.ordinal(), channelLockPosition);
                                 break;
                             case ITEM_CONTROL_AGE:
-                                mTv_control_age.setText(checkContent);
+                                mTvControlAge.setText(checkContent);
                                 controlAgePosition = Arrays.asList(mControlAge).indexOf(checkContent);
                                 SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_PC_AGE.ordinal(), controlAgePosition + 1);
                                 break;
@@ -196,19 +191,19 @@ public class ParentalControlActivity extends BaseActivity {
             switch (position) {
                 case ITEM_MENU_LOCK:
                     if (--menuLockPosition < 0) menuLockPosition = mGeneralSwitch.length - 1;
-                    mTv_menu_lock.setText(mGeneralSwitch[menuLockPosition]);
+                    mTvMenuLock.setText(mGeneralSwitch[menuLockPosition]);
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_cMenuLock.ordinal(), menuLockPosition);
                     break;
 
                 case ITEM_CHANNEL_LOCK:
                     if (--channelLockPosition < 0) channelLockPosition = mGeneralSwitch.length - 1;
-                    mTv_channel_lock.setText(mGeneralSwitch[channelLockPosition]);
+                    mTvChannelLock.setText(mGeneralSwitch[channelLockPosition]);
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_cParentLock.ordinal(), channelLockPosition);
                     break;
 
                 case ITEM_CONTROL_AGE:
                     if (--controlAgePosition < 0) controlAgePosition = mControlAge.length - 1;
-                    mTv_control_age.setText(mControlAge[controlAgePosition]);
+                    mTvControlAge.setText(mControlAge[controlAgePosition]);
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_PC_AGE.ordinal(), controlAgePosition + 1);
                     break;
             }
@@ -219,19 +214,19 @@ public class ParentalControlActivity extends BaseActivity {
             switch (position) {
                 case ITEM_MENU_LOCK:
                     if (++menuLockPosition > mGeneralSwitch.length - 1) menuLockPosition = 0;
-                    mTv_menu_lock.setText(mGeneralSwitch[menuLockPosition]);
+                    mTvMenuLock.setText(mGeneralSwitch[menuLockPosition]);
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_cMenuLock.ordinal(), menuLockPosition);
                     break;
 
                 case ITEM_CHANNEL_LOCK:
                     if (++channelLockPosition > mGeneralSwitch.length - 1) channelLockPosition = 0;
-                    mTv_channel_lock.setText(mGeneralSwitch[channelLockPosition]);
+                    mTvChannelLock.setText(mGeneralSwitch[channelLockPosition]);
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_cParentLock.ordinal(), channelLockPosition);
                     break;
 
                 case ITEM_CONTROL_AGE:
                     if (++controlAgePosition > mControlAge.length - 1) controlAgePosition = 0;
-                    mTv_control_age.setText(mControlAge[controlAgePosition]);
+                    mTvControlAge.setText(mControlAge[controlAgePosition]);
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_PC_AGE.ordinal(), controlAgePosition + 1);
                     break;
             }
@@ -240,9 +235,9 @@ public class ParentalControlActivity extends BaseActivity {
     }
 
     private void itemFocusChange() {
-        itemChange(ITEM_MENU_LOCK, mIv_menu_left, mIv_menu_right, mTv_menu_lock);
-        itemChange(ITEM_CHANNEL_LOCK, mIv_channel_left, mIv_channel_right, mTv_channel_lock);
-        itemChange(ITEM_CONTROL_AGE, mIv_age_left, mIv_age_right, mTv_control_age);
+        itemChange(ITEM_MENU_LOCK, mIvMenuLockLeft, mIvMenuLockRight, mTvMenuLock);
+        itemChange(ITEM_CHANNEL_LOCK, mIvChannelLockLeft, mIvChannelLockRight, mTvChannelLock);
+        itemChange(ITEM_CONTROL_AGE, mTvControlAgeLeft, mIvControlAgeRight, mTvControlAge);
     }
 
     private void itemChange(int selectItem, ImageView ivLeft, ImageView ivRight, TextView textView) {
