@@ -63,6 +63,7 @@
     <string name="motor_move_steps">Move Steps</string>
     <string name="motor_stop">Stop</string>
     <string name="motor_step_size">Step Size</string>
+    <string name="motor_sat_longitudu">Sat Longitude</string>
     <string name="motor_local_longitudu">Local Longitude</string>
     <string name="motor_local_latitude">Local Latitude</string>
     <string name="motor_continue">Continue</string>
