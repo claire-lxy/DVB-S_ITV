@@ -17,7 +17,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 
 public class ScanDialog extends BaseDialogFragment {
-    public  static final String TAG = "ScanDialog";
+    public static final String TAG = "ScanDialog";
 
     // S2
     private static final int ITEM_SCAN_MODE = 1;
@@ -122,8 +122,8 @@ public class ScanDialog extends BaseDialogFragment {
 
     private int mCurrSelectItem = ITEM_SCAN_MODE;
 
-    private int mCurrScanMode;
-    private int mCurrChannelType;
+    private int mCurrScanMode;//即Channel Type
+    private int mCurrChannelType;//对应Service Type
     private int mCurrScanType;
     private int mCurrNetwork;
     private int mCurrCAS;
@@ -211,6 +211,14 @@ public class ScanDialog extends BaseDialogFragment {
                 if (mInstallationType == INSTALLATION_TYPE_S2_SEARCH) {
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_Network.ordinal(), mCurrNetwork);
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_CAS.ordinal(), mCurrCAS);
+                } else if (mInstallationType == INSTALLATION_TYPE_MANUAL_SEARCH) {
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_CAS.ordinal(), mCurrChannelType);
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_ScanMode.ordinal(), mCurrScanMode);
+                    //T2手动
+                } else if(mInstallationType == INSTALLATION_TYPE_AUTO_SEARCH) {
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_CAS.ordinal(), mCurrChannelType);
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_ScanMode.ordinal(), mCurrScanMode);
+                    //T2自动
                 }
                 mOnScanSearchListener.onClick(null);
             }

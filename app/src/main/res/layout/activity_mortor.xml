@@ -6,158 +6,335 @@
     android:background="@drawable/background"
     android:orientation="vertical">
 
-    <RelativeLayout
+    <LinearLayout
+        android:id="@+id/motor_linearlayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginTop="68dp"
-        android:layout_marginBottom="58dp"
         android:background="@drawable/right_background"
-        android:orientation="vertical">
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        >
 
-        <LinearLayout
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
             android:gravity="center_horizontal"
-            android:orientation="vertical">
+            android:text="@string/motor_01"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="18dp"
+            android:background="#c0bfbf" />
+
+        <!--Satellite-->
+        <RelativeLayout
+            android:id="@+id/rl_satellite"
+            android:layout_width="match_parent"
+            android:layout_height="28dp"
+            android:layout_marginLeft="244dp"
+            android:layout_marginRight="244dp"
+            android:layout_marginTop="15dp"
+            android:background="@color/dialog_bg"
+            android:focusable="false">
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="22dp"
-                android:gravity="center_horizontal"
-                android:text="@string/motor_01"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/dp_20"
+                android:layout_marginStart="@dimen/dp_20"
+                android:text="@string/motor_satellite"
+                android:textSize="@dimen/sp_10"
+                tools:ignore="RelativeOverlap" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="18dp"
-                android:background="#c0bfbf" />
+            <ImageView
+                android:id="@+id/imgeview_satellite_left"
+                android:layout_width="@dimen/dp_15"
+                android:layout_height="@dimen/dp_10"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/tv_satellite"
+                android:layout_toStartOf="@+id/tv_satellite"
+                android:src="@drawable/triangle_left"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
 
-            <!--Satellite-->
+            <TextView
+                android:id="@+id/tv_satellite"
+                android:layout_width="@dimen/dp_100"
+                android:layout_height="@dimen/dp_18"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/dp_5"
+                android:layout_marginRight="@dimen/dp_10"
+                android:layout_toLeftOf="@+id/imgeview_satellite_right"
+                android:layout_toStartOf="@+id/imgeview_satellite_right"
+                android:gravity="center"
+                android:text="@string/motor_Insat_2e"
+                android:textSize="@dimen/sp_10" />
+
+            <ImageView
+                android:id="@+id/imgeview_satellite_right"
+                android:layout_width="@dimen/dp_15"
+                android:layout_height="@dimen/dp_10"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/triangle_right"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <!--Motor Type-->
+        <RelativeLayout
+            android:id="@+id/ll_motor_type"
+            android:layout_width="match_parent"
+            android:layout_height="28dp"
+            android:layout_marginLeft="244dp"
+            android:layout_marginRight="244dp"
+            android:background="@drawable/btn_translate_bg_select_shape"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/dp_20"
+                android:layout_marginStart="@dimen/dp_20"
+                android:text="@string/motor_type"
+                android:textSize="@dimen/sp_10"
+                tools:ignore="RelativeOverlap" />
+
+            <ImageView
+                android:id="@+id/imgeview_motor_type_left"
+                android:layout_width="@dimen/dp_15"
+                android:layout_height="@dimen/dp_10"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/tv_motor_type"
+                android:layout_toStartOf="@+id/tv_motor_type"
+                android:src="@drawable/triangle_left"
+                android:visibility="visible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_motor_type"
+                android:layout_width="@dimen/dp_100"
+                android:layout_height="@dimen/dp_18"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/dp_5"
+                android:layout_marginRight="@dimen/dp_5"
+                android:layout_toLeftOf="@+id/imgeview_motor_type_right"
+                android:layout_toStartOf="@+id/imgeview_motor_type_right"
+                android:background="@drawable/btn_red_bg_shape"
+                android:gravity="center"
+                android:text="@string/motor_diseqc"
+                android:textSize="@dimen/sp_10" />
+
+            <ImageView
+                android:id="@+id/imgeview_motor_type_right"
+                android:layout_width="@dimen/dp_15"
+                android:layout_height="@dimen/dp_10"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/dp_5"
+                android:layout_marginStart="@dimen/dp_5"
+                android:src="@drawable/triangle_right"
+                android:visibility="visible"
+                tools:ignore="ContentDescription" />
+
+        </RelativeLayout>
+
+        <!--Tp-->
+        <RelativeLayout
+            android:id="@+id/ll_tp_root"
+            android:layout_width="match_parent"
+            android:layout_height="28dp"
+            android:layout_marginLeft="244dp"
+            android:layout_marginRight="244dp"
+            android:background="@drawable/dvb_btn_fragment_selector"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/dp_20"
+                android:layout_marginStart="@dimen/dp_20"
+                android:text="@string/tp"
+                android:textSize="@dimen/sp_10" />
+
+            <ImageView
+                android:id="@+id/image_tp_left"
+                android:layout_width="@dimen/dp_15"
+                android:layout_height="@dimen/dp_10"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/tv_tp"
+                android:layout_toStartOf="@+id/tv_tp"
+                android:src="@drawable/triangle_left"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_tp"
+                android:layout_width="@dimen/dp_100"
+                android:layout_height="@dimen/dp_18"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/dp_5"
+                android:layout_marginRight="@dimen/dp_5"
+                android:layout_toLeftOf="@+id/image_tp_right"
+                android:layout_toStartOf="@+id/image_tp_right"
+                android:gravity="center"
+                android:textSize="@dimen/sp_10" />
+
+            <ImageView
+                android:id="@+id/image_tp_right"
+                android:layout_width="@dimen/dp_15"
+                android:layout_height="@dimen/dp_10"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/dp_5"
+                android:layout_marginStart="@dimen/dp_5"
+                android:src="@drawable/triangle_right"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <!--Move Step-->
+        <RelativeLayout
+            android:id="@+id/ll_step_root"
+            android:layout_width="match_parent"
+            android:layout_height="28dp"
+            android:layout_marginLeft="244dp"
+            android:layout_marginRight="244dp"
+            android:focusable="true">
+
+            <TextView
+                android:id="@+id/tv_move_steps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/dp_20"
+                android:layout_marginStart="@dimen/dp_20"
+                android:text="@string/motor_move_steps"
+                android:textSize="@dimen/sp_10"
+                tools:ignore="RelativeOverlap" />
+
+            <ImageView
+                android:id="@+id/image_step_left"
+                android:layout_width="@dimen/dp_15"
+                android:layout_height="@dimen/dp_10"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/tv_step"
+                android:layout_toStartOf="@+id/tv_step"
+                android:src="@drawable/triangle_left"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_step"
+                android:layout_width="@dimen/dp_100"
+                android:layout_height="@dimen/dp_18"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/dp_5"
+                android:layout_marginRight="@dimen/dp_5"
+                android:layout_toLeftOf="@+id/image_step_right"
+                android:layout_toStartOf="@+id/image_step_right"
+                android:gravity="center"
+                android:text="@string/motor_stop"
+                android:textSize="@dimen/sp_10" />
+
+            <ImageView
+                android:id="@+id/image_step_right"
+                android:layout_width="@dimen/dp_15"
+                android:layout_height="@dimen/dp_10"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/dp_5"
+                android:layout_marginStart="@dimen/dp_5"
+                android:src="@drawable/triangle_right"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/ll_step_size_root"
+            android:layout_width="match_parent"
+            android:layout_height="28dp"
+            android:layout_marginLeft="244dp"
+            android:layout_marginRight="244dp"
+            android:background="@drawable/dvb_btn_fragment_selector"
+            android:focusable="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/dp_20"
+                android:layout_marginStart="@dimen/dp_20"
+                android:text="@string/motor_step_size"
+                android:textSize="@dimen/sp_10"
+                tools:ignore="RelativeOverlap" />
+
+
+            <ImageView
+                android:id="@+id/image_step_size_left"
+                android:layout_width="@dimen/dp_15"
+                android:layout_height="@dimen/dp_10"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/tv_step_size"
+                android:layout_toStartOf="@+id/tv_step_size"
+                android:src="@drawable/triangle_left"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_step_size"
+                android:layout_width="@dimen/dp_100"
+                android:layout_height="@dimen/dp_18"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/dp_5"
+                android:layout_marginRight="@dimen/dp_5"
+                android:layout_toLeftOf="@+id/image_step_size_right"
+                android:layout_toStartOf="@+id/image_step_size_right"
+                android:gravity="center"
+                android:text="@string/motor_continue"
+                android:textSize="@dimen/sp_10" />
+
+            <ImageView
+                android:id="@+id/image_step_size_right"
+                android:layout_width="@dimen/dp_15"
+                android:layout_height="@dimen/dp_10"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/dp_5"
+                android:layout_marginStart="@dimen/dp_5"
+                android:src="@drawable/triangle_right"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_local_longitude_latitude"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:visibility="gone">
+
             <RelativeLayout
-                android:id="@+id/rl_satellite"
-                android:layout_width="match_parent"
-                android:layout_height="28dp"
-                android:layout_marginLeft="244dp"
-                android:layout_marginTop="15dp"
-                android:layout_marginRight="244dp"
-                android:background="@color/dialog_bg"
-                android:focusable="false">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/dp_20"
-                    android:layout_marginLeft="@dimen/dp_20"
-                    android:text="@string/motor_satellite"
-                    android:textSize="@dimen/sp_10"
-                    tools:ignore="RelativeOverlap" />
-
-                <LinearLayout
-                    android:layout_width="@dimen/dp_140"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:id="@+id/imgeview_satellite_left"
-                        android:layout_width="@dimen/dp_15"
-                        android:layout_height="@dimen/dp_10"
-                        android:src="@drawable/triangle_left"
-                        android:visibility="invisible"
-                        tools:ignore="ContentDescription" />
-
-                    <TextView
-                        android:id="@+id/tv_satellite"
-                        android:layout_width="@dimen/dp_100"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/dp_5"
-                        android:layout_marginLeft="@dimen/dp_5"
-                        android:gravity="center"
-                        android:text="@string/motor_Insat_2e"
-                        android:textSize="@dimen/sp_10" />
-
-                    <ImageView
-                        android:id="@+id/imgeview_satellite_right"
-                        android:layout_width="@dimen/dp_15"
-                        android:layout_height="@dimen/dp_10"
-                        android:layout_marginStart="@dimen/dp_5"
-                        android:layout_marginLeft="@dimen/dp_5"
-                        android:src="@drawable/triangle_right"
-                        android:visibility="invisible"
-                        tools:ignore="ContentDescription" />
-                </LinearLayout>
-            </RelativeLayout>
-
-            <!--Motor Type-->
-            <RelativeLayout
-                android:id="@+id/ll_motor_type"
-                android:layout_width="match_parent"
-                android:layout_height="28dp"
-                android:layout_marginLeft="244dp"
-                android:layout_marginRight="244dp"
-                android:background="@drawable/btn_translate_bg_select_shape"
-                android:focusable="true">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/dp_20"
-                    android:layout_marginLeft="@dimen/dp_20"
-                    android:text="@string/motor_type"
-                    android:textSize="@dimen/sp_10"
-                    tools:ignore="RelativeOverlap" />
-
-                <LinearLayout
-                    android:layout_width="@dimen/dp_140"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:id="@+id/imgeview_motor_type_left"
-                        android:layout_width="@dimen/dp_15"
-                        android:layout_height="@dimen/dp_10"
-                        android:src="@drawable/triangle_left"
-                        android:visibility="visible"
-                        tools:ignore="ContentDescription" />
-
-                    <TextView
-                        android:id="@+id/tv_motor_type"
-                        android:layout_width="@dimen/dp_100"
-                        android:layout_height="@dimen/dp_18"
-                        android:layout_marginStart="@dimen/dp_5"
-                        android:layout_marginLeft="@dimen/dp_5"
-                        android:background="@drawable/btn_red_bg_shape"
-                        android:gravity="center"
-                        android:text="@string/motor_diseqc"
-                        android:textSize="@dimen/sp_10" />
-
-                    <ImageView
-                        android:id="@+id/imgeview_motor_type_right"
-                        android:layout_width="@dimen/dp_15"
-                        android:layout_height="@dimen/dp_10"
-                        android:layout_marginStart="@dimen/dp_5"
-                        android:layout_marginLeft="@dimen/dp_5"
-                        android:src="@drawable/triangle_right"
-                        android:visibility="visible"
-                        tools:ignore="ContentDescription" />
-                </LinearLayout>
-            </RelativeLayout>
-
-            <!--Tp-->
-            <RelativeLayout
-                android:id="@+id/ll_tp_root"
+                android:id="@+id/rl_sat_longitude_root"
                 android:layout_width="match_parent"
                 android:layout_height="28dp"
                 android:layout_marginLeft="244dp"
@@ -166,114 +343,59 @@
                 android:focusable="true">
 
                 <TextView
+                    android:id="@+id/sat_longitude"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/dp_20"
                     android:layout_marginLeft="@dimen/dp_20"
-                    android:text="@string/tp"
+                    android:layout_marginStart="@dimen/dp_20"
+                    android:text="@string/motor_sat_longitudu"
+                    android:textSize="@dimen/sp_10"
+                    tools:ignore="RelativeOverlap" />
+
+                <TextView
+                    android:id="@+id/tv_sat_longitude"
+                    android:layout_width="@dimen/dp_32"
+                    android:layout_height="@dimen/dp_18"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="@dimen/dp_5"
+                    android:layout_marginRight="-3dp"
+                    android:layout_toLeftOf="@+id/et_sat_longitude"
+                    android:layout_toStartOf="@+id/et_sat_longitude"
+                    android:focusable="false"
+                    android:gravity="center_vertical|right"
+                    android:text="@string/west"
                     android:textSize="@dimen/sp_10" />
 
-                <LinearLayout
-                    android:layout_width="@dimen/dp_140"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerVertical="true"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:id="@+id/image_tp_left"
-                        android:layout_width="@dimen/dp_15"
-                        android:layout_height="@dimen/dp_10"
-                        android:src="@drawable/triangle_left"
-                        android:visibility="invisible"
-                        tools:ignore="ContentDescription" />
-
-                    <TextView
-                        android:id="@+id/tv_tp"
-                        android:layout_width="@dimen/dp_100"
-                        android:layout_height="@dimen/dp_18"
-                        android:layout_marginStart="@dimen/dp_5"
-                        android:layout_marginLeft="@dimen/dp_5"
-                        android:gravity="center"
-                        android:textSize="@dimen/sp_10" />
-
-                    <ImageView
-                        android:id="@+id/image_tp_right"
-                        android:layout_width="@dimen/dp_15"
-                        android:layout_height="@dimen/dp_10"
-                        android:layout_marginStart="@dimen/dp_5"
-                        android:layout_marginLeft="@dimen/dp_5"
-                        android:src="@drawable/triangle_right"
-                        android:visibility="invisible"
-                        tools:ignore="ContentDescription" />
-                </LinearLayout>
-            </RelativeLayout>
-
-            <!--Move Step-->
-            <RelativeLayout
-                android:id="@+id/ll_step_root"
-                android:layout_width="match_parent"
-                android:layout_height="28dp"
-                android:layout_marginLeft="244dp"
-                android:layout_marginRight="244dp"
-                android:focusable="true">
-
                 <TextView
-                    android:id="@+id/tv_move_steps"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:id="@+id/et_sat_longitude"
+                    android:layout_width="@dimen/dp_70"
+                    android:layout_height="@dimen/dp_18"
                     android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/dp_20"
-                    android:layout_marginLeft="@dimen/dp_20"
-                    android:text="@string/motor_move_steps"
-                    android:textSize="@dimen/sp_10"
-                    tools:ignore="RelativeOverlap" />
+                    android:layout_marginRight="@dimen/dp_5"
+                    android:layout_toLeftOf="@+id/image_sat_longitude_right"
+                    android:layout_toStartOf="@+id/image_sat_longitude_right"
+                    android:background="@null"
+                    android:gravity="center"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/sp_10" />
 
-                <LinearLayout
-                    android:layout_width="@dimen/dp_140"
-                    android:layout_height="wrap_content"
+                <ImageView
+                    android:id="@+id/image_sat_longitude_right"
+                    android:layout_width="@dimen/dp_15"
+                    android:layout_height="@dimen/dp_10"
                     android:layout_alignParentEnd="true"
                     android:layout_alignParentRight="true"
                     android:layout_centerVertical="true"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:id="@+id/image_step_left"
-                        android:layout_width="@dimen/dp_15"
-                        android:layout_height="@dimen/dp_10"
-                        android:src="@drawable/triangle_left"
-                        android:visibility="invisible"
-                        tools:ignore="ContentDescription" />
-
-                    <TextView
-                        android:id="@+id/tv_step"
-                        android:layout_width="@dimen/dp_100"
-                        android:layout_height="@dimen/dp_18"
-                        android:layout_marginStart="@dimen/dp_5"
-                        android:layout_marginLeft="@dimen/dp_5"
-                        android:gravity="center"
-                        android:text="@string/motor_stop"
-                        android:textSize="@dimen/sp_10" />
-
-                    <ImageView
-                        android:id="@+id/image_step_right"
-                        android:layout_width="@dimen/dp_15"
-                        android:layout_height="@dimen/dp_10"
-                        android:layout_marginStart="@dimen/dp_5"
-                        android:layout_marginLeft="@dimen/dp_5"
-                        android:src="@drawable/triangle_right"
-                        android:visibility="invisible"
-                        tools:ignore="ContentDescription" />
-                </LinearLayout>
+                    android:layout_marginLeft="@dimen/dp_5"
+                    android:layout_marginStart="@dimen/dp_5"
+                    android:src="@drawable/triangle_right"
+                    android:visibility="invisible"
+                    tools:ignore="ContentDescription" />
             </RelativeLayout>
 
-            <!--Sat Longitude-->
             <RelativeLayout
-                android:id="@+id/ll_sat_longitude_root"
+                android:id="@+id/rl_local_longitude_root"
                 android:layout_width="match_parent"
                 android:layout_height="28dp"
                 android:layout_marginLeft="244dp"
@@ -282,58 +404,59 @@
                 android:focusable="true">
 
                 <TextView
-                    android:id="@+id/tv_step_size"
+                    android:id="@+id/local_longitude"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/dp_20"
                     android:layout_marginLeft="@dimen/dp_20"
-                    android:text="@string/motor_step_size"
+                    android:layout_marginStart="@dimen/dp_20"
+                    android:text="@string/motor_local_longitudu"
                     android:textSize="@dimen/sp_10"
                     tools:ignore="RelativeOverlap" />
 
-                <LinearLayout
-                    android:layout_width="@dimen/dp_140"
-                    android:layout_height="wrap_content"
+                <TextView
+                    android:id="@+id/tv_local_longitude"
+                    android:layout_width="@dimen/dp_32"
+                    android:layout_height="@dimen/dp_18"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="@dimen/dp_5"
+                    android:layout_marginRight="-3dp"
+                    android:layout_toLeftOf="@+id/et_local_longitude"
+                    android:layout_toStartOf="@+id/et_local_longitude"
+                    android:focusable="false"
+                    android:gravity="center_vertical|right"
+                    android:text="@string/west"
+                    android:textSize="@dimen/sp_10" />
+
+                <TextView
+                    android:id="@+id/et_local_longitude"
+                    android:layout_width="@dimen/dp_70"
+                    android:layout_height="@dimen/dp_18"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="@dimen/dp_5"
+                    android:layout_toLeftOf="@+id/image_local_longitude_right"
+                    android:layout_toStartOf="@+id/image_local_longitude_right"
+                    android:background="@null"
+                    android:gravity="center"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/sp_10" />
+
+                <ImageView
+                    android:id="@+id/image_local_longitude_right"
+                    android:layout_width="@dimen/dp_15"
+                    android:layout_height="@dimen/dp_10"
                     android:layout_alignParentEnd="true"
                     android:layout_alignParentRight="true"
                     android:layout_centerVertical="true"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:id="@+id/image_Longitude_left"
-                        android:layout_width="@dimen/dp_15"
-                        android:layout_height="@dimen/dp_10"
-                        android:src="@drawable/triangle_left"
-                        android:visibility="invisible"
-                        tools:ignore="ContentDescription" />
-
-                    <TextView
-                        android:id="@+id/tv_Longitude"
-                        android:layout_width="@dimen/dp_100"
-                        android:layout_height="@dimen/dp_18"
-                        android:layout_marginStart="@dimen/dp_5"
-                        android:layout_marginLeft="@dimen/dp_5"
-                        android:gravity="center"
-                        android:text="@string/motor_continue"
-                        android:textSize="@dimen/sp_10" />
-
-                    <ImageView
-                        android:id="@+id/image_Longitude_right"
-                        android:layout_width="@dimen/dp_15"
-                        android:layout_height="@dimen/dp_10"
-                        android:layout_marginStart="@dimen/dp_5"
-                        android:layout_marginLeft="@dimen/dp_5"
-                        android:src="@drawable/triangle_right"
-                        android:visibility="invisible"
-                        tools:ignore="ContentDescription" />
-                </LinearLayout>
+                    android:layout_marginLeft="@dimen/dp_5"
+                    android:layout_marginStart="@dimen/dp_5"
+                    android:src="@drawable/triangle_right"
+                    android:visibility="invisible"
+                    tools:ignore="ContentDescription" />
             </RelativeLayout>
 
-            <!--Step Size-->
             <RelativeLayout
-                android:id="@+id/ll_sat_position_root"
+                android:id="@+id/rl_local_latitude_root"
                 android:layout_width="match_parent"
                 android:layout_height="28dp"
                 android:layout_marginLeft="244dp"
@@ -342,193 +465,261 @@
                 android:focusable="true">
 
                 <TextView
-                    android:id="@+id/tv_position1"
+                    android:id="@+id/local_latitude"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/dp_20"
                     android:layout_marginLeft="@dimen/dp_20"
-                    android:text="@string/motor_position"
+                    android:layout_marginStart="@dimen/dp_20"
+                    android:text="@string/motor_local_latitude"
                     android:textSize="@dimen/sp_10"
                     tools:ignore="RelativeOverlap" />
 
-                <LinearLayout
-                    android:layout_width="@dimen/dp_140"
-                    android:layout_height="wrap_content"
+                <TextView
+                    android:id="@+id/tv_local_latitude"
+                    android:layout_width="@dimen/dp_32"
+                    android:layout_height="@dimen/dp_18"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="@dimen/dp_5"
+                    android:layout_marginRight="-3dp"
+                    android:layout_toLeftOf="@+id/et_local_latitude"
+                    android:layout_toStartOf="@+id/et_local_latitude"
+                    android:focusable="false"
+                    android:gravity="center_vertical|right"
+                    android:text="@string/south"
+                    android:textSize="@dimen/sp_10" />
+
+                <TextView
+                    android:id="@+id/et_local_latitude"
+                    android:layout_width="@dimen/dp_70"
+                    android:layout_height="@dimen/dp_18"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="@dimen/dp_5"
+                    android:layout_toLeftOf="@+id/image_local_latitude_right"
+                    android:layout_toStartOf="@+id/image_local_latitude_right"
+                    android:background="@null"
+                    android:gravity="center"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/sp_10" />
+
+                <ImageView
+                    android:id="@+id/image_local_latitude_right"
+                    android:layout_width="@dimen/dp_15"
+                    android:layout_height="@dimen/dp_10"
                     android:layout_alignParentEnd="true"
                     android:layout_alignParentRight="true"
                     android:layout_centerVertical="true"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:layout_marginLeft="@dimen/dp_5"
+                    android:layout_marginStart="@dimen/dp_5"
+                    android:src="@drawable/triangle_right"
+                    android:visibility="invisible"
+                    tools:ignore="ContentDescription" />
+            </RelativeLayout>
+        </LinearLayout>
 
-                    <ImageView
-                        android:id="@+id/image_position_left"
-                        android:layout_width="@dimen/dp_15"
-                        android:layout_height="@dimen/dp_10"
-                        android:src="@drawable/triangle_left"
-                        android:visibility="invisible"
-                        tools:ignore="ContentDescription" />
-                    <FrameLayout
-                        android:layout_width="@dimen/dp_100"
-                        android:layout_height="@dimen/dp_18">
+        <RelativeLayout
+            android:id="@+id/ll_sat_position_root"
+            android:layout_width="match_parent"
+            android:layout_height="28dp"
+            android:layout_marginLeft="244dp"
+            android:layout_marginRight="244dp"
+            android:background="@drawable/dvb_btn_fragment_selector"
+            android:focusable="true"
+            android:focusableInTouchMode="true">
+
+            <TextView
+                android:id="@+id/tv_position1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/dp_20"
+                android:layout_marginStart="@dimen/dp_20"
+                android:text="@string/motor_position"
+                android:textSize="@dimen/sp_10"
+                tools:ignore="RelativeOverlap" />
+
+                <ImageView
+                    android:id="@+id/image_position_left"
+                    android:layout_width="@dimen/dp_15"
+                    android:layout_height="@dimen/dp_10"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@+id/fl_position"
+                    android:layout_toStartOf="@+id/fl_position"
+                    android:src="@drawable/triangle_left"
+                    android:visibility="invisible"
+                    tools:ignore="ContentDescription" />
+
+                <FrameLayout
+                    android:id="@+id/fl_position"
+                    android:layout_width="@dimen/dp_100"
+                    android:layout_height="@dimen/dp_18"
+                    android:layout_marginLeft="@dimen/dp_5"
+                    android:layout_marginRight="@dimen/dp_5"
+                    android:layout_toLeftOf="@+id/image_position_right"
+                    android:layout_toStartOf="@+id/image_position_right">
+
                     <TextView
                         android:id="@+id/tv_position"
                         android:layout_width="@dimen/dp_100"
                         android:layout_height="@dimen/dp_18"
-                        android:layout_marginStart="@dimen/dp_30"
-                        android:layout_marginLeft="@dimen/dp_30"
+                        android:layout_marginLeft="@dimen/dp_25"
+                        android:layout_marginStart="@dimen/dp_25"
                         android:gravity="center"
                         android:text="1"
                         android:textSize="@dimen/sp_10" />
+
                     <TextView
                         android:id="@+id/tv_position_bg"
                         android:layout_width="@dimen/dp_100"
                         android:layout_height="@dimen/dp_18"
-                        android:layout_marginStart="@dimen/dp_5"
-                        android:layout_marginLeft="@dimen/dp_5"
                         android:gravity="center"
                         android:text="@string/motor_position_text"
-                        android:textSize="@dimen/sp_10"
-                        />
+                        android:textSize="@dimen/sp_10" />
 
-                    </FrameLayout>
-                    <ImageView
-                        android:id="@+id/image_position_right"
-                        android:layout_width="@dimen/dp_15"
-                        android:layout_height="@dimen/dp_10"
-                        android:layout_marginStart="@dimen/dp_5"
-                        android:layout_marginLeft="@dimen/dp_5"
-                        android:src="@drawable/triangle_right"
-                        android:visibility="invisible"
-                        tools:ignore="ContentDescription" />
-                </LinearLayout>
-            </RelativeLayout>
+                </FrameLayout>
 
-            <!--Command-->
-            <RelativeLayout
-                android:id="@+id/ll_sat_command_root"
-                android:layout_width="match_parent"
-                android:layout_height="28dp"
-                android:layout_marginLeft="244dp"
-                android:layout_marginRight="244dp"
-                android:background="@drawable/dvb_btn_fragment_selector"
-                android:focusable="true">
-
-                <TextView
-                    android:id="@+id/tv_diseqc_common"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/dp_20"
-                    android:layout_marginLeft="@dimen/dp_20"
-                    android:text="@string/motor_diseqc_command"
-                    android:textSize="@dimen/sp_10"
-                    tools:ignore="RelativeOverlap" />
-
-                <LinearLayout
-                    android:layout_width="@dimen/dp_140"
-                    android:layout_height="wrap_content"
+                <ImageView
+                    android:id="@+id/image_position_right"
+                    android:layout_width="@dimen/dp_15"
+                    android:layout_height="@dimen/dp_10"
                     android:layout_alignParentEnd="true"
                     android:layout_alignParentRight="true"
                     android:layout_centerVertical="true"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                    android:layout_marginLeft="@dimen/dp_5"
+                    android:layout_marginStart="@dimen/dp_5"
+                    android:src="@drawable/triangle_right"
+                    android:visibility="invisible"
+                    tools:ignore="ContentDescription" />
 
-                    <ImageView
-                        android:id="@+id/image_command_left"
-                        android:layout_width="@dimen/dp_15"
-                        android:layout_height="@dimen/dp_10"
-                        android:src="@drawable/triangle_left"
-                        android:visibility="invisible"
-                        tools:ignore="ContentDescription" />
+        </RelativeLayout>
 
-                    <TextView
-                        android:id="@+id/tv_command"
-                        android:layout_width="@dimen/dp_100"
-                        android:layout_height="@dimen/dp_18"
-                        android:layout_marginStart="@dimen/dp_5"
-                        android:layout_marginLeft="@dimen/dp_5"
-                        android:gravity="center"
-                        android:text="@string/motor_save_position"
-                        android:textSize="@dimen/sp_10" />
+        <!--Command-->
+        <RelativeLayout
+            android:id="@+id/ll_sat_command_root"
+            android:layout_width="match_parent"
+            android:layout_height="28dp"
+            android:layout_marginLeft="244dp"
+            android:layout_marginRight="244dp"
+            android:background="@drawable/dvb_btn_fragment_selector"
+            android:focusable="true">
 
-                    <ImageView
-                        android:id="@+id/image_command_right"
-                        android:layout_width="@dimen/dp_15"
-                        android:layout_height="@dimen/dp_10"
-                        android:layout_marginStart="@dimen/dp_5"
-                        android:layout_marginLeft="@dimen/dp_5"
-                        android:src="@drawable/triangle_right"
-                        android:visibility="invisible"
-                        tools:ignore="ContentDescription" />
-                </LinearLayout>
-            </RelativeLayout>
-            <LinearLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/tv_diseqc_common"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:gravity="center">
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/dp_20"
+                android:layout_marginStart="@dimen/dp_20"
+                android:text="@string/motor_diseqc_command"
+                android:textSize="@dimen/sp_10"
+                tools:ignore="RelativeOverlap" />
 
-                <TextView
-                    android:layout_width="20dp"
-                    android:layout_height="wrap_content"
-                    android:text="@string/i"
-                    android:textSize="@dimen/sp_12" />
+            <ImageView
+                android:id="@+id/image_command_left"
+                android:layout_width="@dimen/dp_15"
+                android:layout_height="@dimen/dp_10"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/tv_command"
+                android:layout_toStartOf="@+id/tv_command"
+                android:src="@drawable/triangle_left"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
 
-                <TextView
-                    android:id="@+id/tv_edit_progress_i"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/sp_10"
-                    android:layout_marginLeft="@dimen/sp_10" />
+            <TextView
+                android:id="@+id/tv_command"
+                android:layout_width="@dimen/dp_100"
+                android:layout_height="@dimen/dp_18"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/dp_5"
+                android:layout_marginRight="@dimen/dp_5"
+                android:layout_toLeftOf="@+id/image_command_right"
+                android:layout_toStartOf="@+id/image_command_right"
+                android:gravity="center"
+                android:text="@string/motor_save_position"
+                android:textSize="@dimen/sp_10" />
 
-                <ProgressBar
-                    android:id="@+id/progress_edit_i"
-                    style="@style/pfBar_mProgress_horizontal1"
-                    android:layout_width="@dimen/dp_250"
-                    android:layout_height="5dp"
-                    android:layout_marginStart="@dimen/sp_6"
-                    android:layout_marginLeft="@dimen/sp_6"
-                    android:indeterminate="false"
-                    android:indeterminateOnly="false"
-                    android:max="100" />
-            </LinearLayout>
+            <ImageView
+                android:id="@+id/image_command_right"
+                android:layout_width="@dimen/dp_15"
+                android:layout_height="@dimen/dp_10"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="@dimen/dp_5"
+                android:layout_marginStart="@dimen/dp_5"
+                android:src="@drawable/triangle_right"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="20dp"
                 android:layout_height="wrap_content"
-                android:gravity="center">
+                android:text="@string/i"
+                android:textSize="@dimen/sp_12" />
 
-                <TextView
-                    android:layout_width="20dp"
-                    android:layout_height="wrap_content"
-                    android:text="@string/q"
-                    android:textSize="@dimen/sp_12" />
+            <TextView
+                android:id="@+id/tv_edit_progress_i"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/sp_10"
+                android:layout_marginStart="@dimen/sp_10" />
 
-                <TextView
-                    android:id="@+id/tv_edit_progress_q"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/sp_10"
-                    android:layout_marginLeft="@dimen/sp_10" />
-
-                <ProgressBar
-                    android:id="@+id/progress_edit_q"
-                    style="@style/pfBar_mProgress_horizontal2"
-                    android:layout_width="@dimen/dp_250"
-                    android:layout_height="5dp"
-                    android:layout_marginStart="@dimen/sp_6"
-                    android:layout_marginLeft="@dimen/sp_6"
-                    android:indeterminate="false"
-                    android:indeterminateOnly="false"
-                    android:max="100" />
-            </LinearLayout>
+            <ProgressBar
+                android:id="@+id/progress_edit_i"
+                style="@style/pfBar_mProgress_horizontal1"
+                android:layout_width="@dimen/dp_250"
+                android:layout_height="5dp"
+                android:layout_marginLeft="@dimen/sp_6"
+                android:layout_marginStart="@dimen/sp_6"
+                android:indeterminate="false"
+                android:indeterminateOnly="false"
+                android:max="100" />
         </LinearLayout>
 
-        <include
-            layout="@layout/bottom_bar_select_item"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:layout_alignParentBottom="true" />
-    </RelativeLayout>
+            android:layout_height="wrap_content"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"
+                android:text="@string/q"
+                android:textSize="@dimen/sp_12" />
+
+            <TextView
+                android:id="@+id/tv_edit_progress_q"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/sp_10"
+                android:layout_marginStart="@dimen/sp_10" />
+
+            <ProgressBar
+                android:id="@+id/progress_edit_q"
+                style="@style/pfBar_mProgress_horizontal2"
+                android:layout_width="@dimen/dp_250"
+                android:layout_height="5dp"
+                android:layout_marginLeft="@dimen/sp_6"
+                android:layout_marginStart="@dimen/sp_6"
+                android:indeterminate="false"
+                android:indeterminateOnly="false"
+                android:max="100" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <include
+        layout="@layout/bottom_bar_select_item"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:layout_alignBottom="@+id/motor_linearlayout"
+        android:layout_marginBottom="48dp" />
+
 </RelativeLayout>

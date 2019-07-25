@@ -63,6 +63,9 @@
     <string name="motor_move_steps">移动到下一步</string>
     <string name="motor_stop">停止</string>
     <string name="motor_step_size">Step Size</string>
+    <string name="motor_sat_longitudu">Sat Longitude</string>
+    <string name="motor_local_longitudu">Local Longitude</string>
+    <string name="motor_local_latitude">Local Latitude</string>
     <string name="motor_continue">继续</string>
     <string name="motor_position">位置</string>
     <string name="motor_position_text">位置: </string>
@@ -71,6 +74,11 @@
     <string name="motor_change_item">改变 条目</string>
     <string name="motor_select">选择</string>
     <string name="motor_ok">OK</string>
+
+    <string name="east">E</string>
+    <string name="south">S</string>
+    <string name="west">W</string>
+    <string name="north">N</string>
 
     <!--DVB setting-->
     <string name="general_setting">General Setting</string>

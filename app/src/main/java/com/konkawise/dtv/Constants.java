@@ -52,6 +52,8 @@ public class Constants {
     public interface IntentKey {
         String INTENT_SATELLITE_INDEX = "satelliteIndex";
         String INTENT_SATELLITE_ACTIVITY = "satelliteActivity";
+        String INTENT_SATELLITE_NAME = "satelliteName";
+        String INTENT_T2_MANUAL_SEARCH_ACTIVITY = "t2ManualSearchActivity";
         String INTENT_TP_NAME = "tpName";
         String INTENT_LNB = "lnb";
         String INTENT_DISEQC = "diseqc";
@@ -69,7 +71,9 @@ public class Constants {
         String INTENT_BOOK_PROG_TYPE = "bookProgType";
         String INTENT_BOOK_SECONDS = "bookSeconds";
 
+
         String INTENT_BOOK_UPDATE = "bookUpdate";
+        String INTENT_CURRNT_TP = "currntTp";
     }
 
     public interface RequestCode {
@@ -81,5 +85,8 @@ public class Constants {
         String LOCALE_TYPE = "localeType";
 
         String FIRST_LAUNCH = "firstLaunch";
+
+        String SAVE_POSITION = "position";
+
     }
 }

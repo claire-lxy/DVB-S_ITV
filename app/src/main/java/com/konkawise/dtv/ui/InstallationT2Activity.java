@@ -36,7 +36,9 @@ public class InstallationT2Activity extends BaseActivity {
                 .setOnScanSearchListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
+                        //T2??????
+                        Intent intent = new Intent(InstallationT2Activity.this, ScanTVandRadioActivity.class);
+                        startActivity(intent);
                     }
                 }).show(getSupportFragmentManager(), ScanDialog.TAG);
     }

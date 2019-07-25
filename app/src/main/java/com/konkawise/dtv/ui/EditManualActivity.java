@@ -336,11 +336,11 @@ public class EditManualActivity extends BaseActivity {
         }
         //马达功能
         if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_YELLOW) {
-            Intent intent = new Intent(EditManualActivity.this, MotorActivity.class);
-            intent.putExtra("edit", mTvSatellite.getText());
-            intent.putExtra("tpname", mTvTp.getText());
-            intent.putExtra("currntTp", mCurrentTp);
-            intent.putExtra("currnt", mCurrentSatellite);
+            Intent intent=new Intent(EditManualActivity.this,MotorActivity.class);
+            intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_NAME,mTvSatellite.getText());
+            intent.putExtra(Constants.IntentKey.INTENT_TP_NAME,mTvTp.getText());
+            intent.putExtra(Constants.IntentKey.INTENT_CURRNT_TP,mCurrentTp);
+            intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX,mCurrentSatellite);
             startActivity(intent);
         }
 

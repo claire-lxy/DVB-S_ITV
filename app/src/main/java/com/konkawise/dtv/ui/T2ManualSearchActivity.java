@@ -1,11 +1,13 @@
 package com.konkawise.dtv.ui;
 
+import android.content.Intent;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.ScanDialog;
@@ -58,6 +60,14 @@ public class T2ManualSearchActivity extends BaseActivity {
     ProgressBar mPbQuality;
 
     private int mCurrSelectItem = ITEM_TRANSPONDER;
+
+    private int[] mTransponderList;
+
+    private int[] mFrequencyList;
+
+    private int [] mBandWidthList;
+
+    private int mCurrentSatellite = -1;
 
     private CheckSignalHelper mCheckSignalHelper;
 
@@ -150,6 +160,8 @@ public class T2ManualSearchActivity extends BaseActivity {
         }
 
         if (keyCode == KeyEvent.KEYCODE_PROG_RED) {
+            saveSatInfo();
+
             showScanDialog();
         }
 
@@ -162,9 +174,17 @@ public class T2ManualSearchActivity extends BaseActivity {
                 .setOnScanSearchListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-
+                        Intent intent = new Intent(T2ManualSearchActivity.this, ScanTVandRadioActivity.class);
+                        intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mCurrentSatellite);//mCurrentSatellite == -1
+                        intent.putExtra(Constants.IntentKey.INTENT_T2_MANUAL_SEARCH_ACTIVITY, 4);
+                        startActivity(intent);
+                        finish();
                     }
                 }).show(getSupportFragmentManager(), ScanDialog.TAG);
+    }
+
+    private void saveSatInfo() {
+        //??Transponder???
     }
 
     private void itemFocusChange() {

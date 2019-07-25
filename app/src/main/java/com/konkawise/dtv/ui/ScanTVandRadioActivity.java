@@ -141,6 +141,9 @@ public class ScanTVandRadioActivity extends BaseActivity {
         } else if (isFromEditManualActivity()) {
             tv_satellite_name.setText(SWPDBaseManager.getInstance().getSatInfo(getSatelliteIndex()).sat_name);
             SWPSearchManager.getInstance().searchByNet(getSatelliteIndex());
+        } else if (isFromT2ManualSearchActivity()) {
+            //T2手动搜台操作
+            tv_satellite_name.setText(R.string.installation_t2);
         }
     }
 
@@ -154,6 +157,10 @@ public class ScanTVandRadioActivity extends BaseActivity {
 
     private boolean isFromEditManualActivity() {
         return getIntent().getIntExtra(Constants.IntentKey.INTENT_EDIT_MANUAL_ACTIVITY, -1) == 3;
+    }
+
+    private boolean isFromT2ManualSearchActivity() {
+        return getIntent().getIntExtra(Constants.IntentKey.INTENT_EDIT_MANUAL_ACTIVITY, -1) == 4;
     }
 
     private int getSatelliteIndex() {
