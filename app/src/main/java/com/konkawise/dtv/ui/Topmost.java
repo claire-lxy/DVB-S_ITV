@@ -44,6 +44,7 @@ import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.CommRemindDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.FindChannelDialog;
+import com.konkawise.dtv.dialog.InitPasswordDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.PasswordDialog;
 import com.konkawise.dtv.dialog.PfBarScanDialog;
@@ -321,7 +322,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     private PfDetailDialog mPfDetailDialog;
     private PasswordDialog mPasswordDialog;
     private SearchChannelDialog mSearchChannelDialog;
-    private PasswordDialog mSettingPasswordDialog;
+    private InitPasswordDialog mSettingPasswordDialog;
 
     private boolean mProgListShow;
     private boolean mMenuShow;
@@ -1347,31 +1348,29 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     }
 
     private void showSettingPasswordDialog() {
-        mSettingPasswordDialog = new PasswordDialog();
-        mSettingPasswordDialog.setOnPasswordInputListener(new PasswordDialog.OnPasswordInputListener() {
+        mSettingPasswordDialog = new InitPasswordDialog().setOnSavePasswordListener(new InitPasswordDialog.OnSavePasswordListener() {
             @Override
-            public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
-                if (isValid) {
-                    PreferenceManager.getInstance().putBoolean(Constants.PrefsKey.FIRST_LAUNCH, true);
-                    dismissSettingPasswordDialog();
+            public void onSavePassword(String password) {
+                SWFtaManager.getInstance().setCommPWDInfo(SWFta.E_E2PP.E2P_Password.ordinal(), password);
+                PreferenceManager.getInstance().putBoolean(Constants.PrefsKey.FIRST_LAUNCH, true);
 
-                    if (SWPDBaseManager.getInstance().getCurrProgInfo() == null) {
-                        showSearchChannelDialog();
+                dismissSettingPasswordDialog();
+
+                if (SWPDBaseManager.getInstance().getCurrProgInfo() == null) {
+                    showSearchChannelDialog();
+                }
+            }
+        }).setOnKeyListener(new InitPasswordDialog.OnKeyListener() {
+                    @Override
+                    public boolean onKeyListener(InitPasswordDialog dialog, int keyCode, KeyEvent event) {
+                        if(keyCode == KeyEvent.KEYCODE_BACK) {
+                            dismissSettingPasswordDialog();
+                            UIApiManager.getInstance().stopPlay(0);
+                            finish();
+                            return true;
+                        }
+                        return false;
                     }
-                }
-            }
-        });
-        mSettingPasswordDialog.setOnKeyListener(new PasswordDialog.OnKeyListener() {
-            @Override
-            public boolean onKeyListener(PasswordDialog dialog, int keyCode, KeyEvent event) {
-                if (keyCode == KeyEvent.KEYCODE_BACK) {
-                    dismissSettingPasswordDialog();
-                    UIApiManager.getInstance().stopPlay(0);
-                    finish();
-                    return true;
-                }
-                return false;
-            }
         });
         mSettingPasswordDialog.show(getSupportFragmentManager(), Constants.PrefsKey.FIRST_LAUNCH);
     }

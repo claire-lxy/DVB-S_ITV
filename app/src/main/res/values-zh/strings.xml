@@ -352,6 +352,7 @@
     <string name="dialog_delete_channel_content">Are you sure to delete?</string>
 
     <string name="toast_invalid_password">Invalid password</string>
+    <string name="toast_invalid_password_length">Need 4-digit password</string>
     <string name="toast_book_limit">Book Limit</string>
     <string name="toast_book_invalid">Invalid Value</string>
     <string name="toast_current_password_error">Current password error</string>
