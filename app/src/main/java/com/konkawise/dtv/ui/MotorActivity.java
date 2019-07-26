@@ -4,6 +4,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -34,6 +35,13 @@ import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HMotorCtrlCode;
 import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
+
+import static java.lang.Math.abs;
+import static java.lang.Math.acos;
+import static java.lang.Math.cos;
+import static java.lang.Math.decrementExact;
+import static java.lang.Math.sqrt;
+
 
 /**
  * motor界面
@@ -142,6 +150,9 @@ public class MotorActivity extends BaseActivity {
 
     @BindView(R.id.tv_position)
     TextView tv_position;
+
+    @BindView(R.id.fl_position)
+    FrameLayout fl_position;
 
     @BindView(R.id.tv_position_bg)
     TextView tv_position_bg;
@@ -307,6 +318,12 @@ public class MotorActivity extends BaseActivity {
         super.onStop();
         SWFta.GetInstance().tunerMotorControl(HMotorCtrlCode.DIRECT_STOP, 0, new int[]{0});
         sendStopMessage(new int[]{0});
+        //退出时保存经纬度
+        satInfo_t.diseqc12_longitude = (int) mSatLongitude;
+        SWPDBaseManager.getInstance().setSatInfo(currnt, satInfo_t);
+        SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SAT_Longitude.ordinal(), (int)mLocalLongitude);
+        SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SAT_Latitude.ordinal(), (int) mLocalLatitude);
+
         ThreadPoolManager.getInstance().remove(mMotorRunnable);
         WeakToolManager.getInstance().removeWeakTool(this);
     }
@@ -340,8 +357,12 @@ public class MotorActivity extends BaseActivity {
         mTpList = SWPDBaseManager.getInstance().getSatChannelInfoList(currnt);
 
         mSatLongitude = satInfo_t.diseqc12_longitude > 1800 ? (satInfo_t.diseqc12_longitude - 3600) : satInfo_t.diseqc12_longitude;
-        mLocalLongitude = (SWFta.E_E2PP.E2P_SAT_Longitude.ordinal()) > 1800 ? (SWFta.E_E2PP.E2P_SAT_Longitude.ordinal() - 3600) : SWFta.E_E2PP.E2P_SAT_Longitude.ordinal();
-        mLocalLatitude = (SWFta.E_E2PP.E2P_SAT_Latitude.ordinal()) > 900 ? (SWFta.E_E2PP.E2P_SAT_Latitude.ordinal() - 1800) : SWFta.E_E2PP.E2P_SAT_Latitude.ordinal();
+        mLocalLongitude = (SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SAT_Longitude.ordinal())) > 1800 ?
+                (SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SAT_Longitude.ordinal()) - 3600) :
+                SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SAT_Longitude.ordinal());
+        mLocalLatitude = (SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SAT_Latitude.ordinal())) > 900 ?
+                (SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SAT_Latitude.ordinal()) - 1800) :
+                SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SAT_Latitude.ordinal());
 
         tv_step.setText(moveStepList[0]);
         mTv_satellite.setText(satName);
@@ -875,9 +896,7 @@ public class MotorActivity extends BaseActivity {
                             @Override
                             public void onConfirmCallback() {
 
-                                double sat_long = mSatLongitude;
-                                double loc_long = mLocalLongitude;
-                                double loc_lat = mLocalLatitude;
+                                calcxxDegree(mSatLongitude, mLocalLongitude, mLocalLatitude);
 
                             }
                         });
@@ -905,7 +924,7 @@ public class MotorActivity extends BaseActivity {
                         showDialog(getString(R.string.dialog_shift), new PositiveCallback() {
                             @Override
                             public void onConfirmCallback() {
-                                SWFta.GetInstance().tunerMotorControl(HMotorCtrlCode.DIRECT_RECALCULATE, 0, new int[]{0});
+                                SWFta.GetInstance().tunerMotorControl(HMotorCtrlCode.DIRECT_USAL_SHIFT, 0, new int[]{0});
                             }
                         });
 
@@ -925,53 +944,53 @@ public class MotorActivity extends BaseActivity {
                 }
             }
         }
-        if (keyCode == KeyEvent.KEYCODE_0) {
-            inputNumber(0);
+        if ((keyCode == KeyEvent.KEYCODE_0) && (ll_local_longitude_latitude.getVisibility() == View.VISIBLE)) {
+            inputNumber(0, position);
             return true;
         }
 
-        if (keyCode == KeyEvent.KEYCODE_1) {
-            inputNumber(1);
+        if ((keyCode == KeyEvent.KEYCODE_1) && (ll_local_longitude_latitude.getVisibility() == View.VISIBLE)) {
+            inputNumber(1, position);
             return true;
         }
 
-        if (keyCode == KeyEvent.KEYCODE_2) {
-            inputNumber(2);
+        if ((keyCode == KeyEvent.KEYCODE_2) && (ll_local_longitude_latitude.getVisibility() == View.VISIBLE)) {
+            inputNumber(2, position);
             return true;
         }
 
-        if (keyCode == KeyEvent.KEYCODE_3) {
-            inputNumber(3);
+        if ((keyCode == KeyEvent.KEYCODE_3) && (ll_local_longitude_latitude.getVisibility() == View.VISIBLE)) {
+            inputNumber(3, position);
             return true;
         }
 
-        if (keyCode == KeyEvent.KEYCODE_4) {
-            inputNumber(4);
+        if ((keyCode == KeyEvent.KEYCODE_4) && (ll_local_longitude_latitude.getVisibility() == View.VISIBLE)) {
+            inputNumber(4, position);
             return true;
         }
 
-        if (keyCode == KeyEvent.KEYCODE_5) {
-            inputNumber(5);
+        if ((keyCode == KeyEvent.KEYCODE_5) && (ll_local_longitude_latitude.getVisibility() == View.VISIBLE)) {
+            inputNumber(5, position);
             return true;
         }
 
-        if (keyCode == KeyEvent.KEYCODE_6) {
-            inputNumber(6);
+        if ((keyCode == KeyEvent.KEYCODE_6) && (ll_local_longitude_latitude.getVisibility() == View.VISIBLE)) {
+            inputNumber(6, position);
             return true;
         }
 
-        if (keyCode == KeyEvent.KEYCODE_7) {
-            inputNumber(7);
+        if ((keyCode == KeyEvent.KEYCODE_7) && (ll_local_longitude_latitude.getVisibility() == View.VISIBLE)) {
+            inputNumber(7, position);
             return true;
         }
 
-        if (keyCode == KeyEvent.KEYCODE_8) {
-            inputNumber(8);
+        if ((keyCode == KeyEvent.KEYCODE_8) && (ll_local_longitude_latitude.getVisibility() == View.VISIBLE)) {
+            inputNumber(8, position);
             return true;
         }
 
-        if (keyCode == KeyEvent.KEYCODE_9) {
-            inputNumber(9);
+        if ((keyCode == KeyEvent.KEYCODE_9) && (ll_local_longitude_latitude.getVisibility() == View.VISIBLE)) {
+            inputNumber(9, position);
             return true;
         }
 
@@ -995,7 +1014,57 @@ public class MotorActivity extends BaseActivity {
         void onConfirmCallback();
     }
 
-    public void inputNumber(int num) {
+    /**
+     * 根据用户输入的数字转换为经纬度，存入缓存并显示在界面上
+     * 做了阈值限定，并且在界面上显示的是正数
+     */
+    public void inputNumber(int num, int position) {
+        switch (position) {
+            case Sat_Longitude:
+                if (mSatLongitude >= 0) {
+                    mSatLongitude = 10 * mSatLongitude + num;
+                } else if (mSatLongitude < 0) {
+                    mSatLongitude = 10 * mSatLongitude - num;
+                }
+
+                if (mSatLongitude > 1800) {
+                    mSatLongitude = num;
+                } else if (mSatLongitude < -1800) {
+                    mSatLongitude = -num;
+                }
+                et_sat_longitude.setText((mSatLongitude >= 0) ? String.valueOf((mSatLongitude) / 10) : String.valueOf((-mSatLongitude) / 10));
+                break;
+            case Local_Longitude:
+                if (mLocalLongitude >= 0) {
+                    mLocalLongitude = 10 * mLocalLongitude + num;
+                } else if (mLocalLongitude < 0) {
+                    mLocalLongitude = 10 * mLocalLongitude - num;
+                }
+
+                if (mLocalLongitude > 1800) {
+                    mLocalLongitude = num;
+                } else if (mLocalLongitude < -1800) {
+                    mLocalLongitude = -num;
+                }
+                et_local_longitude.setText((mLocalLongitude >= 0) ? String.valueOf((mLocalLongitude) / 10) : String.valueOf((-mLocalLongitude) / 10));
+                break;
+            case Local_Latitude:
+                if (mLocalLatitude >= 0) {
+                    mLocalLatitude = 10 * mLocalLatitude + num;
+                } else if (mLocalLatitude < 0) {
+                    mLocalLatitude = 10 * mLocalLatitude - num;
+                }
+
+                if (mLocalLatitude > 900) {
+                    mLocalLatitude = num;
+                } else if (mLocalLatitude < -900) {
+                    mLocalLatitude = -num;
+                }
+                et_local_latitude.setText((mLocalLatitude >= 0) ? String.valueOf((mLocalLatitude) / 10) : String.valueOf((-mLocalLatitude) / 10));
+                break;
+            default:
+                break;
+        }
     }
 
     //发送延时消息，将Move Steps转为Stop
@@ -1075,12 +1144,12 @@ public class MotorActivity extends BaseActivity {
         tv_command.setText(mCommand[0]);
 
         ll_local_longitude_latitude.setVisibility(View.VISIBLE);
-        tv_sat_longitude.setText((mSatLongitude > 0) ? "E" : "W");
-        et_sat_longitude.setText((mSatLongitude > 0) ? String.valueOf((mSatLongitude) / 10) : String.valueOf((-mSatLongitude) / 10));
-        tv_local_longitude.setText((mLocalLongitude > 0) ? "E" : "W");
-        et_local_longitude.setText((mLocalLongitude > 0) ? String.valueOf((mLocalLongitude) / 10) : String.valueOf((-mLocalLongitude) / 10));
-        tv_local_latitude.setText((mLocalLatitude > 0) ? "N" : "S");
-        et_local_latitude.setText((mLocalLatitude > 0) ? String.valueOf((mLocalLatitude) / 10) : String.valueOf((-mLocalLatitude) / 10));
+        tv_sat_longitude.setText((mSatLongitude >= 0) ? "E" : "W");
+        et_sat_longitude.setText((mSatLongitude >= 0) ? String.valueOf((mSatLongitude) / 10) : String.valueOf((-mSatLongitude) / 10));
+        tv_local_longitude.setText((mLocalLongitude >= 0) ? "E" : "W");
+        et_local_longitude.setText((mLocalLongitude >= 0) ? String.valueOf((mLocalLongitude) / 10) : String.valueOf((-mLocalLongitude) / 10));
+        tv_local_latitude.setText((mLocalLatitude >= 0) ? "N" : "S");
+        et_local_latitude.setText((mLocalLatitude >= 0) ? String.valueOf((mLocalLatitude) / 10) : String.valueOf((-mLocalLatitude) / 10));
         saveSatMotorTypeInfo();
     }
 
@@ -1130,6 +1199,53 @@ public class MotorActivity extends BaseActivity {
         SWFtaManager.getInstance().tunerLockFreq(currnt, channelNew_t.Freq, channelNew_t.Symbol, channelNew_t.Qam, 1, 0);
     }
 
+
+    public int calcxxDegree(double sat_long, double loc_long, double loc_lat) {
+        double RATIO = 6.619;    //Ratio Value of Orbit's Radius and Earth's Radius
+        double PI = 3.1415926535;
+        double DEGREE = (PI / 180);
+        double sat_longitude = ((double) sat_long) / 10;
+        double loc_longitude = ((double) loc_long) / 10;
+        double a = 0;//different angle
+        double b = ((double) loc_lat) / 10; //latitude
+        double cos_b = cos(b * DEGREE);
+        double cos_a = 0;
+        double two_acosb = 2 * RATIO * cos_b;
+        double denominator;
+        double numerator;
+        double diff_angle;
+
+        int flag = 0;
+        if (abs(sat_long) > 1800 || abs(loc_long) > 1800 || abs(loc_lat) > 900)
+            return 1;
+        a = abs(sat_longitude - loc_longitude);
+        if (a > 180 && a <= 360)//180~360
+        {
+            a = 360 - a;
+            flag = 1;
+        }
+        cos_a = cos(a * DEGREE);
+        denominator = sqrt((1 + RATIO * RATIO - two_acosb) * (1 + RATIO * RATIO - two_acosb * cos_a));
+        numerator = 1 + RATIO * RATIO * cos_a - RATIO * cos_b * cos_a - RATIO * cos_b;
+        diff_angle = acos(numerator / denominator) / DEGREE;
+        if (diff_angle > 180)
+            return 1;
+        double pAngleDiff = (diff_angle * 100 + 5) / 10;//Calculate a round number
+        if (loc_lat >= 0)    //Northern Hemisphere
+        {
+            if (((sat_long - loc_long) > 0 && (flag == 0)) || ((sat_long - loc_long) < 0 && (flag == 1))) {
+                pAngleDiff = -pAngleDiff;
+            }
+        } else        //Southern Hemisphere
+        {
+            if (((sat_long - loc_long) > 0 && (flag == 1)) || ((sat_long - loc_long) < 0 && (flag == 0))) {
+                pAngleDiff = -pAngleDiff;
+            }
+        }
+        SWFta.GetInstance().tunerMotorControl(HMotorCtrlCode.DIRECT_USAL_GOTOXX, 0, new int[]{(int) pAngleDiff});
+        return 0;
+    }
+
     /**
      * TP 被选中
      */
@@ -1171,7 +1287,7 @@ public class MotorActivity extends BaseActivity {
     private void selectePosition() {
         ll_sat_position_root.setBackgroundResource(R.drawable.btn_translate_bg_select_shape);
         image_position_left.setVisibility(View.VISIBLE);
-        tv_position_bg.setBackgroundResource(R.drawable.btn_red_bg_shape);
+        fl_position.setBackgroundResource(R.drawable.btn_red_bg_shape);
         image_position_right.setVisibility(View.VISIBLE);
         tv_position_bg.requestFocus();
     }
@@ -1250,7 +1366,7 @@ public class MotorActivity extends BaseActivity {
         //position
         ll_sat_position_root.setBackgroundColor(0);
         image_position_left.setVisibility(View.INVISIBLE);
-        tv_position_bg.setBackgroundColor(0);
+        fl_position.setBackgroundColor(0);
         image_position_right.setVisibility(View.INVISIBLE);
 
         //Command

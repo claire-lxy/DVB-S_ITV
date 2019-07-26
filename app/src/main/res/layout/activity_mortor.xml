@@ -296,7 +296,7 @@
 
                 <TextView
                     android:id="@+id/tv_sat_longitude"
-                    android:layout_width="@dimen/dp_32"
+                    android:layout_width="@dimen/dp_28"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginLeft="@dimen/dp_5"
@@ -310,7 +310,7 @@
 
                 <TextView
                     android:id="@+id/et_sat_longitude"
-                    android:layout_width="@dimen/dp_70"
+                    android:layout_width="@dimen/dp_65"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginRight="@dimen/dp_5"
@@ -350,7 +350,7 @@
 
                 <TextView
                     android:id="@+id/tv_local_longitude"
-                    android:layout_width="@dimen/dp_32"
+                    android:layout_width="@dimen/dp_28"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginLeft="@dimen/dp_5"
@@ -364,7 +364,7 @@
 
                 <TextView
                     android:id="@+id/et_local_longitude"
-                    android:layout_width="@dimen/dp_70"
+                    android:layout_width="@dimen/dp_65"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginRight="@dimen/dp_5"
@@ -404,7 +404,7 @@
 
                 <TextView
                     android:id="@+id/tv_local_latitude"
-                    android:layout_width="@dimen/dp_32"
+                    android:layout_width="@dimen/dp_28"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginLeft="@dimen/dp_5"
@@ -418,7 +418,7 @@
 
                 <TextView
                     android:id="@+id/et_local_latitude"
-                    android:layout_width="@dimen/dp_70"
+                    android:layout_width="@dimen/dp_65"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginRight="@dimen/dp_5"
@@ -468,11 +468,11 @@
 
                 <FrameLayout
                     android:id="@+id/fl_position"
-                    android:layout_width="@dimen/dp_100"
+                    android:layout_width="@dimen/dp_91"
                     android:layout_centerVertical="true"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="@dimen/dp_5"
-                    android:layout_marginRight="@dimen/dp_5"
+                    android:layout_marginRight="@dimen/dp_7"
                     android:layout_toLeftOf="@+id/image_position_right"
                     android:layout_toStartOf="@+id/image_position_right">
 
@@ -481,16 +481,17 @@
                         android:layout_width="@dimen/dp_100"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="@dimen/dp_25"
-                        android:layout_marginStart="@dimen/dp_25"
+                        android:layout_marginStart="@dimen/dp_15"
                         android:gravity="center"
                         android:text="1"
                         android:textSize="@dimen/sp_10" />
 
                     <TextView
                         android:id="@+id/tv_position_bg"
-                        android:layout_width="@dimen/dp_100"
+                        android:layout_width="@dimen/dp_91"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
+                        android:gravity="left"
+                        android:layout_marginLeft="@dimen/dp_20"
                         android:text="@string/motor_position_text"
                         android:textSize="@dimen/sp_10" />
 
@@ -527,9 +528,12 @@
 
             <ImageView
                 android:id="@+id/image_command_left"
-                style="@style/ItemArrowLeftStyle"
+                android:layout_width="@dimen/dp_15"
+                android:layout_height="@dimen/dp_10"
+                android:layout_centerVertical="true"
                 android:layout_toLeftOf="@+id/tv_command"
                 android:layout_toStartOf="@+id/tv_command"
+                android:src="@drawable/triangle_left"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
