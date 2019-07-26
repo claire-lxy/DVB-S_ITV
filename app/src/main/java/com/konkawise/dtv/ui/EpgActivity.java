@@ -19,6 +19,7 @@ import android.widget.TextView;
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.HandlerMsgManager;
 import com.konkawise.dtv.R;
+import com.konkawise.dtv.RealTimeManager;
 import com.konkawise.dtv.SWBookingManager;
 import com.konkawise.dtv.SWDVBManager;
 import com.konkawise.dtv.SWEpgManager;
@@ -41,7 +42,6 @@ import com.konkawise.dtv.event.BookUpdateEvent;
 import com.konkawise.dtv.utils.TimeUtils;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.view.TVListView;
-import com.konkawise.dtv.weaktool.RealTimeHelper;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
@@ -68,7 +68,7 @@ import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
 
-public class EpgActivity extends BaseActivity {
+public class EpgActivity extends BaseActivity implements RealTimeManager.OnReceiveTimeListener{
     private static final String TAG = "EpgActivity";
     private static final long RELOAD_CHANNEL_PERIOD = 60 * 1000;
     private static final long RELOAD_CHANNEL_DELAY = 5 * 1000;
@@ -182,9 +182,14 @@ public class EpgActivity extends BaseActivity {
     // 外层key为频道号progNo，内层key为日期id
     private SparseArray<SparseArray<List<EpgEvent_t>>> mEpgChannelCacheMap = new SparseArray<>();
 
-    private RealTimeHelper mRealTimeHelper;
-
     private AVMsgCB mPlayMsgCB = new PlayMsgCB();
+
+    @Override
+    public void onReceiveTimeCallback(String time) {
+        if (!TextUtils.isEmpty(time)) {
+            mTvSystemTime.setText(time);
+        }
+    }
 
     private static class EpgMsgHandler extends WeakHandler<EpgActivity> {
         static final int MSG_PLAY_SELECT_PROG = 0;
@@ -258,6 +263,7 @@ public class EpgActivity extends BaseActivity {
         mEpgMsgHandler = new EpgMsgHandler(this);
         mLoadEpgChannelRunnable = new LoadEpgChannelRunnable(this, R.id.btn_date_0);
         EventBus.getDefault().register(this);
+        RealTimeManager.getInstance().register(this);
 
         initUpdateEpgChannelTimer();
         initCurrentDate();
@@ -271,14 +277,12 @@ public class EpgActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         SWDVBManager.getInstance().regMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, Looper.getMainLooper(), mPlayMsgCB);
-        startUpdateRealTime();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         SWDVBManager.getInstance().unRegMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, mPlayMsgCB);
-        mRealTimeHelper.stop();
         UIApiManager.getInstance().stopPlay(0); // 跳转或销毁界面要停止播放
     }
 
@@ -287,6 +291,7 @@ public class EpgActivity extends BaseActivity {
         dismissPasswordDialog();
         cancelUpdateEpgChannelTimer();
         EventBus.getDefault().unregister(this);
+        RealTimeManager.getInstance().unregister(this);
         super.onDestroy();
     }
 
@@ -441,19 +446,6 @@ public class EpgActivity extends BaseActivity {
                 Log.i(TAG, "epg surface destroy");
             }
         });
-    }
-
-    private void startUpdateRealTime() {
-        mRealTimeHelper = new RealTimeHelper(this);
-        mRealTimeHelper.setOnRealTimeListener(new RealTimeHelper.OnRealTimerListener() {
-            @Override
-            public void onRealTimeCallback(String realTime) {
-                if (!TextUtils.isEmpty(realTime)) {
-                    mTvSystemTime.setText(realTime);
-                }
-            }
-        });
-        mRealTimeHelper.start();
     }
 
     /**

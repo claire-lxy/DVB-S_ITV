@@ -285,7 +285,7 @@
 
             <TextView
                 android:id="@+id/tv_progress_strength_title"
-                android:layout_width="@dimen/dp_10"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:text="@string/i"
@@ -297,8 +297,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="8dp"
                 android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/dp_6"
-                android:layout_marginLeft="@dimen/dp_6"
+                android:layout_marginStart="12dp"
+                android:layout_marginLeft="12dp"
                 android:layout_toStartOf="@+id/tv_progress_strength"
                 android:layout_toLeftOf="@+id/tv_progress_strength"
                 android:layout_toEndOf="@id/tv_progress_strength_title"
@@ -314,8 +314,8 @@
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/dp_10"
-                android:layout_marginLeft="@dimen/dp_10"
+                android:layout_marginStart="10dp"
+                android:layout_marginLeft="10dp"
                 android:textSize="12sp"
                 tools:text="90%" />
         </RelativeLayout>
@@ -330,7 +330,7 @@
 
             <TextView
                 android:id="@+id/tv_quality_title"
-                android:layout_width="@dimen/dp_10"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:text="@string/q"
@@ -342,8 +342,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="8dp"
                 android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/sp_6"
-                android:layout_marginLeft="@dimen/sp_6"
+                android:layout_marginStart="12dp"
+                android:layout_marginLeft="12dp"
                 android:layout_toStartOf="@+id/tv_progress_quality"
                 android:layout_toLeftOf="@+id/tv_progress_quality"
                 android:layout_toEndOf="@id/tv_quality_title"
@@ -359,8 +359,8 @@
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/dp_10"
-                android:layout_marginLeft="@dimen/dp_10"
+                android:layout_marginStart="10dp"
+                android:layout_marginLeft="10dp"
                 android:textSize="12sp"
                 tools:text="100%" />
         </RelativeLayout>

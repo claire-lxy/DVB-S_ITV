@@ -27,6 +27,7 @@ import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.HandlerMsgManager;
 import com.konkawise.dtv.PreferenceManager;
 import com.konkawise.dtv.R;
+import com.konkawise.dtv.RealTimeManager;
 import com.konkawise.dtv.SWBookingManager;
 import com.konkawise.dtv.SWDJAPVRManager;
 import com.konkawise.dtv.SWDVBManager;
@@ -63,6 +64,7 @@ import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
 import com.sw.dvblib.SWDVB;
+import com.sw.dvblib.SWFta;
 import com.sw.dvblib.msg.cb.AVMsgCB;
 
 import org.greenrobot.eventbus.EventBus;
@@ -424,6 +426,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         mSmallHintBox = new SmallHintBox(this);
         BookService.bootService(new Intent(this, BookService.class));
         EventBus.getDefault().register(this);
+        RealTimeManager.getInstance().start();
 
         initVolumeObserver();
         initHandler();
@@ -456,6 +459,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         setRecordFlagStop();
         cancelRecordingTimer();
         if (isFinishing()) {
+            RealTimeManager.getInstance().stop();
             SWDVB.Destory();
         }
     }
@@ -1265,6 +1269,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         new CommTipsDialog()
                 .title(getString(R.string.dialog_title_tips))
                 .content(getString(R.string.exit_app_content))
+                .negativeFocus(true)
                 .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
                     @Override
                     public void onPositiveListener() {

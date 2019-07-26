@@ -136,16 +136,16 @@
         android:visibility="visible">
 
         <ImageView
-            android:layout_width="@dimen/dp_20"
-            android:layout_height="@dimen/dp_10"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:background="@drawable/tag_green_bg"
             tools:ignore="contentDescription" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/dp_5"
-            android:layout_marginLeft="@dimen/dp_5"
+            android:layout_marginStart="10dp"
+            android:layout_marginLeft="10dp"
             android:gravity="center"
             android:text="@string/rename"
             android:textSize="15sp" />
@@ -196,8 +196,8 @@
             tools:ignore="UseCompoundDrawables">
 
             <ImageView
-                android:layout_width="@dimen/dp_20"
-                android:layout_height="@dimen/dp_10"
+                android:layout_width="26dp"
+                android:layout_height="16dp"
                 android:background="@mipmap/btn_yellow"
                 tools:ignore="ContentDescription" />
 

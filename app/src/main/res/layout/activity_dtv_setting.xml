@@ -34,7 +34,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/general_setting"
-                android:textSize="@dimen/sp_12" />
+                android:textSize="18sp" />
         </RelativeLayout>
 
         <!-- T2 Setting -->
@@ -48,7 +48,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/t2_setting"
-                android:textSize="@dimen/sp_12" />
+                android:textSize="18sp" />
         </RelativeLayout>
 
         <!-- Parental Control -->
@@ -62,7 +62,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/parental_control"
-                android:textSize="@dimen/sp_12" />
+                android:textSize="18sp" />
         </RelativeLayout>
 
         <!-- PVR Setting -->
@@ -76,7 +76,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/pvr_settings"
-                android:textSize="@dimen/sp_12" />
+                android:textSize="18sp" />
         </RelativeLayout>
 
         <!-- Book List -->
@@ -90,7 +90,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/book_list"
-                android:textSize="@dimen/sp_12" />
+                android:textSize="18sp" />
         </RelativeLayout>
 
         <!-- Record List -->
@@ -104,7 +104,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/record_list"
-                android:textSize="@dimen/sp_12" />
+                android:textSize="18sp" />
         </RelativeLayout>
 
         <include

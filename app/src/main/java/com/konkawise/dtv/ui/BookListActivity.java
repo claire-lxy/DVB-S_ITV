@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;
+import com.konkawise.dtv.RealTimeManager;
 import com.konkawise.dtv.SWBookingManager;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.adapter.BookListAdapter;
@@ -21,7 +22,6 @@ import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.event.BookUpdateEvent;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.view.TVListView;
-import com.konkawise.dtv.weaktool.RealTimeHelper;
 import com.konkawise.dtv.weaktool.WeakAsyncTask;
 import com.sw.dvblib.SWBooking;
 
@@ -38,7 +38,7 @@ import butterknife.OnItemSelected;
 import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
 
-public class BookListActivity extends BaseActivity {
+public class BookListActivity extends BaseActivity implements RealTimeManager.OnReceiveTimeListener {
     @BindView(R.id.tv_system_time)
     TextView mTvSystemTime;
 
@@ -57,8 +57,6 @@ public class BookListActivity extends BaseActivity {
     private LoadBookingTask mLoadBookingTask;
     private List<PDPInfo_t> mAllProgList;
 
-    private RealTimeHelper mRealTimeHelper;
-
     @Override
     public int getLayoutId() {
         return R.layout.activity_book_list;
@@ -67,6 +65,7 @@ public class BookListActivity extends BaseActivity {
     @Override
     protected void setup() {
         EventBus.getDefault().register(this);
+        RealTimeManager.getInstance().register(this);
 
         mAdapter = new BookListAdapter(this, new ArrayList<>());
         mLvBookList.setAdapter(mAdapter);
@@ -76,21 +75,10 @@ public class BookListActivity extends BaseActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        startUpdateRealTime();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        mRealTimeHelper.stop();
-    }
-
-    @Override
     protected void onStop() {
         super.onStop();
         if (isFinishing()) {
+            RealTimeManager.getInstance().unregister(this);
             if (mLoadBookingTask != null) {
                 mLoadBookingTask.release();
                 mLoadBookingTask = null;
@@ -104,17 +92,11 @@ public class BookListActivity extends BaseActivity {
         super.onDestroy();
     }
 
-    private void startUpdateRealTime() {
-        mRealTimeHelper = new RealTimeHelper(this);
-        mRealTimeHelper.setOnRealTimeListener(new RealTimeHelper.OnRealTimerListener() {
-            @Override
-            public void onRealTimeCallback(String realTime) {
-                if (!TextUtils.isEmpty(realTime)) {
-                    mTvSystemTime.setText(realTime);
-                }
-            }
-        });
-        mRealTimeHelper.start();
+    @Override
+    public void onReceiveTimeCallback(String time) {
+        if (!TextUtils.isEmpty(time)) {
+            mTvSystemTime.setText(time);
+        }
     }
 
     private static class LoadBookingTask extends WeakAsyncTask<BookListActivity, Void, List<BookingModel>> {

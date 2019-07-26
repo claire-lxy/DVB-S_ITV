@@ -213,7 +213,7 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_alignParentBottom="true"
-            android:background="@drawable/right_bottom_background"
+            android:background="@mipmap/right_bottom_background"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -231,25 +231,25 @@
 
             <!-- PageUp/Down -->
             <LinearLayout
-                android:layout_width="42dp"
+                android:layout_width="wrap_content"
                 android:layout_height="20dp"
                 android:layout_marginStart="64dp"
                 android:layout_marginLeft="64dp"
                 android:background="@drawable/btn_translate_bg_shape"
                 android:gravity="center_vertical"
-                android:padding="3dp">
+                android:padding="5dp">
 
                 <ImageView
-                    android:layout_width="8dp"
-                    android:layout_height="8dp"
+                    android:layout_width="13dp"
+                    android:layout_height="13dp"
                     android:src="@drawable/triangle_left"
                     tools:ignore="ContentDescription" />
 
                 <ImageView
-                    android:layout_width="8dp"
-                    android:layout_height="8dp"
-                    android:layout_marginStart="18dp"
-                    android:layout_marginLeft="18dp"
+                    android:layout_width="13dp"
+                    android:layout_height="13dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
                     android:src="@drawable/triangle_right"
                     tools:ignore="ContentDescription" />
             </LinearLayout>
@@ -265,10 +265,11 @@
 
             <!-- Back -->
             <TextView
-                android:layout_width="42dp"
-                android:layout_height="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="64dp"
                 android:layout_marginLeft="64dp"
+                android:padding="3dp"
                 android:background="@drawable/btn_translate_bg_shape"
                 android:gravity="center"
                 android:text="@string/menu"

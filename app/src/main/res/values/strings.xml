@@ -41,7 +41,7 @@
     <string name="lnb">LNB:</string>
     <string name="satellite_S">Satellite:</string>
     <string name="all">ALL</string>
-    <string name="diseqc_1.X">DiSEqC 1.X:</string>
+    <string name="diseqc_title">DiSEqC 1.X:</string>
     <string name="longitude">Longitude:</string>
     <string name="_22khz">22KHz:</string>
     <string name="i">I</string>
@@ -68,7 +68,7 @@
     <string name="motor_local_latitude">Local Latitude</string>
     <string name="motor_continue">Continue</string>
     <string name="motor_position">Position</string>
-    <string name="motor_position_text">Position: </string>
+    <string name="motor_position_text">Position: {0}</string>
     <string name="motor_diseqc_command">DiSEqC Command</string>
     <string name="motor_save_position">Save Position</string>
     <string name="motor_change_item">Change Item</string>

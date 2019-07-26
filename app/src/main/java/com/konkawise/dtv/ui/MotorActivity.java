@@ -21,13 +21,13 @@ import com.konkawise.dtv.WeakToolManager;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.CommRemindDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
-import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.sw.dvblib.SWFta;
 
+import java.text.MessageFormat;
 import java.util.List;
 
 import butterknife.BindArray;
@@ -151,12 +151,6 @@ public class MotorActivity extends BaseActivity {
     @BindView(R.id.tv_position)
     TextView tv_position;
 
-    @BindView(R.id.fl_position)
-    FrameLayout fl_position;
-
-    @BindView(R.id.tv_position_bg)
-    TextView tv_position_bg;
-
     @BindView(R.id.image_position_right)
     ImageView image_position_right;
 
@@ -197,16 +191,16 @@ public class MotorActivity extends BaseActivity {
     @BindArray(R.array.step_size_data)
     int[] StepSizeData;
 
-    @BindView(R.id.tv_edit_progress_i)
+    @BindView(R.id.tv_progress_strength)
     TextView mTv_edit_progress_i;
 
-    @BindView(R.id.progress_edit_i)
+    @BindView(R.id.pb_strength)
     ProgressBar progress_edit_i;
 
-    @BindView(R.id.tv_edit_progress_q)
+    @BindView(R.id.tv_progress_quality)
     TextView mTv_edit_progress_q;
 
-    @BindView(R.id.progress_edit_q)
+    @BindView(R.id.pb_quality)
     ProgressBar progress_edit_q;
 
     @BindView(R.id.ll_local_longitude_latitude)
@@ -372,7 +366,7 @@ public class MotorActivity extends BaseActivity {
 
         //取出上一次存的position
         mPositionStep = PreferenceManager.getInstance().getInt(Constants.PrefsKey.SAVE_POSITION);
-        tv_position.setText(Integer.toString(mPositionStep));
+        tv_position.setText(MessageFormat.format(getString(R.string.motor_position_text), String.valueOf(mPositionStep)));
     }
 
     private static class MotorHandler extends WeakHandler<MotorActivity> {
@@ -645,7 +639,7 @@ public class MotorActivity extends BaseActivity {
                         if (mPositionStep < 1) {
                             mPositionStep = 51;
                         }
-                        tv_position.setText(Integer.toString(mPositionStep));
+                        tv_position.setText(MessageFormat.format(getString(R.string.motor_position_text), String.valueOf(mPositionStep)));
                         break;
                     case Command:
                         --mCommandStep;
@@ -696,7 +690,7 @@ public class MotorActivity extends BaseActivity {
                         if (mPositionStep < 1) {
                             mPositionStep = 51;
                         }
-                        tv_position.setText(Integer.toString(mPositionStep));
+                        tv_position.setText(MessageFormat.format(getString(R.string.motor_position_text), String.valueOf(mPositionStep)));
                         break;
                     case DisEqc_Command:
                         --mDISEqcCommandStep;
@@ -763,7 +757,7 @@ public class MotorActivity extends BaseActivity {
                         if (mPositionStep > 51) {
                             mPositionStep = 1;
                         }
-                        tv_position.setText(Integer.toString(mPositionStep));
+                        tv_position.setText(MessageFormat.format(getString(R.string.motor_position_text), String.valueOf(mPositionStep)));
                         break;
                     case Command:
                         ++mCommandStep;
@@ -813,7 +807,7 @@ public class MotorActivity extends BaseActivity {
                         if (mPositionStep > 51) {
                             mPositionStep = 1;
                         }
-                        tv_position.setText(Integer.toString(mPositionStep));
+                        tv_position.setText(MessageFormat.format(getString(R.string.motor_position_text), String.valueOf(mPositionStep)));
                         break;
                     case DisEqc_Command:
                         ++mDISEqcCommandStep;
@@ -1124,7 +1118,7 @@ public class MotorActivity extends BaseActivity {
 
     private void saveSatPositionInfo() {
         SatInfo_t satInfo_t = SWPDBaseManager.getInstance().getSatList().get(currnt);
-        satInfo_t.diseqc12_pos = Integer.parseInt(tv_position.getText().toString());
+        satInfo_t.diseqc12_pos = mPositionStep;
         SWPDBaseManager.getInstance().setSatInfo(currnt, satInfo_t);  //将卫星Motor Type信息设置到对应的bean类中,保存更改的信息
         //将位置保存到SharedPreferences中，进入页面时写入Position
         PreferenceManager.getInstance().putInt(Constants.PrefsKey.SAVE_POSITION, satInfo_t.diseqc12_pos);
@@ -1287,9 +1281,8 @@ public class MotorActivity extends BaseActivity {
     private void selectePosition() {
         ll_sat_position_root.setBackgroundResource(R.drawable.btn_translate_bg_select_shape);
         image_position_left.setVisibility(View.VISIBLE);
-        fl_position.setBackgroundResource(R.drawable.btn_red_bg_shape);
+        tv_position.setBackgroundResource(R.drawable.btn_red_bg_shape);
         image_position_right.setVisibility(View.VISIBLE);
-        tv_position_bg.requestFocus();
     }
 
     /**
@@ -1366,7 +1359,7 @@ public class MotorActivity extends BaseActivity {
         //position
         ll_sat_position_root.setBackgroundColor(0);
         image_position_left.setVisibility(View.INVISIBLE);
-        fl_position.setBackgroundColor(0);
+        tv_position.setBackgroundColor(0);
         image_position_right.setVisibility(View.INVISIBLE);
 
         //Command

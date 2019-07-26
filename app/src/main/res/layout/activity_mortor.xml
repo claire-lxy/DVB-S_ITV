@@ -3,89 +3,61 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background"
+    android:background="@mipmap/background"
     android:orientation="vertical">
 
-    <LinearLayout
-        android:id="@+id/motor_linearlayout"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="68dp"
-        android:background="@drawable/right_background"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        >
+        android:layout_height="match_parent"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="40dp"
+        android:background="@mipmap/right_background"
+        android:focusableInTouchMode="true">
 
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:id="@+id/motor_title"
+            style="@style/TitleStyle"
             android:layout_marginTop="22dp"
-            android:gravity="center_horizontal"
-            android:text="@string/motor_01"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:text="@string/motor_01" />
 
         <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="18dp"
-            android:background="#c0bfbf" />
+            android:id="@+id/motor_title_divider"
+            style="@style/TitleDividerStyle"
+            android:layout_below="@id/motor_title"
+            android:layout_marginTop="18dp" />
 
         <!--Satellite-->
         <RelativeLayout
             android:id="@+id/rl_satellite"
-            android:layout_width="match_parent"
-            android:layout_height="28dp"
-            android:layout_marginLeft="244dp"
-            android:layout_marginRight="244dp"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/motor_title_divider"
             android:layout_marginTop="15dp"
             android:background="@color/dialog_bg"
             android:focusable="false">
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="@dimen/dp_20"
-                android:layout_marginStart="@dimen/dp_20"
+                style="@style/ItemTitleStyle"
                 android:text="@string/motor_satellite"
-                android:textSize="@dimen/sp_10"
                 tools:ignore="RelativeOverlap" />
 
             <ImageView
                 android:id="@+id/imgeview_satellite_left"
-                android:layout_width="@dimen/dp_15"
-                android:layout_height="@dimen/dp_10"
-                android:layout_centerVertical="true"
-                android:layout_toLeftOf="@+id/tv_satellite"
+                style="@style/ItemArrowLeftStyle"
                 android:layout_toStartOf="@+id/tv_satellite"
-                android:src="@drawable/triangle_left"
+                android:layout_toLeftOf="@+id/tv_satellite"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_satellite"
-                android:layout_width="@dimen/dp_100"
-                android:layout_height="@dimen/dp_18"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="@dimen/dp_5"
-                android:layout_marginRight="@dimen/dp_10"
-                android:layout_toLeftOf="@+id/imgeview_satellite_right"
+                style="@style/ItemContentStyle"
                 android:layout_toStartOf="@+id/imgeview_satellite_right"
-                android:gravity="center"
-                android:text="@string/motor_Insat_2e"
-                android:textSize="@dimen/sp_10" />
+                android:layout_toLeftOf="@+id/imgeview_satellite_right"
+                android:text="@string/motor_Insat_2e" />
 
             <ImageView
                 android:id="@+id/imgeview_satellite_right"
-                android:layout_width="@dimen/dp_15"
-                android:layout_height="@dimen/dp_10"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:src="@drawable/triangle_right"
+                style="@style/ItemArrowRightStyle"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
         </RelativeLayout>
@@ -93,82 +65,62 @@
         <!--Motor Type-->
         <RelativeLayout
             android:id="@+id/ll_motor_type"
-            android:layout_width="match_parent"
-            android:layout_height="28dp"
-            android:layout_marginLeft="244dp"
-            android:layout_marginRight="244dp"
-            android:background="@drawable/btn_translate_bg_select_shape"
-            android:focusable="true">
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/rl_satellite"
+            android:background="@drawable/btn_translate_bg_select_shape">
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="@dimen/dp_20"
-                android:layout_marginStart="@dimen/dp_20"
+                style="@style/ItemTitleStyle"
                 android:text="@string/motor_type"
-                android:textSize="@dimen/sp_10"
                 tools:ignore="RelativeOverlap" />
 
             <ImageView
                 android:id="@+id/imgeview_motor_type_left"
                 style="@style/ItemArrowLeftStyle"
-                android:layout_toLeftOf="@+id/tv_motor_type"
                 android:layout_toStartOf="@+id/tv_motor_type"
+                android:layout_toLeftOf="@+id/tv_motor_type"
                 android:visibility="visible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_motor_type"
                 style="@style/ItemContentStyle"
-                android:layout_centerVertical="true"
-                android:layout_toLeftOf="@+id/imgeview_motor_type_right"
                 android:layout_toStartOf="@+id/imgeview_motor_type_right"
+                android:layout_toLeftOf="@+id/imgeview_motor_type_right"
                 android:background="@drawable/btn_red_bg_shape"
-                android:text="@string/motor_diseqc"
-                android:textSize="@dimen/sp_10" />
+                android:text="@string/motor_diseqc" />
 
             <ImageView
                 android:id="@+id/imgeview_motor_type_right"
                 style="@style/ItemArrowRightStyle"
                 android:visibility="visible"
                 tools:ignore="ContentDescription" />
-
         </RelativeLayout>
 
         <!--Tp-->
         <RelativeLayout
             android:id="@+id/ll_tp_root"
-            android:layout_width="match_parent"
-            android:layout_height="28dp"
-            android:layout_marginLeft="244dp"
-            android:layout_marginRight="244dp"
-            android:background="@drawable/dvb_btn_fragment_selector"
-            android:focusable="true">
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/ll_motor_type"
+            android:background="@drawable/dvb_btn_fragment_selector">
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="@dimen/dp_20"
-                android:layout_marginStart="@dimen/dp_20"
-                android:text="@string/tp"
-                android:textSize="@dimen/sp_10" />
+                style="@style/ItemTitleStyle"
+                android:text="@string/tp" />
 
             <ImageView
                 android:id="@+id/image_tp_left"
                 style="@style/ItemArrowLeftStyle"
-                android:layout_toLeftOf="@+id/tv_tp"
                 android:layout_toStartOf="@+id/tv_tp"
+                android:layout_toLeftOf="@+id/tv_tp"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_tp"
                 style="@style/ItemContentStyle"
-                android:layout_toLeftOf="@+id/image_tp_right"
                 android:layout_toStartOf="@+id/image_tp_right"
-                android:textSize="@dimen/sp_10" />
+                android:layout_toLeftOf="@+id/image_tp_right" />
 
             <ImageView
                 android:id="@+id/image_tp_right"
@@ -180,146 +132,120 @@
         <!--Move Step-->
         <RelativeLayout
             android:id="@+id/ll_step_root"
-            android:layout_width="match_parent"
-            android:layout_height="28dp"
-            android:layout_marginLeft="244dp"
-            android:layout_marginRight="244dp"
-            android:focusable="true">
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/ll_tp_root">
 
             <TextView
                 android:id="@+id/tv_move_steps"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="@dimen/dp_20"
-                android:layout_marginStart="@dimen/dp_20"
+                style="@style/ItemTitleStyle"
                 android:text="@string/motor_move_steps"
-                android:textSize="@dimen/sp_10"
                 tools:ignore="RelativeOverlap" />
 
             <ImageView
                 android:id="@+id/image_step_left"
                 style="@style/ItemArrowLeftStyle"
-                android:layout_toLeftOf="@+id/tv_step"
                 android:layout_toStartOf="@+id/tv_step"
+                android:layout_toLeftOf="@+id/tv_step"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_step"
                 style="@style/ItemContentStyle"
-                android:layout_toLeftOf="@+id/image_step_right"
                 android:layout_toStartOf="@+id/image_step_right"
-                android:text="@string/motor_stop"
-                android:textSize="@dimen/sp_10" />
+                android:layout_toLeftOf="@+id/image_step_right"
+                android:text="@string/motor_stop" />
 
             <ImageView
                 android:id="@+id/image_step_right"
                 style="@style/ItemArrowRightStyle"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
-
         </RelativeLayout>
 
+        <!-- Step Size -->
         <RelativeLayout
             android:id="@+id/ll_step_size_root"
-            android:layout_width="match_parent"
-            android:layout_height="28dp"
-            android:layout_marginLeft="244dp"
-            android:layout_marginRight="244dp"
-            android:background="@drawable/dvb_btn_fragment_selector"
-            android:focusable="true">
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/ll_step_root"
+            android:background="@drawable/dvb_btn_fragment_selector">
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="@dimen/dp_20"
-                android:layout_marginStart="@dimen/dp_20"
+                style="@style/ItemTitleStyle"
                 android:text="@string/motor_step_size"
-                android:textSize="@dimen/sp_10"
                 tools:ignore="RelativeOverlap" />
-
 
             <ImageView
                 android:id="@+id/image_step_size_left"
                 style="@style/ItemArrowLeftStyle"
-                android:layout_toLeftOf="@+id/tv_step_size"
                 android:layout_toStartOf="@+id/tv_step_size"
+                android:layout_toLeftOf="@+id/tv_step_size"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_step_size"
                 style="@style/ItemContentStyle"
-                android:layout_toLeftOf="@+id/image_step_size_right"
                 android:layout_toStartOf="@+id/image_step_size_right"
-                android:text="@string/motor_continue"
-                android:textSize="@dimen/sp_10" />
+                android:layout_toLeftOf="@+id/image_step_size_right"
+                android:text="@string/motor_continue" />
 
             <ImageView
                 android:id="@+id/image_step_size_right"
                 style="@style/ItemArrowRightStyle"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
-
         </RelativeLayout>
 
+        <!-- longitude -->
         <LinearLayout
             android:id="@+id/ll_local_longitude_latitude"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:layout_below="@id/ll_step_size_root"
             android:focusable="true"
             android:focusableInTouchMode="true"
+            android:orientation="vertical"
             android:visibility="gone">
 
             <RelativeLayout
                 android:id="@+id/rl_sat_longitude_root"
-                android:layout_width="match_parent"
-                android:layout_height="28dp"
-                android:layout_marginLeft="244dp"
-                android:layout_marginRight="244dp"
-                android:background="@drawable/dvb_btn_fragment_selector"
-                android:focusable="true">
+                style="@style/ItemGroupStyle"
+                android:background="@drawable/dvb_btn_fragment_selector">
 
                 <TextView
                     android:id="@+id/sat_longitude"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginLeft="@dimen/dp_20"
-                    android:layout_marginStart="@dimen/dp_20"
+                    style="@style/ItemTitleStyle"
                     android:text="@string/motor_sat_longitudu"
-                    android:textSize="@dimen/sp_10"
                     tools:ignore="RelativeOverlap" />
 
                 <TextView
                     android:id="@+id/tv_sat_longitude"
-                    android:layout_width="@dimen/dp_28"
+                    android:layout_width="40dp"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:layout_marginLeft="@dimen/dp_5"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginEnd="-3dp"
                     android:layout_marginRight="-3dp"
-                    android:layout_toLeftOf="@+id/et_sat_longitude"
                     android:layout_toStartOf="@+id/et_sat_longitude"
+                    android:layout_toLeftOf="@+id/et_sat_longitude"
                     android:focusable="false"
-                    android:gravity="center_vertical|right"
-                    android:text="@string/west"
-                    android:textSize="@dimen/sp_10" />
+                    android:gravity="center_vertical|end"
+                    android:text="@string/west" />
 
                 <TextView
                     android:id="@+id/et_sat_longitude"
-                    android:layout_width="@dimen/dp_65"
+                    android:layout_width="100dp"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:layout_marginRight="@dimen/dp_5"
-                    android:layout_toLeftOf="@+id/image_sat_longitude_right"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginRight="10dp"
                     android:layout_toStartOf="@+id/image_sat_longitude_right"
+                    android:layout_toLeftOf="@+id/image_sat_longitude_right"
                     android:background="@null"
                     android:gravity="center"
-                    android:textColor="@color/white"
-                    android:textSize="@dimen/sp_10" />
+                    android:textColor="@color/white" />
 
                 <ImageView
                     android:id="@+id/image_sat_longitude_right"
@@ -330,50 +256,42 @@
 
             <RelativeLayout
                 android:id="@+id/rl_local_longitude_root"
-                android:layout_width="match_parent"
-                android:layout_height="28dp"
-                android:layout_marginLeft="244dp"
-                android:layout_marginRight="244dp"
-                android:background="@drawable/dvb_btn_fragment_selector"
-                android:focusable="true">
+                style="@style/ItemGroupStyle"
+                android:background="@drawable/dvb_btn_fragment_selector">
 
                 <TextView
                     android:id="@+id/local_longitude"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginLeft="@dimen/dp_20"
-                    android:layout_marginStart="@dimen/dp_20"
+                    style="@style/ItemTitleStyle"
                     android:text="@string/motor_local_longitudu"
-                    android:textSize="@dimen/sp_10"
                     tools:ignore="RelativeOverlap" />
 
                 <TextView
                     android:id="@+id/tv_local_longitude"
-                    android:layout_width="@dimen/dp_28"
+                    android:layout_width="40dp"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:layout_marginLeft="@dimen/dp_5"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginEnd="-3dp"
                     android:layout_marginRight="-3dp"
-                    android:layout_toLeftOf="@+id/et_local_longitude"
                     android:layout_toStartOf="@+id/et_local_longitude"
+                    android:layout_toLeftOf="@+id/et_local_longitude"
                     android:focusable="false"
-                    android:gravity="center_vertical|right"
-                    android:text="@string/west"
-                    android:textSize="@dimen/sp_10" />
+                    android:gravity="center_vertical|end"
+                    android:text="@string/west" />
 
                 <TextView
                     android:id="@+id/et_local_longitude"
-                    android:layout_width="@dimen/dp_65"
+                    android:layout_width="100dp"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:layout_marginRight="@dimen/dp_5"
-                    android:layout_toLeftOf="@+id/image_local_longitude_right"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginRight="10dp"
                     android:layout_toStartOf="@+id/image_local_longitude_right"
+                    android:layout_toLeftOf="@+id/image_local_longitude_right"
                     android:background="@null"
                     android:gravity="center"
-                    android:textColor="@color/white"
-                    android:textSize="@dimen/sp_10" />
+                    android:textColor="@color/white" />
 
                 <ImageView
                     android:id="@+id/image_local_longitude_right"
@@ -384,50 +302,42 @@
 
             <RelativeLayout
                 android:id="@+id/rl_local_latitude_root"
-                android:layout_width="match_parent"
-                android:layout_height="28dp"
-                android:layout_marginLeft="244dp"
-                android:layout_marginRight="244dp"
-                android:background="@drawable/dvb_btn_fragment_selector"
-                android:focusable="true">
+                style="@style/ItemGroupStyle"
+                android:background="@drawable/dvb_btn_fragment_selector">
 
                 <TextView
                     android:id="@+id/local_latitude"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginLeft="@dimen/dp_20"
-                    android:layout_marginStart="@dimen/dp_20"
+                    style="@style/ItemTitleStyle"
                     android:text="@string/motor_local_latitude"
-                    android:textSize="@dimen/sp_10"
                     tools:ignore="RelativeOverlap" />
 
                 <TextView
                     android:id="@+id/tv_local_latitude"
-                    android:layout_width="@dimen/dp_28"
+                    android:layout_width="40dp"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:layout_marginLeft="@dimen/dp_5"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginEnd="-3dp"
                     android:layout_marginRight="-3dp"
-                    android:layout_toLeftOf="@+id/et_local_latitude"
                     android:layout_toStartOf="@+id/et_local_latitude"
+                    android:layout_toLeftOf="@+id/et_local_latitude"
                     android:focusable="false"
-                    android:gravity="center_vertical|right"
-                    android:text="@string/south"
-                    android:textSize="@dimen/sp_10" />
+                    android:gravity="center_vertical|end"
+                    android:text="@string/south" />
 
                 <TextView
                     android:id="@+id/et_local_latitude"
-                    android:layout_width="@dimen/dp_65"
+                    android:layout_width="100dp"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
-                    android:layout_marginRight="@dimen/dp_5"
-                    android:layout_toLeftOf="@+id/image_local_latitude_right"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginRight="10dp"
                     android:layout_toStartOf="@+id/image_local_latitude_right"
+                    android:layout_toLeftOf="@+id/image_local_latitude_right"
                     android:background="@null"
                     android:gravity="center"
-                    android:textColor="@color/white"
-                    android:textSize="@dimen/sp_10" />
+                    android:textColor="@color/white" />
 
                 <ImageView
                     android:id="@+id/image_local_latitude_right"
@@ -437,189 +347,174 @@
             </RelativeLayout>
         </LinearLayout>
 
+        <!-- Position -->
         <RelativeLayout
             android:id="@+id/ll_sat_position_root"
-            android:layout_width="match_parent"
-            android:layout_height="28dp"
-            android:layout_marginLeft="244dp"
-            android:layout_marginRight="244dp"
-            android:background="@drawable/dvb_btn_fragment_selector"
-            android:focusable="true"
-            android:focusableInTouchMode="true">
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/ll_local_longitude_latitude"
+            android:background="@drawable/dvb_btn_fragment_selector">
 
             <TextView
                 android:id="@+id/tv_position1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="@dimen/dp_20"
-                android:layout_marginStart="@dimen/dp_20"
+                style="@style/ItemTitleStyle"
                 android:text="@string/motor_position"
-                android:textSize="@dimen/sp_10"
                 tools:ignore="RelativeOverlap" />
 
-                <ImageView
-                    android:id="@+id/image_position_left"
-                    style="@style/ItemArrowLeftStyle"
-                    android:layout_toLeftOf="@+id/fl_position"
-                    android:layout_toStartOf="@+id/fl_position"
-                    android:visibility="invisible"
-                    tools:ignore="ContentDescription" />
+            <ImageView
+                android:id="@+id/image_position_left"
+                style="@style/ItemArrowLeftStyle"
+                android:layout_toStartOf="@+id/tv_position"
+                android:layout_toLeftOf="@+id/tv_position"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
 
-                <FrameLayout
-                    android:id="@+id/fl_position"
-                    android:layout_width="@dimen/dp_91"
-                    android:layout_centerVertical="true"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/dp_5"
-                    android:layout_marginRight="@dimen/dp_7"
-                    android:layout_toLeftOf="@+id/image_position_right"
-                    android:layout_toStartOf="@+id/image_position_right">
+            <TextView
+                android:id="@+id/tv_position"
+                style="@style/ItemContentStyle"
+                android:layout_toStartOf="@+id/image_position_right"
+                android:layout_toLeftOf="@+id/image_position_right"
+                android:text="1" />
 
-                    <TextView
-                        android:id="@+id/tv_position"
-                        android:layout_width="@dimen/dp_100"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="@dimen/dp_25"
-                        android:layout_marginStart="@dimen/dp_15"
-                        android:gravity="center"
-                        android:text="1"
-                        android:textSize="@dimen/sp_10" />
-
-                    <TextView
-                        android:id="@+id/tv_position_bg"
-                        android:layout_width="@dimen/dp_91"
-                        android:layout_height="wrap_content"
-                        android:gravity="left"
-                        android:layout_marginLeft="@dimen/dp_20"
-                        android:text="@string/motor_position_text"
-                        android:textSize="@dimen/sp_10" />
-
-                </FrameLayout>
-
-                <ImageView
-                    android:id="@+id/image_position_right"
-                    style="@style/ItemArrowRightStyle"
-                    android:visibility="invisible"
-                    tools:ignore="ContentDescription" />
-
+            <ImageView
+                android:id="@+id/image_position_right"
+                style="@style/ItemArrowRightStyle"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
         </RelativeLayout>
 
         <!--Command-->
         <RelativeLayout
             android:id="@+id/ll_sat_command_root"
-            android:layout_width="match_parent"
-            android:layout_height="28dp"
-            android:layout_marginLeft="244dp"
-            android:layout_marginRight="244dp"
-            android:background="@drawable/dvb_btn_fragment_selector"
-            android:focusable="true">
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/ll_sat_position_root"
+            android:background="@drawable/dvb_btn_fragment_selector">
 
             <TextView
                 android:id="@+id/tv_diseqc_common"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginLeft="@dimen/dp_20"
-                android:layout_marginStart="@dimen/dp_20"
+                style="@style/ItemTitleStyle"
                 android:text="@string/motor_diseqc_command"
-                android:textSize="@dimen/sp_10"
                 tools:ignore="RelativeOverlap" />
 
             <ImageView
                 android:id="@+id/image_command_left"
-                android:layout_width="@dimen/dp_15"
-                android:layout_height="@dimen/dp_10"
-                android:layout_centerVertical="true"
-                android:layout_toLeftOf="@+id/tv_command"
+                style="@style/ItemArrowLeftStyle"
                 android:layout_toStartOf="@+id/tv_command"
-                android:src="@drawable/triangle_left"
+                android:layout_toLeftOf="@+id/tv_command"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_command"
                 style="@style/ItemContentStyle"
-                android:layout_toLeftOf="@+id/image_command_right"
                 android:layout_toStartOf="@+id/image_command_right"
-                android:text="@string/motor_save_position"
-                android:textSize="@dimen/sp_10" />
+                android:layout_toLeftOf="@+id/image_command_right"
+                android:text="@string/motor_save_position" />
 
             <ImageView
                 android:id="@+id/image_command_right"
                 style="@style/ItemArrowRightStyle"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
-
         </RelativeLayout>
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_above="@+id/rl_quality_progress"
+            android:layout_marginLeft="244dp"
             android:layout_marginTop="10dp"
-            android:gravity="center">
+            android:layout_marginRight="244dp"
+            android:layout_marginBottom="3dp">
 
             <TextView
-                android:layout_width="20dp"
+                android:id="@+id/tv_progress_strength_title"
+                android:layout_width="16dp"
                 android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
                 android:text="@string/i"
-                android:textSize="@dimen/sp_12" />
-
-            <TextView
-                android:id="@+id/tv_edit_progress_i"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/sp_10"
-                android:layout_marginStart="@dimen/sp_10" />
+                android:textSize="12sp" />
 
             <ProgressBar
-                android:id="@+id/progress_edit_i"
+                android:id="@+id/pb_strength"
                 style="@style/pfBar_mProgress_horizontal1"
-                android:layout_width="@dimen/dp_250"
-                android:layout_height="5dp"
-                android:layout_marginLeft="@dimen/sp_6"
-                android:layout_marginStart="@dimen/sp_6"
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="12dp"
+                android:layout_marginLeft="12dp"
+                android:layout_toStartOf="@+id/tv_progress_strength"
+                android:layout_toLeftOf="@+id/tv_progress_strength"
+                android:layout_toEndOf="@id/tv_progress_strength_title"
+                android:layout_toRightOf="@id/tv_progress_strength_title"
                 android:indeterminate="false"
                 android:indeterminateOnly="false"
                 android:max="100" />
-        </LinearLayout>
 
-        <LinearLayout
+            <TextView
+                android:id="@+id/tv_progress_strength"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="16dp"
+                android:layout_marginLeft="16dp"
+                android:textSize="12sp"
+                tools:text="90%" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rl_quality_progress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center">
+            android:layout_above="@+id/bottom_bar"
+            android:layout_marginLeft="244dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="244dp"
+            android:layout_marginBottom="30dp">
 
             <TextView
-                android:layout_width="20dp"
+                android:id="@+id/tv_quality_title"
+                android:layout_width="16dp"
                 android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
                 android:text="@string/q"
-                android:textSize="@dimen/sp_12" />
-
-            <TextView
-                android:id="@+id/tv_edit_progress_q"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/sp_10"
-                android:layout_marginStart="@dimen/sp_10" />
+                android:textSize="12sp" />
 
             <ProgressBar
-                android:id="@+id/progress_edit_q"
+                android:id="@+id/pb_quality"
                 style="@style/pfBar_mProgress_horizontal2"
-                android:layout_width="@dimen/dp_250"
-                android:layout_height="5dp"
-                android:layout_marginLeft="@dimen/sp_6"
-                android:layout_marginStart="@dimen/sp_6"
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="12dp"
+                android:layout_marginLeft="12dp"
+                android:layout_toStartOf="@+id/tv_progress_quality"
+                android:layout_toLeftOf="@+id/tv_progress_quality"
+                android:layout_toEndOf="@id/tv_quality_title"
+                android:layout_toRightOf="@id/tv_quality_title"
                 android:indeterminate="false"
                 android:indeterminateOnly="false"
                 android:max="100" />
-        </LinearLayout>
-    </LinearLayout>
 
-    <include
-        layout="@layout/bottom_bar_select_item"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:layout_alignBottom="@+id/motor_linearlayout"
-        android:layout_marginBottom="48dp" />
+            <TextView
+                android:id="@+id/tv_progress_quality"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="16dp"
+                android:layout_marginLeft="16dp"
+                android:textSize="12sp"
+                tools:text="100%" />
+        </RelativeLayout>
 
+        <include
+            android:id="@+id/bottom_bar"
+            layout="@layout/bottom_bar_select_item"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_alignParentBottom="true" />
+    </RelativeLayout>
 </RelativeLayout>

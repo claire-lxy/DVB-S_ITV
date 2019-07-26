@@ -49,8 +49,8 @@
 
             <ImageView
                 android:id="@+id/iv_book_type_left"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_centerVertical="true"
                 android:src="@drawable/triangle_left"
                 tools:ignore="ContentDescription" />
@@ -59,15 +59,15 @@
                 android:id="@+id/tv_book_type"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/dp_12"
-                android:layout_marginRight="@dimen/dp_12"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
                 android:background="@drawable/btn_red_bg_shape"
                 android:gravity="center" />
 
             <ImageView
                 android:id="@+id/iv_book_type_right"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
@@ -103,8 +103,8 @@
 
             <ImageView
                 android:id="@+id/iv_book_mode_left"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_centerVertical="true"
                 android:src="@drawable/triangle_left"
                 android:visibility="invisible"
@@ -114,14 +114,14 @@
                 android:id="@+id/tv_book_mode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/dp_12"
-                android:layout_marginRight="@dimen/dp_12"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
                 android:gravity="center" />
 
             <ImageView
                 android:id="@+id/iv_book_mode_right"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
@@ -158,8 +158,8 @@
 
             <ImageView
                 android:id="@+id/iv_book_channel_type_left"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_centerVertical="true"
                 android:src="@drawable/triangle_left"
                 android:visibility="invisible"
@@ -169,14 +169,14 @@
                 android:id="@+id/tv_book_channel_type"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/dp_12"
-                android:layout_marginRight="@dimen/dp_12"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
                 android:gravity="center" />
 
             <ImageView
                 android:id="@+id/iv_book_channel_type_right"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
@@ -213,8 +213,8 @@
 
             <ImageView
                 android:id="@+id/iv_book_channel_name_left"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_centerVertical="true"
                 android:src="@drawable/triangle_left"
                 android:visibility="invisible"
@@ -224,14 +224,14 @@
                 android:id="@+id/tv_book_channel_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/dp_12"
-                android:layout_marginRight="@dimen/dp_12"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
                 android:gravity="center" />
 
             <ImageView
                 android:id="@+id/iv_book_channel_name_right"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
@@ -266,8 +266,8 @@
             <!--android:id="@+id/tv_book_date_weekly"-->
             <!--android:layout_width="0dp"-->
             <!--android:layout_height="wrap_content"-->
-            <!--android:layout_marginLeft="@dimen/dp_12"-->
-            <!--android:layout_marginRight="@dimen/dp_12"-->
+            <!--android:layout_marginLeft="20dp"-->
+            <!--android:layout_marginRight="20dp"-->
             <!--android:layout_weight="1"-->
             <!--android:gravity="center"-->
             <!--android:visibility="gone" />-->
@@ -281,8 +281,8 @@
 
             <ImageView
                 android:id="@+id/iv_book_date_weekly_left"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_centerVertical="true"
                 android:src="@drawable/triangle_left"
                 android:visibility="invisible"
@@ -292,14 +292,14 @@
                 android:id="@+id/tv_book_date_weekly"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/dp_12"
-                android:layout_marginRight="@dimen/dp_12"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
                 android:gravity="center" />
 
             <ImageView
                 android:id="@+id/iv_book_date_weekly_right"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
@@ -319,8 +319,8 @@
 
             <!--<ImageView-->
                 <!--android:id="@+id/iv_book_date_monthly_left"-->
-                <!--android:layout_width="@dimen/dp_8"-->
-                <!--android:layout_height="@dimen/dp_8"-->
+                <!--android:layout_width="14dp"-->
+                <!--android:layout_height="14dp"-->
                 <!--android:layout_centerVertical="true"-->
                 <!--android:src="@drawable/triangle_left"-->
                 <!--android:visibility="invisible"-->
@@ -330,14 +330,14 @@
                 <!--android:id="@+id/tv_book_date_monthly"-->
                 <!--android:layout_width="match_parent"-->
                 <!--android:layout_height="wrap_content"-->
-                <!--android:layout_marginLeft="@dimen/dp_12"-->
-                <!--android:layout_marginRight="@dimen/dp_12"-->
+                <!--android:layout_marginLeft="20dp"-->
+                <!--android:layout_marginRight="20dp"-->
                 <!--android:gravity="center" />-->
 
             <!--<ImageView-->
                 <!--android:id="@+id/iv_book_date_monthly_right"-->
-                <!--android:layout_width="@dimen/dp_8"-->
-                <!--android:layout_height="@dimen/dp_8"-->
+                <!--android:layout_width="14dp"-->
+                <!--android:layout_height="14dp"-->
                 <!--android:layout_alignParentEnd="true"-->
                 <!--android:layout_alignParentRight="true"-->
                 <!--android:layout_centerVertical="true"-->

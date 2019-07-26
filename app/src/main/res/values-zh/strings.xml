@@ -41,7 +41,7 @@
     <string name="lnb">LNB:</string>
     <string name="satellite_S">卫星:</string>
     <string name="all">所有</string>
-    <string name="diseqc_1.X">Diseqc 1.X:</string>
+    <string name="diseqc_title">Diseqc 1.X:</string>
     <string name="longitude">Longitude:</string>
     <string name="_22khz">22KHz:</string>
     <string name="i">I</string>
@@ -68,7 +68,7 @@
     <string name="motor_local_latitude">Local Latitude</string>
     <string name="motor_continue">继续</string>
     <string name="motor_position">位置</string>
-    <string name="motor_position_text">位置: </string>
+    <string name="motor_position_text">位置: {0}</string>
     <string name="motor_diseqc_command">DisEqc Command</string>
     <string name="motor_save_position">保存位置</string>
     <string name="motor_change_item">改变 条目</string>

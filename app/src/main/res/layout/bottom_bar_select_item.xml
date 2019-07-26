@@ -3,26 +3,26 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="56dp"
-    android:background="@drawable/right_bottom_background"
+    android:background="@mipmap/right_bottom_background"
     android:gravity="center"
     android:orientation="horizontal">
 
     <LinearLayout
-        android:layout_width="@dimen/dp_30"
-        android:layout_height="@dimen/dp_20"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:background="@drawable/btn_translate_bg_shape"
         android:gravity="center"
-        android:padding="@dimen/dp_3">
+        android:padding="7dp">
 
         <ImageView
-            android:layout_width="@dimen/dp_8"
-            android:layout_height="@dimen/dp_8"
+            android:layout_width="13dp"
+            android:layout_height="13dp"
             android:src="@drawable/triangle_up"
             tools:ignore="ContentDescription" />
 
         <ImageView
-            android:layout_width="@dimen/dp_8"
-            android:layout_height="@dimen/dp_8"
+            android:layout_width="13dp"
+            android:layout_height="13dp"
             android:src="@drawable/triangle_down"
             tools:ignore="ContentDescription" />
     </LinearLayout>
@@ -30,27 +30,27 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="6dp"
-        android:layout_marginLeft="6dp"
-        android:text="@string/motor_change_item"
-        android:textSize="@dimen/sp_10" />
-
-    <TextView
-        android:layout_width="@dimen/dp_30"
-        android:layout_height="@dimen/dp_20"
-        android:layout_marginStart="40dp"
-        android:layout_marginLeft="40dp"
-        android:background="@drawable/btn_translate_bg_shape"
-        android:gravity="center"
-        android:padding="@dimen/dp_3"
-        android:text="@string/motor_ok"
-        android:textSize="@dimen/sp_10" />
+        android:layout_marginStart="10dp"
+        android:layout_marginLeft="10dp"
+        android:text="@string/motor_change_item" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="6dp"
-        android:layout_marginLeft="6dp"
-        android:text="@string/motor_select"
-        android:textSize="@dimen/sp_10" />
+        android:layout_marginStart="40dp"
+        android:layout_marginLeft="40dp"
+        android:background="@drawable/btn_translate_bg_shape"
+        android:gravity="center"
+        android:paddingLeft="10dp"
+        android:paddingTop="5dp"
+        android:paddingRight="10dp"
+        android:paddingBottom="5dp"
+        android:text="@string/motor_ok" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginLeft="10dp"
+        android:text="@string/motor_select" />
 </LinearLayout>

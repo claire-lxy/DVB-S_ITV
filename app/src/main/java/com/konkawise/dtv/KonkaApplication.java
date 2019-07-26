@@ -5,6 +5,8 @@ import android.app.Application;
 import android.content.Context;
 import android.os.Build;
 
+import com.squareup.leakcanary.LeakCanary;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -17,6 +19,14 @@ public class KonkaApplication extends Application {
         super.onCreate();
         sApplication = this;
         closeDetectedProblemApiDialog();
+        initLeakCanary();
+    }
+
+    private void initLeakCanary() {
+        if (LeakCanary.isInAnalyzerProcess(this)) {
+            return;
+        }
+        LeakCanary.install(this);
     }
 
     /**

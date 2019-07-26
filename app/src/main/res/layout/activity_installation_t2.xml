@@ -34,7 +34,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/t2_auto_search"
-                android:textSize="@dimen/sp_12" />
+                android:textSize="18sp" />
         </RelativeLayout>
 
         <RelativeLayout
@@ -47,7 +47,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/t2_manual_search"
-                android:textSize="@dimen/sp_12" />
+                android:textSize="18sp" />
         </RelativeLayout>
 
         <include

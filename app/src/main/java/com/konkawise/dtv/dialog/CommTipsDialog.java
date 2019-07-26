@@ -31,6 +31,8 @@ public class CommTipsDialog extends BaseDialogFragment {
     private String mPositive;
     private String mNegative;
     private float mLineSpacing;
+    private boolean mPositiveFocus;
+    private boolean mNegativeFocus;
 
     private OnCommPositiveListener mOnPositiveListener;
     private OnCommNegativeListener mOnNegativeListener;
@@ -63,6 +65,8 @@ public class CommTipsDialog extends BaseDialogFragment {
         if (mLineSpacing != 0) mTvContent.setLineSpacing(mLineSpacing, 0);
         mBtnPositive.setText(TextUtils.isEmpty(mPositive) ? getStrings(R.string.yes) : mPositive);
         mBtnNegative.setText(TextUtils.isEmpty(mNegative) ? getStrings(R.string.cancel) : mNegative);
+        if (mPositiveFocus) mBtnPositive.requestFocus();
+        if (mNegativeFocus) mBtnNegative.requestFocus();
     }
 
     public CommTipsDialog title(String title) {
@@ -80,8 +84,14 @@ public class CommTipsDialog extends BaseDialogFragment {
         return this;
     }
 
-    public void updateContent(String content) {
-        mTvContent.setText(content);
+    public CommTipsDialog positiveFocus(boolean positiveFocus) {
+        this.mPositiveFocus = positiveFocus;
+        return this;
+    }
+
+    public CommTipsDialog negativeFocus(boolean negativeFocus) {
+        this.mNegativeFocus = negativeFocus;
+        return this;
     }
 
     public CommTipsDialog setOnPositiveListener(String positive, OnCommPositiveListener listener) {

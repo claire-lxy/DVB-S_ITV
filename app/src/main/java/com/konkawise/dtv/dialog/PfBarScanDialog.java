@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.media.AudioManager;
 import android.os.Message;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
@@ -15,6 +16,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.konkawise.dtv.R;
+import com.konkawise.dtv.RealTimeManager;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.SWTimerManager;
@@ -23,7 +25,6 @@ import com.konkawise.dtv.WeakToolManager;
 import com.konkawise.dtv.base.BaseDialog;
 import com.konkawise.dtv.bean.DateModel;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
-import com.konkawise.dtv.weaktool.RealTimeHelper;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakToolInterface;
 import com.sw.dvblib.SWDVB;
@@ -32,7 +33,7 @@ import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.EpgEvent_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 
-public class PfBarScanDialog extends BaseDialog implements WeakToolInterface {
+public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, RealTimeManager.OnReceiveTimeListener {
     public static final String TAG = "PfBarScanDialog";
 
     @BindView(R.id.tv_pf_prog_num)
@@ -86,7 +87,6 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface {
     private Context mContext;
     private AudioManager mAudioManager;
     private CheckSignalHelper mCheckSignalHelper;
-    private RealTimeHelper mRealTimeHelper;
 
     @SuppressLint("HandlerLeak")
     private WeakHandler<PfBarScanDialog> sHandler = new WeakHandler<PfBarScanDialog>(this) {
@@ -147,28 +147,13 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface {
     }
 
     private void startRealTime() {
-        stopRealTime();
-        mRealTimeHelper = new RealTimeHelper(this);
-        mRealTimeHelper.setOnRealTimeListener(new RealTimeHelper.OnRealTimerListener() {
-            @Override
-            public void onRealTimeCallback(String realTime) {
-                mTvTime.setText(realTime);
-            }
-        });
-        mRealTimeHelper.start();
-    }
-
-    private void stopRealTime() {
-        if (mRealTimeHelper != null) {
-            mRealTimeHelper.stop();
-            mRealTimeHelper = null;
-        }
+        RealTimeManager.getInstance().register(this);
     }
 
     @Override
     public void dismiss() {
         stopCheckSignal();
-        stopRealTime();
+        RealTimeManager.getInstance().unregister(this);
         WeakToolManager.getInstance().removeWeakTool(this);
         super.dismiss();
     }
@@ -213,5 +198,12 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface {
         startRealTime();
         updateProgInfo();
         updateProgInformation();
+    }
+
+    @Override
+    public void onReceiveTimeCallback(String time) {
+        if (!TextUtils.isEmpty(time)) {
+            mTvTime.setText(time);
+        }
     }
 }

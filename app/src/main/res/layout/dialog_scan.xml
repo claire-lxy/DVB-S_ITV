@@ -65,8 +65,8 @@
 
             <ImageView
                 android:id="@+id/iv_scan_mode_left"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_centerVertical="true"
                 android:src="@drawable/triangle_left"
                 tools:ignore="ContentDescription" />
@@ -75,16 +75,16 @@
                 android:id="@+id/tv_scan_mode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/dp_12"
-                android:layout_marginRight="@dimen/dp_12"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
                 android:background="@drawable/btn_red_bg_shape"
                 android:gravity="center"
                 android:text="@string/all" />
 
             <ImageView
                 android:id="@+id/iv_scan_mode_right"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
@@ -122,8 +122,8 @@
 
             <ImageView
                 android:id="@+id/iv_channel_type_left"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_centerVertical="true"
                 android:src="@drawable/triangle_left"
                 android:visibility="invisible"
@@ -133,15 +133,15 @@
                 android:id="@+id/tv_channel_type"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/dp_12"
-                android:layout_marginRight="@dimen/dp_12"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
                 android:gravity="center"
                 android:text="@string/all" />
 
             <ImageView
                 android:id="@+id/iv_channel_type_right"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
@@ -180,8 +180,8 @@
 
             <ImageView
                 android:id="@+id/iv_scan_type_left"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_centerVertical="true"
                 android:src="@drawable/triangle_left"
                 android:visibility="invisible"
@@ -191,15 +191,15 @@
                 android:id="@+id/tv_scan_type"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/dp_12"
-                android:layout_marginRight="@dimen/dp_12"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
                 android:gravity="center"
                 android:text="@string/all" />
 
             <ImageView
                 android:id="@+id/iv_scan_type_right"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
@@ -237,8 +237,8 @@
 
             <ImageView
                 android:id="@+id/iv_network_left"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_centerVertical="true"
                 android:src="@drawable/triangle_left"
                 android:visibility="invisible"
@@ -248,15 +248,15 @@
                 android:id="@+id/tv_network"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/dp_12"
-                android:layout_marginRight="@dimen/dp_12"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
                 android:gravity="center"
                 android:text="@string/nit_off" />
 
             <ImageView
                 android:id="@+id/iv_network_right"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
@@ -295,8 +295,8 @@
 
             <ImageView
                 android:id="@+id/iv_cas_system_left"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_centerVertical="true"
                 android:src="@drawable/triangle_left"
                 android:visibility="invisible"
@@ -306,15 +306,15 @@
                 android:id="@+id/tv_cas_system"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/dp_12"
-                android:layout_marginRight="@dimen/dp_12"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
                 android:gravity="center"
                 android:text="@string/allca" />
 
             <ImageView
                 android:id="@+id/iv_cas_system_right"
-                android:layout_width="@dimen/dp_8"
-                android:layout_height="@dimen/dp_8"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
