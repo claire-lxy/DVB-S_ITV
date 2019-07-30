@@ -15,7 +15,6 @@
 | annotation | 存放注解类，一般在该包下新建注解作为枚举（使用annotation的方式作为枚举能够提高程序运行效率） |
 | bean | 存放ui层本地数据类 |
 | dialog | 存放对话框，所有对话框没有特殊情况，统一继承base包下提供的BaseDialogFragment |
-| epghandle | 处理epg频道列表切换播放需要弹出密码输入框的业务逻辑，业务逻辑是一个责任链模式，频道切换时需要判断Menu Lock、Parental Lock、Pay等提示输入密码 |
 | fragment | 存放Fragment，Fragment应该继承base包下的基类 |
 | receiver | 存放BroadcastReceiver |
 | service | 存放Service，Service应该继承base包下的BaseService兼容Android版本 |
@@ -37,6 +36,7 @@
 | ThreadPoolManager | 线程池管理类，线程池运行的Runnable线程应该使用弱引用工具包中的WeakRunnable，防止内存泄漏 |
 | UsbManager | 监听Usb插拔管理类 |
 | WeakToolManager | 弱引用管理工具类，使用weaktool包下的工具类前，为了能得到WeakToolManager类的管理，类应该实现weakTool包下的WeakToolInterface，在类销毁前使用WeakToolManager.removeWeakTool()移除弱引用工具类，防止内存泄漏 |
+| RealTimeManager | 获取实时时间管理工具类，通过注册hidl发送的消息获取实时时间 |
 
 # iTV引用jar包
 

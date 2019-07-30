@@ -129,18 +129,14 @@ public class ScanTVandRadioActivity extends BaseActivity {
             searchProgram(getSatelliteIndex());
         }
 
-        if (isFromTpListingActivity()) {
-            int freq = getIntent().getIntExtra(Constants.IntentKey.INTENT_FREQ, -1);
-            int mTpIndex = getIntent().getIntExtra(Constants.IntentKey.INTENT_TP_INDEX, -1);
-            int Symbol = getIntent().getIntExtra(Constants.IntentKey.INTENT_SYMBOL, -1);
-            int Qam = getIntent().getIntExtra(Constants.IntentKey.INTENT_QAM, -1);
+        if (isFromTpListingActivity() || isFromEditManualActivity()) {
+            int freq = getFreq();
+            int satIndex = getSatelliteIndex();
+            int Symbol = getSymbol();
+            int Qam = getQam();
 
-            tv_satellite_name.setText(SWPDBaseManager.getInstance().getSatInfo(mTpIndex).sat_name);
-            SWPSearchManager.getInstance().searchByOneTS(mTpIndex, freq, Symbol, Qam);
-
-        } else if (isFromEditManualActivity()) {
-            tv_satellite_name.setText(SWPDBaseManager.getInstance().getSatInfo(getSatelliteIndex()).sat_name);
-            SWPSearchManager.getInstance().searchByNet(getSatelliteIndex());
+            tv_satellite_name.setText(SWPDBaseManager.getInstance().getSatInfo(satIndex).sat_name);
+            SWPSearchManager.getInstance().searchByOneTS(satIndex, freq, Symbol, Qam);
         } else if (isFromT2ManualSearchActivity()) {
             //T2手动搜台操作
             tv_satellite_name.setText(R.string.installation_t2);
@@ -163,8 +159,20 @@ public class ScanTVandRadioActivity extends BaseActivity {
         return getIntent().getIntExtra(Constants.IntentKey.INTENT_EDIT_MANUAL_ACTIVITY, -1) == 4;
     }
 
+    private int getFreq() {
+        return getIntent().getIntExtra(Constants.IntentKey.INTENT_FREQ, -1);
+    }
+
     private int getSatelliteIndex() {
         return getIntent().getIntExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, -1);
+    }
+
+    private int getSymbol() {
+        return getIntent().getIntExtra(Constants.IntentKey.INTENT_SYMBOL, -1);
+    }
+
+    private int getQam() {
+        return getIntent().getIntExtra(Constants.IntentKey.INTENT_QAM, -1);
     }
 
     private void initCheckSignal() {

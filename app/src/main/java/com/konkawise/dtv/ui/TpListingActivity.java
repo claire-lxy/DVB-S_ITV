@@ -2,6 +2,7 @@ package com.konkawise.dtv.ui;
 
 import android.content.Intent;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ListView;
@@ -231,7 +232,7 @@ public class TpListingActivity extends BaseActivity {
                     public void onClick(View v) {
                         Intent intent = new Intent(TpListingActivity.this, ScanTVandRadioActivity.class);
                         intent.putExtra(Constants.IntentKey.INTENT_FREQ, getFreq());
-                        intent.putExtra(Constants.IntentKey.INTENT_TP_INDEX, getIndex());
+                        intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, getIndex());
                         intent.putExtra(Constants.IntentKey.INTENT_SYMBOL, getSymbol());
                         intent.putExtra(Constants.IntentKey.INTENT_QAM, getQam());
                         intent.putExtra(Constants.IntentKey.INTENT_TP_NAME, getTpName());

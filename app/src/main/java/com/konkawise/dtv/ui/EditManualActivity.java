@@ -377,11 +377,18 @@ public class EditManualActivity extends BaseActivity {
                 .setOnScanSearchListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Intent intent = new Intent(EditManualActivity.this, ScanTVandRadioActivity.class);
-                        intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mCurrentSatellite);
-                        intent.putExtra(Constants.IntentKey.INTENT_EDIT_MANUAL_ACTIVITY, 3);
-                        startActivity(intent);
-                        finish();
+                        List<ChannelNew_t> tpList = getTpList();
+                        if (tpList != null && !tpList.isEmpty()) {
+                            Intent intent = new Intent(EditManualActivity.this, ScanTVandRadioActivity.class);
+                            ChannelNew_t channel = getTpList().get(mCurrentTp);
+                            intent.putExtra(Constants.IntentKey.INTENT_FREQ, channel.Freq);
+                            intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mCurrentSatellite);
+                            intent.putExtra(Constants.IntentKey.INTENT_SYMBOL, channel.Symbol);
+                            intent.putExtra(Constants.IntentKey.INTENT_QAM, channel.Qam);
+                            intent.putExtra(Constants.IntentKey.INTENT_EDIT_MANUAL_ACTIVITY, 3);
+                            startActivity(intent);
+                            finish();
+                        }
                     }
                 }).show(getSupportFragmentManager(), ScanDialog.TAG);
     }

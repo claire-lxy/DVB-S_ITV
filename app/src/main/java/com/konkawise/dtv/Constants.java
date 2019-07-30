@@ -59,7 +59,6 @@ public class Constants {
         String INTENT_LNB = "lnb";
         String INTENT_DISEQC = "diseqc";
         String INTENT_FREQ = "freq";
-        String INTENT_TP_INDEX = "tpIndex";
         String INTENT_SYMBOL = "symbol";
         String INTENT_QAM = "qam";
         String INTENT_TPLIST_ACTIVITY = "tpListActivity";
