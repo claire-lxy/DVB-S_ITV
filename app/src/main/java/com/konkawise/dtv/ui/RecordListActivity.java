@@ -8,6 +8,7 @@ import android.widget.ListView;
 
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;
+import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.UsbManager;
 import com.konkawise.dtv.adapter.DeviceGroupAdapter;
 import com.konkawise.dtv.adapter.RecordListAdapter;
@@ -17,6 +18,7 @@ import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.PasswordDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
+import com.konkawise.dtv.weaktool.WeakRunnable;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -42,7 +44,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     void onDeviceItemSelect(int position) {
         Log.i(TAG, "refresh record data--");
         mCurrRecordPosition = 0;
-        updateRecordGroup(queryRecordFiles(""), mCurrRecordPosition, false);
+        updateRecordGroupData(mCurrRecordPosition, false);
         mCurrDevicePostion = position;
     }
 
@@ -80,6 +82,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     private Set<UsbInfo> mUsbInfos = new LinkedHashSet<>();
     private DeviceGroupAdapter deviceGroupAdapter;
     private RecordListAdapter mAdapter;
+    private LoadRecordListRunnable loadRecordListRunnable;
 
     @Override
     protected int getLayoutId() {
@@ -109,8 +112,14 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         deviceGroupAdapter.setDarked(darked);
         deviceGroupAdapter.updateData(transUsbInfoToString(tUsbInfos));
         if (deviceGroupAdapter.getData().size() > 0) {
-            updateRecordGroup(queryRecordFiles(""), mCurrRecordPosition, false);
-            mCurrDevicePostion = selectPosition;
+            if (selectPosition >= tUsbInfos.size())
+                selectPosition = 0;
+            if (mCurrDevicePostion == selectPosition) {
+                updateRecordGroupData(mCurrRecordPosition, false);
+            } else {
+                mDeviceListView.setSelection(selectPosition);
+                mCurrDevicePostion = selectPosition;
+            }
         } else {
             mAdapter.clearSelect();
             mAdapter.clearData();
@@ -125,18 +134,48 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         deviceGroupAdapter.notifyDataSetChanged();
     }
 
-    private void updateRecordGroup(List<PDPMInfo_t> ltRecordFiles, int selectPosition, boolean darked) {
-        mAdapter.setSelectPosition(selectPosition);
-        mAdapter.setDarked(darked);
-        mAdapter.updateData(ltRecordFiles);
-        if (selectPosition < mAdapter.getData().size())
-            mListView.setSelection(selectPosition);
+    private void updateRecordGroupData(int selectPosition, boolean darked) {
+        if (loadRecordListRunnable == null) {
+            loadRecordListRunnable = new LoadRecordListRunnable(this);
+        }
+        loadRecordListRunnable.selectPositon = selectPosition;
+        loadRecordListRunnable.darked = darked;
+        ThreadPoolManager.getInstance().remove(loadRecordListRunnable);
+        ThreadPoolManager.getInstance().execute(loadRecordListRunnable);
     }
 
     private void updateRecordGroup(int selectPosition, boolean darked) {
         mAdapter.setDarked(darked);
         mAdapter.setSelectPosition(selectPosition);
         mAdapter.notifyDataSetChanged();
+    }
+
+    private static class LoadRecordListRunnable extends WeakRunnable<RecordListActivity> {
+        int selectPositon;
+        boolean darked;
+
+        public LoadRecordListRunnable(RecordListActivity view) {
+            super(view);
+        }
+
+        @Override
+        protected void loadBackground() {
+            RecordListActivity context = mWeakReference.get();
+            List<PDPMInfo_t> ltRecordFiles = context.queryRecordFiles("");
+            context.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (selectPositon >= ltRecordFiles.size())
+                        selectPositon = 0;
+                    context.mCurrRecordPosition = selectPositon;
+                    context.mAdapter.setDarked(darked);
+                    context.mAdapter.setSelectPosition(selectPositon);
+                    context.mAdapter.updateData(ltRecordFiles);
+                    context.mListView.setSelection(selectPositon);
+
+                }
+            });
+        }
     }
 
     private List<String> transUsbInfoToString(Set<UsbInfo> tUsbInfos) {

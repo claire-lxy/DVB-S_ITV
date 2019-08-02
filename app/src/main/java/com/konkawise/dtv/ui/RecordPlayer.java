@@ -19,8 +19,10 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.konkawise.dtv.HandlerMsgManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.base.BaseActivity;
+import com.konkawise.dtv.bean.HandlerMsgModel;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.SeekTimeDialog;
@@ -42,6 +44,10 @@ public class RecordPlayer extends BaseActivity {
 
     public static final int FROM_TOPMOST = 0;
     public static final int FROM_RECORD_LIST = 1;
+
+    private static final int SEEK_TYPE_LEFT = -1;
+    private static final int SEEK_TYPE_NO = 0;
+    private static final int SEEK_TYPE_RIGHT = 1;
 
     //读写权限
     private static String[] PERMISSIONS_STORAGE = {
@@ -81,10 +87,14 @@ public class RecordPlayer extends BaseActivity {
     private int currType;
     private MediaPlayer player;
 
+    private int seekNum = 1;
+    private int seekType = SEEK_TYPE_NO;
+
     private static class PlayHandler extends WeakHandler<RecordPlayer> {
 
         static final int MSG_UPGRADE_PROGRESS = 0;
         static final int MSG_DISMISS_CONTROL_UI = 1;
+        static final int MSG_SEEK = 2;
 
         public PlayHandler(RecordPlayer view) {
             super(view);
@@ -97,12 +107,12 @@ public class RecordPlayer extends BaseActivity {
                 int progress = context.player.getCurrentPosition();
                 Log.i(TAG, "MSG_UPGRADE_PROGRESS:" + progress);
                 context.refreshUI(progress);
-                if (progress < context.player.getDuration())
-                    context.playHandler.sendEmptyMessageDelayed(MSG_UPGRADE_PROGRESS, 1000);
-            }
-            if (msg.what == MSG_DISMISS_CONTROL_UI) {
+                context.sendUpgradePrgressMsg(new HandlerMsgModel(MSG_UPGRADE_PROGRESS, 1000L));
+            } else if (msg.what == MSG_DISMISS_CONTROL_UI) {
                 context.tvProgNum.setVisibility(View.INVISIBLE);
                 context.lyControl.setVisibility(View.INVISIBLE);
+            } else if (msg.what == MSG_SEEK) {
+                context.seek(context.seekNum, context.seekType);
             }
         }
     }
@@ -152,12 +162,11 @@ public class RecordPlayer extends BaseActivity {
     }
 
     private void showControlUI(boolean dismiss) {
-        if (playHandler.hasMessages(PlayHandler.MSG_DISMISS_CONTROL_UI))
-            playHandler.removeMessages(PlayHandler.MSG_DISMISS_CONTROL_UI);
+        removeDissControlUIMsg();
         tvProgNum.setVisibility(View.VISIBLE);
         lyControl.setVisibility(View.VISIBLE);
         if (dismiss)
-            playHandler.sendEmptyMessageDelayed(PlayHandler.MSG_DISMISS_CONTROL_UI, 4000);
+            sendDissControlUIMsg(new HandlerMsgModel(PlayHandler.MSG_DISMISS_CONTROL_UI, 4000L));
     }
 
     private void switchPlayTypeUI(int playType, int seekNum) {
@@ -185,13 +194,13 @@ public class RecordPlayer extends BaseActivity {
             case TYPE_SEEK_BACK:
                 tvSeekNum.setVisibility(View.VISIBLE);
                 ivPlayerHandler.setVisibility(View.VISIBLE);
-                tvSeekNum.setText(MessageFormat.format("*", seekNum));
+                tvSeekNum.setText(MessageFormat.format("*{0}", seekNum));
                 ivPlayerHandler.setImageResource(R.drawable.osd_rewind_hl);
                 break;
             case TYPE_SEEK_FORWARD:
                 tvSeekNum.setVisibility(View.VISIBLE);
                 ivPlayerHandler.setVisibility(View.VISIBLE);
-                tvSeekNum.setText(MessageFormat.format("*", seekNum));
+                tvSeekNum.setText(MessageFormat.format("*{0}", seekNum));
                 ivPlayerHandler.setImageResource(R.drawable.osd_forward_hl);
                 break;
         }
@@ -225,8 +234,9 @@ public class RecordPlayer extends BaseActivity {
             player = null;
         }
         if (playHandler != null) {
-            playHandler.removeMessages(PlayHandler.MSG_UPGRADE_PROGRESS);
-            playHandler.removeMessages(PlayHandler.MSG_DISMISS_CONTROL_UI);
+            removeUpgradeProgressMsg();
+            removeDissControlUIMsg();
+            removeSeekMsg();
         }
     }
 
@@ -249,6 +259,8 @@ public class RecordPlayer extends BaseActivity {
                             .show(getSupportFragmentManager(), SeekTimeDialog.TAG);
                 } else if (currType == TYPE_PAUSE) {
                     resume();
+                } else if (currType == TYPE_SEEK_BACK || currType == TYPE_SEEK_FORWARD) {
+                    seek(seekNum, SEEK_TYPE_NO);
                 }
                 return true;
 
@@ -263,6 +275,16 @@ public class RecordPlayer extends BaseActivity {
                                 finish();
                             }
                         }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
+                return true;
+
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                recordSeekTypeNum(SEEK_TYPE_LEFT);
+                seek(seekNum, seekType);
+                return true;
+
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                recordSeekTypeNum(SEEK_TYPE_RIGHT);
+                seek(seekNum, seekType);
                 return true;
         }
         return super.onKeyDown(keyCode, event);
@@ -281,7 +303,7 @@ public class RecordPlayer extends BaseActivity {
                     Log.i(TAG, "PLAY");
                     showControlUI(true);
                     initUIContent();
-                    playHandler.sendEmptyMessage(PlayHandler.MSG_UPGRADE_PROGRESS);
+                    sendUpgradePrgressMsg(new HandlerMsgModel(PlayHandler.MSG_UPGRADE_PROGRESS));
                     player.start();
                     if (from == FROM_TOPMOST) {
                         new Handler().postDelayed(new Runnable() {
@@ -328,8 +350,56 @@ public class RecordPlayer extends BaseActivity {
         player.pause();
     }
 
+    private void recordSeekTypeNum(int seekType) {
+        if (this.seekType == SEEK_TYPE_NO) {
+            this.seekType = seekType;
+            this.seekNum = 2;
+            return;
+        }
+        if (this.seekType == seekType) {
+            if (this.seekNum == 32) {
+                this.seekType = SEEK_TYPE_NO;
+                this.seekNum = 1;
+                return;
+            }
+            this.seekNum = this.seekNum * 2;
+        } else {
+            this.seekType = SEEK_TYPE_NO;
+            this.seekNum = 1;
+        }
+    }
+
     private void seek(int seekNum, int type) {
-        //TODO
+        Log.i(TAG, "seek");
+        removeSeekMsg();
+        int progress = 0;
+        if (type == SEEK_TYPE_NO) {
+            resume();
+        } else if (type == SEEK_TYPE_LEFT) {
+            progress = player.getCurrentPosition() - seekNum * 1000;
+            if (progress < 0) {
+                seekType = SEEK_TYPE_NO;
+                this.seekNum = 0;
+                player.seekTo(0);
+                resume();
+            }
+            switchPlayTypeUI(TYPE_SEEK_BACK, seekNum);
+            showControlUI(false);
+            player.seekTo(progress);
+            sendSeekMsg(new HandlerMsgModel(PlayHandler.MSG_SEEK, 1000L));
+        } else {
+            progress = player.getCurrentPosition() + seekNum * 1000;
+            if (progress > player.getDuration()) {
+                seekType = SEEK_TYPE_NO;
+                this.seekNum = 0;
+                player.seekTo(player.getDuration());
+                stop();
+            }
+            switchPlayTypeUI(TYPE_SEEK_FORWARD, seekNum);
+            showControlUI(false);
+            player.seekTo(progress);
+            sendSeekMsg(new HandlerMsgModel(PlayHandler.MSG_SEEK, 1000L));
+        }
     }
 
     private void stop() {
@@ -338,6 +408,30 @@ public class RecordPlayer extends BaseActivity {
         showControlUI(false);
 //        if (playHandler.hasMessages(PlayHandler.MSG_UPGRADE_PROGRESS))
 //            playHandler.removeMessages(PlayHandler.MSG_UPGRADE_PROGRESS);
+    }
+
+    private void sendSeekMsg(HandlerMsgModel progMsg) {
+        HandlerMsgManager.getInstance().sendMessage(playHandler, progMsg);
+    }
+
+    private void sendUpgradePrgressMsg(HandlerMsgModel progMsg) {
+        HandlerMsgManager.getInstance().sendMessage(playHandler, progMsg);
+    }
+
+    private void sendDissControlUIMsg(HandlerMsgModel progMsg) {
+        HandlerMsgManager.getInstance().sendMessage(playHandler, progMsg);
+    }
+
+    private void removeSeekMsg() {
+        HandlerMsgManager.getInstance().removeMessage(playHandler, PlayHandler.MSG_SEEK);
+    }
+
+    private void removeUpgradeProgressMsg() {
+        HandlerMsgManager.getInstance().removeMessage(playHandler, PlayHandler.MSG_UPGRADE_PROGRESS);
+    }
+
+    private void removeDissControlUIMsg() {
+        HandlerMsgManager.getInstance().removeMessage(playHandler, PlayHandler.MSG_DISMISS_CONTROL_UI);
     }
 
     @Override

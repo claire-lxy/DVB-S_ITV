@@ -177,7 +177,7 @@ public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsb
     protected void setup() {
         UsbManager.getInstance().registerUsbReceiveListener(this);
         mUsbInfos.addAll(UsbManager.getInstance().getUsbInfos());
-        Log.i(TAG,"mUsbInfos size:"+mUsbInfos.size());
+        Log.i(TAG, "mUsbInfos size:" + mUsbInfos.size());
         initData();
     }
 
@@ -207,7 +207,7 @@ public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsb
             mTvDeviceFreeSpace.setText(MessageFormat.format(getString(R.string.device_free_space), mUsbInfos.get(devicePosition).availableSize));
             mTvDeviceTotalCapacity.setText(MessageFormat.format(getString(R.string.device_total_capacity), mUsbInfos.get(devicePosition).totalSize));
         } else {
-            if(mItemDeviceFormat.isFocused()) {
+            if (mItemDeviceFormat.isFocused()) {
                 mItemTimeShiftLengthLeft.requestFocus();
                 mCurrSelectItem = ITEM_TIME_SHIFT_LENGTH;
                 itemFocusChange();
@@ -222,8 +222,8 @@ public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsb
     }
 
     private void updateTipsDialog(UsbInfo currUsbInfo, int usbObserveType) {
-        if(mCommTipsDialog!=null && mCommTipsDialog.isVisible() && usbObserveType == Constants.USB_TYPE_DETACH){
-            if(mUsbInfos.get(mDeviceNamePosition).uuid.equals(currUsbInfo.uuid)){
+        if (mCommTipsDialog != null && mCommTipsDialog.isVisible() && usbObserveType == Constants.USB_TYPE_DETACH) {
+            if (mUsbInfos.get(mDeviceNamePosition).uuid.equals(currUsbInfo.uuid)) {
                 mCommTipsDialog.dismiss();
                 mCommTipsDialog = null;
             }
@@ -231,8 +231,8 @@ public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsb
     }
 
     private void updateDialogContent() {
-        if (mCommCheckItemDialog!=null && mCommCheckItemDialog.isVisible()) {
-            if(mCurrSelectItem == ITEM_DEVICE_NAME) {
+        if (mCommCheckItemDialog != null && mCommCheckItemDialog.isVisible()) {
+            if (mCurrSelectItem == ITEM_DEVICE_NAME) {
                 if (mUsbInfos.isEmpty()) {
                     mCommCheckItemDialog.dismiss();
                 } else {
@@ -240,7 +240,8 @@ public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsb
                     for (UsbInfo usbInfo : mUsbInfos) {
                         deviceNameList.add(usbInfo.fsLabel);
                     }
-                    mCommCheckItemDialog.updateContent(deviceNameList);
+                    mCommCheckItemDialog.position(0)
+                            .updateContent(deviceNameList);
                 }
             }
         }
@@ -351,10 +352,10 @@ public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsb
                     break;
 
                 case ITEM_DEVICE_NAME:
-                    if(mUsbInfos==null || mUsbInfos.size()==0)
+                    if (mUsbInfos == null || mUsbInfos.size() == 0)
                         return super.onKeyDown(keyCode, event);
-                    if(--mDeviceNamePosition < 0)
-                        mDeviceNamePosition = mUsbInfos.size()-1;
+                    if (--mDeviceNamePosition < 0)
+                        mDeviceNamePosition = mUsbInfos.size() - 1;
                     updateDeviceInfo(mDeviceNamePosition);
                     break;
 
@@ -386,9 +387,9 @@ public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsb
                     break;
 
                 case ITEM_DEVICE_NAME:
-                    if(mUsbInfos==null || mUsbInfos.size()==0)
+                    if (mUsbInfos == null || mUsbInfos.size() == 0)
                         return super.onKeyDown(keyCode, event);
-                    if(++mDeviceNamePosition > mUsbInfos.size()-1)
+                    if (++mDeviceNamePosition > mUsbInfos.size() - 1)
                         mDeviceNamePosition = 0;
                     updateDeviceInfo(mDeviceNamePosition);
                     break;
@@ -423,7 +424,7 @@ public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsb
 
     @Override
     public void onUsbReceive(int usbObserveType, Set<UsbInfo> usbInfos, UsbInfo currUsbInfo) {
-        updateTipsDialog(currUsbInfo,usbObserveType);
+        updateTipsDialog(currUsbInfo, usbObserveType);
 
         mUsbInfos.clear();
         if (usbInfos != null && !usbInfos.isEmpty()) {
