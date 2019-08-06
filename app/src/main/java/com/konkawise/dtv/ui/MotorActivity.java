@@ -4,7 +4,6 @@ import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -39,7 +38,6 @@ import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 import static java.lang.Math.abs;
 import static java.lang.Math.acos;
 import static java.lang.Math.cos;
-import static java.lang.Math.decrementExact;
 import static java.lang.Math.sqrt;
 
 
