@@ -5,7 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.sw.dvblib.SWDVB;
+import com.konkawise.dtv.SWDVBManager;
+import com.konkawise.dtv.event.BookRegisterListenerEvent;
+
+import org.greenrobot.eventbus.EventBus;
 
 public class HomeReceiver extends BroadcastReceiver {
     private static final String TAG = "HomeReceiver";
@@ -13,14 +16,17 @@ public class HomeReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.i(TAG, "receive home");
-        if (mOnReceiveHomeHandleListener != null) {
-            boolean handleCallback = mOnReceiveHomeHandleListener.onHomeHandleCallback();
-            if (handleCallback) {
-                SWDVB.Destory();
+        if (Intent.ACTION_CLOSE_SYSTEM_DIALOGS.equals(intent.getAction())) {
+            Log.i(TAG, "receive home");
+            EventBus.getDefault().post(new BookRegisterListenerEvent(true));
+            if (mOnReceiveHomeHandleListener != null) {
+                boolean handleCallback = mOnReceiveHomeHandleListener.onHomeHandleCallback();
+                if (handleCallback) {
+                    SWDVBManager.getInstance().releaseResource();
+                }
+            } else {
+                SWDVBManager.getInstance().releaseResource();
             }
-        } else {
-            SWDVB.Destory();
         }
     }
 

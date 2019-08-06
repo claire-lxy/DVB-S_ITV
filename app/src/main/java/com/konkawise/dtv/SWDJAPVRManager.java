@@ -21,8 +21,8 @@ public class SWDJAPVRManager {
         return SWDJAPVRManagerHolder.INSTANCE;
     }
 
-    public int startRecord() {
-        return DJAPVR.CreateInstance().startRecord();
+    public int startRecord(int delay) {
+        return DJAPVR.CreateInstance().startRecord(delay);
     }
 
     public int stopRecord() {

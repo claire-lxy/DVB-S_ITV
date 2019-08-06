@@ -1,5 +1,6 @@
 package com.konkawise.dtv.utils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.text.TextUtils;
 
@@ -8,6 +9,7 @@ import com.konkawise.dtv.SWTimerManager;
 import com.konkawise.dtv.bean.DateModel;
 
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -22,6 +24,8 @@ public class TimeUtils {
     public static final int HOUR = 3;
     public static final int MINUTE = 4;
 
+    @SuppressLint("SimpleDateFormat")
+    private static final SimpleDateFormat sDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final DecimalFormat sDecimalFormat = new DecimalFormat("00");
 
     /**
@@ -33,7 +37,7 @@ public class TimeUtils {
 
     public static int getYear(String year) {
         if (TextUtils.isEmpty(year)) {
-            SysTime_t sysTime_t = SWTimerManager.getInstance().getSysTime();
+            SysTime_t sysTime_t = SWTimerManager.getInstance().getLocalTime();
             if (sysTime_t != null) {
                 return sysTime_t.Year;
             }
@@ -50,7 +54,7 @@ public class TimeUtils {
 
     public static int getMonth(String month) {
         if (TextUtils.isEmpty(month)) {
-            SysTime_t sysTime_t = SWTimerManager.getInstance().getSysTime();
+            SysTime_t sysTime_t = SWTimerManager.getInstance().getLocalTime();
             if (sysTime_t != null) {
                 return sysTime_t.Month;
             }
@@ -67,7 +71,7 @@ public class TimeUtils {
 
     public static int getDay(String day) {
         if (TextUtils.isEmpty(day)) {
-            SysTime_t sysTime_t = SWTimerManager.getInstance().getSysTime();
+            SysTime_t sysTime_t = SWTimerManager.getInstance().getLocalTime();
             if (sysTime_t != null) {
                 return sysTime_t.Day;
             }
@@ -84,7 +88,7 @@ public class TimeUtils {
 
     public static int getHour(String hour) {
         if (TextUtils.isEmpty(hour)) {
-            SysTime_t sysTime_t = SWTimerManager.getInstance().getSysTime();
+            SysTime_t sysTime_t = SWTimerManager.getInstance().getLocalTime();
             if (sysTime_t != null) {
                 return sysTime_t.Hour;
             }
@@ -101,7 +105,7 @@ public class TimeUtils {
 
     public static int getMinute(String minute) {
         if (TextUtils.isEmpty(minute)) {
-            SysTime_t sysTime_t = SWTimerManager.getInstance().getSysTime();
+            SysTime_t sysTime_t = SWTimerManager.getInstance().getLocalTime();
             if (sysTime_t != null) {
                 return sysTime_t.Minute;
             }
@@ -227,6 +231,10 @@ public class TimeUtils {
      * @return 00:00:00
      */
     public static String getDecimalFormatTime(int seconds) {
+        if (seconds <= 0) {
+            return "00:00:00";
+        }
+
         String hour = sDecimalFormat.format(seconds / 3600);
         String minute = sDecimalFormat.format(seconds % 3600 / 60);
         String second = sDecimalFormat.format(seconds % 60);

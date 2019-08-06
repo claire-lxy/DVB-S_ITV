@@ -55,8 +55,9 @@ import com.konkawise.dtv.dialog.SearchProgramDialog;
 import com.konkawise.dtv.dialog.SubtitleDialog;
 import com.konkawise.dtv.dialog.TeletextDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
-import com.konkawise.dtv.receiver.VolumeChangeObserver;
+import com.konkawise.dtv.event.RecordStateChangeEvent;
 import com.konkawise.dtv.service.BookService;
+import com.konkawise.dtv.service.PowerService;
 import com.konkawise.dtv.utils.TimeUtils;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.utils.Utils;
@@ -88,7 +89,7 @@ import vendor.konka.hardware.dtvmanager.V1_0.HTeletext_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 
-public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolumeChangeListener {
+public class Topmost extends BaseActivity {
     private static final String TAG = "Topmost";
     private static final long SMALL_HINT_BOX_PERIOD = 1000;
     private static final long RECORDING_DELAY = 1000;
@@ -330,8 +331,6 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     private boolean mMenuShow;
     private boolean mPasswordEntered;
 
-    private VolumeChangeObserver mVolumeChangeObserver;
-
     private TvListAdapter mProgListAdapter;
     private int mCurrSelectProgPosition;
     private int mCurrSatPosition;
@@ -345,7 +344,33 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     private LoadProgRunnable mLoadProgRunnable;
     private LoadSatRunnable mLoadSatRunnable;
 
+    private WaitingStartRecordRunnable mWaitingStartRecordRunnable;
+
     private AVMsgCB mAvMsgCB = new PlayMsgCB();
+    private boolean mUsbAttach;
+
+    private class PlayMsgCB extends AVMsgCB {
+        @Override
+        public int ProgPlay_SWAV_ISLOCKED(int type, int progno, int progindex, int home) {
+            showPasswordDialog();
+            return super.ProgPlay_SWAV_ISLOCKED(type, progno, progindex, home);
+        }
+
+        @Override
+        public int ProgPlay_SWAV_USBAttach() {
+            Log.i(TAG, "usb attach");
+            mUsbAttach = true;
+            return super.ProgPlay_SWAV_USBAttach();
+        }
+
+        @Override
+        public int ProgPlay_SWAV_USBDetach() {
+            Log.i(TAG, "usb detach");
+            mUsbAttach = false;
+            stopRecord();
+            return super.ProgPlay_SWAV_USBDetach();
+        }
+    }
 
     private static class PlayHandler extends WeakHandler<Topmost> {
         static final int MSG_PLAY_PROG = 0;
@@ -424,11 +449,9 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     protected void setup() {
         SWDVB.GetInstance(); // 必须先初始化库，否则使用库会出现空指针异常
         mSmallHintBox = new SmallHintBox(this);
-        BookService.bootService(new Intent(this, BookService.class));
-        EventBus.getDefault().register(this);
-        RealTimeManager.getInstance().start();
 
-        initVolumeObserver();
+        bootService();
+        registerListener();
         initHandler();
         initSatList();
         initProgList();
@@ -440,13 +463,15 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     @Override
     protected void onResume() {
         super.onResume();
+        RealTimeManager.getInstance().start();
         SWDVBManager.getInstance().regMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, Looper.getMainLooper(), mAvMsgCB);
         showSurface();
         updatePfBarInfo();
 //        startSmallHintBoxTimer();
         restoreMenuItem(); // 恢复menu初始item显示
 
-        if (SWPDBaseManager.getInstance().getCurrProgInfo() == null) {
+        if (PreferenceManager.getInstance().getBoolean(Constants.PrefsKey.FIRST_LAUNCH)
+                && SWPDBaseManager.getInstance().getCurrProgInfo() == null) {
             showSearchChannelDialog();
         }
     }
@@ -456,11 +481,9 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         super.onPause();
         SWDVBManager.getInstance().unRegMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, mAvMsgCB);
         cancelSmallHintBoxTimer();
-        setRecordFlagStop();
-        cancelRecordingTimer();
+        stopRecord();
         if (isFinishing()) {
-            RealTimeManager.getInstance().stop();
-            SWDVB.Destory();
+            SWDVBManager.getInstance().releaseResource();
         }
     }
 
@@ -482,8 +505,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         cancelSmallHintBoxTimer();
         dismissPfBarScanDialog();
         dismissPasswordDialog();
-        mVolumeChangeObserver.unregisterVolumeReceiver();
-        EventBus.getDefault().unregister(this);
+        unregisterListener();
     }
 
     @Override
@@ -507,23 +529,76 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                 return true;
             }
         } else if (bookType == BookService.ACTION_BOOKING_RECORD) {
-            if (!UsbManager.getInstance().isUsbExist()) {
+            if (!isUsbExit()) {
                 ToastUtils.showToast(R.string.toast_no_storage_device);
                 return false;
             }
 
             if (progType != -1 && progNum != -1 && recordSeconds != -1) {
-                SWPDBaseManager.getInstance().setCurrProgType(progType, 0);
-                playProg(progNum, true);
-                startRecordingTimer(recordSeconds);
-                SWBookingManager.getInstance().setRecording(true);
-                SWDJAPVRManager.getInstance().startRecord();
-
-                sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
+                startRecord(new OnStartRecordCallback() {
+                    @Override
+                    public void startRecordCallback(int recordFlag) {
+                        if (recordFlag == 0) {
+                            SWPDBaseManager.getInstance().setCurrProgType(progType, 0);
+                            playProg(progNum, true);
+                            startRecordingTimer(recordSeconds);
+                            SWBookingManager.getInstance().setRecording(true);
+                            sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
+                            ToastUtils.showToast(R.string.toast_start_record);
+                        } else {
+                            ToastUtils.showToast(R.string.toast_start_record_failed);
+                        }
+                    }
+                });
                 return true;
             }
         }
         return false;
+    }
+
+    private void startRecord(OnStartRecordCallback callback) {
+        if (mWaitingStartRecordRunnable == null) {
+            mWaitingStartRecordRunnable = new WaitingStartRecordRunnable(this, callback);
+        } else {
+            ThreadPoolManager.getInstance().remove(mWaitingStartRecordRunnable);
+        }
+        ThreadPoolManager.getInstance().execute(mWaitingStartRecordRunnable);
+    }
+
+    private static class WaitingStartRecordRunnable extends WeakRunnable<Topmost> {
+        private OnStartRecordCallback callback;
+
+        WaitingStartRecordRunnable(Topmost view, OnStartRecordCallback callback) {
+            super(view);
+            this.callback = callback;
+        }
+
+        @Override
+        protected void loadBackground() {
+            int recordDelay = 0;
+            int result;
+            while (true) {
+                result = SWDJAPVRManager.getInstance().startRecord(recordDelay);
+                if (result != -4) break;
+
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                recordDelay++;
+            }
+
+            final int startRecordResult = result;
+            mWeakReference.get().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (callback != null) {
+                        callback.startRecordCallback(startRecordResult);
+                    }
+                }
+            });
+        }
     }
 
     private void startRecordingTimer(int recordSeconds) {
@@ -598,11 +673,13 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
 
         @Override
         protected void runTimer() {
-            final boolean hasSignal = hasSignal();
+            Topmost context = mWeakReference.get();
+
+//            final boolean hasSignal = hasSignal();
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    mSmallHintBox.hintBox(SmallHintBox.CHECK_TYPE_SIGNAL, hasSignal);
+//                    mSmallHintBox.hintBox(SmallHintBox.CHECK_TYPE_SIGNAL, hasSignal);
                 }
             });
         }
@@ -614,10 +691,17 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         }
     }
 
-    private void initVolumeObserver() {
-        mVolumeChangeObserver = new VolumeChangeObserver(this);
-        mVolumeChangeObserver.registerVolumeReceiver();
-        mVolumeChangeObserver.setOnVolumeChangeListener(this);
+    private void bootService() {
+        BookService.bootService(new Intent(this, BookService.class));
+        PowerService.bootService(new Intent(this, PowerService.class));
+    }
+
+    private void registerListener() {
+        EventBus.getDefault().register(this);
+    }
+
+    private void unregisterListener() {
+        EventBus.getDefault().unregister(this);
     }
 
     private void initHandler() {
@@ -795,7 +879,30 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     }
 
     private void initSurfaceView() {
-        mSurfaceView.getHolder().addCallback(new SurfaceCallback());
+        mSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) {
+                Log.i(TAG, "topmost surface create");
+                UIApiManager.getInstance().setSurface(holder.getSurface());
+                UIApiManager.getInstance().setWindowSize(0, 0,
+                        getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
+                if (!handleBook()) {
+                    if (SWPDBaseManager.getInstance().getCurrProgInfo() != null && PreferenceManager.getInstance().getBoolean(Constants.PrefsKey.FIRST_LAUNCH))
+                        playProg(getCurrentProgNum(), true);
+                }
+            }
+
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+            }
+
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {
+                Log.i(TAG, "topmost surface destroy");
+                UIApiManager.getInstance().stopPlay(0);
+            }
+        });
     }
 
     private void showSurface() {
@@ -807,34 +914,6 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     private void hideSurface() {
         if (mSurfaceView.getVisibility() != View.GONE) {
             mSurfaceView.setVisibility(View.GONE);
-        }
-    }
-
-    private class SurfaceCallback implements SurfaceHolder.Callback {
-
-        @Override
-        public void surfaceCreated(SurfaceHolder holder) {
-            Log.i(TAG, "topmost surface create");
-            UIApiManager.getInstance().setSurface(holder.getSurface());
-            UIApiManager.getInstance().setWindowSize(0, 0,
-                    getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
-            if (!handleBook()) {
-                if (SWPDBaseManager.getInstance().getCurrProgInfo() != null)
-                    playProg(getCurrentProgNum(), true);
-            }
-        }
-
-        @Override
-        public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
-        }
-
-        @Override
-        public void surfaceDestroyed(SurfaceHolder holder) {
-            Log.i(TAG, "topmost surface destroy");
-            if (!isFinishing()) {
-                UIApiManager.getInstance().stopPlay(0);
-            }
         }
     }
 
@@ -1273,7 +1352,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
                 .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
                     @Override
                     public void onPositiveListener() {
-                        UIApiManager.getInstance().stopPlay(0);
+                        hideSurface();
                         finish();
                     }
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
@@ -1363,19 +1442,20 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
 
                 if (SWPDBaseManager.getInstance().getCurrProgInfo() == null) {
                     showSearchChannelDialog();
+                } else {
+                    playProg();
                 }
             }
         }).setOnKeyListener(new InitPasswordDialog.OnKeyListener() {
-                    @Override
-                    public boolean onKeyListener(InitPasswordDialog dialog, int keyCode, KeyEvent event) {
-                        if(keyCode == KeyEvent.KEYCODE_BACK) {
-                            dismissSettingPasswordDialog();
-                            UIApiManager.getInstance().stopPlay(0);
-                            finish();
-                            return true;
-                        }
-                        return false;
-                    }
+            @Override
+            public boolean onKeyListener(InitPasswordDialog dialog, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_BACK) {
+                    dismissSettingPasswordDialog();
+                    showExitDialog();
+                    return true;
+                }
+                return false;
+            }
         });
         mSettingPasswordDialog.show(getSupportFragmentManager(), Constants.PrefsKey.FIRST_LAUNCH);
     }
@@ -1394,12 +1474,15 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
     }
 
     private void stopRecord() {
-        SWDJAPVRManager.getInstance().stopRecord();
+        if (isRecording()) {
+            SWDJAPVRManager.getInstance().stopRecord();
 
-        cancelRecordingTimer();
-        setRecordFlagStop();
-        mRecordingLayout.setVisibility(View.GONE);
-        ToastUtils.showToast(R.string.toast_stop_record);
+            cancelRecordingTimer();
+            setRecordFlagStop();
+            mRecordingLayout.setVisibility(View.GONE);
+            mTvRecordingTime.setText(TimeUtils.getDecimalFormatTime(0));
+            ToastUtils.showToast(R.string.toast_stop_record);
+        }
     }
 
     private boolean isPfBarShowing() {
@@ -1556,7 +1639,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
 
         // PAUSE
         if (keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) {
-            if (!UsbManager.getInstance().isUsbExist()) {
+            if (!isUsbExit()) {
                 ToastUtils.showToast(R.string.toast_no_storage_device);
                 return true;
             }
@@ -1568,14 +1651,14 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         }
 
         // STOP
-        if (keyCode == KeyEvent.KEYCODE_MEDIA_STOP && SWDJAPVRManager.getInstance().isRecording()) {
+        if (keyCode == KeyEvent.KEYCODE_MEDIA_STOP) {
             stopRecord();
             return true;
         }
 
         // SHIFT
         if (keyCode == KeyEvent.KEYCODE_SHIFT_RIGHT) {
-            if (!UsbManager.getInstance().isUsbExist()) {
+            if (!isUsbExit()) {
                 ToastUtils.showToast(R.string.toast_no_storage_device);
                 return true;
             }
@@ -1608,7 +1691,7 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
 
         // RECORD
         if (keyCode == KeyEvent.KEYCODE_MEDIA_RECORD) {
-            if (!UsbManager.getInstance().isUsbExist()) {
+            if (!isUsbExit()) {
                 ToastUtils.showToast(R.string.toast_no_storage_device);
                 return true;
             }
@@ -1616,17 +1699,28 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
             if (SWBookingManager.getInstance().isRecording()) {
                 showQuitRecordDialog(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_UNKNOWN));
             } else {
-                SWDJAPVRManager.getInstance().setRecording(true);
-                SWDJAPVRManager.getInstance().startRecord();
-                startRecordingTimer(-1);
+                if (mProgListAdapter.getCount() > 0) {
+                    startRecord(new OnStartRecordCallback() {
+                        @Override
+                        public void startRecordCallback(int recordFlag) {
+                            if (recordFlag == 0) {
+                                SWDJAPVRManager.getInstance().setRecording(true);
+                                startRecordingTimer(60); // test 60 seconds
+                                sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
+                                ToastUtils.showToast(R.string.toast_start_record);
+                            } else {
+                                ToastUtils.showToast(R.string.toast_start_record_failed);
+                            }
+                        }
+                    });
+                }
             }
-            sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
             return true;
         }
 
         // TV/RADIO
         if (keyCode == KeyEvent.KEYCODE_TV_RADIO_SERVICE) {
-            if (isRecording()) stopRecord();
+            stopRecord();
             SWPDBaseManager.getInstance().setCurrProgType(SWPDBaseManager.getInstance().getCurrProgType() == 1 ? 0 : 1, 0);
             updateProgList();
             playProg();
@@ -1926,15 +2020,18 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
 
     @Override
     public boolean onHomeHandleCallback() {
-        if (isRecording()) {
-            stopRecord();
-            return true;
-        }
+        stopRecord();
+        // 按下home时，iTV需要提前释放surface，SurfaceView隐藏时会主动回调onSurfaceDestroy更快销毁surface，让launcher能及时拿到surface显示出画面
+        hideSurface();
         return super.onHomeHandleCallback();
     }
 
     private boolean isRecording() {
         return SWBookingManager.getInstance().isRecording() || SWDJAPVRManager.getInstance().isRecording();
+    }
+
+    private boolean isUsbExit() {
+        return UsbManager.getInstance().isUsbExist() || mUsbAttach;
     }
 
     @Override
@@ -1944,13 +2041,6 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
             return true;
         }
         return super.onKeyLongPress(keyCode, event);
-    }
-
-    @Override
-    public void onVolumeChange(int volume) {
-        if (isPfBarShowing()) {
-            mPfBarScanDialog.updateVolume(volume);
-        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -1963,18 +2053,15 @@ public class Topmost extends BaseActivity implements VolumeChangeObserver.OnVolu
         }
     }
 
-    private class PlayMsgCB extends AVMsgCB {
-        @Override
-        public int ProgPlay_SWAV_ISLOCKED(int type, int progno, int progindex, int home) {
-            Log.i(TAG, "ProgPlay_SWAV_ISLOCKED---type:" + type + " progno:" + progno + " progindex:" + progindex + " home:" + home);
-            showPasswordDialog();
-            return super.ProgPlay_SWAV_ISLOCKED(type, progno, progindex, home);
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onRecordStateChange(RecordStateChangeEvent event) {
+        if (!event.isRecording) {
+            Log.i(TAG, "book stop current record");
+            stopRecord();
         }
+    }
 
-        @Override
-        public int ProgPlay_SWAV_ISLOCKTIME(int type, int progno, int progindex) {
-            Log.i(TAG, "ProgPlay_SWAV_ISLOCKTIME---type:" + type + " progno:" + progno + " progindex:" + progindex);
-            return super.ProgPlay_SWAV_ISLOCKTIME(type, progno, progindex);
-        }
+    public interface OnStartRecordCallback {
+        void startRecordCallback(int recordFlag);
     }
 }

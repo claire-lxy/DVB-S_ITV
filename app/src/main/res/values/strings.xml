@@ -371,6 +371,7 @@
     <string name="toast_stop_record">Record End!</string>
     <string name="toast_no_storage_device">No Storage Device!</string>
     <string name="toast_program_playing">Program is playing!</string>
+    <string name="toast_start_record_failed">Start record failed!</string>
 
     <string name="dialog_try_auto_diseqc">Scanning DiSEqC Port Index {0}.Try [{1}/{2}] times...</string>
     <string name="dialog_auto_diseqc_title">Information</string>

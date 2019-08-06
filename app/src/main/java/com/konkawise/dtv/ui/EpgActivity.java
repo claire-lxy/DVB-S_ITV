@@ -68,7 +68,7 @@ import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
 
-public class EpgActivity extends BaseActivity implements RealTimeManager.OnReceiveTimeListener{
+public class EpgActivity extends BaseActivity implements RealTimeManager.OnReceiveTimeListener {
     private static final String TAG = "EpgActivity";
     private static final long RELOAD_CHANNEL_PERIOD = 60 * 1000;
     private static final long RELOAD_CHANNEL_DELAY = 5 * 1000;
@@ -239,7 +239,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
             if (null == pdpm) return;
             SWEpgManager.getInstance().sentDataReq(pdpm.Sat, pdpm.TsID, pdpm.ServID);
 
-            context.notifyProgChange(new HandlerMsgModel(EpgMsgHandler.MSG_PROG_CHANGE_LOAD, context.mCurrentFocusDateIndex, RELOAD_CHANNEL_DELAY), true);
+            context.notifyProgChange(new HandlerMsgModel(EpgMsgHandler.MSG_PROG_CHANGE_LOAD, context.mCurrentFocusDateIndex, RELOAD_CHANNEL_DELAY));
             context.notifyUpdateDate();
 
             context.runOnUiThread(new Runnable() {
@@ -261,14 +261,12 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     protected void setup() {
         SWPDBaseManager.getInstance().setCurrProgType(0, 0);
         mEpgMsgHandler = new EpgMsgHandler(this);
-        mLoadEpgChannelRunnable = new LoadEpgChannelRunnable(this, R.id.btn_date_0);
         EventBus.getDefault().register(this);
-        RealTimeManager.getInstance().register(this);
 
         initUpdateEpgChannelTimer();
         initCurrentDate();
         initEpgChannelDate();
-        initEpgList();
+        initProgList();
         initEpgChannelList();
         initSurfaceView();
     }
@@ -276,14 +274,23 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     @Override
     protected void onResume() {
         super.onResume();
+        showSurface();
+        RealTimeManager.getInstance().register(this);
         SWDVBManager.getInstance().regMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, Looper.getMainLooper(), mPlayMsgCB);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        RealTimeManager.getInstance().unregister(this);
         SWDVBManager.getInstance().unRegMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, mPlayMsgCB);
         UIApiManager.getInstance().stopPlay(0); // 跳转或销毁界面要停止播放
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        hideSurface();
     }
 
     @Override
@@ -291,7 +298,6 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
         dismissPasswordDialog();
         cancelUpdateEpgChannelTimer();
         EventBus.getDefault().unregister(this);
-        RealTimeManager.getInstance().unregister(this);
         super.onDestroy();
     }
 
@@ -309,7 +315,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     }
 
     private void initCurrentDate() {
-        SysTime_t sysTime = SWTimerManager.getInstance().getSysTime();
+        SysTime_t sysTime = SWTimerManager.getInstance().getLocalTime();
         if (sysTime != null) {
             String date = sysTime.Year + "-" + sysTime.Month + "-" + sysTime.Day;
             mTvCurrentDate.setText(date);
@@ -317,7 +323,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     }
 
     private void updateCurrentDate() {
-        SysTime_t sysTime = SWTimerManager.getInstance().getSysTime();
+        SysTime_t sysTime = SWTimerManager.getInstance().getLocalTime();
         if (sysTime != null) {
             int maxDayOfMonth = TimeUtils.getDayOfMonthByYearAndMonth(sysTime.Year, sysTime.Month);
             int year = sysTime.Year;
@@ -337,7 +343,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     }
 
     private void initEpgChannelDate() {
-        SysTime_t sysTime = SWTimerManager.getInstance().getSysTime();
+        SysTime_t sysTime = SWTimerManager.getInstance().getLocalTime();
         mDates = new Button[mDateIds.length];
         for (int i = 0; i < mDateIds.length; i++) {
             mDates[i] = findViewById(mDateIds[i]);
@@ -358,7 +364,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
         updateDateFocus();
     }
 
-    private void initEpgList() {
+    private void initProgList() {
         mProgAdapter = new EpgProgListAdapter(this, new ArrayList<>());
         mLvProgList.setAdapter(mProgAdapter);
         mLvProgList.setOnKeyListener(new View.OnKeyListener() {
@@ -399,6 +405,10 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
             mEpgChannelAdapter = new EpgChannelListAdapter(this, new ArrayList<>());
             mLvEpgChannel.setAdapter(mEpgChannelAdapter);
         }
+
+        // 进行一次Epg Channel加载
+        mLoadEpgChannelRunnable = new LoadEpgChannelRunnable(this, 0);
+        updateEpgChannel(0);
 
         mLvEpgChannel.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -446,6 +456,18 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
                 Log.i(TAG, "epg surface destroy");
             }
         });
+    }
+
+    private void showSurface() {
+        if (mSurfaceView.getVisibility() != View.VISIBLE) {
+            mSurfaceView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void hideSurface() {
+        if (mSurfaceView.getVisibility() != View.GONE) {
+            mSurfaceView.setVisibility(View.GONE);
+        }
     }
 
     /**
@@ -762,14 +784,14 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
             SparseArray<List<EpgEvent_t>> epgChannelMap = context.mEpgChannelCacheMap.get(progNo);
             if (epgChannelMap == null) {
                 epgChannelMap = new SparseArray<>();
-                List<EpgEvent_t> epgChannelList = UIApiManager.getInstance().getCurrProgSchInfo(context.getFocusDateIndex(focusDateIndex));
+                List<EpgEvent_t> epgChannelList = UIApiManager.getInstance().getCurrProgSchInfo(focusDateIndex);
                 if (epgChannelList == null) epgChannelList = new ArrayList<>();
                 epgChannelMap.put(focusDateIndex, epgChannelList);
                 context.mEpgChannelCacheMap.put(progNo, epgChannelMap);
             } else {
                 List<EpgEvent_t> epgChannelList = epgChannelMap.get(focusDateIndex);
                 if (epgChannelList == null) {
-                    epgChannelList = UIApiManager.getInstance().getCurrProgSchInfo(context.getFocusDateIndex(focusDateIndex));
+                    epgChannelList = UIApiManager.getInstance().getCurrProgSchInfo(focusDateIndex);
                     if (epgChannelList == null) epgChannelList = new ArrayList<>();
                     epgChannelMap.put(focusDateIndex, epgChannelList);
                 }
@@ -802,26 +824,6 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
         }
     }
 
-    private int getFocusDateIndex(int id) {
-        switch (id) {
-            case R.id.btn_date_0:
-                return 0;
-            case R.id.btn_date_1:
-                return 1;
-            case R.id.btn_date_2:
-                return 2;
-            case R.id.btn_date_3:
-                return 3;
-            case R.id.btn_date_4:
-                return 4;
-            case R.id.btn_date_5:
-                return 5;
-            case R.id.btn_date_6:
-                return 6;
-        }
-        return 0;
-    }
-
     private void showLoadingEpg() {
         if (mPbLoadingEpg.getVisibility() == View.GONE) {
             mPbLoadingEpg.setVisibility(View.VISIBLE);
@@ -840,13 +842,11 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
      * 发送消息通知切换频道更新Epg Booking列表
      */
     private void notifyProgChange() {
-        notifyProgChange(new HandlerMsgModel(EpgMsgHandler.MSG_PROG_CHANGE_LOAD, R.id.btn_date_0), true);
+        notifyProgChange(new HandlerMsgModel(EpgMsgHandler.MSG_PROG_CHANGE_LOAD, 0));
     }
 
-    private void notifyProgChange(HandlerMsgModel msgModel, boolean isRemoveMsg) {
-        if (isRemoveMsg) {
-            HandlerMsgManager.getInstance().removeMessage(mEpgMsgHandler, EpgMsgHandler.MSG_PROG_CHANGE_LOAD);
-        }
+    private void notifyProgChange(HandlerMsgModel msgModel) {
+        HandlerMsgManager.getInstance().removeMessage(mEpgMsgHandler, EpgMsgHandler.MSG_PROG_CHANGE_LOAD);
         HandlerMsgManager.getInstance().sendMessage(mEpgMsgHandler, msgModel);
     }
 
@@ -901,16 +901,15 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     private class PlayMsgCB extends AVMsgCB {
         @Override
         public int ProgPlay_SWAV_ISLOCKED(int type, int progno, int progindex, int home) {
-            Log.i(TAG, "ProgPlay_SWAV_ISLOCKED---type:" + type + " progno:" + progno + " progindex:" + progindex + " home:" + home);
             showEnterPasswordDialog();
             return super.ProgPlay_SWAV_ISLOCKED(type, progno, progindex, home);
         }
+    }
 
-        @Override
-        public int ProgPlay_SWAV_ISLOCKTIME(int type, int progno, int progindex) {
-            Log.i(TAG, "ProgPlay_SWAV_ISLOCKTIME---type:" + type + " progno:" + progno + " progindex:" + progindex);
-            return super.ProgPlay_SWAV_ISLOCKTIME(type, progno, progindex);
-        }
+    @Override
+    public boolean onHomeHandleCallback() {
+        hideSurface(); // 按下home键提前销毁surface，让launcher拿到surface资源
+        return super.onHomeHandleCallback();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

@@ -22,31 +22,36 @@ public class SWTimerManager {
     }
 
     public boolean isProgramPlaying(EpgEvent_t epgEvent_t) {
+        if (epgEvent_t == null) return false;
+
+        SysTime_t currTime = getLocalTime();
         SysTime_t startTime = getStartTime(epgEvent_t);
         SysTime_t endTime = getEndTime(epgEvent_t);
-        SysTime_t currTime = getSysTime();
-        return new DateModel(startTime, currTime).isBetween(new DateModel(currTime, endTime));
+        if (currTime.Day == startTime.Day) {
+            return new DateModel(startTime, currTime).isBetween(new DateModel(currTime, endTime));
+        }
+        return false;
     }
 
     /**
      * 获取当前时间年月日时分秒数据
      */
-    public SysTime_t getSysTime() {
-        return SWTimer.CreateInstance().getSysTime();
+    public SysTime_t getLocalTime() {
+        return SWTimer.CreateInstance().getLocalTime();
     }
 
     /**
      * 根据EpgEvent获取开始时间
      */
     public SysTime_t getStartTime(EpgEvent_t epgEvent) {
-        return SWTimer.CreateInstance().transUtctimeToSystime(getUtcTime(epgEvent, 0));
+        return mjdToLocal(getUtcTime(epgEvent, 0));
     }
 
     /**
      * 根据EpgEvent获取结束时间
      */
     public SysTime_t getEndTime(EpgEvent_t epgEvent) {
-        return SWTimer.CreateInstance().transUtctimeToSystime(getUtcTime(epgEvent, epgEvent.DurSeconds));
+        return mjdToLocal(getUtcTime(epgEvent, epgEvent.DurSeconds));
     }
 
     private UtcTime_t getUtcTime(EpgEvent_t epgEvent, int seconds) {
@@ -59,7 +64,7 @@ public class SWTimerManager {
     /**
      * UTC转换成年月日时分秒
      */
-    public SysTime_t transUtctimeToSystime(UtcTime_t utcTime) {
-        return SWTimer.CreateInstance().transUtctimeToSystime(utcTime);
+    public SysTime_t mjdToLocal(UtcTime_t utcTime) {
+        return SWTimer.CreateInstance().mjdToLocal(utcTime);
     }
 }

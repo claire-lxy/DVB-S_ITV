@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.media.AudioManager;
 import android.os.Message;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -85,7 +84,6 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
     TextView mTvProgressQuality;
 
     private Context mContext;
-    private AudioManager mAudioManager;
     private CheckSignalHelper mCheckSignalHelper;
 
     @SuppressLint("HandlerLeak")
@@ -102,7 +100,6 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
         initBg();
         SWDVB.GetInstance();
         mContext = context;
-        mAudioManager = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
         sHandler.sendEmptyMessageDelayed(0, SWFtaManager.getInstance().dismissTimeout());
     }
 
@@ -158,10 +155,6 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
         super.dismiss();
     }
 
-    public void updateVolume(int volume) {
-//      mTvSoundNum.setText(String.valueOf(volume));
-    }
-
     private void updateProgInfo() {
         PDPMInfo_t currProgInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
         if (currProgInfo != null) {
@@ -193,7 +186,6 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
     }
 
     public void updatePfInformation() {
-//      mTvSoundNum.setText(String.valueOf(mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC)));
         startCheckSignal();
         startRealTime();
         updateProgInfo();

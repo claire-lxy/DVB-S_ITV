@@ -8,6 +8,9 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.DEVICE_POWER"/>
 
     <application
         android:name="com.konkawise.dtv.KonkaApplication"
@@ -42,7 +45,6 @@
         <activity android:name="com.konkawise.dtv.ui.FavoriteActivity" />
         <activity android:name="com.konkawise.dtv.ui.BookListActivity" />
 
-        <receiver android:name="com.konkawise.dtv.receiver.HomeReceiver" />
         <receiver android:name="com.konkawise.dtv.receiver.UsbReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_MOUNTED" />
@@ -67,8 +69,8 @@
         <activity android:name="com.konkawise.dtv.ui.RecordListActivity" />
         <activity
             android:name="com.konkawise.dtv.ui.RecordPlayer"
-            android:windowSoftInputMode="adjustUnspecified|stateHidden"
-            android:configChanges="orientation|keyboardHidden" />
+            android:configChanges="orientation|keyboardHidden"
+            android:windowSoftInputMode="adjustUnspecified|stateHidden" />
         <activity android:name="com.konkawise.dtv.ui.T2SettingsActivity" />
 
         <provider
@@ -76,8 +78,10 @@
             android:authorities="dvbchannellock"
             android:exported="true" />
 
-        <service android:name="com.konkawise.dtv.service.BookService"
-            android:enabled="true"/>
+        <service
+            android:name="com.konkawise.dtv.service.BookService"
+            android:enabled="true" />
+        <service android:name=".service.PowerService" />
     </application>
 
 </manifest>

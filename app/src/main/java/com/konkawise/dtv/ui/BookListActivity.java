@@ -65,7 +65,6 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
     @Override
     protected void setup() {
         EventBus.getDefault().register(this);
-        RealTimeManager.getInstance().register(this);
 
         mAdapter = new BookListAdapter(this, new ArrayList<>());
         mLvBookList.setAdapter(mAdapter);
@@ -75,10 +74,21 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        RealTimeManager.getInstance().register(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        RealTimeManager.getInstance().unregister(this);
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
         if (isFinishing()) {
-            RealTimeManager.getInstance().unregister(this);
             if (mLoadBookingTask != null) {
                 mLoadBookingTask.release();
                 mLoadBookingTask = null;

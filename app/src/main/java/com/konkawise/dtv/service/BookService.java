@@ -24,13 +24,18 @@ import com.konkawise.dtv.dialog.BookReadyDialog;
 import com.konkawise.dtv.dialog.OnCommNegativeListener;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.QuitRecordingDialog;
+import com.konkawise.dtv.event.BookRegisterListenerEvent;
 import com.konkawise.dtv.event.BookUpdateEvent;
+import com.konkawise.dtv.event.RecordStateChangeEvent;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakToolInterface;
 import com.sw.dvblib.SWBooking;
+import com.sw.dvblib.SWDVB;
 import com.sw.dvblib.msg.cb.TimeMsgCB;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.text.MessageFormat;
 
@@ -48,10 +53,12 @@ public class BookService extends BaseService implements WeakToolInterface {
     private QuitRecordingDialog mQuitRecordingDialog;
     private BookCountDownHandler mBookCountDownHandler;
     private TimeMsgCB mTimeMsgCB;
+    private SWDVB.DTVListener mDTVListener;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        EventBus.getDefault().register(this);
         Log.i(TAG, "book service create");
     }
 
@@ -65,16 +72,24 @@ public class BookService extends BaseService implements WeakToolInterface {
     @Override
     public void onDestroy() {
         Log.i(TAG, "book service destroy");
+        EventBus.getDefault().unregister(this);
         WeakToolManager.getInstance().removeWeakTool(this);
-        SWDVBManager.getInstance().unRegMsgHandler(Constants.BOOK_CALLBACK_MSG_ID, mTimeMsgCB);
-        mTimeMsgCB = null;
+        if (mDTVListener != null) {
+            SWDVBManager.getInstance().unregisterDTVListener(mDTVListener);
+            mDTVListener = null;
+        }
+        if (mTimeMsgCB != null) {
+            SWDVBManager.getInstance().unRegMsgHandler(Constants.BOOK_CALLBACK_MSG_ID, mTimeMsgCB);
+            mTimeMsgCB = null;
+        }
         super.onDestroy();
     }
 
     private void registerBookMsg() {
         if (mTimeMsgCB == null) {
-            mTimeMsgCB = new BookMsgCB();
             Log.i(TAG, "register book msg");
+            mTimeMsgCB = new BookMsgCB();
+            mDTVListener = new SWDVB.DTVListener(SWDVB.GetInstance());
             SWDVBManager.getInstance().regMsgHandler(Constants.BOOK_CALLBACK_MSG_ID, getMainLooper(), mTimeMsgCB);
         }
     }
@@ -83,33 +98,33 @@ public class BookService extends BaseService implements WeakToolInterface {
         // 预订节目播放倒计时
         @Override
         public int Timer_ITIS_SUBFORTIME(int id) {
-            Log.i(TAG, "预订节目播放倒计时");
+            Log.i(TAG, "book play countdown");
             showBookReadyDialog();
-            return 0;
+            return super.Timer_ITIS_SUBFORTIME(id);
         }
 
         // 预录节目倒计时
         @Override
         public int Timer_ITIS_SUBFORRECTIME(int id) {
-            Log.i(TAG, "预录节目倒计时");
+            Log.i(TAG, "book record countdown");
             showBookReadyDialog();
-            return 0;
+            return super.Timer_ITIS_SUBFORRECTIME(id);
         }
 
         // 开始预订节目播放
         @Override
         public int Timer_ITIS_TIMETOPLAY(int type, int id, int sat, int tsid, int servid, int evtid) {
-            Log.i(TAG, "开始预订节目播放");
+            Log.i(TAG, "book play start");
             bookReady();
-            return 0;
+            return super.Timer_ITIS_TIMETOPLAY(type, id, sat, tsid, servid, evtid);
         }
 
         // 开始预录节目
         @Override
         public int Timer_ITIS_TIMETOREC(int type, int id, int sat, int tsid, int servid, int evtid) {
-            Log.i(TAG, "开始预录节目");
+            Log.i(TAG, "book record start");
             bookReady();
-            return 0;
+            return super.Timer_ITIS_TIMETOREC(type, id, sat, tsid, servid, evtid);
         }
     }
 
@@ -182,9 +197,9 @@ public class BookService extends BaseService implements WeakToolInterface {
                     @Override
                     public void onPositiveListener() {
                         dismissQuitRecordingDialog();
-                        SWDJAPVRManager.getInstance().setRecording(false);
-                        SWDJAPVRManager.getInstance().stopRecord();
+                        EventBus.getDefault().post(new RecordStateChangeEvent(false)); // 通知Topmost停止录制
                         if (bookInfo != null) {
+                            bookInfo.lasttime = 60; // 根据接口获取设置的录制时长
                             bookReady(bookInfo);
                         }
                     }
@@ -323,6 +338,19 @@ public class BookService extends BaseService implements WeakToolInterface {
                 intent.putExtra(Constants.IntentKey.INTENT_BOOK_PROG_TYPE, playInfo.Progtype);
                 intent.putExtra(Constants.IntentKey.INTENT_BOOK_PROG_NUM, playInfo.Progno);
                 startActivity(intent);
+            }
+        }
+    }
+
+    // 按home或退出apk时，通知注册book消息通道
+    // 进入apk时，通知解注册book消息通道
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onReceiveRegisterBookListener(BookRegisterListenerEvent event) {
+        if (mDTVListener != null) {
+            if (event.isRegisterBookListener) {
+                SWDVBManager.getInstance().registerDTVListener(mDTVListener);
+            } else {
+                SWDVBManager.getInstance().unregisterDTVListener(mDTVListener);
             }
         }
     }
