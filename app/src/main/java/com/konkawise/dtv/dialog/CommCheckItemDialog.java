@@ -1,6 +1,7 @@
 package com.konkawise.dtv.dialog;
 
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.*;
 import android.widget.*;
@@ -90,9 +91,12 @@ public class CommCheckItemDialog extends BaseDialogFragment {
         }
         ViewGroup.LayoutParams params = listView.getLayoutParams();
         params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
-        int lvLayoutHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 120, getResources().getDisplayMetrics());
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+        int lvLayoutHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 120, dm);
         if (lvLayoutHeight > params.height) {
             params.height = lvLayoutHeight;
+        } else {
+            params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 196, dm);
         }
         listView.setLayoutParams(params);
     }
