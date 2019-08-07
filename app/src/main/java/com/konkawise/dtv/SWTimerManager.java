@@ -65,6 +65,10 @@ public class SWTimerManager {
      * UTC转换成年月日时分秒
      */
     public SysTime_t mjdToLocal(UtcTime_t utcTime) {
-        return SWTimer.CreateInstance().mjdToLocal(utcTime);
+        return mjdToLocal(utcTime, true);
+    }
+
+    public SysTime_t mjdToLocal(UtcTime_t utcTime, boolean adjustZoneTime) {
+        return SWTimer.CreateInstance().mjdToLocal(utcTime, adjustZoneTime);
     }
 }
