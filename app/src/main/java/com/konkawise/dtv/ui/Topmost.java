@@ -1265,7 +1265,6 @@ public class Topmost extends BaseActivity {
     private void showPasswordDialog() {
         if (mPasswordDialog != null && mPasswordDialog.getDialog() != null && mPasswordDialog.isVisible())
             return;
-        if (!isProgLock()) return;
 
         getContentResolver().update(Uri.parse("content://dvbchannellock/dvb_info/0"), null, null, null);
         showPasswordDialog(null, new PasswordDialog.OnControlArrowKeyListener() {

@@ -12,6 +12,7 @@ import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.SetPasswordDialog;
 import com.sw.dvblib.SWFta;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -71,7 +72,9 @@ public class ParentalControlActivity extends BaseActivity {
 
     @OnClick(R.id.item_control_age)
     void controlAge() {
-        showCheckItemDialog(getResources().getString(R.string.control_age), Arrays.asList(mControlAge), controlAgePosition);
+        List<String> ltTemps = new ArrayList<>(Arrays.asList(mControlAge));
+        ltTemps.removeAll(Arrays.asList(new String[]{"1", "2", "3"}));
+        showCheckItemDialog(getResources().getString(R.string.control_age), ltTemps, controlAgePosition - 3 < 0 ? 0 : controlAgePosition - 3);
     }
 
     @OnClick(R.id.rl_set_password)
@@ -100,12 +103,7 @@ public class ParentalControlActivity extends BaseActivity {
     private void initData() {
         menuLockPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_cMenuLock.ordinal()));
         channelLockPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_cParentLock.ordinal()));
-        int ctrlAge = SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_PC_AGE.ordinal());
-        if (ctrlAge > 0 && ctrlAge < 19) {
-            controlAgePosition = ctrlAge - 1;
-        } else {
-            controlAgePosition = 0;
-        }
+        controlAgePosition = SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_PC_AGE.ordinal());
     }
 
     private int getSelectPosition(int[] datas, int value) {
@@ -124,7 +122,7 @@ public class ParentalControlActivity extends BaseActivity {
                 .position(selectPosition)
                 .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
                     @Override
-                    public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
+                    public void onDismiss(CommCheckItemDialog dialog, int p, String checkContent) {
                         switch (position) {
                             case ITEM_MENU_LOCK:
                                 mTvMenuLock.setText(checkContent);
@@ -139,7 +137,7 @@ public class ParentalControlActivity extends BaseActivity {
                             case ITEM_CONTROL_AGE:
                                 mTvControlAge.setText(checkContent);
                                 controlAgePosition = Arrays.asList(mControlAge).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_PC_AGE.ordinal(), controlAgePosition + 1);
+                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_PC_AGE.ordinal(), controlAgePosition);
                                 break;
                             default:
                                 break;
@@ -202,9 +200,14 @@ public class ParentalControlActivity extends BaseActivity {
                     break;
 
                 case ITEM_CONTROL_AGE:
-                    if (--controlAgePosition < 0) controlAgePosition = mControlAge.length - 1;
+                    controlAgePosition--;
+                    if (controlAgePosition < 0)
+                        controlAgePosition = mControlAge.length - 1;
+                    else if (controlAgePosition > 0 && controlAgePosition <= 3)
+                        controlAgePosition = 0;
+
                     mTvControlAge.setText(mControlAge[controlAgePosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_PC_AGE.ordinal(), controlAgePosition + 1);
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_PC_AGE.ordinal(), controlAgePosition);
                     break;
             }
 
@@ -225,9 +228,13 @@ public class ParentalControlActivity extends BaseActivity {
                     break;
 
                 case ITEM_CONTROL_AGE:
-                    if (++controlAgePosition > mControlAge.length - 1) controlAgePosition = 0;
+                    controlAgePosition++;
+                    if (controlAgePosition > mControlAge.length - 1)
+                        controlAgePosition = 0;
+                    else if (controlAgePosition > 0 && controlAgePosition <= 3)
+                        controlAgePosition = 4;
                     mTvControlAge.setText(mControlAge[controlAgePosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_PC_AGE.ordinal(), controlAgePosition + 1);
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_PC_AGE.ordinal(), controlAgePosition);
                     break;
             }
         }
