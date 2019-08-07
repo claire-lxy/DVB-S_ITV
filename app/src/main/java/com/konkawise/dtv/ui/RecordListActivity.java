@@ -1,6 +1,8 @@
 package com.konkawise.dtv.ui;
 
 import android.content.Intent;
+import android.os.Bundle;
+import android.service.autofill.RegexValidator;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -13,13 +15,16 @@ import com.konkawise.dtv.UsbManager;
 import com.konkawise.dtv.adapter.DeviceGroupAdapter;
 import com.konkawise.dtv.adapter.RecordListAdapter;
 import com.konkawise.dtv.base.BaseActivity;
+import com.konkawise.dtv.bean.RecordInfo;
 import com.konkawise.dtv.bean.UsbInfo;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.PasswordDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.weaktool.WeakRunnable;
+import com.sw.dvblib.DJAPVR;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -29,6 +34,7 @@ import butterknife.BindView;
 import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
+import vendor.konka.hardware.dtvmanager.V1_0.HPVR_RecFile_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 
 public class RecordListActivity extends BaseActivity implements UsbManager.OnUsbReceiveListener {
@@ -74,6 +80,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         Intent intent = new Intent();
         intent.setClass(this, RecordPlayer.class);
         intent.putExtra("from", RecordPlayer.FROM_RECORD_LIST);
+        intent.putExtra("recordinfo", mAdapter.getItem(position));
         startActivity(intent);
     }
 
@@ -161,7 +168,16 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         @Override
         protected void loadBackground() {
             RecordListActivity context = mWeakReference.get();
-            List<PDPMInfo_t> ltRecordFiles = context.queryRecordFiles("");
+            UsbInfo selectUsbInfo = null;
+            int i = 0;
+            for (UsbInfo usbInfo : context.mUsbInfos) {
+                if (i == selectPositon) {
+                    selectUsbInfo = usbInfo;
+                    break;
+                }
+                i++;
+            }
+            List<RecordInfo> ltRecordFiles = context.queryRecordFiles(selectUsbInfo.path + "/PVR/");
             context.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -187,46 +203,46 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     }
 
     private void renameChannel(String newName) {
-        mAdapter.getItem(mCurrRecordPosition).Name = newName;
-        mAdapter.notifyDataSetChanged();
+//        mAdapter.getItem(mCurrRecordPosition).Name = newName;
+//        mAdapter.notifyDataSetChanged();
     }
 
     private void lockChannels() {
-        List<PDPMInfo_t> recordList = mAdapter.getData();
-        if (recordList == null || recordList.isEmpty()) return;
-
-        if (isMulti()) {
-            for (int i = 0; i < recordList.size(); i++) {
-                if (mAdapter.getSelectMap().get(i)) {
-                    lockChannel(recordList, i);
-                }
-            }
-        } else {
-            lockChannel(recordList, mCurrRecordPosition);
-        }
-
-        mAdapter.clearSelect();
+//        List<PDPMInfo_t> recordList = mAdapter.getData();
+//        if (recordList == null || recordList.isEmpty()) return;
+//
+//        if (isMulti()) {
+//            for (int i = 0; i < recordList.size(); i++) {
+//                if (mAdapter.getSelectMap().get(i)) {
+//                    lockChannel(recordList, i);
+//                }
+//            }
+//        } else {
+//            lockChannel(recordList, mCurrRecordPosition);
+//        }
+//
+//        mAdapter.clearSelect();
     }
 
     private void lockChannel(List<PDPMInfo_t> recordList, int position) {
-        PDPMInfo_t recordInfo = recordList.get(position);
-        recordInfo.LockFlag = recordInfo.LockFlag == 1 ? 0 : 1;
-        mAdapter.updateData(position, recordInfo);
+//        PDPMInfo_t recordInfo = recordList.get(position);
+//        recordInfo.LockFlag = recordInfo.LockFlag == 1 ? 0 : 1;
+//        mAdapter.updateData(position, recordInfo);
     }
 
     private void deleteChannels() {
-        List<PDPMInfo_t> recordList = mAdapter.getData();
-        if (recordList == null || recordList.isEmpty()) return;
-
-        if (isMulti()) {
-            for (int i = 0; i < recordList.size(); i++) {
-                if (mAdapter.getSelectMap().get(i)) {
-                    deleteChannel(recordList, i);
-                }
-            }
-        } else {
-            deleteChannel(recordList, mCurrRecordPosition);
-        }
+//        List<PDPMInfo_t> recordList = mAdapter.getData();
+//        if (recordList == null || recordList.isEmpty()) return;
+//
+//        if (isMulti()) {
+//            for (int i = 0; i < recordList.size(); i++) {
+//                if (mAdapter.getSelectMap().get(i)) {
+//                    deleteChannel(recordList, i);
+//                }
+//            }
+//        } else {
+//            deleteChannel(recordList, mCurrRecordPosition);
+//        }
     }
 
     private void deleteChannel(List<PDPMInfo_t> recordList, int position) {
@@ -244,18 +260,18 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     }
 
     private void showRenameDialog() {
-        if (mAdapter.getCount() <= 0 || mCurrRecordPosition >= mAdapter.getCount()) return;
-        new RenameDialog()
-                .setProgNo(mAdapter.getItem(mCurrRecordPosition).PShowNo)
-                .setOldName(mAdapter.getItem(mCurrRecordPosition).Name)
-                .setEditLisener(new RenameDialog.EditTextLisener() {
-                    @Override
-                    public void setEdit(String newName) {
-                        if (TextUtils.isEmpty(newName)) return;
-
-                        renameChannel(newName);
-                    }
-                });
+//        if (mAdapter.getCount() <= 0 || mCurrRecordPosition >= mAdapter.getCount()) return;
+//        new RenameDialog()
+//                .setProgNo(mAdapter.getItem(mCurrRecordPosition).PShowNo)
+//                .setOldName(mAdapter.getItem(mCurrRecordPosition).Name)
+//                .setEditLisener(new RenameDialog.EditTextLisener() {
+//                    @Override
+//                    public void setEdit(String newName) {
+//                        if (TextUtils.isEmpty(newName)) return;
+//
+//                        renameChannel(newName);
+//                    }
+//                });
     }
 
     private void showDeleteDialog() {
@@ -329,15 +345,31 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         return super.onKeyDown(keyCode, event);
     }
 
-    private List<PDPMInfo_t> queryRecordFiles(String path) {
-        List<PDPMInfo_t> ltPdpminfo = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            PDPMInfo_t pdpmInfo_t = new PDPMInfo_t();
-            pdpmInfo_t.Name = "name" + (i + 1);
-            pdpmInfo_t.PShowNo = i + 1;
-            ltPdpminfo.add(pdpmInfo_t);
+    private List<RecordInfo> queryRecordFiles(String path) {
+        Log.i(TAG, "record filePath---:" + path);
+
+        List<RecordInfo> ltRecordInfo = new ArrayList<>();
+        File dF = new File(path);
+        File[] files = dF.listFiles();
+        if (files == null || files.length == 0)
+            return ltRecordInfo;
+
+        for (File f : files) {
+            if (f.isFile() && filterTSFile(f)) {
+                RecordInfo recordInfo = new RecordInfo();
+                recordInfo.setRecordFile(f);
+                ltRecordInfo.add(recordInfo);
+            }
         }
-        return ltPdpminfo;
+        Log.i(TAG, "record file size:" + ltRecordInfo.size());
+        return ltRecordInfo;
+    }
+
+    private boolean filterTSFile(File file) {
+        String fileName = file.getName();
+        String end = fileName
+                .substring(fileName.lastIndexOf(".") + 1, fileName.length());
+        return end.equals("ts");
     }
 
     @Override

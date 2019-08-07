@@ -1,15 +1,19 @@
 package com.konkawise.dtv.ui;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Looper;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.KeyEvent;
@@ -52,6 +56,7 @@ import com.konkawise.dtv.dialog.PfBarScanDialog;
 import com.konkawise.dtv.dialog.PfDetailDialog;
 import com.konkawise.dtv.dialog.SearchChannelDialog;
 import com.konkawise.dtv.dialog.SearchProgramDialog;
+import com.konkawise.dtv.dialog.SetPVRTimeDialog;
 import com.konkawise.dtv.dialog.SubtitleDialog;
 import com.konkawise.dtv.dialog.TeletextDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
@@ -99,6 +104,13 @@ public class Topmost extends BaseActivity {
     private static final long RECORD_TIME_HIDE_DELAY = 10 * 1000;
 
     private static final int KEYCODE_TV_SUBTITLE = 293;
+
+    //读写权限
+    private static String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    //请求状态码
+    private static int REQUEST_PERMISSION_CODE = 1;
 
     @BindView(R.id.sv_topmost)
     SurfaceView mSurfaceView;
@@ -447,6 +459,12 @@ public class Topmost extends BaseActivity {
 
     @Override
     protected void setup() {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, REQUEST_PERMISSION_CODE);
+            }
+        }
+
         SWDVB.GetInstance(); // 必须先初始化库，否则使用库会出现空指针异常
         mSmallHintBox = new SmallHintBox(this);
 
@@ -479,6 +497,7 @@ public class Topmost extends BaseActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        UIApiManager.getInstance().stopPlay(0);
         SWDVBManager.getInstance().unRegMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, mAvMsgCB);
         cancelSmallHintBoxTimer();
         stopRecord();
@@ -900,7 +919,7 @@ public class Topmost extends BaseActivity {
             @Override
             public void surfaceDestroyed(SurfaceHolder holder) {
                 Log.i(TAG, "topmost surface destroy");
-                UIApiManager.getInstance().stopPlay(0);
+                //               UIApiManager.getInstance().stopPlay(0);
             }
         });
     }
@@ -1643,10 +1662,18 @@ public class Topmost extends BaseActivity {
                 ToastUtils.showToast(R.string.toast_no_storage_device);
                 return true;
             }
-            Intent intent = new Intent();
-            intent.setClass(this, RecordPlayer.class);
-            intent.putExtra("from", RecordPlayer.FROM_TOPMOST);
-            startActivity(intent);
+            new SetPVRTimeDialog()
+                    .setOnPasswordInputListener(new SetPVRTimeDialog.OnTimeInputListener() {
+                        @Override
+                        public void onPasswordInput(int minute) {
+                            Intent intent = new Intent();
+                            intent.setClass(Topmost.this, RecordPlayer.class);
+                            intent.putExtra("from", RecordPlayer.FROM_TOPMOST);
+                            intent.putExtra("time", minute);
+                            startActivity(intent);
+                        }
+                    })
+                    .show(getSupportFragmentManager(), SetPVRTimeDialog.TAG);
             return true;
         }
 
@@ -1662,10 +1689,18 @@ public class Topmost extends BaseActivity {
                 ToastUtils.showToast(R.string.toast_no_storage_device);
                 return true;
             }
-            Intent intent = new Intent();
-            intent.setClass(this, RecordPlayer.class);
-            intent.putExtra("from", RecordPlayer.FROM_TOPMOST);
-            startActivity(intent);
+            new SetPVRTimeDialog()
+                    .setOnPasswordInputListener(new SetPVRTimeDialog.OnTimeInputListener() {
+                        @Override
+                        public void onPasswordInput(int minute) {
+                            Intent intent = new Intent();
+                            intent.setClass(Topmost.this, RecordPlayer.class);
+                            intent.putExtra("from", RecordPlayer.FROM_TOPMOST);
+                            intent.putExtra("time", minute);
+                            startActivity(intent);
+                        }
+                    })
+                    .show(getSupportFragmentManager(), SetPVRTimeDialog.TAG);
             return true;
         }
 
@@ -2063,5 +2098,10 @@ public class Topmost extends BaseActivity {
 
     public interface OnStartRecordCallback {
         void startRecordCallback(int recordFlag);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }

@@ -49,6 +49,7 @@ public class Constants {
     public static final int BOOK_CALLBACK_MSG_ID = 0x8002; // book消息回调通道id
     public static final int LOCK_CALLBACK_MSG_ID = 0x8003; // 频道锁消息回调通道id
     public static final int TIME_CALLBACK_MSG_ID = 0x8004; // 系统时间消息回调通道id
+    public static final int PVR_CALLBACK_MSG_ID = 0x8005; // PVR播放消息回调通道id
 
     public interface IntentKey {
         String INTENT_SATELLITE_INDEX = "satelliteIndex";

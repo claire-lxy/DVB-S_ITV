@@ -57,7 +57,7 @@ public class SeekTimeDialog extends BaseDialogFragment {
         }
     }
 
-    private int maxHour, maxMinute, maxSecond;
+    private int totalDuration;
     private int currHour, currMinute, currSecond;
     private int h, m, s;
     private OnTimeListener listener;
@@ -132,13 +132,13 @@ public class SeekTimeDialog extends BaseDialogFragment {
     }
 
     private void initUIContent() {
-        etHour.setText(currHour+"");
-        etMinute.setText(currMinute+"");
-        etSecond.setText(currSecond+"");
-        etHour.setFocusable(maxHour != 0);
-        etMinute.setFocusable(maxMinute != 0);
-        etHour.setTextColor(getResources().getColor(maxHour == 0 ? R.color.epg_text_normal : R.color.epg_text_select));
-        etMinute.setTextColor(getResources().getColor(maxMinute == 0 ? R.color.epg_text_normal : R.color.epg_text_select));
+        etHour.setText(currHour + "");
+        etMinute.setText(currMinute + "");
+        etSecond.setText(currSecond + "");
+        etHour.setFocusable(totalDuration > 60 * 60 * 1000);
+        etMinute.setFocusable(totalDuration > 60 * 1000);
+        etHour.setTextColor(getResources().getColor(totalDuration < 60 * 60 * 1000 ? R.color.epg_text_normal : R.color.epg_text_select));
+        etMinute.setTextColor(getResources().getColor(totalDuration < 60 * 1000 ? R.color.epg_text_normal : R.color.epg_text_select));
     }
 
     private boolean inputTimeCheck() {
@@ -148,20 +148,19 @@ public class SeekTimeDialog extends BaseDialogFragment {
         h = Integer.valueOf((sbHour.length() == 2 && sbHour.charAt(0) == '0') ? sbHour.deleteCharAt(0).toString() : sbHour.toString());
         m = Integer.valueOf((sbMinute.length() == 2 && sbMinute.charAt(0) == '0') ? sbMinute.deleteCharAt(0).toString() : sbMinute.toString());
         s = Integer.valueOf((sbSecond.length() == 2 && sbSecond.charAt(0) == '0') ? sbSecond.deleteCharAt(0).toString() : sbSecond.toString());
-        return h * 60 * 60 + m * 60 + s < maxHour * 60 * 60 + maxMinute * 60 + maxSecond;
+        return h * 60 * 60 + m * 60 + s <= totalDuration;
     }
 
-    public SeekTimeDialog setTimeLimit(int hour, int minute, int second) {
-        this.maxHour = hour;
-        this.maxMinute = minute;
-        this.maxSecond = second;
+    public SeekTimeDialog setTimeLimit(int totalDuration) {
+        this.totalDuration = totalDuration;
         return this;
     }
 
-    public SeekTimeDialog setCurrTime(int currHour, int currMinute, int currSecond) {
-        this.currHour = currHour;
-        this.currMinute = currMinute;
-        this.currSecond = currSecond;
+    public SeekTimeDialog setCurrTime(int currMS) {
+        int seconds = currMS / 1000;
+        currHour = seconds / (60 * 60);
+        currMinute = (seconds - currHour * 60 * 60) / 60;
+        currSecond = (seconds - currHour * 60 * 60) % 60;
         return this;
     }
 
@@ -207,7 +206,7 @@ public class SeekTimeDialog extends BaseDialogFragment {
             EditText currView = etHour;
             switch (currHandler) {
                 case HANDLER_HOUR:
-                    maxTime = maxHour;
+                    maxTime = totalDuration / (60 * 60 * 1000);
                     currView = etHour;
                     break;
                 case HANDLER_MINUTE:

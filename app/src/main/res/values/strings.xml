@@ -249,6 +249,13 @@
     <string name="password">Enter Password</string>
     <string name="password_input">Please Input Password:</string>
 
+    <!--set_pvr_time_dialog-->
+    <string name="time">Enter Time</string>
+    <string name="time_input">Please Input Time(minute):</string>
+
+    <string name="dialog_exit_pvr_tips">Tips</string>
+    <string name="dialog_exit_timeshift_content">Program is timeshifting, do you want to stop it?</string>
+
     <!--sort_dialog-->
     <string name="please_search">No programs, please search</string>
 
