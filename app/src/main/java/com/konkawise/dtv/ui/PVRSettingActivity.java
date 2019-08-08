@@ -176,7 +176,7 @@ public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsb
     @Override
     protected void setup() {
         UsbManager.getInstance().registerUsbReceiveListener(this);
-        mUsbInfos.addAll(UsbManager.getInstance().getUsbInfos());
+        mUsbInfos.addAll(UsbManager.getInstance().getUsbInfos(this));
         Log.i(TAG, "mUsbInfos size:" + mUsbInfos.size());
         initData();
     }

@@ -32,7 +32,9 @@ public class UsbManager {
         return UsbManagerHolder.INSTANCE;
     }
 
-    public Set<UsbInfo> getUsbInfos() {
+    public Set<UsbInfo> getUsbInfos(Context context) {
+        if (mUsbInfos.size() == 0)
+            return queryUsbInfos(context);
         return mUsbInfos;
     }
 

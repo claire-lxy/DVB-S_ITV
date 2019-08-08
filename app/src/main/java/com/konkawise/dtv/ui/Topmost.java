@@ -76,6 +76,7 @@ import com.konkawise.dtv.weaktool.WeakTimerTask;
 import com.sw.dvblib.SWDVB;
 import com.sw.dvblib.SWFta;
 import com.sw.dvblib.msg.cb.AVMsgCB;
+import com.sw.dvblib.msg.cb.EpgMsgCB;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -94,6 +95,7 @@ import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
 import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
+import vendor.konka.hardware.dtvmanager.V1_0.EpgEvent_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HSubtitle_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HTeletext_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
@@ -109,13 +111,6 @@ public class Topmost extends BaseActivity {
     private static final long RECORD_TIME_HIDE_DELAY = 10 * 1000;
 
     private static final int KEYCODE_TV_SUBTITLE = 293;
-
-    //读写权限
-    private static String[] PERMISSIONS_STORAGE = {
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE};
-    //请求状态码
-    private static int REQUEST_PERMISSION_CODE = 1;
 
     @BindView(R.id.sv_topmost)
     SurfaceView mSurfaceView;
@@ -464,12 +459,6 @@ public class Topmost extends BaseActivity {
 
     @Override
     protected void setup() {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, REQUEST_PERMISSION_CODE);
-            }
-        }
-
         SWDVB.GetInstance(); // 必须先初始化库，否则使用库会出现空指针异常
         mSmallHintBox = new SmallHintBox(this);
 
@@ -1701,8 +1690,8 @@ public class Topmost extends BaseActivity {
                         public void onPasswordInput(int minute) {
                             Intent intent = new Intent();
                             intent.setClass(Topmost.this, RecordPlayer.class);
-                            intent.putExtra("from", RecordPlayer.FROM_TOPMOST);
-                            intent.putExtra("time", minute);
+                            intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, RecordPlayer.FROM_TOPMOST);
+                            intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_TIME, minute);
                             startActivity(intent);
                         }
                     })
@@ -1728,8 +1717,8 @@ public class Topmost extends BaseActivity {
                         public void onPasswordInput(int minute) {
                             Intent intent = new Intent();
                             intent.setClass(Topmost.this, RecordPlayer.class);
-                            intent.putExtra("from", RecordPlayer.FROM_TOPMOST);
-                            intent.putExtra("time", minute);
+                            intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, RecordPlayer.FROM_TOPMOST);
+                            intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_TIME, minute);
                             startActivity(intent);
                         }
                     })
@@ -2133,10 +2122,5 @@ public class Topmost extends BaseActivity {
 
     public interface OnStartRecordCallback {
         void startRecordCallback(int recordFlag);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }

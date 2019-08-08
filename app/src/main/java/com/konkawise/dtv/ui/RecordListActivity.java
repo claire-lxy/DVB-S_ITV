@@ -1,8 +1,12 @@
 package com.konkawise.dtv.ui;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.service.autofill.RegexValidator;
+import android.support.v4.app.ActivityCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -21,6 +25,8 @@ import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.PasswordDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
+import com.konkawise.dtv.permission.OnRequestPermissionResultListener;
+import com.konkawise.dtv.permission.PermissionHelper;
 import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.sw.dvblib.DJAPVR;
 
@@ -79,8 +85,8 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
 //        }
         Intent intent = new Intent();
         intent.setClass(this, RecordPlayer.class);
-        intent.putExtra("from", RecordPlayer.FROM_RECORD_LIST);
-        intent.putExtra("recordinfo", mAdapter.getItem(position));
+        intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, RecordPlayer.FROM_RECORD_LIST);
+        intent.putExtra(Constants.IntentKey.INTENT_RECORD_INFO, mAdapter.getItem(position));
         startActivity(intent);
     }
 
@@ -104,8 +110,30 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         mListView.setAdapter(mAdapter);
         deviceGroupAdapter = new DeviceGroupAdapter(this, new ArrayList<>());
         mDeviceListView.setAdapter(deviceGroupAdapter);
-        mUsbInfos = UsbManager.getInstance().getUsbInfos();
-        updateDeviceGroup(mUsbInfos, 0, false);
+        mUsbInfos = UsbManager.getInstance().getUsbInfos(this);
+
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+            if (ActivityCompat.checkSelfPermission(this, Constants.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                new PermissionHelper(this)
+                        .permissions(new String[]{Constants.READ_EXTERNAL_STORAGE, Constants.WRITE_EXTERNAL_STORAGE})
+                        .request()
+                        .result(new OnRequestPermissionResultListener() {
+                            @Override
+                            public void onRequestResult(List<String> grantedPermissions, List<String> deniedPermissions) {
+                                for (int i = 0; i < grantedPermissions.size(); i++) {
+                                    if (grantedPermissions.get(i).equals(Constants.WRITE_EXTERNAL_STORAGE)) {
+                                        updateDeviceGroup(mUsbInfos, 0, false);
+                                        break;
+                                    }
+                                }
+                            }
+                        });
+            } else {
+                updateDeviceGroup(mUsbInfos, 0, false);
+            }
+        } else {
+            updateDeviceGroup(mUsbInfos, 0, false);
+        }
     }
 
     @Override

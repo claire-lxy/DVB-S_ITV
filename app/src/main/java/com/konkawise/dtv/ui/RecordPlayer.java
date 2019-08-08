@@ -152,6 +152,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     protected void setup() {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         UsbManager.getInstance().registerUsbReceiveListener(this);
+
         init();
     }
 
@@ -177,7 +178,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     private void init() {
         playHandler = new PlayHandler(this);
 
-        from = getIntent().getIntExtra("from", 0);
+        from = getIntent().getIntExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, 0);
 
         SurfaceHolder holder = svRecordPlayer.getHolder();
         holder.addCallback(new SurfaceHolder.Callback() {
@@ -395,12 +396,12 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         showControlUI(true);
         initUIContent(0);
         sendUpgradePrgressMsg(new HandlerMsgModel(PlayHandler.MSG_UPGRADE_PROGRESS));
-        recordInfo = (RecordInfo) getIntent().getSerializableExtra("recordinfo");
+        recordInfo = (RecordInfo) getIntent().getSerializableExtra(Constants.IntentKey.INTENT_RECORD_INFO);
         DJAPVR.CreateInstance().startPlay(recordInfo.getFile().getParent() + "/", recordInfo.getFile().getName(), 0);
     }
 
     private void playTimeShift() {
-        totalDuration = getIntent().getIntExtra("time", 0) * 60 * 1000;
+        totalDuration = getIntent().getIntExtra(Constants.IntentKey.INTENT_TIMESHIFT_TIME, 0) * 60 * 1000;
         switchPlayTypeUI(TYPE_PAUSE, -1);
         showControlUI(false);
         initUIContent(totalDuration);
@@ -409,7 +410,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     }
 
     private boolean gotoShiftEnd(int currMS, int endMS) {
-        return currMS / 1000 == endMS / 1000;
+        return Math.abs(currMS / 1000 - endMS / 1000) <= 2;
     }
 
     private void resume() {
