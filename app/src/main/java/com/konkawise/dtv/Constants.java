@@ -1,5 +1,7 @@
 package com.konkawise.dtv;
 
+import android.Manifest;
+
 public class Constants {
     // installation scan type, s2 or t2
     public static final int INSTALLATION_S2_SCAN = 0x1001;
@@ -51,6 +53,10 @@ public class Constants {
     public static final int TIME_CALLBACK_MSG_ID = 0x8004; // 系统时间消息回调通道id
     public static final int PVR_CALLBACK_MSG_ID = 0x8005; // PVR播放消息回调通道id
 
+    // permission
+    public static final String READ_EXTERNAL_STORAGE = Manifest.permission.READ_EXTERNAL_STORAGE;
+    public static final String WRITE_EXTERNAL_STORAGE = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+
     public interface IntentKey {
         String INTENT_SATELLITE_INDEX = "satelliteIndex";
         String INTENT_SATELLITE_ACTIVITY = "satelliteActivity";
@@ -75,6 +81,10 @@ public class Constants {
 
         String INTENT_BOOK_UPDATE = "bookUpdate";
         String INTENT_CURRNT_TP = "currntTp";
+
+        String INTENT_TIMESHIFT_RECORD_FROM = "from";
+        String INTENT_TIMESHIFT_TIME = "time";
+        String INTENT_RECORD_INFO = "recordinfo";
     }
 
     public interface RequestCode {
