@@ -1,6 +1,5 @@
 package com.konkawise.dtv.utils;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.text.TextUtils;
 
@@ -9,7 +8,6 @@ import com.konkawise.dtv.SWTimerManager;
 import com.konkawise.dtv.bean.DateModel;
 
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -24,8 +22,6 @@ public class TimeUtils {
     public static final int HOUR = 3;
     public static final int MINUTE = 4;
 
-    @SuppressLint("SimpleDateFormat")
-    private static final SimpleDateFormat sDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final DecimalFormat sDecimalFormat = new DecimalFormat("00");
 
     /**

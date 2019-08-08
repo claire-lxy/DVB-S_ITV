@@ -78,7 +78,7 @@
 
         <service
             android:name="com.konkawise.dtv.service.BookService"
-            android:enabled="true" />
+            android:exported="true" />
         <service android:name=".service.PowerService" />
     </application>
 

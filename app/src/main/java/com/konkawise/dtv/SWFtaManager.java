@@ -214,4 +214,18 @@ public class SWFtaManager {
     public void factoryReset() {
         SWFta.CreateInstance().factoryReset(0);
     }
+
+    /**
+     * 获取录制的盘符uuid
+     */
+    public String getDiskUUID() {
+        return SWFta.CreateInstance().getDiskUUID();
+    }
+
+    /**
+     * 设置录制的盘符uuid
+     */
+    public void setDiskUUID(String uuid) {
+        SWFta.CreateInstance().setDiskUUID(uuid);
+    }
 }

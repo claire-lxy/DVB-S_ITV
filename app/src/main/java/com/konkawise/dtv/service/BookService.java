@@ -16,6 +16,8 @@ import com.konkawise.dtv.SWDJAPVRManager;
 import com.konkawise.dtv.SWDVBManager;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
+import com.konkawise.dtv.SWTimerManager;
+import com.konkawise.dtv.ScreenManager;
 import com.konkawise.dtv.WeakToolManager;
 import com.konkawise.dtv.base.BaseService;
 import com.konkawise.dtv.bean.BookingModel;
@@ -27,6 +29,7 @@ import com.konkawise.dtv.dialog.QuitRecordingDialog;
 import com.konkawise.dtv.event.BookRegisterListenerEvent;
 import com.konkawise.dtv.event.BookUpdateEvent;
 import com.konkawise.dtv.event.RecordStateChangeEvent;
+import com.konkawise.dtv.utils.TimeUtils;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakToolInterface;
 import com.sw.dvblib.SWBooking;
@@ -43,6 +46,7 @@ import vendor.konka.hardware.dtvmanager.V1_0.HForplayprog_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HPDPPlayInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
 
 public class BookService extends BaseService implements WeakToolInterface {
     private static final String TAG = "BookService";
@@ -134,6 +138,8 @@ public class BookService extends BaseService implements WeakToolInterface {
         PDPInfo_t progInfo = SWPDBaseManager.getInstance().getProgInfoByServiceId(bookInfo.servid, bookInfo.tsid, bookInfo.sat);
         if (progInfo == null) return;
 
+        ScreenManager.getInstance().wakeupScreen(this); // 待机情况下唤醒设备显示弹框
+
         BookingModel bookingModel = new BookingModel(bookInfo, progInfo);
         String channelName = bookingModel.getBookChannelName();
         String mode = bookingModel.getBookMode(this);
@@ -150,8 +156,11 @@ public class BookService extends BaseService implements WeakToolInterface {
             positive = getString(R.string.dialog_book_standby);
         }
 
+        SysTime_t currTime = SWTimerManager.getInstance().getLocalTime();
+        SysTime_t bookTime = SWTimerManager.getInstance().getTime(bookInfo.year, bookInfo.month, bookInfo.day, bookInfo.hour, bookInfo.minute, bookInfo.second);
+        int countDownSeconds = TimeUtils.getTotalSeconds(currTime, bookTime);
         mBookReadyDialog = new BookReadyDialog(this)
-                .content(MessageFormat.format(getString(R.string.dialog_book_ready_content), content, String.valueOf(60)))
+                .content(MessageFormat.format(getString(R.string.dialog_book_ready_content), content, String.valueOf(countDownSeconds)))
                 .channelName(channelName)
                 .mode(mode)
                 .setOnPositiveListener(positive, new OnCommPositiveListener() {
@@ -159,7 +168,7 @@ public class BookService extends BaseService implements WeakToolInterface {
                     public void onPositiveListener() {
                         dismissBookReadyDialog();
                         removeHandlerMsg();
-                        SWBookingManager.getInstance().cancelSubForPlay(4, SWBookingManager.getInstance().getCancelBookProg(bookInfo)); // 取消定时器防止到点回调消息过来
+                        cancelBook(bookInfo);
                         if (SWDJAPVRManager.getInstance().isRecording()) {
                             showQuitRecordingDialog(bookInfo);
                         } else {
@@ -181,12 +190,12 @@ public class BookService extends BaseService implements WeakToolInterface {
         }
         mBookReadyDialog.setCancelable(false);
         mBookReadyDialog.show();
-        startCountDown(bookInfo);
+        startCountDown(bookInfo, countDownSeconds);
     }
 
-    private void startCountDown(HSubforProg_t bookInfo) {
+    private void startCountDown(HSubforProg_t bookInfo, int countDownSeconds) {
         removeHandlerMsg();
-        mBookCountDownHandler = new BookCountDownHandler(this, bookInfo);
+        mBookCountDownHandler = new BookCountDownHandler(this, bookInfo, countDownSeconds);
         HandlerMsgManager.getInstance().sendMessage(mBookCountDownHandler, new HandlerMsgModel(BookCountDownHandler.MSG_COUNT_DOWN_SECONDS));
     }
 
@@ -199,7 +208,6 @@ public class BookService extends BaseService implements WeakToolInterface {
                         dismissQuitRecordingDialog();
                         EventBus.getDefault().post(new RecordStateChangeEvent(false)); // 通知Topmost停止录制
                         if (bookInfo != null) {
-                            bookInfo.lasttime = 60; // 根据接口获取设置的录制时长
                             bookReady(bookInfo);
                         }
                     }
@@ -257,10 +265,10 @@ public class BookService extends BaseService implements WeakToolInterface {
         HSubforProg_t bookInfo;
         int countDownSeconds;
 
-        BookCountDownHandler(BookService view, HSubforProg_t bookInfo) {
+        BookCountDownHandler(BookService view, HSubforProg_t bookInfo, int countDownSeconds) {
             super(view);
             this.bookInfo = bookInfo;
-            this.countDownSeconds = 60;
+            this.countDownSeconds = countDownSeconds;
         }
 
         @Override
@@ -315,6 +323,9 @@ public class BookService extends BaseService implements WeakToolInterface {
         }
     }
 
+    /**
+     * 启动book
+     */
     private void startBook(int schtype, int lasttime) {
         removeHandlerMsg();
         dismissBookReadyDialog();

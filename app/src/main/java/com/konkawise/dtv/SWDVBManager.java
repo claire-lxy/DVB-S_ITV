@@ -32,7 +32,7 @@ public class SWDVBManager {
     }
 
     public void unregisterDTVListener(SWDVB.DTVListener listener) {
-
+        SWDVB.GetInstance().unregisterMsgCallbackListener(listener);
     }
 
     public void releaseResource() {

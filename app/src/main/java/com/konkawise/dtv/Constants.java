@@ -51,6 +51,8 @@ public class Constants {
     public static final int TIME_CALLBACK_MSG_ID = 0x8004; // 系统时间消息回调通道id
     public static final int PVR_CALLBACK_MSG_ID = 0x8005; // PVR播放消息回调通道id
 
+    public static final String STANDBY_SCREEN_ON_PROPERTY = "sys.screen.wakeup"; // 待机允许唤醒系统属性
+
     public interface IntentKey {
         String INTENT_SATELLITE_INDEX = "satelliteIndex";
         String INTENT_SATELLITE_ACTIVITY = "satelliteActivity";

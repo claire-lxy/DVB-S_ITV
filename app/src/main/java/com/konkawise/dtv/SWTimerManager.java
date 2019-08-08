@@ -71,4 +71,15 @@ public class SWTimerManager {
     public SysTime_t mjdToLocal(UtcTime_t utcTime, boolean adjustZoneTime) {
         return SWTimer.CreateInstance().mjdToLocal(utcTime, adjustZoneTime);
     }
+
+    public SysTime_t getTime(int year, int month, int day, int hour, int minute, int second) {
+        SysTime_t time = new SysTime_t();
+        time.Year = year;
+        time.Month = month;
+        time.Day = day;
+        time.Hour = hour;
+        time.Minute = minute;
+        time.Second = second;
+        return time;
+    }
 }

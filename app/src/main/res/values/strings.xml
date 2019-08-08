@@ -366,19 +366,24 @@
     <string name="play">Play</string>
     <string name="dialog_delete_channel_content">Are you sure to delete?</string>
 
+    <string name="dialog_record_minute_title">Enter Record Minute</string>
+    <string name="dialog_record_minute_content">Please Input Record Minute(s)</string>
+
     <string name="toast_invalid_password">Invalid password</string>
     <string name="toast_invalid_password_length">Need 4-digit password</string>
     <string name="toast_book_limit">Book Limit</string>
     <string name="toast_book_invalid">Invalid Value</string>
     <string name="toast_current_password_error">Current password error</string>
     <string name="toast_confirm_password_invalid">Confirm password is incorrect</string>
-    <string name="toast_pid_not_empty">parameter should be not empty</string>
+    <string name="toast_pid_not_empty">Parameter should be not empty</string>
     <string name="toast_program_number_invalid">No This Channel</string>
     <string name="toast_start_record">Start Recording!</string>
     <string name="toast_stop_record">Record End!</string>
     <string name="toast_no_storage_device">No Storage Device!</string>
     <string name="toast_program_playing">Program is playing!</string>
     <string name="toast_start_record_failed">Start record failed!</string>
+    <string name="toast_record_minute_empty">Record Minute(s) should be not empty</string>
+    <string name="toast_record_minute_invalid">Record minute(s) invalid!</string>
 
     <string name="dialog_try_auto_diseqc">Scanning DiSEqC Port Index {0}.Try [{1}/{2}] times...</string>
     <string name="dialog_auto_diseqc_title">Information</string>
