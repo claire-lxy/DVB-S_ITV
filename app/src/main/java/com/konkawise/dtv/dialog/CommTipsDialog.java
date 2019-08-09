@@ -33,6 +33,7 @@ public class CommTipsDialog extends BaseDialogFragment {
     private float mLineSpacing;
     private boolean mPositiveFocus;
     private boolean mNegativeFocus;
+    private int mResizeDialogWidth;
 
     private OnCommPositiveListener mOnPositiveListener;
     private OnCommNegativeListener mOnNegativeListener;
@@ -69,8 +70,13 @@ public class CommTipsDialog extends BaseDialogFragment {
         if (mNegativeFocus) mBtnNegative.requestFocus();
     }
 
+    @Override
+    protected int resizeDialogWidth() {
+        return mResizeDialogWidth == 0 ? super.resizeDialogWidth() : mResizeDialogWidth;
+    }
+
     public CommTipsDialog title(String title) {
-        this.mTitle = TextUtils.isEmpty(mTitle) ? "" : title;
+        this.mTitle = TextUtils.isEmpty(title) ? "" : title;
         return this;
     }
 
@@ -91,6 +97,11 @@ public class CommTipsDialog extends BaseDialogFragment {
 
     public CommTipsDialog negativeFocus(boolean negativeFocus) {
         this.mNegativeFocus = negativeFocus;
+        return this;
+    }
+
+    public CommTipsDialog resizeDialogWidth(int resizeWidth) {
+        this.mResizeDialogWidth = resizeWidth;
         return this;
     }
 

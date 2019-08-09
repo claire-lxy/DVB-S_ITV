@@ -32,6 +32,10 @@ public class Constants {
     public static final int BOOK_CONFLICT_ADD = 0x6003; // book冲突，需要先删除后添加
     public static final int BOOK_CONFLICT_REPLACE = 0x6004; // book冲突，需要替换
 
+    // tp type
+    public static final int TP_TYPE_ADD = 0x7001;
+    public static final int TP_TYPE_EDIT = 0x7002;
+
     // msg callback id
     public static final int SCAN_CALLBACK_MSG_ID = 0x8001; // 频道扫描消息回调通道id
     public static final int BOOK_CALLBACK_MSG_ID = 0x8002; // book消息回调通道id
@@ -42,10 +46,6 @@ public class Constants {
     // pvr type
     public static final int PVR_TYPE_TIMESHIFT = 0x9001;
     public static final int PVR_TYPE_RECORD = 0x9002;
-
-    // tp type
-    public static final int TP_TYPE_ADD = 0x7001;
-    public static final int TP_TYPE_EDIT = 0x7002;
 
     // DiSEqC index
     public static final int DISEQC_A = 0;
@@ -61,7 +61,9 @@ public class Constants {
     public static final String READ_EXTERNAL_STORAGE = Manifest.permission.READ_EXTERNAL_STORAGE;
     public static final String WRITE_EXTERNAL_STORAGE = Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
-    public static final String STANDBY_SCREEN_ON_PROPERTY = "sys.screen.wakeup"; // 待机允许唤醒系统属性
+    public static final String STANDBY_PROPERTY = "persist.suspend.mode"; // 待机唤醒属性
+    public static final String STANDBY_DEEP_RESTART = "deep_restart"; // 系统唤醒重启
+    public static final String STANDBY_SMART_SUSPEND = "smart_suspend"; // 系统唤醒返回Launcher
 
     public interface IntentKey {
         String INTENT_SATELLITE_INDEX = "satelliteIndex";

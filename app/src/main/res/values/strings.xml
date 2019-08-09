@@ -348,6 +348,8 @@
     <string name="dialog_book_conflict_content">Do you want to replace the following program?\nBookTime: {0}\nChannelName: {1}\nType: {2}</string>
     <string name="dialog_book_conflict_positive">Replace</string>
     <string name="dialog_quit_record_content">Program is recording, do you want to stop it?</string>
+    <string name="dialog_power_saving_off_cotnent">The current low power standby mode will prevent the Timers from starting from standby.\n\nTo allow Timers to start from standby, please switch to Sleep standby mode.</string>
+    <string name="dialog_power_saving_positive">Power saving OFF</string>
 
     <!-- Record List -->
     <string name="record_list">Record List</string>

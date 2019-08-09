@@ -519,7 +519,6 @@ public class Topmost extends BaseActivity {
         super.onNewIntent(intent);
         setIntent(intent);
         handleBook();
-        setIntent(new Intent()); // 处理完后要重置为空，防止其他界面返回或跳转到Topmost使用上一个book跳转的intent
     }
 
     private boolean handleBook() {
@@ -945,6 +944,8 @@ public class Topmost extends BaseActivity {
                 if (!handleBook()) {
                     if (SWPDBaseManager.getInstance().getCurrProgInfo() != null && PreferenceManager.getInstance().getBoolean(Constants.PrefsKey.FIRST_LAUNCH))
                         playProg(getCurrentProgNum(), true);
+                } else {
+                    setIntent(new Intent()); // 处理完后要重置为空，防止其他界面返回或跳转到Topmost使用上一个book跳转的intent
                 }
             }
 

@@ -11,13 +11,16 @@
         android:id="@+id/tv_comm_dialog_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
         android:textSize="18sp" />
 
     <TextView
         android:id="@+id/tv_comm_dialog_content"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
         android:layout_marginTop="30dp"
+        android:layout_marginRight="15dp"
         android:lineSpacingExtra="5dp"
         android:textSize="18sp" />
 

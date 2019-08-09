@@ -8,6 +8,7 @@ import android.view.KeyEvent;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
+import com.konkawise.dtv.PropertiesManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.RealTimeManager;
 import com.konkawise.dtv.SWBookingManager;
@@ -18,6 +19,7 @@ import com.konkawise.dtv.bean.BookParameterModel;
 import com.konkawise.dtv.bean.BookingModel;
 import com.konkawise.dtv.dialog.BookDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
+import com.konkawise.dtv.dialog.OnCommNegativeListener;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.event.BookUpdateEvent;
 import com.konkawise.dtv.utils.ToastUtils;
@@ -130,6 +132,27 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
                 mWeakReference.get().mAdapter.addData(bookingModels);
             }
         }
+    }
+
+    private void showPowerSavingOffDialog(String bookTitle, int bookingType) {
+        new CommTipsDialog()
+                .title(getString(R.string.dialog_title_tips))
+                .content(getString(R.string.dialog_power_saving_off_cotnent))
+                .resizeDialogWidth((int) (getResources().getDisplayMetrics().widthPixels * 0.7))
+                .setOnNegativeListener(getString(R.string.cancel), new OnCommNegativeListener() {
+                    @Override
+                    public void onNegativeListener() {
+                        showBookDialog(bookTitle, bookingType);
+                    }
+                })
+                .setOnPositiveListener(getString(R.string.dialog_power_saving_positive), new OnCommPositiveListener() {
+                    @Override
+                    public void onPositiveListener() {
+                        // 设置为浅待机
+                        PropertiesManager.getInstance().setProperty(Constants.STANDBY_PROPERTY, Constants.STANDBY_SMART_SUSPEND);
+                        showBookDialog(bookTitle, bookingType);
+                    }
+                }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
 
     private void showBookDialog(String title, final int bookingType) {
@@ -266,15 +289,27 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
 
+    private boolean isPowerSavingOff() {
+        return Constants.STANDBY_SMART_SUSPEND.equals(PropertiesManager.getInstance().getProperty(Constants.STANDBY_PROPERTY, ""));
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_PROG_RED) {
-            showBookDialog(getString(R.string.add), Constants.BOOK_TYPE_ADD);
+            if (isPowerSavingOff()) {
+                showBookDialog(getString(R.string.add), Constants.BOOK_TYPE_ADD);
+            } else {
+                showPowerSavingOffDialog(getString(R.string.add), Constants.BOOK_TYPE_ADD);
+            }
             return true;
         }
 
         if (keyCode == KeyEvent.KEYCODE_PROG_GREEN) {
-            showBookDialog(getString(R.string.edit), Constants.BOOK_TYPE_EDIT);
+            if (isPowerSavingOff()) {
+                showBookDialog(getString(R.string.edit), Constants.BOOK_TYPE_EDIT);
+            } else {
+                showPowerSavingOffDialog(getString(R.string.edit), Constants.BOOK_TYPE_EDIT);
+            }
             return true;
         }
 
