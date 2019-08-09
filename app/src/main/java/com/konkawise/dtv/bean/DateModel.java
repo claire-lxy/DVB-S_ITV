@@ -48,7 +48,7 @@ public class DateModel {
     }
 
     private Date getDate(SysTime_t sysTime) {
-        return new Date(sysTime.Year, sysTime.Month, sysTime.Day, sysTime.Hour, sysTime.Minute);
+        return new Date(sysTime.Year, sysTime.Month, sysTime.Day, sysTime.Hour, sysTime.Minute, sysTime.Second);
     }
 
     public String getYear(SysTime_t sysTime) {

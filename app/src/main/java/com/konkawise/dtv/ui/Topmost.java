@@ -1,20 +1,15 @@
 package com.konkawise.dtv.ui;
 
-import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Looper;
 import android.os.Message;
-import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
-import android.support.v4.app.ActivityCompat;
-import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.KeyEvent;
@@ -43,6 +38,7 @@ import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.UIApiManager;
 import com.konkawise.dtv.UsbManager;
 import com.konkawise.dtv.adapter.TvListAdapter;
+import com.konkawise.dtv.annotation.PVRType;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.bean.HandlerMsgModel;
 import com.konkawise.dtv.bean.UsbInfo;
@@ -52,15 +48,14 @@ import com.konkawise.dtv.dialog.CommRemindDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.FindChannelDialog;
 import com.konkawise.dtv.dialog.InitPasswordDialog;
+import com.konkawise.dtv.dialog.InputPvrMinuteDialog;
 import com.konkawise.dtv.dialog.OnCommCallback;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.PasswordDialog;
 import com.konkawise.dtv.dialog.PfBarScanDialog;
 import com.konkawise.dtv.dialog.PfDetailDialog;
-import com.konkawise.dtv.dialog.RecordMinuteDialog;
 import com.konkawise.dtv.dialog.SearchChannelDialog;
 import com.konkawise.dtv.dialog.SearchProgramDialog;
-import com.konkawise.dtv.dialog.SetPVRTimeDialog;
 import com.konkawise.dtv.dialog.SubtitleDialog;
 import com.konkawise.dtv.dialog.TeletextDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
@@ -76,7 +71,6 @@ import com.konkawise.dtv.weaktool.WeakTimerTask;
 import com.sw.dvblib.SWDVB;
 import com.sw.dvblib.SWFta;
 import com.sw.dvblib.msg.cb.AVMsgCB;
-import com.sw.dvblib.msg.cb.EpgMsgCB;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -95,7 +89,6 @@ import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
 import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
-import vendor.konka.hardware.dtvmanager.V1_0.EpgEvent_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HSubtitle_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HTeletext_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
@@ -491,6 +484,7 @@ public class Topmost extends BaseActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        hideSurface();
         UIApiManager.getInstance().stopPlay(0);
         SWDVBManager.getInstance().unRegMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, mAvMsgCB);
         cancelSmallHintBoxTimer();
@@ -503,7 +497,6 @@ public class Topmost extends BaseActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        hideSurface();
         if (mProgListShow) {
             toggleProgList();
         }
@@ -542,15 +535,16 @@ public class Topmost extends BaseActivity {
                 return true;
             }
         } else if (bookType == BookService.ACTION_BOOKING_RECORD) {
-            if (!isUsbExit()) {
+            if (isUsbNotExit()) {
                 ToastUtils.showToast(R.string.toast_no_storage_device);
                 return false;
             }
 
             if (progType != -1 && progNum != -1 && recordSeconds != -1) {
-                startRecord(new OnStartRecordCallback() {
+                startRecord(new OnCommCallback() {
                     @Override
-                    public void startRecordCallback(int recordFlag) {
+                    public void callback(Object object) {
+                        int recordFlag = (int) object;
                         if (recordFlag == 0) {
                             SWPDBaseManager.getInstance().setCurrProgType(progType, 0);
                             playProg(progNum, true);
@@ -569,7 +563,7 @@ public class Topmost extends BaseActivity {
         return false;
     }
 
-    private void startRecord(OnStartRecordCallback callback) {
+    private void startRecord(OnCommCallback callback) {
         if (mWaitingStartRecordRunnable == null) {
             mWaitingStartRecordRunnable = new WaitingStartRecordRunnable(this, callback);
         } else {
@@ -591,17 +585,27 @@ public class Topmost extends BaseActivity {
     }
 
     private void recordProg(int recordSeconds) {
-        SWDJAPVRManager.getInstance().setRecording(true);
-        startRecordingTimer(recordSeconds);
-        sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
-        ToastUtils.showToast(R.string.toast_start_record);
+        startRecord(new OnCommCallback() {
+            @Override
+            public void callback(Object object) {
+                int recordFlag = (int) object;
+                if (recordFlag == 0) {
+                    SWDJAPVRManager.getInstance().setRecording(true);
+                    startRecordingTimer(recordSeconds);
+                    sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
+                    ToastUtils.showToast(R.string.toast_start_record);
+                } else {
+                    ToastUtils.showToast(R.string.toast_start_record_failed);
+                }
+            }
+        });
     }
 
     private static class WaitingStartRecordRunnable extends WeakRunnable<Topmost> {
-        private OnStartRecordCallback callback;
+        private OnCommCallback callback;
         private Set<UsbInfo> mUsbInfos;
 
-        WaitingStartRecordRunnable(Topmost view, OnStartRecordCallback callback) {
+        WaitingStartRecordRunnable(Topmost view, OnCommCallback callback) {
             super(view);
             this.callback = callback;
         }
@@ -611,19 +615,24 @@ public class Topmost extends BaseActivity {
             int recordDelay = 0;
             int result = -4;
             while (true) {
-                if (!TextUtils.isEmpty(SWFtaManager.getInstance().getDiskUUID())) {
-                    result = SWDJAPVRManager.getInstance().startRecord(recordDelay);
-                } else {
-                    if (mUsbInfos == null) {
-                        mUsbInfos = UsbManager.getInstance().queryUsbInfos(mWeakReference.get());
-                    }
-                    if (mUsbInfos != null && !mUsbInfos.isEmpty()) {
+                if (mUsbInfos == null)
+                    mUsbInfos = UsbManager.getInstance().queryUsbInfos(mWeakReference.get());
+
+                if (mUsbInfos != null && !mUsbInfos.isEmpty()) {
+                    UsbInfo foundUsbInfo = UsbManager.getInstance().isContainUsb(mUsbInfos, SWFtaManager.getInstance().getDiskUUID());
+                    if (foundUsbInfo != null) {
+                        result = SWDJAPVRManager.getInstance().startRecord(recordDelay, foundUsbInfo.path);
+                        SWFtaManager.getInstance().setDiskUUID(foundUsbInfo.uuid);
+                        Log.i(TAG, "found, result = " + result + ", path = " + foundUsbInfo.path);
+                    } else {
                         for (UsbInfo usbInfo : mUsbInfos) {
                             result = SWDJAPVRManager.getInstance().startRecord(recordDelay, usbInfo.path);
-                            Log.i("test", "result = " + result + ", path = " + usbInfo.path);
-                            if (result != -4) break;
+                            SWFtaManager.getInstance().setDiskUUID(usbInfo.uuid);
+                            Log.i(TAG, "not found, result = " + result + ", path = " + usbInfo.path);
                         }
                     }
+                } else {
+                    result = -3;
                 }
 
                 if (result != -4) break;
@@ -641,7 +650,7 @@ public class Topmost extends BaseActivity {
                 @Override
                 public void run() {
                     if (callback != null) {
-                        callback.startRecordCallback(startRecordResult);
+                        callback.callback(startRecordResult);
                     }
                 }
             });
@@ -1502,15 +1511,26 @@ public class Topmost extends BaseActivity {
         mSettingPasswordDialog.show(getSupportFragmentManager(), Constants.PrefsKey.FIRST_LAUNCH);
     }
 
-    private void showInputRecordMinuteDialog() {
-        new RecordMinuteDialog()
-                .setOnInputRecordMinuteCallback(new OnCommCallback() {
+    private void showInputPvrMinuteDialog(@PVRType int pvrType) {
+        new InputPvrMinuteDialog()
+                .setOnInputPVRContentCallback(new OnCommCallback() {
                     @Override
                     public void callback(Object object) {
-                        int recordMinutes = (int) object;
-                        recordProg(recordMinutes * 60);
+                        int minutes = (int) object;
+                        switch (pvrType) {
+                            case Constants.PVR_TYPE_RECORD:
+                                recordProg(minutes * 60);
+                                break;
+                            case Constants.PVR_TYPE_TIMESHIFT:
+                                Intent intent = new Intent();
+                                intent.setClass(Topmost.this, RecordPlayer.class);
+                                intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, RecordPlayer.FROM_TOPMOST);
+                                intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_TIME, minutes);
+                                startActivity(intent);
+                                break;
+                        }
                     }
-                }).show(getSupportFragmentManager(), RecordMinuteDialog.TAG);
+                }).show(getSupportFragmentManager(), InputPvrMinuteDialog.TAG);
     }
 
     private void showQuitRecordDialog(KeyEvent event) {
@@ -1680,22 +1700,12 @@ public class Topmost extends BaseActivity {
 
         // PAUSE
         if (keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) {
-            if (!isUsbExit()) {
+            if (isUsbNotExit()) {
                 ToastUtils.showToast(R.string.toast_no_storage_device);
                 return true;
             }
-            new SetPVRTimeDialog()
-                    .setOnPasswordInputListener(new SetPVRTimeDialog.OnTimeInputListener() {
-                        @Override
-                        public void onPasswordInput(int minute) {
-                            Intent intent = new Intent();
-                            intent.setClass(Topmost.this, RecordPlayer.class);
-                            intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, RecordPlayer.FROM_TOPMOST);
-                            intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_TIME, minute);
-                            startActivity(intent);
-                        }
-                    })
-                    .show(getSupportFragmentManager(), SetPVRTimeDialog.TAG);
+
+            showInputPvrMinuteDialog(Constants.PVR_TYPE_TIMESHIFT);
             return true;
         }
 
@@ -1707,22 +1717,12 @@ public class Topmost extends BaseActivity {
 
         // SHIFT
         if (keyCode == KeyEvent.KEYCODE_SHIFT_RIGHT) {
-            if (!isUsbExit()) {
+            if (isUsbNotExit()) {
                 ToastUtils.showToast(R.string.toast_no_storage_device);
                 return true;
             }
-            new SetPVRTimeDialog()
-                    .setOnPasswordInputListener(new SetPVRTimeDialog.OnTimeInputListener() {
-                        @Override
-                        public void onPasswordInput(int minute) {
-                            Intent intent = new Intent();
-                            intent.setClass(Topmost.this, RecordPlayer.class);
-                            intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, RecordPlayer.FROM_TOPMOST);
-                            intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_TIME, minute);
-                            startActivity(intent);
-                        }
-                    })
-                    .show(getSupportFragmentManager(), SetPVRTimeDialog.TAG);
+
+            showInputPvrMinuteDialog(Constants.PVR_TYPE_TIMESHIFT);
             return true;
         }
 
@@ -1748,7 +1748,7 @@ public class Topmost extends BaseActivity {
 
         // RECORD
         if (keyCode == KeyEvent.KEYCODE_MEDIA_RECORD) {
-            if (!isUsbExit()) {
+            if (isUsbNotExit()) {
                 ToastUtils.showToast(R.string.toast_no_storage_device);
                 return true;
             }
@@ -1757,21 +1757,12 @@ public class Topmost extends BaseActivity {
                 showQuitRecordDialog(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_UNKNOWN));
             } else {
                 if (mProgListAdapter.getCount() > 0) {
-                    startRecord(new OnStartRecordCallback() {
-                        @Override
-                        public void startRecordCallback(int recordFlag) {
-                            if (recordFlag == 0) {
-                                int recordMinutes = SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_RecordMaxMin.ordinal());
-                                if (recordMinutes == 0) {
-                                    showInputRecordMinuteDialog();
-                                } else {
-                                    recordProg(recordMinutes >= Integer.MAX_VALUE ? Integer.MAX_VALUE : recordMinutes * 60);
-                                }
-                            } else {
-                                ToastUtils.showToast(R.string.toast_start_record_failed);
-                            }
-                        }
-                    });
+                    int recordMinutes = SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_RecordMaxMin.ordinal());
+                    if (recordMinutes == 0) {
+                        showInputPvrMinuteDialog(Constants.PVR_TYPE_RECORD);
+                    } else {
+                        recordProg(recordMinutes >= Integer.MAX_VALUE ? Integer.MAX_VALUE : recordMinutes * 60);
+                    }
                 }
             }
             return true;
@@ -1895,6 +1886,7 @@ public class Topmost extends BaseActivity {
         if (mProgListAdapter.getCount() <= 0) return super.dispatchKeyEvent(event);
         // 如果处于booking录制状态，拦截提示退出
         if (interceptEventWhenRecord(event)) {
+            sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
             showQuitRecordDialog(event);
             return true;
         }
@@ -1946,6 +1938,14 @@ public class Topmost extends BaseActivity {
         // menu显示，焦点在menu上
         if (mMenuShow && event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP) {
             if (isMenuTopFocused()) return true; // 避免menu已经到顶持续按上键导致焦点丢失问题
+            return super.dispatchKeyEvent(event);
+        }
+
+        if (mMenuShow && event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
+            return super.dispatchKeyEvent(event);
+        }
+
+        if (mMenuShow && event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
             return super.dispatchKeyEvent(event);
         }
 
@@ -2089,8 +2089,8 @@ public class Topmost extends BaseActivity {
         return SWBookingManager.getInstance().isRecording() || SWDJAPVRManager.getInstance().isRecording();
     }
 
-    private boolean isUsbExit() {
-        return UsbManager.getInstance().isUsbExist(this) || mUsbAttach;
+    private boolean isUsbNotExit() {
+        return !UsbManager.getInstance().isUsbExist(this) && !mUsbAttach;
     }
 
     @Override
@@ -2118,9 +2118,5 @@ public class Topmost extends BaseActivity {
             Log.i(TAG, "book stop current record");
             stopRecord();
         }
-    }
-
-    public interface OnStartRecordCallback {
-        void startRecordCallback(int recordFlag);
     }
 }

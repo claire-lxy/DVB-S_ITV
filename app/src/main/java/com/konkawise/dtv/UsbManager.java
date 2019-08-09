@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.StatFs;
 import android.os.storage.StorageManager;
+import android.text.TextUtils;
 import android.text.format.Formatter;
 import android.util.Log;
 
@@ -14,6 +15,7 @@ import com.konkawise.dtv.bean.UsbInfo;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -128,6 +130,19 @@ public class UsbManager {
             return usbInfos != null && !usbInfos.isEmpty();
         }
         return true;
+    }
+
+    public UsbInfo isContainUsb(Collection<UsbInfo> usbInfos, String uuid) {
+        if (TextUtils.isEmpty(uuid) || usbInfos == null || usbInfos.isEmpty()) {
+            return null;
+        }
+
+        for (UsbInfo usbInfo : usbInfos) {
+            if (TextUtils.equals(usbInfo.uuid, uuid)) {
+                return usbInfo;
+            }
+        }
+        return null;
     }
 
     public interface OnUsbReceiveListener {

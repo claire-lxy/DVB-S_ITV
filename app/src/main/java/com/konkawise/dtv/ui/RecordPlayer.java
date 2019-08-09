@@ -1,14 +1,7 @@
 package com.konkawise.dtv.ui;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.media.MediaPlayer;
-import android.os.Build;
-import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
@@ -37,7 +30,6 @@ import com.konkawise.dtv.weaktool.WeakHandler;
 import com.sw.dvblib.DJAPVR;
 import com.sw.dvblib.msg.cb.AVMsgCB;
 
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Set;
 

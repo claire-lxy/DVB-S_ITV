@@ -5,7 +5,6 @@ import android.content.Context;
 import android.os.Build;
 import android.os.PowerManager;
 import android.text.TextUtils;
-import android.util.Log;
 
 import static android.content.Context.POWER_SERVICE;
 

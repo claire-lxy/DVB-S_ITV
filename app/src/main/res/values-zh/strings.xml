@@ -12,8 +12,6 @@
     <string name="audio_language">Audio Language</string>
     <string name="audio_track_left_simple">左声道</string>
     <string name="audio_track_right_simple">右声道</string>
-    <string name="audio_track_left">左声道</string>
-    <string name="audio_track_right">右声道</string>
     <string name="audio_track_stereo">立体声</string>
 
     <string name="epg_event_playing">播放</string>
@@ -34,16 +32,12 @@
     <string name="off">关</string>
     <string name="on">开</string>
     <string name="motor">马达:</string>
-    <string name="motor_0">马达</string>
     <string name="diseqc">DisEqc:</string>
     <string name="freq">频率:</string>
     <string name="lnb_power">Lnb Power:</string>
     <string name="lnb">LNB:</string>
-    <string name="satellite_S">卫星:</string>
     <string name="all">所有</string>
-    <string name="diseqc_title">Diseqc 1.X:</string>
     <string name="longitude">Longitude:</string>
-    <string name="_22khz">22KHz:</string>
     <string name="i">I</string>
     <string name="q">Q</string>
     <string name="rename">重命名</string>
@@ -75,10 +69,8 @@
     <string name="motor_select">选择</string>
     <string name="motor_ok">OK</string>
 
-    <string name="east">E</string>
     <string name="south">S</string>
     <string name="west">W</string>
-    <string name="north">N</string>
 
     <!--DVB setting-->
     <string name="general_setting">General Setting</string>
@@ -101,7 +93,6 @@
     <!--sub/txt-->
     <string name="subtitle">Subtitle</string>
     <string name="teletext">Teletext</string>
-    <string name="default_off">off</string>
 
     <!--TV-->
     <string name="tv">电视</string>
@@ -136,9 +127,7 @@
     <!--activity_blind_select.xml-->
     <string name="blindscan_select">盲扫选择</string>
     <string name="satellite_blind">卫星:</string>
-    <string name="lnb_5150">5150</string>
     <string name="diseqc_1_x">Diseqc 1.X:</string>
-    <string name="diseqc_d">DisEqc D</string>
     <string name="freq_22KHz">22KHz:</string>
 
     <!--activity_scan_tv_and_radio.xml-->
@@ -366,9 +355,6 @@
     <string name="play">Play</string>
     <string name="dialog_delete_channel_content">Are you sure to delete?</string>
 
-    <string name="dialog_record_minute_title">Enter Record Minute</string>
-    <string name="dialog_record_minute_content">Please Input Record Minute(s)</string>
-
     <string name="toast_invalid_password">Invalid password</string>
     <string name="toast_invalid_password_length">Need 4-digit password</string>
     <string name="toast_book_limit">Book Limit</string>
@@ -382,8 +368,8 @@
     <string name="toast_no_storage_device">No Storage Device!</string>
     <string name="toast_program_playing">Program is playing!</string>
     <string name="toast_start_record_failed">Start record failed!</string>
-    <string name="toast_record_minute_empty">Record Minute(s) should be not empty</string>
-    <string name="toast_record_minute_invalid">Record minute(s) invalid!</string>
+    <string name="toast_pvr_minute_empty">Minute(s) is empty!</string>
+    <string name="toast_pvr_minute_invalid">Minute(s) invalid!</string>
 
     <string name="dialog_try_auto_diseqc">Scanning DiSEqC Port Index {0}.Try [{1}/{2}] times...</string>
     <string name="dialog_auto_diseqc_title">Information</string>

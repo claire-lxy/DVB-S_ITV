@@ -1,5 +1,6 @@
 package com.konkawise.dtv.dialog;
 
+import android.content.DialogInterface;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -13,23 +14,23 @@ import com.konkawise.dtv.view.LastInputEditText;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class RecordMinuteDialog extends BaseDialogFragment {
-    public static final String TAG = "RecordMinuteDialog";
+public class InputPvrMinuteDialog extends BaseDialogFragment {
+    public static final String TAG = "InputPvrMinuteDialog";
 
-    @BindView(R.id.et_record_minute)
-    LastInputEditText mEtRecordMinute;
+    @BindView(R.id.et_pvr_content)
+    LastInputEditText mEtPvrMinute;
 
-    @OnClick(R.id.btn_confirm_record_minute)
+    @OnClick(R.id.btn_pvr_confirm)
     void confirmRecordMinute() {
-        String recordMinutes = mEtRecordMinute.getText().toString();
+        String recordMinutes = mEtPvrMinute.getText().toString();
         if (TextUtils.isEmpty(recordMinutes)) {
-            ToastUtils.showToast(R.string.toast_record_minute_empty);
-            mEtRecordMinute.requestFocus();
+            ToastUtils.showToast(R.string.toast_pvr_minute_empty);
+            mEtPvrMinute.requestFocus();
             return;
         }
         if (Integer.valueOf(recordMinutes) <= 0) {
-            ToastUtils.showToast(R.string.toast_record_minute_invalid);
-            mEtRecordMinute.requestFocus();
+            ToastUtils.showToast(R.string.toast_pvr_minute_invalid);
+            mEtPvrMinute.requestFocus();
             return;
         }
 
@@ -44,27 +45,26 @@ public class RecordMinuteDialog extends BaseDialogFragment {
 
     @Override
     protected int getLayoutId() {
-        return R.layout.dialog_record_minute_layout;
+        return R.layout.dialog_input_pvr_minute_layout;
     }
 
     @Override
     protected void setup(View view) {
-        if (getDialog() != null) getDialog().setCancelable(false);
-        mEtRecordMinute.postDelayed(new Runnable() {
+        mEtPvrMinute.postDelayed(new Runnable() {
             @Override
             public void run() {
-                mEtRecordMinute.setFocusable(true);
-                mEtRecordMinute.requestFocus();
+                mEtPvrMinute.setFocusable(true);
+                mEtPvrMinute.requestFocus();
             }
         }, 500);
 
-        mEtRecordMinute.setOnKeyListener(new View.OnKeyListener() {
+        mEtPvrMinute.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 switch (event.getKeyCode()) {
                     case KeyEvent.KEYCODE_DPAD_LEFT:
                         if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                            mEtRecordMinute.setText(EditUtils.getEditSubstring(mEtRecordMinute));
+                            mEtPvrMinute.setText(EditUtils.getEditSubstring(mEtPvrMinute));
                         }
                         return true;
                     case KeyEvent.KEYCODE_DPAD_CENTER:
@@ -75,8 +75,16 @@ public class RecordMinuteDialog extends BaseDialogFragment {
         });
     }
 
-    public RecordMinuteDialog setOnInputRecordMinuteCallback(OnCommCallback callback) {
+    public InputPvrMinuteDialog setOnInputPVRContentCallback(OnCommCallback callback) {
         this.mCallback = callback;
         return this;
+    }
+
+    @Override
+    protected boolean onKeyListener(DialogInterface dialog, int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
+            return true;
+        }
+        return super.onKeyListener(dialog, keyCode, event);
     }
 }

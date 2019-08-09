@@ -1,13 +1,9 @@
 package com.konkawise.dtv.ui;
 
-import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.os.Bundle;
-import android.service.autofill.RegexValidator;
 import android.support.v4.app.ActivityCompat;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.ListView;
@@ -24,11 +20,9 @@ import com.konkawise.dtv.bean.UsbInfo;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.PasswordDialog;
-import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.permission.OnRequestPermissionResultListener;
 import com.konkawise.dtv.permission.PermissionHelper;
 import com.konkawise.dtv.weaktool.WeakRunnable;
-import com.sw.dvblib.DJAPVR;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -40,7 +34,6 @@ import butterknife.BindView;
 import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
-import vendor.konka.hardware.dtvmanager.V1_0.HPVR_RecFile_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 
 public class RecordListActivity extends BaseActivity implements UsbManager.OnUsbReceiveListener {
