@@ -2,6 +2,7 @@ package com.konkawise.dtv.dialog;
 
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.*;
 import android.widget.*;
@@ -72,8 +73,13 @@ public class CommCheckItemDialog extends BaseDialogFragment {
 
     public void updateContent(List<String> content) {
         String lastCheckContent = mAdapter.getItem(mSelectPosition);
-        mAdapter.updateData(content);
+        Log.i(TAG, "lastCheckContent:" + lastCheckContent + "------content:" + content);
         mSelectPosition = content.indexOf(lastCheckContent);
+        if (mSelectPosition < 0)
+            mSelectPosition = 0;
+
+        mAdapter.updateData(content);
+        mAdapter.setSelectItem(mSelectPosition);
         mLv_content.setSelection(mSelectPosition);
         setListViewHeightBasedOnChildren(mLv_content);
     }

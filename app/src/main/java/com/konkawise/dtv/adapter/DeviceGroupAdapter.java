@@ -34,4 +34,8 @@ public class DeviceGroupAdapter extends BaseListViewAdapter<String> {
     public void setDarked(boolean darked) {
         this.darked = darked;
     }
+
+    public boolean getDarked() {
+        return darked;
+    }
 }

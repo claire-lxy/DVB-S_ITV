@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;
+import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.UsbManager;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.bean.UsbInfo;
@@ -18,6 +19,7 @@ import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.OnCommNegativeListener;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
+import com.sw.dvblib.SWFta;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -163,6 +165,10 @@ public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsb
     private int mDeviceNamePosition;
     private int mDeviceFormatPosition;
 
+    private int[] arrayTimeShift = {1, 5, 30, 60};
+    private int[] arrayRecordLength = {0, 0x7FFFFFFF, 1, 10, 30, 60};
+    private int[] arrayRecordType = {0, 1};
+
     private CommCheckItemDialog mCommCheckItemDialog;
     private CommTipsDialog mCommTipsDialog;
 
@@ -188,11 +194,17 @@ public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsb
     }
 
     private void initData() {
+        mTimeShiftLengthPosition = getSelectPosition(arrayTimeShift, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_TimeshiftMaxMin.ordinal()));
+        mRecordLengthPosition = getSelectPosition(arrayRecordLength, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_RecordMaxMin.ordinal()));
+        mRecordTypePosition = getSelectPosition(arrayRecordType, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_RecordType.ordinal()));
+        mDeviceNamePosition = getdiskPosition(SWFtaManager.getInstance().getDiskUUID(), mUsbInfos);
+
+
         mTvTimeShiftLength.setText(mTimeShiftLengthArray[mTimeShiftLengthPosition]);
         mTvRecordLength.setText(mRecordLengthArray[mRecordLengthPosition]);
         mTvRecordType.setText(mRecordTypeArray[mRecordTypePosition]);
         mTvDeviceFormat.setText(getResources().getString(R.string.device_format_OK));
-        updateDeviceInfo(0);
+        updateDeviceInfo(mDeviceNamePosition);
     }
 
     private void updateDeviceInfo(int devicePosition) {
@@ -206,6 +218,8 @@ public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsb
             mTvDeviceFileSystem.setText(MessageFormat.format(getString(R.string.device_file_system), mUsbInfos.get(devicePosition).fsType.toUpperCase()));
             mTvDeviceFreeSpace.setText(MessageFormat.format(getString(R.string.device_free_space), mUsbInfos.get(devicePosition).availableSize));
             mTvDeviceTotalCapacity.setText(MessageFormat.format(getString(R.string.device_total_capacity), mUsbInfos.get(devicePosition).totalSize));
+
+            SWFtaManager.getInstance().setDiskUUID(mUsbInfos.get(devicePosition).uuid);
         } else {
             if (mItemDeviceFormat.isFocused()) {
                 mItemTimeShiftLengthLeft.requestFocus();
@@ -230,7 +244,7 @@ public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsb
         }
     }
 
-    private void updateDialogContent() {
+    private void updateDialogContent(int diskPosition) {
         if (mCommCheckItemDialog != null && mCommCheckItemDialog.isVisible()) {
             if (mCurrSelectItem == ITEM_DEVICE_NAME) {
                 if (mUsbInfos.isEmpty()) {
@@ -240,7 +254,7 @@ public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsb
                     for (UsbInfo usbInfo : mUsbInfos) {
                         deviceNameList.add(usbInfo.fsLabel);
                     }
-                    mCommCheckItemDialog.position(0)
+                    mCommCheckItemDialog
                             .updateContent(deviceNameList);
                 }
             }
@@ -257,6 +271,19 @@ public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsb
         return 0;
     }
 
+    private int getdiskPosition(String uuid, List<UsbInfo> ltUsbInfos) {
+        if (ltUsbInfos == null || ltUsbInfos.size() == 0)
+            return 0;
+        int position = 0;
+        for (int i = 0; i < ltUsbInfos.size(); i++) {
+            if (TextUtils.equals(uuid, ltUsbInfos.get(i).uuid)) {
+                position = i;
+                break;
+            }
+        }
+        return position;
+    }
+
     private void showGeneralSettingDialog(String title, List<String> content, int selectPosition) {
         mCommCheckItemDialog = new CommCheckItemDialog()
                 .title(title)
@@ -271,16 +298,19 @@ public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsb
                             case ITEM_TIME_SHIFT_LENGTH:
                                 mTvTimeShiftLength.setText(checkContent);
                                 mTimeShiftLengthPosition = Arrays.asList(mTimeShiftLengthArray).indexOf(checkContent);
+                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_TimeshiftMaxMin.ordinal(), arrayTimeShift[mTimeShiftLengthPosition]);
                                 break;
 
                             case ITEM_RECORD_LENGTH:
                                 mTvRecordLength.setText(checkContent);
                                 mRecordLengthPosition = Arrays.asList(mRecordLengthArray).indexOf(checkContent);
+                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_RecordMaxMin.ordinal(), arrayRecordLength[mRecordLengthPosition]);
                                 break;
 
                             case ITEM_RECORD_TYPE:
                                 mTvRecordType.setText(checkContent);
                                 mRecordTypePosition = Arrays.asList(mRecordTypeArray).indexOf(checkContent);
+                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_RecordType.ordinal(), arrayRecordType[mRecordTypePosition]);
                                 break;
 
                             case ITEM_DEVICE_NAME:
@@ -337,18 +367,21 @@ public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsb
                     if (--mTimeShiftLengthPosition < 0)
                         mTimeShiftLengthPosition = mTimeShiftLengthArray.length - 1;
                     mTvTimeShiftLength.setText(mTimeShiftLengthArray[mTimeShiftLengthPosition]);
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_TimeshiftMaxMin.ordinal(), arrayTimeShift[mTimeShiftLengthPosition]);
                     break;
 
                 case ITEM_RECORD_LENGTH:
                     if (--mRecordLengthPosition < 0)
                         mRecordLengthPosition = mRecordLengthArray.length - 1;
                     mTvRecordLength.setText(mRecordLengthArray[mRecordLengthPosition]);
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_RecordMaxMin.ordinal(), arrayRecordLength[mRecordLengthPosition]);
                     break;
 
                 case ITEM_RECORD_TYPE:
                     if (--mRecordTypePosition < 0)
                         mRecordTypePosition = mRecordTypeArray.length - 1;
                     mTvRecordType.setText(mRecordTypeArray[mRecordTypePosition]);
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_RecordType.ordinal(), arrayRecordType[mRecordTypePosition]);
                     break;
 
                 case ITEM_DEVICE_NAME:
@@ -372,18 +405,21 @@ public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsb
                     if (++mTimeShiftLengthPosition > mTimeShiftLengthArray.length - 1)
                         mTimeShiftLengthPosition = 0;
                     mTvTimeShiftLength.setText(mTimeShiftLengthArray[mTimeShiftLengthPosition]);
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_TimeshiftMaxMin.ordinal(), arrayTimeShift[mTimeShiftLengthPosition]);
                     break;
 
                 case ITEM_RECORD_LENGTH:
                     if (++mRecordLengthPosition > mRecordLengthArray.length - 1)
                         mRecordLengthPosition = 0;
                     mTvRecordLength.setText(mRecordLengthArray[mRecordLengthPosition]);
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_RecordMaxMin.ordinal(), arrayRecordLength[mRecordLengthPosition]);
                     break;
 
                 case ITEM_RECORD_TYPE:
                     if (++mRecordTypePosition > mRecordTypeArray.length - 1)
                         mRecordTypePosition = 0;
                     mTvRecordType.setText(mRecordTypeArray[mRecordTypePosition]);
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_RecordType.ordinal(), arrayRecordType[mRecordTypePosition]);
                     break;
 
                 case ITEM_DEVICE_NAME:
@@ -425,13 +461,20 @@ public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsb
     @Override
     public void onUsbReceive(int usbObserveType, Set<UsbInfo> usbInfos, UsbInfo currUsbInfo) {
         updateTipsDialog(currUsbInfo, usbObserveType);
+        UsbInfo selectInfo = null;
+        if (mUsbInfos != null && mUsbInfos.size() > 0)
+            selectInfo = mUsbInfos.get(mDeviceNamePosition);
 
         mUsbInfos.clear();
         if (usbInfos != null && !usbInfos.isEmpty()) {
             mUsbInfos.addAll(usbInfos);
         }
 
-        updateDialogContent();
-        updateDeviceInfo(0);
+        if (selectInfo != null)
+            mDeviceNamePosition = getdiskPosition(selectInfo.uuid, mUsbInfos);
+        else
+            mDeviceNamePosition = 0;
+        updateDialogContent(mDeviceNamePosition);
+        updateDeviceInfo(mDeviceNamePosition);
     }
 }

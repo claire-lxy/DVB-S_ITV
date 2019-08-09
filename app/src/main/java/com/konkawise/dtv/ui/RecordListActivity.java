@@ -1,9 +1,13 @@
 package com.konkawise.dtv.ui;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Bundle;
+import android.service.autofill.RegexValidator;
 import android.support.v4.app.ActivityCompat;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.ListView;
@@ -20,9 +24,11 @@ import com.konkawise.dtv.bean.UsbInfo;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.PasswordDialog;
+import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.permission.OnRequestPermissionResultListener;
 import com.konkawise.dtv.permission.PermissionHelper;
 import com.konkawise.dtv.weaktool.WeakRunnable;
+import com.sw.dvblib.DJAPVR;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -34,6 +40,7 @@ import butterknife.BindView;
 import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
+import vendor.konka.hardware.dtvmanager.V1_0.HPVR_RecFile_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 
 public class RecordListActivity extends BaseActivity implements UsbManager.OnUsbReceiveListener {
@@ -83,9 +90,9 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         startActivity(intent);
     }
 
-    private int mCurrDevicePostion = -1;
+    private int mCurrDevicePostion;
     private int mCurrRecordPosition;
-    private Set<UsbInfo> mUsbInfos = new LinkedHashSet<>();
+    private List<UsbInfo> mUsbInfos = new ArrayList<>();
     private DeviceGroupAdapter deviceGroupAdapter;
     private RecordListAdapter mAdapter;
     private LoadRecordListRunnable loadRecordListRunnable;
@@ -103,7 +110,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         mListView.setAdapter(mAdapter);
         deviceGroupAdapter = new DeviceGroupAdapter(this, new ArrayList<>());
         mDeviceListView.setAdapter(deviceGroupAdapter);
-        mUsbInfos = UsbManager.getInstance().getUsbInfos(this);
+        mUsbInfos.addAll(UsbManager.getInstance().getUsbInfos(this));
 
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
             if (ActivityCompat.checkSelfPermission(this, Constants.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -115,17 +122,17 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
                             public void onRequestResult(List<String> grantedPermissions, List<String> deniedPermissions) {
                                 for (int i = 0; i < grantedPermissions.size(); i++) {
                                     if (grantedPermissions.get(i).equals(Constants.WRITE_EXTERNAL_STORAGE)) {
-                                        updateDeviceGroup(mUsbInfos, 0, false);
+                                        updateDeviceGroup(mUsbInfos, 0, false, false);
                                         break;
                                     }
                                 }
                             }
                         });
             } else {
-                updateDeviceGroup(mUsbInfos, 0, false);
+                updateDeviceGroup(mUsbInfos, 0, false, false);
             }
         } else {
-            updateDeviceGroup(mUsbInfos, 0, false);
+            updateDeviceGroup(mUsbInfos, 0, false, false);
         }
     }
 
@@ -135,19 +142,18 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         UsbManager.getInstance().unregisterUsbReceiveListener(this);
     }
 
-    private void updateDeviceGroup(Set<UsbInfo> tUsbInfos, int selectPosition, boolean darked) {
-        deviceGroupAdapter.setSelectPosition(selectPosition);
+    private void updateDeviceGroup(List<UsbInfo> tUsbInfos, int selectDevicePosition, boolean darked, boolean needRefresh) {
+        deviceGroupAdapter.setSelectPosition(selectDevicePosition);
         deviceGroupAdapter.setDarked(darked);
         deviceGroupAdapter.updateData(transUsbInfoToString(tUsbInfos));
         if (deviceGroupAdapter.getData().size() > 0) {
-            if (selectPosition >= tUsbInfos.size())
-                selectPosition = 0;
-            if (mCurrDevicePostion == selectPosition) {
-                updateRecordGroupData(mCurrRecordPosition, false);
-            } else {
-                mDeviceListView.setSelection(selectPosition);
-                mCurrDevicePostion = selectPosition;
-            }
+            if (selectDevicePosition >= tUsbInfos.size())
+                selectDevicePosition = 0;
+            mCurrDevicePostion = selectDevicePosition;
+
+            if (needRefresh)
+                updateRecordGroupData(0, false);
+            mDeviceListView.setSelection(selectDevicePosition);
         } else {
             mAdapter.clearSelect();
             mAdapter.clearData();
@@ -156,30 +162,30 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         }
     }
 
-    private void updateDeviceGroup(int selectPosition, boolean darked) {
-        deviceGroupAdapter.setSelectPosition(selectPosition);
+    private void updateDeviceGroup(int selectDevicePosition, boolean darked) {
+        deviceGroupAdapter.setSelectPosition(selectDevicePosition);
         deviceGroupAdapter.setDarked(darked);
         deviceGroupAdapter.notifyDataSetChanged();
     }
 
-    private void updateRecordGroupData(int selectPosition, boolean darked) {
+    private void updateRecordGroupData(int selectRecordPosition, boolean darked) {
         if (loadRecordListRunnable == null) {
             loadRecordListRunnable = new LoadRecordListRunnable(this);
         }
-        loadRecordListRunnable.selectPositon = selectPosition;
+        loadRecordListRunnable.selectRecordPosition = selectRecordPosition;
         loadRecordListRunnable.darked = darked;
         ThreadPoolManager.getInstance().remove(loadRecordListRunnable);
         ThreadPoolManager.getInstance().execute(loadRecordListRunnable);
     }
 
-    private void updateRecordGroup(int selectPosition, boolean darked) {
+    private void updateRecordGroup(int selectRecordPosition, boolean darked) {
         mAdapter.setDarked(darked);
-        mAdapter.setSelectPosition(selectPosition);
+        mAdapter.setSelectPosition(selectRecordPosition);
         mAdapter.notifyDataSetChanged();
     }
 
     private static class LoadRecordListRunnable extends WeakRunnable<RecordListActivity> {
-        int selectPositon;
+        int selectRecordPosition;
         boolean darked;
 
         public LoadRecordListRunnable(RecordListActivity view) {
@@ -189,33 +195,25 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         @Override
         protected void loadBackground() {
             RecordListActivity context = mWeakReference.get();
-            UsbInfo selectUsbInfo = null;
-            int i = 0;
-            for (UsbInfo usbInfo : context.mUsbInfos) {
-                if (i == selectPositon) {
-                    selectUsbInfo = usbInfo;
-                    break;
-                }
-                i++;
-            }
-            List<RecordInfo> ltRecordFiles = context.queryRecordFiles(selectUsbInfo.path + "/PVR/");
+            List<RecordInfo> ltRecordFiles = context.queryRecordFiles(context.mUsbInfos.get(context.mCurrDevicePostion).path + "/PVR/");
             context.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (selectPositon >= ltRecordFiles.size())
-                        selectPositon = 0;
-                    context.mCurrRecordPosition = selectPositon;
+                    if (selectRecordPosition >= ltRecordFiles.size())
+                        selectRecordPosition = 0;
+                    context.mCurrRecordPosition = selectRecordPosition;
                     context.mAdapter.setDarked(darked);
-                    context.mAdapter.setSelectPosition(selectPositon);
+                    context.mAdapter.clearSelect();
+                    context.mAdapter.setSelectPosition(selectRecordPosition);
                     context.mAdapter.updateData(ltRecordFiles);
-                    context.mListView.setSelection(selectPositon);
+                    context.mListView.setSelection(selectRecordPosition);
 
                 }
             });
         }
     }
 
-    private List<String> transUsbInfoToString(Set<UsbInfo> tUsbInfos) {
+    private List<String> transUsbInfoToString(List<UsbInfo> tUsbInfos) {
         List<String> ltDeviceNames = new ArrayList<>();
         for (UsbInfo usbInfo : tUsbInfos) {
             ltDeviceNames.add(usbInfo.fsLabel);
@@ -393,15 +391,38 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         return end.equals("ts");
     }
 
+    private int getdiskPosition(String uuid, List<UsbInfo> ltUsbInfos, int[] refresh) {
+        refresh[0] = -1;
+        if (ltUsbInfos == null || ltUsbInfos.size() == 0)
+            return 0;
+        int position = 0;
+        for (int i = 0; i < ltUsbInfos.size(); i++) {
+            if (TextUtils.equals(uuid, ltUsbInfos.get(i).uuid)) {
+                position = i;
+                refresh[0] = 0;
+                break;
+            }
+        }
+        return position;
+    }
+
     @Override
     public void onUsbReceive(int usbObserveType, Set<UsbInfo> usbInfos, UsbInfo currUsbInfo) {
-        if (usbObserveType == Constants.USB_TYPE_DETACH) {
-            mCurrRecordPosition = 0;
-            mAdapter.clearData();
-            mAdapter.clearSelect();
-            updateDeviceGroup(usbInfos, 0, false);
-        } else {
-            updateDeviceGroup(usbInfos, mCurrDevicePostion < 0 ? 0 : mCurrDevicePostion, false);
+        UsbInfo selectInfo = null;
+        if (mUsbInfos != null && mUsbInfos.size() > 0)
+            selectInfo = mUsbInfos.get(mCurrDevicePostion);
+
+        mUsbInfos.clear();
+        if (usbInfos != null && !usbInfos.isEmpty()) {
+            mUsbInfos.addAll(usbInfos);
         }
+
+        int position = 0;
+        int[] refresh = new int[1];
+        if (selectInfo != null)
+            position = getdiskPosition(selectInfo.uuid, mUsbInfos, refresh);
+
+        Log.i(TAG, "REFRESH---" + (refresh[0] == -1));
+        updateDeviceGroup(mUsbInfos, position, deviceGroupAdapter.getDarked(), refresh[0] == -1);
     }
 }
