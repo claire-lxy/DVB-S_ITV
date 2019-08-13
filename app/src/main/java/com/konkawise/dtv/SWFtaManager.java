@@ -1,5 +1,7 @@
 package com.konkawise.dtv;
 
+import android.text.TextUtils;
+
 import com.sw.dvblib.SWFta;
 
 import vendor.konka.hardware.dtvmanager.V1_0.HPDPPlayInfo_t;
@@ -227,5 +229,10 @@ public class SWFtaManager {
      */
     public void setDiskUUID(String uuid) {
         SWFta.CreateInstance().setDiskUUID(uuid);
+    }
+
+    public boolean isPasswordEmpty() {
+        String password = getCommPWDInfo(SWFta.E_E2PP.E2P_Password.ordinal());
+        return TextUtils.isEmpty(password) || TextUtils.equals(password, "null");
     }
 }

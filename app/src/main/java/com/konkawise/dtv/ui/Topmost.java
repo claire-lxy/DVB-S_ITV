@@ -25,7 +25,6 @@ import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.HandlerMsgManager;
-import com.konkawise.dtv.PreferenceManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.RealTimeManager;
 import com.konkawise.dtv.SWBookingManager;
@@ -475,8 +474,7 @@ public class Topmost extends BaseActivity {
 //        startSmallHintBoxTimer();
         restoreMenuItem(); // 恢复menu初始item显示
 
-        if (PreferenceManager.getInstance().getBoolean(Constants.PrefsKey.FIRST_LAUNCH)
-                && SWPDBaseManager.getInstance().getCurrProgInfo() == null) {
+        if (!SWFtaManager.getInstance().isPasswordEmpty() && SWPDBaseManager.getInstance().getCurrProgInfo() == null) {
             showSearchChannelDialog();
         }
     }
@@ -942,8 +940,9 @@ public class Topmost extends BaseActivity {
                 UIApiManager.getInstance().setWindowSize(0, 0,
                         getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
                 if (!handleBook()) {
-                    if (SWPDBaseManager.getInstance().getCurrProgInfo() != null && PreferenceManager.getInstance().getBoolean(Constants.PrefsKey.FIRST_LAUNCH))
+                    if (SWPDBaseManager.getInstance().getCurrProgInfo() != null && !SWFtaManager.getInstance().isPasswordEmpty()) {
                         playProg(getCurrentProgNum(), true);
+                    }
                 } else {
                     setIntent(new Intent()); // 处理完后要重置为空，防止其他界面返回或跳转到Topmost使用上一个book跳转的intent
                 }
@@ -1206,7 +1205,7 @@ public class Topmost extends BaseActivity {
     }
 
     private void checkLaunchSettingPassword() {
-        if (!PreferenceManager.getInstance().getBoolean(Constants.PrefsKey.FIRST_LAUNCH)) {
+        if (SWFtaManager.getInstance().isPasswordEmpty()) {
             showSettingPasswordDialog();
         }
     }
@@ -1375,6 +1374,9 @@ public class Topmost extends BaseActivity {
                     @Override
                     public void onPositiveListener() {
                         SWFtaManager.getInstance().factoryReset();
+                        SWFtaManager.getInstance().setCommPWDInfo(SWFta.E_E2PP.E2P_Password.ordinal(), "null");
+                        toggleMenu();
+                        showSettingPasswordDialog();
                     }
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
@@ -1404,6 +1406,7 @@ public class Topmost extends BaseActivity {
                 .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
                     @Override
                     public void onPositiveListener() {
+                        dismissSettingPasswordDialog();
                         hideSurface();
                         finish();
                     }
@@ -1488,7 +1491,6 @@ public class Topmost extends BaseActivity {
             @Override
             public void onSavePassword(String password) {
                 SWFtaManager.getInstance().setCommPWDInfo(SWFta.E_E2PP.E2P_Password.ordinal(), password);
-                PreferenceManager.getInstance().putBoolean(Constants.PrefsKey.FIRST_LAUNCH, true);
 
                 dismissSettingPasswordDialog();
 
@@ -1501,15 +1503,14 @@ public class Topmost extends BaseActivity {
         }).setOnKeyListener(new InitPasswordDialog.OnKeyListener() {
             @Override
             public boolean onKeyListener(InitPasswordDialog dialog, int keyCode, KeyEvent event) {
-                if (keyCode == KeyEvent.KEYCODE_BACK) {
-                    dismissSettingPasswordDialog();
+                if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
                     showExitDialog();
                     return true;
                 }
                 return false;
             }
         });
-        mSettingPasswordDialog.show(getSupportFragmentManager(), Constants.PrefsKey.FIRST_LAUNCH);
+        mSettingPasswordDialog.show(getSupportFragmentManager(), InitPasswordDialog.TAG);
     }
 
     private void showInputPvrMinuteDialog(@PVRType int pvrType) {

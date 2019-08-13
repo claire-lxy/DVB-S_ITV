@@ -15,6 +15,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 
 public class InitPasswordDialog extends BaseDialogFragment {
+    public static final String TAG = "InitPasswordDialog";
 
     @BindView(R.id.et_init_password)
     LastInputEditText mEtInitPassword;

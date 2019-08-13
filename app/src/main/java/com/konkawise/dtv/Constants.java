@@ -103,8 +103,6 @@ public class Constants {
         // language
         String LOCALE_TYPE = "localeType";
 
-        String FIRST_LAUNCH = "firstLaunch";
-
         String SAVE_POSITION = "position";
 
     }
