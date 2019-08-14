@@ -32,7 +32,6 @@ import com.konkawise.dtv.SWDJAPVRManager;
 import com.konkawise.dtv.SWDVBManager;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
-import com.konkawise.dtv.SWPSearchManager;
 import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.UIApiManager;
 import com.konkawise.dtv.UsbManager;
@@ -95,7 +94,6 @@ import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 
 public class Topmost extends BaseActivity {
     private static final String TAG = "Topmost";
-    private static final long SMALL_HINT_BOX_PERIOD = 1000;
     private static final long RECORDING_DELAY = 1000;
     private static final long RECORDING_PERIOD = 1000;
     private static final long PLAY_PROG_DELAY = 1000;
@@ -184,7 +182,8 @@ public class Topmost extends BaseActivity {
     @OnItemClick(R.id.lv_prog_list)
     void onItemClick(int position) {
         toggleProgList();
-        if (mProgListAdapter.getItem(position).ProgNo == getCurrentProgNum()) return;
+        if (mProgListAdapter.getItem(position).ProgNo == SWPDBaseManager.getInstance().getCurrProgNo())
+            return;
 
         SWPDBaseManager.getInstance().setCurrProgType(SWPDBaseManager.getInstance().getCurrProgType(), 0);
         mProgListAdapter.setSelectPosition(position);
@@ -225,7 +224,9 @@ public class Topmost extends BaseActivity {
 
     private void gotoEpg() {
         if (mProgListAdapter.getCount() <= 0) {
-            showEpgSearchDialog();
+            if (mMenuShow) {
+                showEpgSearchDialog();
+            }
         } else {
             startActivity(new Intent(this, EpgActivity.class));
         }
@@ -313,10 +314,6 @@ public class Topmost extends BaseActivity {
     private boolean mLongPressed;
     private long mLongPressDelayTime;
 
-    private Timer mSmallHintBoxTimer;
-    private SmallHintBoxTimerTask mSmallHintBoxTimerTask;
-    private SmallHintBox mSmallHintBox;
-
     private Timer mRecordingTimer;
     private RecordingTimerTask mRecordingTimerTask;
 
@@ -339,12 +336,8 @@ public class Topmost extends BaseActivity {
     private int mCurrSelectProgPosition;
     private int mCurrSatPosition;
     private List<SatInfo_t> mSatList;
-    // 所有卫星的频道列表缓存
-    private List<PDPMInfo_t> mAllSatProgListCache = new ArrayList<>();
-    // 喜爱分组频道列表缓存
-    private SparseArray<List<PDPMInfo_t>> mFavoriteProgListCacheMap = new SparseArray<>();
-    // 对应卫星索引的频道列表缓存
-    private SparseArray<List<PDPMInfo_t>> mSatProgListCacheMap = new SparseArray<>();
+    // key:satIndex，fav分组的key从satIndex+SWPDBaseManager.RANGE_SAT_INDEX开始，获取喜爱分组列表时要-SWPDBaseManager.RANGE_SAT_INDEX
+    private SparseArray<List<PDPMInfo_t>> mProgListMap = new SparseArray<>();
     private LoadProgRunnable mLoadProgRunnable;
     private LoadSatRunnable mLoadSatRunnable;
 
@@ -412,7 +405,7 @@ public class Topmost extends BaseActivity {
                     context.mTvProgNum.setVisibility(View.INVISIBLE);
                     break;
                 case MSG_SHOW_PROG_NUM:
-                    context.showProgNum(context.getCurrentProgShowNum());
+                    context.showProgNum(context.getCurrentProgShowNo());
                     context.showPfInfo();
                     break;
                 case MSG_HIDE_PF_BAR:
@@ -435,12 +428,13 @@ public class Topmost extends BaseActivity {
         @Override
         protected void handleMsg(Message msg) {
             Topmost context = mWeakReference.get();
-            if (msg.what == MSG_JUMP_PROG && context.isJumpProgNumValid()) {
-                context.playProg(msg.arg1);
-                context.mJumpProgNumBuilder.delete(0, context.mJumpProgNumBuilder.length());
+            int progNum = msg.arg1;
+            if (msg.what == MSG_JUMP_PROG && context.isJumpProgNumValid() && progNum != SWPDBaseManager.getInstance().getCurrProgNo()) {
+                context.playProg(progNum);
             } else {
                 context.showProgNumInvalid();
             }
+            context.mJumpProgNumBuilder.delete(0, context.mJumpProgNumBuilder.length());
         }
     }
 
@@ -452,7 +446,6 @@ public class Topmost extends BaseActivity {
     @Override
     protected void setup() {
         SWDVB.GetInstance(); // 必须先初始化库，否则使用库会出现空指针异常
-        mSmallHintBox = new SmallHintBox(this);
 
         bootService();
         registerListener();
@@ -471,10 +464,9 @@ public class Topmost extends BaseActivity {
         SWDVBManager.getInstance().regMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, Looper.getMainLooper(), mAvMsgCB);
         showSurface();
         updatePfBarInfo();
-//        startSmallHintBoxTimer();
         restoreMenuItem(); // 恢复menu初始item显示
 
-        if (!SWFtaManager.getInstance().isPasswordEmpty() && SWPDBaseManager.getInstance().getCurrProgInfo() == null) {
+        if (!SWFtaManager.getInstance().isPasswordEmpty() && !SWPDBaseManager.getInstance().isProgCanPlay()) {
             showSearchChannelDialog();
         }
     }
@@ -485,7 +477,6 @@ public class Topmost extends BaseActivity {
         hideSurface();
         UIApiManager.getInstance().stopPlay(0);
         SWDVBManager.getInstance().unRegMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, mAvMsgCB);
-        cancelSmallHintBoxTimer();
         stopRecord();
         if (isFinishing()) {
             SWDVBManager.getInstance().releaseResource();
@@ -506,7 +497,6 @@ public class Topmost extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        cancelSmallHintBoxTimer();
         dismissPfBarScanDialog();
         dismissPasswordDialog();
         unregisterListener();
@@ -701,49 +691,6 @@ public class Topmost extends BaseActivity {
         }
     }
 
-    private void startSmallHintBoxTimer() {
-        cancelSmallHintBoxTimer();
-        mSmallHintBoxTimer = new Timer();
-        mSmallHintBoxTimerTask = new SmallHintBoxTimerTask(this);
-        mSmallHintBoxTimer.schedule(mSmallHintBoxTimerTask, 0, SMALL_HINT_BOX_PERIOD);
-    }
-
-    private void cancelSmallHintBoxTimer() {
-        if (mSmallHintBoxTimer != null) {
-            mSmallHintBoxTimer.cancel();
-            mSmallHintBoxTimer.purge();
-            mSmallHintBoxTimerTask.release();
-            mSmallHintBoxTimer = null;
-            mSmallHintBoxTimerTask = null;
-        }
-    }
-
-    private class SmallHintBoxTimerTask extends WeakTimerTask<Topmost> {
-
-        SmallHintBoxTimerTask(Topmost view) {
-            super(view);
-        }
-
-        @Override
-        protected void runTimer() {
-            Topmost context = mWeakReference.get();
-
-//            final boolean hasSignal = hasSignal();
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-//                    mSmallHintBox.hintBox(SmallHintBox.CHECK_TYPE_SIGNAL, hasSignal);
-                }
-            });
-        }
-
-        private boolean hasSignal() {
-            int strength = SWPSearchManager.getInstance().getSignalStatus(SWPSearchManager.SIGNAL_STRENGTH);
-            int quality = SWPSearchManager.getInstance().getSignalStatus(SWPSearchManager.SIGNAL_QUALITY);
-            return strength > 0 || quality > 0;
-        }
-    }
-
     private void bootService() {
         BookService.bootService(new Intent(this, BookService.class));
         PowerService.bootService(new Intent(this, PowerService.class));
@@ -829,7 +776,7 @@ public class Topmost extends BaseActivity {
 
     private void updateProgListSelection(int progNum) {
         if (mProgListAdapter.getCount() > 0) {
-            int scrollToPosition = getScrollToPosition(progNum);
+            int scrollToPosition = getPositionByProgNum(progNum);
             mProgListView.setSelection(scrollToPosition);
             mProgListAdapter.setSelectPosition(scrollToPosition);
         }
@@ -865,9 +812,10 @@ public class Topmost extends BaseActivity {
                     context.mPbLoadingChannel.setVisibility(View.GONE);
                     if (progList != null && !progList.isEmpty()) {
                         context.mProgListAdapter.updateData(progList);
-                        PDPMInfo_t progInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
+                        PDPMInfo_t progInfo = context.getCurrProgInfo();
                         if (progInfo != null) {
                             context.updateProgListSelection(progInfo.ProgNo);
+                            context.playProg(progInfo.ProgNo, true); // 更新完成频道列表，切换播放
                         }
                     } else {
                         context.mProgListAdapter.updateData(new ArrayList<>());
@@ -875,10 +823,11 @@ public class Topmost extends BaseActivity {
                 }
             });
 
+            context.preloadProgList();
         }
     }
 
-    private int getScrollToPosition(int progNum) {
+    private int getPositionByProgNum(int progNum) {
         if (mProgListAdapter.getCount() > 0) {
             for (int i = 0; i < mProgListAdapter.getData().size(); i++) {
                 if (mProgListAdapter.getData().get(i).ProgNo == progNum) {
@@ -940,8 +889,8 @@ public class Topmost extends BaseActivity {
                 UIApiManager.getInstance().setWindowSize(0, 0,
                         getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
                 if (!handleBook()) {
-                    if (SWPDBaseManager.getInstance().getCurrProgInfo() != null && !SWFtaManager.getInstance().isPasswordEmpty()) {
-                        playProg(getCurrentProgNum(), true);
+                    if (SWPDBaseManager.getInstance().isProgCanPlay() && !SWFtaManager.getInstance().isPasswordEmpty()) {
+                        playProg(SWPDBaseManager.getInstance().getCurrProgNo(), true);
                     }
                 } else {
                     setIntent(new Intent()); // 处理完后要重置为空，防止其他界面返回或跳转到Topmost使用上一个book跳转的intent
@@ -977,50 +926,83 @@ public class Topmost extends BaseActivity {
      * 获取频道列表，如果有喜爱列表还包含喜爱分组的频道列表
      */
     private List<PDPMInfo_t> getProgList() {
-        if (mCurrSatPosition == 0) {
-            if (mAllSatProgListCache.isEmpty()) {
-                List<PDPMInfo_t> totalProgList = SWPDBaseManager.getInstance().getWholeGroupProgList();
-                if (totalProgList != null && !totalProgList.isEmpty()) {
-                    mAllSatProgListCache.addAll(totalProgList);
+        List<SatInfo_t> satList = getSatList();
+        if (satList != null && !satList.isEmpty()) {
+            int satIndex = satList.get(mCurrSatPosition).SatIndex;
+            List<PDPMInfo_t> progInfoList = mProgListMap.get(satIndex);
+            if (progInfoList != null && !progInfoList.isEmpty()) {
+                return progInfoList;
+            }
+
+            if (satIndex == -1) {
+                progInfoList = SWPDBaseManager.getInstance().getWholeGroupProgList();
+            } else if (satIndex >= SWPDBaseManager.RANGE_SAT_INDEX) {
+                progInfoList = SWPDBaseManager.getInstance().getFavListByIndex(satIndex - SWPDBaseManager.RANGE_SAT_INDEX);
+            } else {
+                progInfoList = SWPDBaseManager.getInstance().getCurrGroupProgListByCond(1, satIndex);
+            }
+            mProgListMap.put(satIndex, progInfoList);
+            return progInfoList;
+        }
+
+        return null;
+    }
+
+    /**
+     * 预加载其他分组频道列表
+     */
+    private void preloadProgList() {
+        List<SatInfo_t> satList = getSatList();
+        if (satList != null && !satList.isEmpty()) {
+            for (SatInfo_t satInfo : satList) {
+                List<PDPMInfo_t> progInfoList = mProgListMap.get(satInfo.SatIndex);
+                if (progInfoList == null || progInfoList.isEmpty()) {
+                    if (satInfo.SatIndex == -1) {
+                        progInfoList = SWPDBaseManager.getInstance().getWholeGroupProgList();
+                    } else if (satInfo.SatIndex >= SWPDBaseManager.RANGE_SAT_INDEX) {
+                        progInfoList = SWPDBaseManager.getInstance().getFavListByIndex(satInfo.SatIndex - SWPDBaseManager.RANGE_SAT_INDEX);
+                    } else {
+                        progInfoList = SWPDBaseManager.getInstance().getCurrGroupProgListByCond(1, satInfo.SatIndex);
+                    }
+                    mProgListMap.put(satInfo.SatIndex, progInfoList);
                 }
             }
-            return mAllSatProgListCache;
-        } else {
-            List<SatInfo_t> allSatList = SWPDBaseManager.getInstance().getAllSatList(this);
-            if (allSatList != null && !allSatList.isEmpty()) {
-                int satIndex = getSatList().get(mCurrSatPosition).SatIndex;
-                // 当前卫星索引比添加了All的卫星索引还大，说明有喜爱分组，获取喜爱分组频道列表
-                if (mCurrSatPosition > allSatList.size() - 1) {
-                    List<PDPMInfo_t> favoriteProgList = mFavoriteProgListCacheMap.get(satIndex); // 这里的SatIndex是存储喜爱分组的索引
-                    if (favoriteProgList == null || favoriteProgList.isEmpty()) {
-                        favoriteProgList = SWPDBaseManager.getInstance().getFavListByIndex(satIndex);
-                        mFavoriteProgListCacheMap.put(satIndex, favoriteProgList);
-                    }
-                    return favoriteProgList;
-                } else {
-                    List<PDPMInfo_t> progList = mSatProgListCacheMap.get(satIndex);
-                    if (progList == null || progList.isEmpty()) {
-                        progList = SWPDBaseManager.getInstance().getCurrGroupProgListByCond(1, satIndex);
-                        mSatProgListCacheMap.put(satIndex, progList);
-                    }
-                    return progList;
+        }
+    }
+
+    /**
+     * 获取对应分组下的当前频道
+     */
+    private PDPMInfo_t getCurrProgInfo() {
+        List<SatInfo_t> satList = getSatList();
+        if (satList != null && !satList.isEmpty()) {
+            List<PDPMInfo_t> progInfoList = mProgListMap.get(satList.get(mCurrSatPosition).SatIndex);
+            if (progInfoList != null && !progInfoList.isEmpty() && mCurrSelectProgPosition < progInfoList.size()) {
+                return progInfoList.get(mCurrSelectProgPosition);
+            }
+        }
+        return null;
+    }
+
+    private PDPMInfo_t getProgInfoByShowNum(int showNum) {
+        List<SatInfo_t> satList = getSatList();
+        if (satList != null && !satList.isEmpty()) {
+            List<PDPMInfo_t> progInfoList = mProgListMap.get(satList.get(mCurrSatPosition).SatIndex);
+            if (progInfoList != null && !progInfoList.isEmpty()) {
+                for (PDPMInfo_t progInfo : progInfoList) {
+                    if (progInfo.PShowNo == showNum) return progInfo;
                 }
             }
         }
         return null;
     }
 
-    private void clearProgListCache() {
-        mAllSatProgListCache.clear();
-        mFavoriteProgListCacheMap.clear();
-        mSatProgListCacheMap.clear();
-    }
-
     /**
-     * 当前播放台号，0~getTotalProgNum()-1
+     * 获取在当前频道分组下当前频道的频道号
+     * SWPDBaseManager.getInstance().getCurrProgNo()是不区分频道分组的，在Topmost界面一般用来判断切换的频道号是否和当前相同，要和该方法有所区分
      */
-    private int getCurrentProgNum() {
-        PDPMInfo_t currProgInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
+    private int getCurrentProgNo() {
+        PDPMInfo_t currProgInfo = getCurrProgInfo();
         if (currProgInfo == null) {
             currProgInfo = new PDPMInfo_t();
             currProgInfo.ProgNo = 0;
@@ -1029,22 +1011,35 @@ public class Topmost extends BaseActivity {
     }
 
     /**
-     * 当前显示台号,1~getTotalProgNum()
+     * 获取在当前频道分组下当前频道的显示频道号
      */
-    private int getCurrentProgShowNum() {
-        PDPMInfo_t currentProgInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
-        if (currentProgInfo == null) {
-            currentProgInfo = new PDPMInfo_t();
-            currentProgInfo.PShowNo = 1;
+    private int getCurrentProgShowNo() {
+        PDPMInfo_t currProgInfo = getCurrProgInfo();
+        if (currProgInfo == null) {
+            currProgInfo = new PDPMInfo_t();
+            currProgInfo.PShowNo = 1;
         }
-        return currentProgInfo.PShowNo;
+        return currProgInfo.PShowNo;
     }
 
     /**
-     * 总频道数
+     * 获取在当前频道分组下第一个频道的频道号
      */
-    private int getTotalProgNum() {
-        return SWPDBaseManager.getInstance().getProgNumOfCurrGroup();
+    private int getFirstProgNo() {
+        if (mProgListAdapter.getCount() > 0) {
+            return mProgListAdapter.getItem(0).ProgNo;
+        }
+        return 0;
+    }
+
+    /**
+     * 获取在当前频道分组下最后一个频道的频道号
+     */
+    private int getLastProgNo() {
+        if (mProgListAdapter.getCount() > 0) {
+            return mProgListAdapter.getItem(mProgListAdapter.getCount() - 1).ProgNo;
+        }
+        return 0;
     }
 
     /**
@@ -1118,7 +1113,7 @@ public class Topmost extends BaseActivity {
      * 发送msg通知播放当前台号，同时显示相关节目信息，如台号、PF信息等
      */
     private void playProg() {
-        playProg(getCurrentProgNum(), false);
+        playProg(getCurrentProgNo(), false);
     }
 
     /**
@@ -1130,10 +1125,11 @@ public class Topmost extends BaseActivity {
 
     private void playProg(int progNum, boolean immediately) {
         UIApiManager.getInstance().stopPlay(0); // 切台之前暂停当前频道播放
+        mCurrSelectProgPosition = getPositionByProgNum(progNum); // 记录下当前播放频道的position
         SWPDBaseManager.getInstance().setCurrProgNo(progNum);
         removePlayProgMsg();
         showPfInfo();
-        showProgNum(getCurrentProgShowNum());
+        showProgNum(getCurrentProgShowNo());
         showRadioBackground();
         sendPlayProgMsg(new HandlerMsgModel(PlayHandler.MSG_PLAY_PROG, progNum, immediately ? 0 : PLAY_PROG_DELAY));
     }
@@ -1142,9 +1138,9 @@ public class Topmost extends BaseActivity {
      * 加台播放
      */
     private void nextProg() {
-        int nextProgNum = getCurrentProgNum() + 1;
-        if (nextProgNum >= getTotalProgNum()) {
-            nextProgNum = 0;
+        int nextProgNum = getCurrentProgNo() + 1;
+        if (nextProgNum > getLastProgNo()) {
+            nextProgNum = getFirstProgNo();
         }
         playProg(nextProgNum);
     }
@@ -1153,9 +1149,9 @@ public class Topmost extends BaseActivity {
      * 减台播放
      */
     private void lastProg() {
-        int lastProgNum = getCurrentProgNum() - 1;
-        if (lastProgNum < 0) {
-            lastProgNum = getTotalProgNum() - 1;
+        int lastProgNum = getCurrentProgNo() - 1;
+        if (lastProgNum < getFirstProgNo()) {
+            lastProgNum = getLastProgNo();
         }
         playProg(lastProgNum);
     }
@@ -1166,7 +1162,10 @@ public class Topmost extends BaseActivity {
     private void jumpPlayProg() {
         if (isJumpProgNumValid()) {
             removeJumpProgMsg();
-            sendJumpProgMsg(new HandlerMsgModel(JumpProgHandler.MSG_JUMP_PROG, Integer.valueOf(mJumpProgNumBuilder.toString()) - 1));
+            PDPMInfo_t progInfo = getProgInfoByShowNum(Integer.valueOf(mJumpProgNumBuilder.toString()));
+            if (progInfo != null) {
+                sendJumpProgMsg(new HandlerMsgModel(JumpProgHandler.MSG_JUMP_PROG, progInfo.ProgNo));
+            }
         } else {
             showProgNumInvalid();
         }
@@ -1181,14 +1180,25 @@ public class Topmost extends BaseActivity {
             mJumpProgNumBuilder.delete(0, mJumpProgNumBuilder.length());
         }
         mJumpProgNumBuilder.append(progNum);
-        showProgNum(Integer.valueOf(mJumpProgNumBuilder.toString()), false);
-        sendJumpProgMsg(new HandlerMsgModel(JumpProgHandler.MSG_JUMP_PROG, Integer.valueOf(mJumpProgNumBuilder.toString()) - 1, JUMP_PROG_DELAY));
+        int jumpProgShowNum = Integer.valueOf(mJumpProgNumBuilder.toString());
+        showProgNum(jumpProgShowNum, false);
+        if (jumpProgShowNum > 0) {
+            PDPMInfo_t progInfo = getProgInfoByShowNum(jumpProgShowNum);
+            if (progInfo != null) {
+                sendJumpProgMsg(new HandlerMsgModel(JumpProgHandler.MSG_JUMP_PROG, progInfo.ProgNo, JUMP_PROG_DELAY));
+            }
+        }
     }
 
     private boolean isJumpProgNumValid() {
         if (mJumpProgNumBuilder.length() > 0) {
-            int jumProgNum = Integer.valueOf(mJumpProgNumBuilder.toString());
-            return jumProgNum > 0 && jumProgNum <= getTotalProgNum();
+            int jumpProgShowNum = Integer.valueOf(mJumpProgNumBuilder.toString());
+            if (jumpProgShowNum > 0) {
+                PDPMInfo_t progInfo = getProgInfoByShowNum(jumpProgShowNum);
+                if (progInfo != null) {
+                    return progInfo.ProgNo <= getLastProgNo();
+                }
+            }
         }
         return false;
     }
@@ -1226,7 +1236,7 @@ public class Topmost extends BaseActivity {
             return;
         }
 
-        PDPMInfo_t currProgInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
+        PDPMInfo_t currProgInfo = getCurrProgInfo();
         if (currProgInfo != null) {
             SatInfo_t satInfo = SWPDBaseManager.getInstance().getSatInfo(currProgInfo.Sat);
             int[] pids = SWPDBaseManager.getInstance().getServicePID(currProgInfo.ProgNo);
@@ -1391,7 +1401,7 @@ public class Topmost extends BaseActivity {
                     public void onFindChannels(PDPMInfo_t findChannel) {
                         if (findChannel == null) return;
 
-                        if (findChannel.ProgNo != getCurrentProgNum()) playProg(findChannel.ProgNo);
+                        if (findChannel.ProgNo != getCurrentProgNo()) playProg(findChannel.ProgNo);
                         toggleProgList();
                         updateProgListSelection(findChannel.ProgNo);
                     }
@@ -1414,10 +1424,11 @@ public class Topmost extends BaseActivity {
     }
 
     private void showSubtitleDialog() {
-        if (SWPDBaseManager.getInstance().getCurrProgInfo() == null) return;
+        PDPMInfo_t progInfo = getCurrProgInfo();
+        if (!SWPDBaseManager.getInstance().isProgCanPlay() || progInfo == null) return;
 
         int currSubtitle = 0;
-        int serviceid = SWPDBaseManager.getInstance().getCurrProgInfo().ServID;
+        int serviceid = progInfo.ServID;
         int num = SWFtaManager.getInstance().getSubtitleNum(serviceid);
         final int[] pids = new int[num];
         List<HashMap<String, Object>> subtitles = new ArrayList<>();
@@ -1451,10 +1462,11 @@ public class Topmost extends BaseActivity {
     }
 
     private void showTeletextDialog() {
-        if (SWPDBaseManager.getInstance().getCurrProgInfo() == null) return;
+        PDPMInfo_t progInfo = getCurrProgInfo();
+        if (!SWPDBaseManager.getInstance().isProgCanPlay() || progInfo == null) return;
 
         int currTeleText = 0;
-        int serviceid = SWPDBaseManager.getInstance().getCurrProgInfo().ServID;
+        int serviceid = progInfo.ServID;
         int num = SWFtaManager.getInstance().getTeletextNum(serviceid);
         final int[] pids = new int[num];
         String[] teletextNames = new String[num + 1];
@@ -1481,7 +1493,7 @@ public class Topmost extends BaseActivity {
     }
 
     private void showAudioDialog() {
-        if (SWPDBaseManager.getInstance().getCurrProgInfo() == null) return;
+        if (!SWPDBaseManager.getInstance().isProgCanPlay()) return;
 
         new AudioDialog().title(getString(R.string.audio)).show(getSupportFragmentManager(), AudioDialog.TAG);
     }
@@ -1494,7 +1506,7 @@ public class Topmost extends BaseActivity {
 
                 dismissSettingPasswordDialog();
 
-                if (SWPDBaseManager.getInstance().getCurrProgInfo() == null) {
+                if (!SWPDBaseManager.getInstance().isProgCanPlay()) {
                     showSearchChannelDialog();
                 } else {
                     playProg();
@@ -1588,6 +1600,9 @@ public class Topmost extends BaseActivity {
         startTranslateAnimation(mProgListShow ? -mProgListMenu.getLeft() : 0f,
                 mProgListShow ? 0f : -mProgListMenu.getLeft(), mProgListMenu, null);
         mProgListShow = !mProgListShow;
+        if (!mProgListShow) {
+            showPfInfo();
+        }
     }
 
     private void toggleMenu() {
@@ -1775,7 +1790,6 @@ public class Topmost extends BaseActivity {
             stopRecord();
             SWPDBaseManager.getInstance().setCurrProgType(SWPDBaseManager.getInstance().getCurrProgType() == 1 ? 0 : 1, 0);
             updateProgList();
-            playProg();
             return true;
         }
 
@@ -1915,6 +1929,7 @@ public class Topmost extends BaseActivity {
 
                 if (--mCurrSatPosition < 0) mCurrSatPosition = satList.size() - 1;
                 mTvSatelliteName.setText(satList.get(mCurrSatPosition).sat_name);
+                mCurrSelectProgPosition = 0;
                 updateProgList();
                 return true;
             }
@@ -1925,6 +1940,7 @@ public class Topmost extends BaseActivity {
 
                 if (++mCurrSatPosition >= satList.size()) mCurrSatPosition = 0;
                 mTvSatelliteName.setText(satList.get(mCurrSatPosition).sat_name);
+                mCurrSelectProgPosition = 0;
                 updateProgList();
                 return true;
             }
@@ -1944,11 +1960,11 @@ public class Topmost extends BaseActivity {
         }
 
         if (mMenuShow && event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
-            return super.dispatchKeyEvent(event);
+            return true;
         }
 
         if (mMenuShow && event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
-            return super.dispatchKeyEvent(event);
+            return true;
         }
 
         // menu显示，焦点在menu上不处理
@@ -1967,7 +1983,7 @@ public class Topmost extends BaseActivity {
                     // 频道列表有数据时才弹出
                     if (!mProgListShow && mProgListAdapter.getCount() > 0) {
                         mProgListView.requestFocus();
-                        updateProgListSelection(getCurrentProgNum());
+                        updateProgListSelection(getCurrentProgNo());
                         toggleProgList();
                     } else {
                         return super.dispatchKeyEvent(event);
@@ -1983,16 +1999,18 @@ public class Topmost extends BaseActivity {
                     if (event.getRepeatCount() == 0) {
                         mLongPressed = false;
                         event.startTracking();
-                        mNewProgNum = getCurrentProgNum() - 1;
+                        mNewProgNum = getCurrentProgNo() - 1;
                         mLongPressDelayTime = System.currentTimeMillis();
                     } else {
                         mLongPressed = true;
                         if (System.currentTimeMillis() - mLongPressDelayTime > 200) {
                             removePlayProgMsg();
                             mLongPressDelayTime = System.currentTimeMillis();
-                            if (--mNewProgNum < 0) mNewProgNum = getTotalProgNum() - 1;
-                            // mNewProgNum是逻辑切台播放台号，显示台号显示要+1
-                            showProgNum(mNewProgNum + 1, !mLongPressed);
+                            if (--mNewProgNum < getFirstProgNo()) mNewProgNum = getLastProgNo();
+                            int position = getPositionByProgNum(mNewProgNum);
+                            if (position >= 0) {
+                                showProgNum(mProgListAdapter.getItem(position).PShowNo, !mLongPressed);
+                            }
                         }
                     }
                     break;
@@ -2001,13 +2019,17 @@ public class Topmost extends BaseActivity {
                     if (mProgListShow) {
                         return super.dispatchKeyEvent(event);
                     } else {
-                        if (mLongPressed) {
-                            mLongPressed = false;
-                            playProg(mNewProgNum);
-                        } else {
-                            lastProg();
+                        if (mNewProgNum != SWPDBaseManager.getInstance().getCurrProgNo()) {
+                            if (mLongPressed) {
+                                mLongPressed = false;
+                                int position = getPositionByProgNum(mNewProgNum);
+                                if (position >= 0) {
+                                    playProg(mProgListAdapter.getItem(position).ProgNo);
+                                }
+                            } else {
+                                lastProg();
+                            }
                         }
-
                         mLongPressDelayTime = 0;
                         mNewProgNum = 0;
                     }
@@ -2023,26 +2045,37 @@ public class Topmost extends BaseActivity {
                     if (event.getRepeatCount() == 0) {
                         mLongPressed = false;
                         event.startTracking();
-                        mNewProgNum = getCurrentProgNum() + 1;
+                        mNewProgNum = getCurrentProgNo() + 1;
                         mLongPressDelayTime = System.currentTimeMillis();
                     } else {
                         mLongPressed = true;
                         if (System.currentTimeMillis() - mLongPressDelayTime > 200) {
                             removePlayProgMsg();
                             mLongPressDelayTime = System.currentTimeMillis();
-                            if (++mNewProgNum >= getTotalProgNum()) mNewProgNum = 0;
-                            // mNewProgNum是逻辑切台播放台号，显示台号显示要+1
-                            showProgNum(mNewProgNum + 1, !mLongPressed);
+                            if (++mNewProgNum > getLastProgNo()) mNewProgNum = getFirstProgNo();
+                            int position = getPositionByProgNum(mNewProgNum);
+                            if (position >= 0) {
+                                showProgNum(mProgListAdapter.getItem(position).PShowNo, !mLongPressed);
+                            }
                         }
                     }
                     break;
 
                 case KeyEvent.ACTION_UP:
-                    if (mLongPressed) {
-                        mLongPressed = false;
-                        playProg(mNewProgNum);
+                    if (mProgListShow) {
+                        return super.dispatchKeyEvent(event);
                     } else {
-                        nextProg();
+                        if (mNewProgNum != SWPDBaseManager.getInstance().getCurrProgNo()) {
+                            if (mLongPressed) {
+                                mLongPressed = false;
+                                int position = getPositionByProgNum(mNewProgNum);
+                                if (position >= 0) {
+                                    playProg(mProgListAdapter.getItem(position).ProgNo);
+                                }
+                            } else {
+                                nextProg();
+                            }
+                        }
                     }
 
                     mNewProgNum = 0;
@@ -2109,7 +2142,7 @@ public class Topmost extends BaseActivity {
         Log.i(TAG, "receive program update, tv size = " + event.tvSize + ", radio size = " + event.radioSize);
         if (event.tvSize != 0 || event.radioSize != 0 || event.isProgramEdit) {
             updateSatList();
-            clearProgListCache(); // 更新频道列表前清空缓存
+            mProgListMap.clear(); // 更新频道列表前清空缓存
             updateProgList();
         }
     }

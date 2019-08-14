@@ -17,6 +17,7 @@ import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 
 public class SWPDBaseManager {
+    public static final int RANGE_SAT_INDEX = 10000;
 
     private static class SWPDBaseManagerHolder {
         private static SWPDBaseManager INSTANCE = new SWPDBaseManager();
@@ -302,7 +303,7 @@ public class SWPDBaseManager {
                 int favProgNum = SWPDBase.CreateInstance().getProgNumOfGroup(SWPDBase.SW_FAV_GROUP, favIndex);
                 if (favProgNum > 0) {
                     SatInfo_t favSatInfo = new SatInfo_t();
-                    favSatInfo.SatIndex = favIndex; // 存入favIndex，方便切换时获取对应的喜爱分组频道列表展示
+                    favSatInfo.SatIndex = favIndex + RANGE_SAT_INDEX; // 存入favIndex，方便切换时获取对应的喜爱分组频道列表展示，加上一个大数值与其他SatIndex区分
                     favSatInfo.sat_name = getFavoriteGroupNameByIndex(favIndex);
                     allSatList.add(favSatInfo);
                 }
@@ -366,5 +367,9 @@ public class SWPDBaseManager {
     private String getFavoriteGroupNameByIndex(int favIndex) {
         String favoriteGroupName = PreferenceManager.getInstance().getString("fav" + favIndex);
         return TextUtils.isEmpty(favoriteGroupName) ? "FAV" + favIndex : favoriteGroupName;
+    }
+
+    public boolean isProgCanPlay() {
+        return getCurrProgInfo() != null;
     }
 }
