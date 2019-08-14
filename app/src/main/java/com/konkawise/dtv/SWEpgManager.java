@@ -2,6 +2,8 @@ package com.konkawise.dtv;
 
 import com.sw.dvblib.SWEpg;
 
+import vendor.konka.hardware.dtvmanager.V1_0.EpgEvent_t;
+
 public class SWEpgManager {
 
     private static class SWEpgManagerHolder {
@@ -14,6 +16,10 @@ public class SWEpgManager {
 
     public static SWEpgManager getInstance() {
         return SWEpgManagerHolder.INSTANCE;
+    }
+
+    public EpgEvent_t getNextEitOfService(int index) {
+        return SWEpg.CreateInstance().getNextEitOfService(index);
     }
 
     /**

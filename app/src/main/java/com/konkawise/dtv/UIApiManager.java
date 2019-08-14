@@ -87,10 +87,8 @@ public class UIApiManager {
 
     /**
      * PfBar播放当前节目信息
-     *
-     * @param index 0代表information0 1代表information1
      */
-    public EpgEvent_t getCurrProgPFInfo(int index) {
-        return UIAPI.CreateInstance().getCurrProgPFInfo(index);
+    public EpgEvent_t getCurrProgPFInfo() {
+        return UIAPI.CreateInstance().getCurrProgPFInfo();
     }
 }
