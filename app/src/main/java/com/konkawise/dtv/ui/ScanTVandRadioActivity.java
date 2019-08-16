@@ -137,10 +137,22 @@ public class ScanTVandRadioActivity extends BaseActivity {
 
             tv_satellite_name.setText(SWPDBaseManager.getInstance().getSatInfo(satIndex).sat_name);
             SWPSearchManager.getInstance().searchByOneTS(satIndex, freq, Symbol, Qam);
-        } else if (isFromT2ManualSearchActivity()) {
+        }
+
+        if (isFromT2AutoSearch()) {
             //T2手动搜台操作
             tv_satellite_name.setText(R.string.installation_t2);
+            searchProgram(getSatelliteIndex());
         }
+
+        if (isFromT2ManualSearchActivity()) {
+            tv_satellite_name.setText(R.string.installation_t2);
+            int freq = getFreq();
+            int satIndex = getSatelliteIndex();
+            int Symbol = getSymbol();
+            SWPSearchManager.getInstance().searchByOneTS(satIndex, freq, Symbol, 0);
+        }
+
     }
 
     private boolean isFromSatelliteActivity() {
@@ -156,7 +168,11 @@ public class ScanTVandRadioActivity extends BaseActivity {
     }
 
     private boolean isFromT2ManualSearchActivity() {
-        return getIntent().getIntExtra(Constants.IntentKey.INTENT_EDIT_MANUAL_ACTIVITY, -1) == 4;
+        return getIntent().getIntExtra(Constants.IntentKey.INTENT_T2_MANUAL_SEARCH_ACTIVITY, -1) == 4;
+    }
+
+    private boolean isFromT2AutoSearch() {
+        return getIntent().getIntExtra(Constants.IntentKey.INTENT_T2_AUTO_SEARCH, -1) == 5;
     }
 
     private int getFreq() {

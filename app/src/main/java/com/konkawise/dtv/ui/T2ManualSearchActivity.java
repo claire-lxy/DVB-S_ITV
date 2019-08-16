@@ -1,6 +1,7 @@
 package com.konkawise.dtv.ui;
 
 import android.content.Intent;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -8,17 +9,28 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
+import com.konkawise.dtv.PreferenceManager;
 import com.konkawise.dtv.R;
+import com.konkawise.dtv.SWFtaManager;
+import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.ScanDialog;
+import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
 
+import java.text.MessageFormat;
+import java.util.List;
+
 import butterknife.BindView;
+import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
 
 public class T2ManualSearchActivity extends BaseActivity {
+    private static final int T2_SatIndex = 0;
     private static final int ITEM_TRANSPONDER = 1;
     private static final int ITEM_FREQUENCY = 2;
     private static final int ITEM_BANDWIDTH = 3;
+
+    private int mCurrntChannel = 0;
 
     @BindView(R.id.iv_transponder_left)
     ImageView mIvTransponderLeft;
@@ -61,13 +73,9 @@ public class T2ManualSearchActivity extends BaseActivity {
 
     private int mCurrSelectItem = ITEM_TRANSPONDER;
 
-    private int[] mTransponderList;
+    private List<ChannelNew_t> satChannelInfoList;
 
-    private int[] mFrequencyList;
-
-    private int [] mBandWidthList;
-
-    private int mCurrentSatellite = -1;
+    private ChannelNew_t channel;
 
     private CheckSignalHelper mCheckSignalHelper;
 
@@ -78,6 +86,31 @@ public class T2ManualSearchActivity extends BaseActivity {
 
     @Override
     protected void setup() {
+        initT2Data();
+        initT2Ui();
+        initCheckSignal();
+    }
+
+    private void initT2Data() {
+        satChannelInfoList = SWPDBaseManager.getInstance().getSatChannelInfoList(T2_SatIndex);
+        if (satChannelInfoList != null) {
+            channel = satChannelInfoList.get(mCurrntChannel);
+            mCurrntChannel = PreferenceManager.getInstance().getInt(Constants.PrefsKey.SAVE_CHANNEL);
+            SWFtaManager.getInstance().tunerLockFreq(T2_SatIndex, channel.Freq, channel.Symbol, channel.Symbol, 1, 0);
+        }
+    }
+
+    private void initT2Ui() {
+        mTvTransponder.setText(String.valueOf(mCurrntChannel));
+        channel = satChannelInfoList.get(mCurrntChannel);
+        mTvFrequency.setText(MessageFormat.format(getString(R.string.frequency_text), (channel.Freq / 10) + "." + (channel.Freq % 10)));
+        mTvBandWidth.setText(MessageFormat.format(getString(R.string.bandwidth_text), channel.Symbol));
+        SWFtaManager.getInstance().tunerLockFreq(T2_SatIndex, channel.Freq, channel.Symbol, channel.Symbol, 1, 0);
+        Log.e("T2ManualSearchActivity", "satChannelInfoList.size:  " + satChannelInfoList.size() + "channel.Freq  " + channel.Freq + "channel.Symbol  " +
+                channel.Symbol + "channel.Qam  " + channel.Symbol + "TsID  " + channel.TsID + "channel.NetID  " + channel.NetID + "channel.ChannelIndex  " + channel.ChannelIndex);
+    }
+
+    private void initCheckSignal() {
         mCheckSignalHelper = new CheckSignalHelper(this);
         mCheckSignalHelper.setOnCheckSignalListener(new CheckSignalHelper.OnCheckSignalListener() {
             @Override
@@ -103,6 +136,7 @@ public class T2ManualSearchActivity extends BaseActivity {
     protected void onStop() {
         super.onStop();
         mCheckSignalHelper.stopCheckSignal();
+        PreferenceManager.getInstance().putInt(Constants.PrefsKey.SAVE_CHANNEL, mCurrntChannel);
     }
 
     @Override
@@ -130,7 +164,11 @@ public class T2ManualSearchActivity extends BaseActivity {
         if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
             switch (mCurrSelectItem) {
                 case ITEM_TRANSPONDER:
-
+                    --mCurrntChannel;
+                    if (mCurrntChannel < 0) {
+                        mCurrntChannel = satChannelInfoList.size() - 1;
+                    }
+                    initT2Ui();
                     break;
 
                 case ITEM_FREQUENCY:
@@ -146,7 +184,11 @@ public class T2ManualSearchActivity extends BaseActivity {
         if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
             switch (mCurrSelectItem) {
                 case ITEM_TRANSPONDER:
-
+                    ++mCurrntChannel;
+                    if (mCurrntChannel > satChannelInfoList.size() - 1) {
+                        mCurrntChannel = 0;
+                    }
+                    initT2Ui();
                     break;
 
                 case ITEM_FREQUENCY:
@@ -160,8 +202,6 @@ public class T2ManualSearchActivity extends BaseActivity {
         }
 
         if (keyCode == KeyEvent.KEYCODE_PROG_RED) {
-            saveSatInfo();
-
             showScanDialog();
         }
 
@@ -175,16 +215,14 @@ public class T2ManualSearchActivity extends BaseActivity {
                     @Override
                     public void onClick(View v) {
                         Intent intent = new Intent(T2ManualSearchActivity.this, ScanTVandRadioActivity.class);
-                        intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mCurrentSatellite);//mCurrentSatellite == -1
+                        intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, T2_SatIndex);//mCurrentSatellite == 0
+                        intent.putExtra(Constants.IntentKey.INTENT_FREQ, channel.Freq);
+                        intent.putExtra(Constants.IntentKey.INTENT_SYMBOL, channel.Symbol);
                         intent.putExtra(Constants.IntentKey.INTENT_T2_MANUAL_SEARCH_ACTIVITY, 4);
                         startActivity(intent);
                         finish();
                     }
                 }).show(getSupportFragmentManager(), ScanDialog.TAG);
-    }
-
-    private void saveSatInfo() {
-        //??Transponder???
     }
 
     private void itemFocusChange() {

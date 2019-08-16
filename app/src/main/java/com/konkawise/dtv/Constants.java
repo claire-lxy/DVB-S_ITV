@@ -70,6 +70,7 @@ public class Constants {
         String INTENT_SATELLITE_ACTIVITY = "satelliteActivity";
         String INTENT_SATELLITE_NAME = "satelliteName";
         String INTENT_T2_MANUAL_SEARCH_ACTIVITY = "t2ManualSearchActivity";
+        String INTENT_T2_AUTO_SEARCH = "installationT2Activity";
         String INTENT_TP_NAME = "tpName";
         String INTENT_LNB = "lnb";
         String INTENT_DISEQC = "diseqc";
@@ -105,5 +106,6 @@ public class Constants {
 
         String SAVE_POSITION = "position";
 
+        String SAVE_CHANNEL = "channel";
     }
 }

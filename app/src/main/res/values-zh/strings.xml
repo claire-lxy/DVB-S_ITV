@@ -286,7 +286,9 @@
 
     <string name="transponder">TransponderNo:</string>
     <string name="frequency">Frequency:</string>
+    <string name="frequency_text">{0} MHz</string>
     <string name="bandwidth">BandWidth:</string>
+    <string name="bandwidth_text">{0} M</string>
 
     <string name="antenna_power">Antenna Power</string>
     <string name="area_setting">Area Setting</string>
