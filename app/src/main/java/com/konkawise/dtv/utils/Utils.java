@@ -7,6 +7,11 @@ import com.konkawise.dtv.R;
 
 import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.acos;
+import static java.lang.Math.cos;
+import static java.lang.Math.sqrt;
+
 /**
  * 创建者      lj DELL
  * 创建时间    2018/12/24 10:24
@@ -154,5 +159,51 @@ public class Utils {
         input1 = longitude % 10;
         longitudeStr = direct[longDirect] + "" + input0 + input1;
         return longitudeStr;
+    }
+
+    public static int getDegress(double sat_long, double loc_long, double loc_lat) {
+        double RATIO = 6.619;    //Ratio Value of Orbit's Radius and Earth's Radius
+        double PI = 3.1415926535;
+        double DEGREE = (PI / 180);
+        double sat_longitude = ((double) sat_long) / 10;
+        double loc_longitude = ((double) loc_long) / 10;
+        double a = 0;//different angle
+        double b = ((double) loc_lat) / 10; //latitude
+        double cos_b = cos(b * DEGREE);
+        double cos_a = 0;
+        double two_acosb = 2 * RATIO * cos_b;
+        double denominator;
+        double numerator;
+        double diff_angle;
+
+        int flag = 0;
+        if (abs(sat_long) > 1800 || abs(loc_long) > 1800 || abs(loc_lat) > 900)
+            return 1;
+        a = abs(sat_longitude - loc_longitude);
+        //180~360
+        if (a > 180 && a <= 360) {
+            a = 360 - a;
+            flag = 1;
+        }
+        cos_a = cos(a * DEGREE);
+        denominator = sqrt((1 + RATIO * RATIO - two_acosb) * (1 + RATIO * RATIO - two_acosb * cos_a));
+        numerator = 1 + RATIO * RATIO * cos_a - RATIO * cos_b * cos_a - RATIO * cos_b;
+        diff_angle = acos(numerator / denominator) / DEGREE;
+        if (diff_angle > 180)
+            return 1;
+        double pAngleDiff = (diff_angle * 100 + 5) / 10;//Calculate a round number
+        //Northern Hemisphere
+        if (loc_lat >= 0) {
+            if (((sat_long - loc_long) > 0 && (flag == 0)) || ((sat_long - loc_long) < 0 && (flag == 1))) {
+                pAngleDiff = -pAngleDiff;
+            }
+        } else {
+            //Southern Hemisphere
+            if (((sat_long - loc_long) > 0 && (flag == 1)) || ((sat_long - loc_long) < 0 && (flag == 0))) {
+                pAngleDiff = -pAngleDiff;
+            }
+        }
+
+        return (int) pAngleDiff;
     }
 }

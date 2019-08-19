@@ -245,32 +245,32 @@
     </string-array>
 
     <string-array name="diseqc_command">
-        <item>Save Position</item>
-        <item>(Re-)Calculate</item>
-        <item>Disable Limit</item>
-        <item>East Limit</item>
-        <item>West Limit</item>
-        <item>Goto Ref</item>
+        <item>@string/motor_command_savepos</item>
+        <item>@string/motor_diseqc_command_recalculate</item>
+        <item>@string/motor_diseqc_command_disablelimit</item>
+        <item>@string/motor_diseqc_command_eastlimit</item>
+        <item>@string/motor_diseqc_command_westlimit</item>
+        <item>@string/motor_command_gotoref</item>
     </string-array>
 
-    <string-array name="command">
-    <item>Goto XX</item>
-    <item>Save Pos</item>
-    <item>Calculate</item>
-    <item>Shift</item>
-    <item>Goto Ref</item>
+    <string-array name="usals_command">
+        <item>@string/motor_usals_command_gotoxx</item>
+        <item>@string/motor_command_savepos</item>
+        <item>@string/motor_usals_command_calculate</item>
+        <item>@string/motor_usals_command_shift</item>
+        <item>@string/motor_command_gotoref</item>
     </string-array>
 
-    <string-array name="type_list">
-        <item>DisEqc1.2</item>
-        <item>USALS</item>
-        <item>OFF"</item>
+    <string-array name="motor_type">
+        <item>@string/motor_type_diseqc</item>
+        <item>@string/motor_type_usals</item>
+        <item>@string/motor_type_off</item>
     </string-array>
 
-    <string-array name="move_step_list">
-        <item>Stop</item>
-        <item>East</item>
-        <item>West"</item>
+    <string-array name="move_step">
+        <item>@string/motor_move_step_stop</item>
+        <item>@string/motor_move_step_east</item>
+        <item>@string/motor_move_step_west</item>
     </string-array>
 
     <integer-array name="step_size_data">

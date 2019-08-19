@@ -396,4 +396,22 @@
     <string name="dialog_no_search">No Program!</string>
     <string name="dialog_search_result_tv">TV: {0}</string>
     <string name="dialog_search_result_radio">Radio: {0}</string>
+
+    <string name="motor_move_step_stop">Stop</string>
+    <string name="motor_move_step_east">East</string>
+    <string name="motor_move_step_west">West</string>
+    <string name="motor_type_diseqc">DisEqc1.2</string>
+    <string name="motor_type_usals">USALS</string>
+    <string name="motor_type_off">OFF</string>
+    <string name="motor_usals_command_title">Command</string>
+    <string name="motor_diseqc_command_title">DiSEqC Command</string>
+    <string name="motor_command_savepos">Save Position</string>
+    <string name="motor_diseqc_command_recalculate">(Re-)Calculate</string>
+    <string name="motor_diseqc_command_disablelimit">Disable Limit</string>
+    <string name="motor_diseqc_command_eastlimit">East Limit</string>
+    <string name="motor_diseqc_command_westlimit">West Limit</string>
+    <string name="motor_usals_command_gotoxx">Goto XX</string>
+    <string name="motor_usals_command_calculate">Calculate</string>
+    <string name="motor_usals_command_shift">Shift</string>
+    <string name="motor_command_gotoref">Goto Ref</string>
 </resources>
