@@ -230,6 +230,7 @@ public class BookDialog extends BaseDialogFragment {
             mBookModel.bookInfo.hour = startTime.Hour;
             mBookModel.bookInfo.minute = startTime.Minute;
 
+            mBookModel.bookInfo.sat = mBookModel.progInfo.Sat;
             mBookModel.bookInfo.tsid = mBookModel.progInfo.Freq;
             mBookModel.bookInfo.servid = mBookModel.progInfo.ServID;
             // 需要添加默认值，否则接口调用会出现崩溃情况
