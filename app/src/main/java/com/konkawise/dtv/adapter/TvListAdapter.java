@@ -6,6 +6,7 @@ import android.view.View;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.adapter.base.BaseListViewAdapter;
 import com.konkawise.dtv.adapter.base.BaseListViewHolder;
+import com.konkawise.dtv.ui.Topmost;
 
 import java.util.List;
 
@@ -20,7 +21,7 @@ public class TvListAdapter extends BaseListViewAdapter<PDPMInfo_t> {
 
     @Override
     protected void convert(BaseListViewHolder holder, int position, PDPMInfo_t item) {
-        holder.setText(R.id.tv_prog_num, String.valueOf(item.PShowNo))
+        holder.setText(R.id.tv_prog_num, Topmost.LCNON ? String.valueOf(item.PShowNo) : String.valueOf(position + 1))
                 .setText(R.id.tv_prog_name, item.Name)
                 .setVisibility(R.id.iv_prog_play, mSelectPosition == position ? View.VISIBLE : View.GONE)
                 .setVisibility(R.id.iv_prog_fav, item.FavFlag == 1 ? View.VISIBLE : View.INVISIBLE)

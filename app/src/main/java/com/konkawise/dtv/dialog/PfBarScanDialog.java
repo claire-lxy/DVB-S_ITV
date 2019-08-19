@@ -24,6 +24,7 @@ import com.konkawise.dtv.UIApiManager;
 import com.konkawise.dtv.WeakToolManager;
 import com.konkawise.dtv.base.BaseDialog;
 import com.konkawise.dtv.bean.DateModel;
+import com.konkawise.dtv.ui.Topmost;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
@@ -88,6 +89,7 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
     TextView mTvProgressQuality;
 
     private Context mContext;
+    private int mCurrSelectProgPosition;
     private CheckSignalHelper mCheckSignalHelper;
     private Timer mUpdateInformationTimer;
 
@@ -209,7 +211,7 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
     private void updateProgInfo(EpgEvent_t currPfInfo) {
         PDPMInfo_t currProgInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
         if (currProgInfo != null) {
-            mTvProgNum.setText(String.valueOf(currProgInfo.PShowNo));
+            mTvProgNum.setText(Topmost.LCNON ? String.valueOf(currProgInfo.PShowNo) : String.valueOf(mCurrSelectProgPosition + 1));
             mTvProgName.setText(currProgInfo.Name);
             mTvSubtitleNum.setText(String.valueOf(SWFtaManager.getInstance().getSubtitleNum(currProgInfo.ServID)));
             mTvTeletxtNum.setText(String.valueOf(SWFtaManager.getInstance().getTeletextNum(currProgInfo.ServID)));
@@ -236,7 +238,8 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
                 SWTimerManager.getInstance().getEndTime(info)).getFormatHourAndMinute() + " " + info.memEventName;
     }
 
-    public void updatePfInformation() {
+    public void updatePfInformation(int mCurrSelectProgPosition) {
+        this.mCurrSelectProgPosition = mCurrSelectProgPosition;
         startCheckSignal();
         startRealTime();
         startUpdateInformation();

@@ -93,6 +93,8 @@ import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 
 public class Topmost extends BaseActivity {
+    public static final boolean LCNON = true;
+
     private static final String TAG = "Topmost";
     private static final long RECORDING_DELAY = 1000;
     private static final long RECORDING_PERIOD = 1000;
@@ -402,6 +404,7 @@ public class Topmost extends BaseActivity {
             Topmost context = mWeakReference.get();
             switch (msg.what) {
                 case MSG_HIDE_PROG_NUM:
+                    context.mJumpProgNumBuilder.delete(0, context.mJumpProgNumBuilder.length());
                     context.mTvProgNum.setVisibility(View.INVISIBLE);
                     break;
                 case MSG_SHOW_PROG_NUM:
@@ -428,13 +431,19 @@ public class Topmost extends BaseActivity {
         @Override
         protected void handleMsg(Message msg) {
             Topmost context = mWeakReference.get();
-            int progNum = msg.arg1;
-            if (msg.what == MSG_JUMP_PROG && context.isJumpProgNumValid() && progNum != SWPDBaseManager.getInstance().getCurrProgNo()) {
-                context.playProg(progNum);
-            } else {
-                context.showProgNumInvalid();
+            if (msg.what == MSG_JUMP_PROG) {
+                int progNum = msg.arg1;
+                if (context.isJumpProgNumValid() && progNum != SWPDBaseManager.getInstance().getCurrProgNo()) {
+                    context.playProg(progNum);
+                } else {
+                    if (!context.isJumpProgNumValid())
+                        context.showProgNumInvalid(true);
+                    else
+                        context.showProgNumInvalid(false);
+                }
+                context.mJumpProgNumBuilder.delete(0, context.mJumpProgNumBuilder.length());
             }
-            context.mJumpProgNumBuilder.delete(0, context.mJumpProgNumBuilder.length());
+
         }
     }
 
@@ -812,8 +821,10 @@ public class Topmost extends BaseActivity {
                     context.mPbLoadingChannel.setVisibility(View.GONE);
                     if (progList != null && !progList.isEmpty()) {
                         context.mProgListAdapter.updateData(progList);
-                        PDPMInfo_t progInfo = context.getCurrProgInfo();
+                        PDPMInfo_t progInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
                         if (progInfo != null) {
+                            context.mCurrSelectProgPosition = context.getPositionByProgNum(progInfo.ProgNo);
+                            progInfo = context.mProgListAdapter.getItem(context.mCurrSelectProgPosition);
                             context.updateProgListSelection(progInfo.ProgNo);
                             context.playProg(progInfo.ProgNo, true); // 更新完成频道列表，切换播放
                         }
@@ -989,9 +1000,15 @@ public class Topmost extends BaseActivity {
         if (satList != null && !satList.isEmpty()) {
             List<PDPMInfo_t> progInfoList = mProgListMap.get(satList.get(mCurrSatPosition).SatIndex);
             if (progInfoList != null && !progInfoList.isEmpty()) {
-                for (PDPMInfo_t progInfo : progInfoList) {
-                    if (progInfo.PShowNo == showNum) return progInfo;
+                if (LCNON) {
+                    for (PDPMInfo_t progInfo : progInfoList) {
+                        if (progInfo.PShowNo == showNum) return progInfo;
+                    }
+                } else {
+                    if (showNum > 0 && showNum <= progInfoList.size())
+                        return progInfoList.get(showNum - 1);
                 }
+
             }
         }
         return null;
@@ -1129,7 +1146,7 @@ public class Topmost extends BaseActivity {
         SWPDBaseManager.getInstance().setCurrProgNo(progNum);
         removePlayProgMsg();
         showPfInfo();
-        showProgNum(getCurrentProgShowNo());
+        showProgNum(LCNON ? getCurrentProgShowNo() : mCurrSelectProgPosition + 1);
         showRadioBackground();
         sendPlayProgMsg(new HandlerMsgModel(PlayHandler.MSG_PLAY_PROG, progNum, immediately ? 0 : PLAY_PROG_DELAY));
     }
@@ -1138,22 +1155,28 @@ public class Topmost extends BaseActivity {
      * 加台播放
      */
     private void nextProg() {
-        int nextProgNum = getCurrentProgNo() + 1;
-        if (nextProgNum > getLastProgNo()) {
-            nextProgNum = getFirstProgNo();
-        }
-        playProg(nextProgNum);
+//        int nextProgNum = getCurrentProgNo() + 1;
+//        if (nextProgNum > getLastProgNo()) {
+//            nextProgNum = getFirstProgNo();
+//        }
+        mCurrSelectProgPosition++;
+        if (mCurrSelectProgPosition >= mProgListAdapter.getCount())
+            mCurrSelectProgPosition = 0;
+        playProg(mProgListAdapter.getData().get(mCurrSelectProgPosition).ProgNo);
     }
 
     /**
      * 减台播放
      */
     private void lastProg() {
-        int lastProgNum = getCurrentProgNo() - 1;
-        if (lastProgNum < getFirstProgNo()) {
-            lastProgNum = getLastProgNo();
-        }
-        playProg(lastProgNum);
+//        int lastProgNum = getCurrentProgNo() - 1;
+//        if (lastProgNum < getFirstProgNo()) {
+//            lastProgNum = getLastProgNo();
+//        }
+        mCurrSelectProgPosition--;
+        if (mCurrSelectProgPosition < 0)
+            mCurrSelectProgPosition = mProgListAdapter.getCount() - 1;
+        playProg(mProgListAdapter.getData().get(mCurrSelectProgPosition).ProgNo);
     }
 
     /**
@@ -1167,7 +1190,7 @@ public class Topmost extends BaseActivity {
                 sendJumpProgMsg(new HandlerMsgModel(JumpProgHandler.MSG_JUMP_PROG, progInfo.ProgNo));
             }
         } else {
-            showProgNumInvalid();
+            showProgNumInvalid(true);
         }
     }
 
@@ -1181,7 +1204,7 @@ public class Topmost extends BaseActivity {
         }
         mJumpProgNumBuilder.append(progNum);
         int jumpProgShowNum = Integer.valueOf(mJumpProgNumBuilder.toString());
-        showProgNum(jumpProgShowNum, false);
+        showProgNum(jumpProgShowNum, true);
         if (jumpProgShowNum > 0) {
             PDPMInfo_t progInfo = getProgInfoByShowNum(jumpProgShowNum);
             if (progInfo != null) {
@@ -1203,11 +1226,12 @@ public class Topmost extends BaseActivity {
         return false;
     }
 
-    private void showProgNumInvalid() {
+    private void showProgNumInvalid(boolean invalid) {
         hideProgNum();
         dismissPfBarScanDialog();
         mJumpProgNumBuilder.delete(0, mJumpProgNumBuilder.length());
-        ToastUtils.showToast(R.string.toast_program_number_invalid);
+        if (invalid)
+            ToastUtils.showToast(R.string.toast_program_number_invalid);
     }
 
     private void showRadioBackground() {
@@ -1257,7 +1281,7 @@ public class Topmost extends BaseActivity {
 
     private void updatePfBarInfo() {
         if (mPfBarScanDialog != null) {
-            mPfBarScanDialog.updatePfInformation();
+            mPfBarScanDialog.updatePfInformation(mCurrSelectProgPosition);
         }
     }
 
@@ -1929,7 +1953,6 @@ public class Topmost extends BaseActivity {
 
                 if (--mCurrSatPosition < 0) mCurrSatPosition = satList.size() - 1;
                 mTvSatelliteName.setText(satList.get(mCurrSatPosition).sat_name);
-                mCurrSelectProgPosition = 0;
                 updateProgList();
                 return true;
             }
@@ -1940,7 +1963,6 @@ public class Topmost extends BaseActivity {
 
                 if (++mCurrSatPosition >= satList.size()) mCurrSatPosition = 0;
                 mTvSatelliteName.setText(satList.get(mCurrSatPosition).sat_name);
-                mCurrSelectProgPosition = 0;
                 updateProgList();
                 return true;
             }
@@ -1977,7 +1999,7 @@ public class Topmost extends BaseActivity {
                 jumpPlayProg();
             } else {
                 if (mJumpProgNumBuilder.length() > 0) {
-                    showProgNumInvalid();
+                    showProgNumInvalid(true);
                 } else {
                     dismissPfBarScanDialog();
                     // 频道列表有数据时才弹出
