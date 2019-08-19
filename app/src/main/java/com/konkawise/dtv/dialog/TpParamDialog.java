@@ -2,14 +2,12 @@ package com.konkawise.dtv.dialog;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.text.InputType;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
+import android.view.WindowManager;
 import android.widget.TextView;
 
-import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.annotation.TpType;
 import com.konkawise.dtv.base.BaseDialogFragment;
@@ -54,25 +52,11 @@ public class TpParamDialog extends BaseDialogFragment {
         mEtTpQam.setText(TextUtils.isEmpty(mTpQam) ? "" : mTpQam);
 
         mEtTpFreq.setHint(TextUtils.isEmpty(mTpFreq) ? "0" : mTpFreq);
-        mEtTpSymbol.setHint(TextUtils.isEmpty(mTpSymbol) ? "" : mTpSymbol);
+        mEtTpSymbol.setHint(TextUtils.isEmpty(mTpSymbol) ? "0" : mTpSymbol);
         mEtTpQam.setHint(TextUtils.isEmpty(mTpQam) ? "" : mTpQam);
 
         mEtTpFreq.setSelection(mEtTpFreq.getText().toString().length());
         mEtTpSymbol.setSelection(mEtTpSymbol.getText().toString().length());
-
-        if (mTpType == Constants.TP_TYPE_ADD) {
-            mEtTpFreq.setInputType(InputType.TYPE_NULL);
-            mEtTpSymbol.setInputType(InputType.TYPE_NULL);
-        } else {
-            mEtTpFreq.setInputType(EditorInfo.TYPE_CLASS_PHONE);
-            mEtTpSymbol.setInputType(EditorInfo.TYPE_CLASS_PHONE);
-            mEtTpFreq.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mEtTpFreq.requestFocus();
-                }
-            }, 100);
-        }
 
         mEtTpFreq.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -153,6 +137,14 @@ public class TpParamDialog extends BaseDialogFragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        if (getDialog() != null && getDialog().getWindow() != null) {
+            getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
+        }
+    }
+
+    @Override
     protected int resizeDialogWidth() {
         return (int) (getResources().getDisplayMetrics().widthPixels * 0.7);
     }
@@ -168,12 +160,12 @@ public class TpParamDialog extends BaseDialogFragment {
     }
 
     public TpParamDialog freq(String freq) {
-        this.mTpFreq = TextUtils.isEmpty(freq) ? "0" : freq;
+        this.mTpFreq = TextUtils.isEmpty(freq) ? "" : freq;
         return this;
     }
 
     public TpParamDialog symbol(String symbol) {
-        this.mTpSymbol = TextUtils.isEmpty(symbol) ? "0" : symbol;
+        this.mTpSymbol = TextUtils.isEmpty(symbol) ? "" : symbol;
         return this;
     }
 
