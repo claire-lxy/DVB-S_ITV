@@ -1,6 +1,5 @@
 package com.konkawise.dtv.dialog;
 
-import android.content.DialogInterface;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -78,13 +77,5 @@ public class InputPvrMinuteDialog extends BaseDialogFragment {
     public InputPvrMinuteDialog setOnInputPVRContentCallback(OnCommCallback callback) {
         this.mCallback = callback;
         return this;
-    }
-
-    @Override
-    protected boolean onKeyListener(DialogInterface dialog, int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
-            return true;
-        }
-        return super.onKeyListener(dialog, keyCode, event);
     }
 }
