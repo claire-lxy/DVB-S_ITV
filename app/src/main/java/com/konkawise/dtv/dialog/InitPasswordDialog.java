@@ -3,6 +3,7 @@ package com.konkawise.dtv.dialog;
 import android.content.DialogInterface;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.konkawise.dtv.R;
@@ -117,7 +118,9 @@ public class InitPasswordDialog extends BaseDialogFragment {
     @Override
     public void onStart() {
         super.onStart();
-        getDialog().getWindow().setSoftInputMode(getDialog().getWindow().getAttributes().SOFT_INPUT_ADJUST_NOTHING);
+        if (getDialog() != null && getDialog().getWindow() != null) {
+            getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
+        }
     }
 
     @Override

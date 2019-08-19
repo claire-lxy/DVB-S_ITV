@@ -15,7 +15,6 @@ import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.ScanDialog;
-import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
 
 import java.text.MessageFormat;

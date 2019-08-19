@@ -32,13 +32,13 @@ public class SWPDBaseManager {
     }
 
     /**
-     * 获取卫星列表
+     * 获取卫星列表，排除第一个T2的信号
      */
     public List<SatInfo_t> getSatList() {
         ArrayList<SatInfo_t> satelliteList = new ArrayList<>();
         int satNum = SWPDBase.CreateInstance().getSatNum(getCurrProgNo());
 
-        for (int i = 0; i < satNum; i++) {
+        for (int i = 1; i < satNum; i++) {
             satelliteList.add(getSatInfo(i));
         }
         return satelliteList;
@@ -51,8 +51,26 @@ public class SWPDBaseManager {
         return SWPDBase.CreateInstance().getSatInfo(sat);
     }
 
+    /**
+     * 获取卫星列表，包含T2信号
+     */
     public List<SatInfo_t> getProgSatList() {
         return SWPDBase.CreateInstance().getProgSatList();
+    }
+
+    /**
+     * 根据SatIndex查找所在的卫星位置
+     */
+    public int findPositionBySatIndex(int satIndex) {
+        if (satIndex < 0) return 0;
+
+        List<SatInfo_t> satList = getSatList();
+        if (satList != null && !satList.isEmpty()) {
+            for (int i = 0; i < satList.size(); i++) {
+                if (satList.get(i).SatIndex == satIndex) return i;
+            }
+        }
+        return 0;
     }
 
     /**

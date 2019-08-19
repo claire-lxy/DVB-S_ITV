@@ -147,7 +147,7 @@ public class TpListingActivity extends BaseActivity {
     private void initTpList() {
         mAdapter = new TpListingAdapter(this, new ArrayList<>());
         mListView.setAdapter(mAdapter);
-        loadTp(getIndex());
+        loadTp(0);
     }
 
     private void updateTpList() {

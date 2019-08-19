@@ -67,6 +67,7 @@ public class Constants {
 
     public interface IntentKey {
         String INTENT_SATELLITE_INDEX = "satelliteIndex";
+        String INTENT_SATELLITE_POSITION = "satelltePosition";
         String INTENT_SATELLITE_ACTIVITY = "satelliteActivity";
         String INTENT_SATELLITE_NAME = "satelliteName";
         String INTENT_T2_MANUAL_SEARCH_ACTIVITY = "t2ManualSearchActivity";

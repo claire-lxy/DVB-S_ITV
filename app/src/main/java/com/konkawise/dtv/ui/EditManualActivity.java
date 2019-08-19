@@ -2,7 +2,6 @@ package com.konkawise.dtv.ui;
 
 import android.content.Intent;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
@@ -24,6 +23,7 @@ import com.konkawise.dtv.dialog.ScanDialog;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindArray;
@@ -174,11 +174,10 @@ public class EditManualActivity extends BaseActivity {
     @Override
     protected void setup() {
         mTvBottomBarGreen.setText(getString(R.string.rename));
-        //mTvBottomBarYellow.setVisibility(View.GONE);
         mTvBottomBarYellow.setText(getString(R.string.motor_01));
 
         mLastFocusable22KHz = getResources().getString(R.string.on);
-        mCurrentSatellite = getIntent().getIntExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, -1);
+        mCurrentSatellite = SWPDBaseManager.getInstance().findPositionBySatIndex(getIntent().getIntExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, -1));
 
         initCheckSignal();
         satelliteChange();
@@ -321,7 +320,7 @@ public class EditManualActivity extends BaseActivity {
         if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
             saveSatInfo();
             Intent intent = new Intent();
-            intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mCurrentSatellite);
+            intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_POSITION, mCurrentSatellite);
             setResult(RESULT_OK, intent);
         }
 
@@ -334,13 +333,13 @@ public class EditManualActivity extends BaseActivity {
         if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_GREEN) {
             showRenameDialog();
         }
-        //马达功能
+
         if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_YELLOW) {
             Intent intent=new Intent(EditManualActivity.this,MotorActivity.class);
             intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_NAME,mTvSatellite.getText());
             intent.putExtra(Constants.IntentKey.INTENT_TP_NAME,mTvTp.getText());
             intent.putExtra(Constants.IntentKey.INTENT_CURRNT_TP,mCurrentTp);
-            intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX,mCurrentSatellite);
+            intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, getSatList().get(mCurrentSatellite).SatIndex);
             startActivity(intent);
         }
 
@@ -382,7 +381,7 @@ public class EditManualActivity extends BaseActivity {
                             Intent intent = new Intent(EditManualActivity.this, ScanTVandRadioActivity.class);
                             ChannelNew_t channel = getTpList().get(mCurrentTp);
                             intent.putExtra(Constants.IntentKey.INTENT_FREQ, channel.Freq);
-                            intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mCurrentSatellite);
+                            intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, getSatList().get(mCurrentSatellite).SatIndex);
                             intent.putExtra(Constants.IntentKey.INTENT_SYMBOL, channel.Symbol);
                             intent.putExtra(Constants.IntentKey.INTENT_QAM, channel.Qam);
                             intent.putExtra(Constants.IntentKey.INTENT_EDIT_MANUAL_ACTIVITY, 3);
@@ -426,7 +425,6 @@ public class EditManualActivity extends BaseActivity {
 
         // Sat
         satInfo_t.sat_name = mTvSatellite.getText().toString();
-        satInfo_t.SatIndex = mCurrentSatellite;
         // diseqc
         Utils.setDescNum(satInfo_t, mCurrentDiseqc, mDiSEqCArray);
         // 22KHZ
@@ -434,7 +432,7 @@ public class EditManualActivity extends BaseActivity {
         // LNB POWER
         satInfo_t.LnbPower = isLnbPowerOn() ? 1 : 0;
 
-        SWPDBaseManager.getInstance().setSatInfo(mCurrentSatellite, satInfo_t);  //将卫星信息设置到对应的bean类中,保存更改的信息
+        SWPDBaseManager.getInstance().setSatInfo(satInfo_t.SatIndex, satInfo_t);  //将卫星信息设置到对应的bean类中,保存更改的信息
         mSatList = SWPDBaseManager.getInstance().getSatList(); // 更新卫星列表
     }
 
@@ -562,8 +560,10 @@ public class EditManualActivity extends BaseActivity {
     }
 
     private List<ChannelNew_t> getTpList() {
-        mTpList = SWPDBaseManager.getInstance().getSatChannelInfoList(mCurrentSatellite);
-        Log.i(TAG, "TpList size:" + mTpList.size() + " mCurrentSatellite:" + mCurrentSatellite);
+        List<SatInfo_t> satList = getSatList();
+        if (satList == null || satList.isEmpty()) return new ArrayList<>();
+
+        mTpList = SWPDBaseManager.getInstance().getSatChannelInfoList(getSatList().get(mCurrentSatellite).SatIndex);
         return mTpList;
     }
 

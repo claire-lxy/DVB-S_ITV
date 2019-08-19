@@ -118,15 +118,12 @@ public class ScanTVandRadioActivity extends BaseActivity {
         mSatList = SatelliteActivity.satList;
 
         if (mSatList.size() > 0 && isFromSatelliteActivity()) {
-            //多卫星搜索
             mutiSateIndex = 0;
-            searchByNet();
-        } else if (mSatList.size() == 0 && isFromSatelliteActivity()) { //根据卫星索引开始搜索
-            //根据卫星索引进行搜索tp然后搜台
+            searchMultiSatellite();
+        } else if (mSatList.size() == 0 && isFromSatelliteActivity()) {
             setSatInfo();
-            tv_satellite_name.setText(SWPDBaseManager.getInstance().getSatInfo(getSatelliteIndex()).sat_name);
-            //获取单颗卫星所有的tP并进行搜台
-            searchProgram(getSatelliteIndex());
+            tv_satellite_name.setText(SWPDBaseManager.getInstance().getSatInfo(SWPDBaseManager.getInstance().findPositionBySatIndex(getSatelliteIndex())).sat_name);
+            SWPSearchManager.getInstance().searchByNet(getSatelliteIndex());
         }
 
         if (isFromTpListingActivity() || isFromEditManualActivity()) {
@@ -140,9 +137,8 @@ public class ScanTVandRadioActivity extends BaseActivity {
         }
 
         if (isFromT2AutoSearch()) {
-            //T2手动搜台操作
             tv_satellite_name.setText(R.string.installation_t2);
-            searchProgram(getSatelliteIndex());
+            SWPSearchManager.getInstance().searchByNet(getSatelliteIndex());
         }
 
         if (isFromT2ManualSearchActivity()) {
@@ -210,37 +206,29 @@ public class ScanTVandRadioActivity extends BaseActivity {
     private void initRecyclerView() {
         mTvRecyclerView.setHasFixedSize(true);
         mTvRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mTvAdapter = new TvAndRadioRecycleViewAdapter(this, new ArrayList<PDPInfo_t>());
+        mTvAdapter = new TvAndRadioRecycleViewAdapter(this, new ArrayList<>());
         mTvRecyclerView.setAdapter(mTvAdapter);
 
         mRadioRecyclerView.setHasFixedSize(true);
         mRadioRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mRadioAdapter = new TvAndRadioRecycleViewAdapter(this, new ArrayList<PDPInfo_t>());
+        mRadioAdapter = new TvAndRadioRecycleViewAdapter(this, new ArrayList<>());
         mRadioRecyclerView.setAdapter(mRadioAdapter);
     }
 
-    private void searchByNet() {
-        if (mutiSateIndex < mSatList.size()) {
-            String satelliteName = mSatList.get(mutiSateIndex).sat_name + "(" + (mutiSateIndex + 1) + "/" + mSatList.size() + ")";
-            tv_satellite_name.setText(satelliteName);
-            searchProgram(mSatList.get(mutiSateIndex).SatIndex);
-        }
-    }
-
-    /**
-     * 根据卫星搜索
-     */
-    private void searchProgram(int intExtra) {
-        SWPSearchManager.getInstance().searchByNet(intExtra);
+    private void searchMultiSatellite() {
+        String satelliteName = mSatList.get(mutiSateIndex).sat_name + "(" + (mutiSateIndex + 1) + "/" + mSatList.size() + ")";
+        tv_satellite_name.setText(satelliteName);
+        SWPSearchManager.getInstance().searchByNet(mSatList.get(mutiSateIndex).SatIndex);
     }
 
     /**
      * 卫星信息设置到bean中
      */
     public void setSatInfo() {
-        SatInfo_t satInfo = SWPDBaseManager.getInstance().getSatList().get(getSatelliteIndex());
+        int sat = SWPDBaseManager.getInstance().findPositionBySatIndex(getSatelliteIndex());
+        SatInfo_t satInfo = SWPDBaseManager.getInstance().getSatList().get(sat);
 
-        SatInfo_t updateInfo = SWPDBaseManager.getInstance().getSatInfo(getSatelliteIndex());
+        SatInfo_t updateInfo = SWPDBaseManager.getInstance().getSatInfo(sat);
         updateInfo.LnbType = satInfo.LnbType;
         updateInfo.LnbPower = satInfo.LnbPower;
         updateInfo.diseqc10_pos = satInfo.diseqc10_pos;
@@ -249,7 +237,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
         updateInfo.lnb_high = satInfo.lnb_high;
         updateInfo.Enable = satInfo.Enable;
 
-        SWPDBaseManager.getInstance().setSatInfo(getSatelliteIndex(), updateInfo);  //将卫星信息设置到对应的bean类中
+        SWPDBaseManager.getInstance().setSatInfo(sat, updateInfo);
     }
 
     @Override
@@ -261,7 +249,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
                         @Override
                         public void onPositiveListener() {
                             SatelliteActivity.satList.clear();
-                            SWPSearchManager.getInstance().seatchStop(false); //停止搜索  //保存搜索的信息
+                            SWPSearchManager.getInstance().seatchStop(false);
                             finish();
                         }
                     }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
@@ -382,7 +370,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
             if (mutiSateIndex != -1 && mutiSateIndex < mSatList.size() - 1) {
                 mutiSateIndex++;
                 SWPSearchManager.getInstance().seatchStop(true);
-                searchByNet();
+                searchMultiSatellite();
                 return 1;
             }
             SatelliteActivity.satList.clear();

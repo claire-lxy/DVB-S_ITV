@@ -58,7 +58,8 @@ public class SatelliteActivity extends BaseActivity {
 
     @OnItemSelected(R.id.lv_satellite)
     void selectSatelliteItem(int position) {
-        updateUI(position);
+        mCurrPosition = position;
+        updateUI();
     }
 
     @OnItemClick(R.id.lv_satellite)
@@ -81,7 +82,7 @@ public class SatelliteActivity extends BaseActivity {
 
     private SatelliteListAdapter mAdapter;
     public static List<SatInfo_t> satList = new ArrayList(); // ScanTVandRadioActivity传递选中的卫星列表
-    private int mCurrPosition = 0;
+    private int mCurrPosition;
 
     private UpdateSatParamRunnable mUpdateSatParamRunnable;
 
@@ -118,7 +119,7 @@ public class SatelliteActivity extends BaseActivity {
                 SatelliteActivity context = mWeakReference.get();
 
                 context.mAdapter.updateData(satList);
-                context.mListView.setSelection(context.mCurrPosition);
+                context.mListView.setSelection(0);
             }
         }
     }
@@ -133,7 +134,7 @@ public class SatelliteActivity extends BaseActivity {
                         @Override
                         public void onClick(View v) {
                             Intent intent = new Intent(SatelliteActivity.this, ScanTVandRadioActivity.class);
-                            intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mCurrPosition);
+                            intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mAdapter.getItem(mCurrPosition).SatIndex);
                             intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_ACTIVITY, 1);
                             intent.putExtra(Constants.IntentKey.INTENT_TP_NAME, mTvLnbPowerFreq.getText().toString().trim());
                             startActivity(intent);
@@ -144,7 +145,7 @@ public class SatelliteActivity extends BaseActivity {
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_GREEN) {
             Intent intent = new Intent(this, EditManualActivity.class);
-            intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mCurrPosition);
+            intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mAdapter.getItem(mCurrPosition).SatIndex);
             intent.putExtra(Constants.IntentKey.INTENT_LNB, mTvLnb.getText().toString().trim());
             intent.putExtra(Constants.IntentKey.INTENT_DISEQC, mTvLnbPowerDiseqc.getText().toString());
             startActivityForResult(intent, REQUEST_CODE_SATELLITE_EDIT);
@@ -152,7 +153,7 @@ public class SatelliteActivity extends BaseActivity {
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_YELLOW) {
             Intent intent = new Intent(this, TpListingActivity.class);
-            intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mCurrPosition);
+            intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mAdapter.getItem(mCurrPosition).SatIndex);
             intent.putExtra(Constants.IntentKey.INTENT_LNB, mTvLnb.getText().toString().trim());
             intent.putExtra(Constants.IntentKey.INTENT_DISEQC, mTvLnbPowerDiseqc.getText().toString());
             startActivityForResult(intent, REQUEST_CODE_TP_EDIT);
@@ -181,26 +182,24 @@ public class SatelliteActivity extends BaseActivity {
         if ((requestCode == REQUEST_CODE_SATELLITE_EDIT || requestCode == REQUEST_CODE_TP_EDIT) && resultCode == RESULT_OK) {
             mAdapter.updateData(SWPDBaseManager.getInstance().getSatList());
             if (data != null) {
-                int index = data.getIntExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, -1);
-                if (index != -1) {
-                    mCurrPosition = index;
+                int position = data.getIntExtra(Constants.IntentKey.INTENT_SATELLITE_POSITION, -1);
+                if (position != -1) {
+                    mCurrPosition = position;
                     mListView.setSelection(mCurrPosition);
                 }
             }
-            updateUI(mCurrPosition);
+            updateUI();
         }
     }
 
-    private void updateUI(int position) {
+    private void updateUI() {
         if (mUpdateSatParamRunnable != null) {
             ThreadPoolManager.getInstance().remove(mUpdateSatParamRunnable);
-            mUpdateSatParamRunnable.position = position;
             ThreadPoolManager.getInstance().execute(mUpdateSatParamRunnable);
         }
     }
 
     private static class UpdateSatParamRunnable extends WeakRunnable<SatelliteActivity> {
-        int position;
 
         UpdateSatParamRunnable(SatelliteActivity view) {
             super(view);
@@ -211,11 +210,9 @@ public class SatelliteActivity extends BaseActivity {
             SatelliteActivity context = mWeakReference.get();
 
             List<SatInfo_t> satList = SWPDBaseManager.getInstance().getSatList();
-            if (satList != null && !satList.isEmpty() && position < satList.size()) {
-                SatInfo_t satInfo_t = satList.get(position);
+            if (satList != null && !satList.isEmpty() && context.mCurrPosition < satList.size()) {
+                SatInfo_t satInfo_t = satList.get(context.mCurrPosition);
                 ChannelNew_t channel_t1 = SWPDBaseManager.getInstance().getChannelInfoBySat(satInfo_t.SatIndex, 0);
-
-                context.mCurrPosition = satInfo_t.SatIndex;
 
                 context.runOnUiThread(new Runnable() {
                     @Override
