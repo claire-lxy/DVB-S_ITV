@@ -6,6 +6,9 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.konkawise.dtv.SWDVBManager;
+import com.konkawise.dtv.event.RecordStateChangeEvent;
+
+import org.greenrobot.eventbus.EventBus;
 
 public class PowerReceiver extends BroadcastReceiver {
     private static final String TAG = "PowerReceiver";
@@ -14,6 +17,7 @@ public class PowerReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
             Log.i(TAG, "receive screen off");
+            EventBus.getDefault().post(new RecordStateChangeEvent(false));
             SWDVBManager.getInstance().releaseResource();
         }
     }

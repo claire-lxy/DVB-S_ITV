@@ -110,6 +110,8 @@ public class ChannelEditActivity extends BaseActivity {
     private SparseArray<int[]> mEditPidMap = new SparseArray<>(); // key:progNo
     // 存储编辑操作的sortType
     private int mEditSortType = SWPDBaseManager.getInstance().getSortType();
+    // 存储编辑操作的rename
+    private SparseArray<String> mEditRenameMap = new SparseArray<>(); // key:progNo
 
     private List<SatInfo_t> mSatList;
     private int mCurrSatPosition;
@@ -117,7 +119,6 @@ public class ChannelEditActivity extends BaseActivity {
     private ChannelEditAdapter mAdapter;
     private int mCurrSelectPosition;
     private LoadChannelRunnable mLoadChannelRunnable;
-    private List<PDPMInfo_t> mOriginalChannelList = new ArrayList<>();
 
     private boolean mSaveFavorite;
     private boolean mSaveEditChannel;
@@ -192,9 +193,7 @@ public class ChannelEditActivity extends BaseActivity {
                 @Override
                 public void run() {
                     context.mPbLoadingChannel.setVisibility(View.GONE);
-                    context.mOriginalChannelList.clear();
                     if (channelList != null && !channelList.isEmpty()) {
-                        context.mOriginalChannelList.addAll(channelList);
                         context.mAdapter.updateData(channelList);
                         context.mLvChannelList.setSelection(context.scrollToPosition(scrollToProgIndex));
                     } else {
@@ -287,6 +286,7 @@ public class ChannelEditActivity extends BaseActivity {
         mEditFavChannelsMap = mFavChannelsMap.clone();
 
         mEditPidMap.clear();
+        mEditRenameMap.clear();
 
         mAdapter.clearSelect();
         mAdapter.clearDelete();
@@ -555,8 +555,12 @@ public class ChannelEditActivity extends BaseActivity {
     public void renameChannel(String newName) {
         recordSaveData(EDIT_SAVE_CHANNEL);
 
-        mAdapter.getItem(mCurrSelectPosition).Name = newName;
+        PDPMInfo_t channelInfo = mAdapter.getItem(mCurrSelectPosition);
+        channelInfo.Name = newName;
+        mAdapter.updateData(mCurrSelectPosition, channelInfo);
         mAdapter.notifyDataSetChanged();
+
+        mEditRenameMap.put(channelInfo.ProgNo, newName);
     }
 
     /**
@@ -581,8 +585,7 @@ public class ChannelEditActivity extends BaseActivity {
 
     private ArrayList<PDPEdit_t> getEditList() {
         List<PDPMInfo_t> channelList = mAdapter.getData();
-        if (mOriginalChannelList == null || mOriginalChannelList.isEmpty()
-                || channelList == null || channelList.isEmpty()) return null;
+        if (channelList == null || channelList.isEmpty()) return null;
 
         ArrayList<PDPEdit_t> editList = new ArrayList<>();
         for (int i = 0; i < channelList.size(); i++) {
@@ -593,9 +596,10 @@ public class ChannelEditActivity extends BaseActivity {
             editInfo.hideFlag = channelList.get(i).HideFlag;
             editInfo.lockFlag = channelList.get(i).LockFlag;
 
-            boolean isRename = !TextUtils.equals(mOriginalChannelList.get(i).Name, channelList.get(i).Name);
+            String channelName = mEditRenameMap.get(channelList.get(i).ProgNo);
+            boolean isRename = !TextUtils.isEmpty(channelName);
             editInfo.nameFlag = isRename ? 1 : 0;
-            editInfo.newprogname = isRename ? channelList.get(i).Name : "";
+            editInfo.newprogname = isRename ? channelName : "";
             editList.add(editInfo);
         }
         return editList;

@@ -227,7 +227,7 @@ public class Topmost extends BaseActivity {
     private void gotoEpg() {
         if (mProgListAdapter.getCount() <= 0) {
             if (mMenuShow) {
-                showEpgSearchDialog();
+                showRemindSearchDialog();
             }
         } else {
             startActivity(new Intent(this, EpgActivity.class));
@@ -236,7 +236,13 @@ public class Topmost extends BaseActivity {
 
     @OnClick(R.id.item_channel_manage)
     void channelManage() {
-        toggleChannelManageItem();
+        if (mProgListAdapter.getCount() <= 0 && isShowChannelManageItem()) {
+            if (mMenuShow) {
+                showRemindSearchDialog();
+            }
+        } else {
+            toggleChannelManageItem();
+        }
     }
 
     @OnClick(R.id.item_channel_edit)
@@ -792,8 +798,6 @@ public class Topmost extends BaseActivity {
     }
 
     private static class LoadProgRunnable extends WeakRunnable<Topmost> {
-        static final int MAX_DELAY_LOAD_PROG = 3;
-        private int delayTime;
 
         LoadProgRunnable(Topmost view) {
             super(view);
@@ -803,11 +807,9 @@ public class Topmost extends BaseActivity {
         protected void loadBackground() {
             Topmost context = mWeakReference.get();
             // 等待卫星列表获取完再获取频道列表
-            while (context.mSatList == null || context.mSatList.isEmpty()) {
-                if (delayTime >= MAX_DELAY_LOAD_PROG) break;
+            while (context.mSatList == null) {
                 Log.i(TAG, "waiting load satellite");
                 try {
-                    delayTime++;
                     Thread.sleep(100);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -826,7 +828,7 @@ public class Topmost extends BaseActivity {
                             context.mCurrSelectProgPosition = context.getPositionByProgNum(progInfo.ProgNo);
                             progInfo = context.mProgListAdapter.getItem(context.mCurrSelectProgPosition);
                             context.updateProgListSelection(progInfo.ProgNo);
-                            context.playProg(progInfo.ProgNo, true); // 更新完成频道列表，切换播放
+                            context.playProg(progInfo.ProgNo); // 更新完成频道列表，切换播放
                         }
                     } else {
                         context.mProgListAdapter.updateData(new ArrayList<>());
@@ -879,14 +881,11 @@ public class Topmost extends BaseActivity {
         protected void loadBackground() {
             Topmost context = mWeakReference.get();
 
-            if (context.mSatList == null) {
-                context.mSatList = new ArrayList<>();
-            } else {
-                context.mSatList.clear();
-            }
             List<SatInfo_t> allSatList = SWPDBaseManager.getInstance().getAllSatListContainFav(context);
             if (allSatList != null && !allSatList.isEmpty()) {
-                context.mSatList.addAll(allSatList);
+                context.mSatList = new ArrayList<>(allSatList);
+            } else {
+                context.mSatList = new ArrayList<>();
             }
         }
     }
@@ -1008,7 +1007,6 @@ public class Topmost extends BaseActivity {
                     if (showNum > 0 && showNum <= progInfoList.size())
                         return progInfoList.get(showNum - 1);
                 }
-
             }
         }
         return null;
@@ -1155,28 +1153,20 @@ public class Topmost extends BaseActivity {
      * 加台播放
      */
     private void nextProg() {
-//        int nextProgNum = getCurrentProgNo() + 1;
-//        if (nextProgNum > getLastProgNo()) {
-//            nextProgNum = getFirstProgNo();
-//        }
         mCurrSelectProgPosition++;
         if (mCurrSelectProgPosition >= mProgListAdapter.getCount())
             mCurrSelectProgPosition = 0;
-        playProg(mProgListAdapter.getData().get(mCurrSelectProgPosition).ProgNo);
+        playProg(mProgListAdapter.getItem(mCurrSelectProgPosition).ProgNo);
     }
 
     /**
      * 减台播放
      */
     private void lastProg() {
-//        int lastProgNum = getCurrentProgNo() - 1;
-//        if (lastProgNum < getFirstProgNo()) {
-//            lastProgNum = getLastProgNo();
-//        }
         mCurrSelectProgPosition--;
         if (mCurrSelectProgPosition < 0)
             mCurrSelectProgPosition = mProgListAdapter.getCount() - 1;
-        playProg(mProgListAdapter.getData().get(mCurrSelectProgPosition).ProgNo);
+        playProg(mProgListAdapter.getItem(mCurrSelectProgPosition).ProgNo);
     }
 
     /**
@@ -1317,7 +1307,7 @@ public class Topmost extends BaseActivity {
         }, 1000);
     }
 
-    private void showEpgSearchDialog() {
+    private void showRemindSearchDialog() {
         new CommRemindDialog()
                 .content(getString(R.string.no_program))
                 .setOnPositiveListener("", new OnCommPositiveListener() {
@@ -1923,7 +1913,13 @@ public class Topmost extends BaseActivity {
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         // 没有节目，不处理节目切换
-        if (mProgListAdapter.getCount() <= 0) return super.dispatchKeyEvent(event);
+        if (mProgListAdapter.getCount() <= 0) {
+            if (unInterceptEventWhenProgEmpty(event)) {
+                return super.dispatchKeyEvent(event);
+            }
+            return true;
+        }
+
         // 如果处于booking录制状态，拦截提示退出
         if (interceptEventWhenRecord(event)) {
             sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
@@ -2134,6 +2130,20 @@ public class Topmost extends BaseActivity {
                 keyCode != KeyEvent.KEYCODE_FORWARD_DEL;
     }
 
+    private boolean unInterceptEventWhenProgEmpty(KeyEvent event) {
+        int keyCode = event.getKeyCode();
+        return keyCode == KeyEvent.KEYCODE_BACK ||
+                keyCode == KeyEvent.KEYCODE_MENU ||
+                keyCode == KeyEvent.KEYCODE_UNKNOWN ||
+                keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
+                keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
+                (mMenuShow && (keyCode == KeyEvent.KEYCODE_DPAD_UP ||
+                        keyCode == KeyEvent.KEYCODE_DPAD_DOWN ||
+                        keyCode == KeyEvent.KEYCODE_DPAD_LEFT ||
+                        keyCode == KeyEvent.KEYCODE_DPAD_RIGHT ||
+                        keyCode == KeyEvent.KEYCODE_DPAD_CENTER));
+    }
+
     @Override
     public boolean onHomeHandleCallback() {
         stopRecord();
@@ -2161,8 +2171,8 @@ public class Topmost extends BaseActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onReceiveProgramUpdate(ProgramUpdateEvent event) {
-        Log.i(TAG, "receive program update, tv size = " + event.tvSize + ", radio size = " + event.radioSize);
         if (event.tvSize != 0 || event.radioSize != 0 || event.isProgramEdit) {
+            mSatList = null; // 置空重新加载
             updateSatList();
             mProgListMap.clear(); // 更新频道列表前清空缓存
             updateProgList();
@@ -2172,7 +2182,6 @@ public class Topmost extends BaseActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRecordStateChange(RecordStateChangeEvent event) {
         if (!event.isRecording) {
-            Log.i(TAG, "book stop current record");
             stopRecord();
         }
     }

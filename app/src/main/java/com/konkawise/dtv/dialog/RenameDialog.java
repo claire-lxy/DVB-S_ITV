@@ -61,6 +61,7 @@ public class RenameDialog extends BaseDialogFragment {
         }
         tv_name_type.setText(TextUtils.isEmpty(mNameType) ? getStrings(R.string.channel_name) : mNameType);
         eidt_rename.setHint(mOldName);
+        eidt_rename.setText(mOldName);
 
         tv_rename_canncle.requestFocus();
         eidt_rename.setOnKeyListener(new View.OnKeyListener() {
@@ -70,10 +71,10 @@ public class RenameDialog extends BaseDialogFragment {
                     switch (keyCode) {
                         case KeyEvent.KEYCODE_DPAD_LEFT:
                             eidt_rename.setText(EditUtils.getEditSubstring(eidt_rename));
-                            break;
+                            return true;
                         case KeyEvent.KEYCODE_DPAD_DOWN:
                             tv_rename_canncle.requestFocus();
-                            break;
+                            return true;
                     }
                 }
                 return false;

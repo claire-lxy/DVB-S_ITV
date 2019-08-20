@@ -79,49 +79,12 @@ public class PIDDialog extends BaseDialogFragment {
 
         tv_pid_canncle.requestFocus();
 
-        rl_video_type.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View view, int keyCode, KeyEvent event) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    switch (event.getKeyCode()) {
-                        case KeyEvent.KEYCODE_DPAD_LEFT:
-                            break;
-                        case KeyEvent.KEYCODE_DPAD_RIGHT:
-                            break;
-                        case KeyEvent.KEYCODE_ENTER:
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                return false;
-            }
-        });
-
-        rl_auto_type.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View view, int i, KeyEvent event) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    switch (event.getKeyCode()) {
-                        case KeyEvent.KEYCODE_DPAD_LEFT:
-                            break;
-                        case KeyEvent.KEYCODE_DPAD_RIGHT:
-                            break;
-                        case KeyEvent.KEYCODE_ENTER:
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                return false;
-            }
-        });
-
         eidt_text_video_pid.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent event) {
                 if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT && event.getAction() == KeyEvent.ACTION_DOWN) {
                     eidt_text_video_pid.setText(EditUtils.getEditSubstring(eidt_text_video_pid));
+                    return true;
                 }
                 return false;
             }
@@ -134,7 +97,7 @@ public class PIDDialog extends BaseDialogFragment {
                     switch (event.getKeyCode()) {
                         case KeyEvent.KEYCODE_DPAD_LEFT:
                             edit_text_audio_pid.setText(EditUtils.getEditSubstring(edit_text_audio_pid));
-                            break;
+                            return true;
                         case KeyEvent.KEYCODE_DPAD_UP:
                             eidt_text_video_pid.postDelayed(new Runnable() {
                                 @Override
@@ -142,9 +105,7 @@ public class PIDDialog extends BaseDialogFragment {
                                     eidt_text_video_pid.requestFocus();
                                 }
                             },100);
-                            break;
-                        default:
-                            break;
+                            return true;
                     }
                 }
                 return false;
@@ -158,7 +119,7 @@ public class PIDDialog extends BaseDialogFragment {
                     switch (event.getKeyCode()) {
                         case KeyEvent.KEYCODE_DPAD_LEFT:
                             edit_text_pdr_pid.setText(EditUtils.getEditSubstring(edit_text_pdr_pid));
-                            break;
+                            return true;
                         case KeyEvent.KEYCODE_DPAD_UP:
                             edit_text_audio_pid.postDelayed(new Runnable() {
                                 @Override
@@ -167,10 +128,7 @@ public class PIDDialog extends BaseDialogFragment {
                                     edit_text_audio_pid.requestFocus();
                                 }
                             }, 100);
-                            break;
-
-                        default:
-                            break;
+                            return true;
                     }
                 }
                 return false;
