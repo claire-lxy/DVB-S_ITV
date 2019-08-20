@@ -150,10 +150,6 @@ public class TpListingActivity extends BaseActivity {
         loadTp(0);
     }
 
-    private void updateTpList() {
-        loadTp(0);
-    }
-
     private void updateTpList(int selection) {
         loadTp(selection);
     }
@@ -288,14 +284,14 @@ public class TpListingActivity extends BaseActivity {
         newTp.Symbol = TextUtils.isEmpty(symbol) ? 0 : Integer.parseInt(symbol);
         newTp.NetID = 0;
         newTp.TsID = 0;
-        String mVoRH = qam;
-        if (mVoRH.equals(getResources().getString(R.string.h))) {
+        if (qam.equals(getString(R.string.h))) {
             newTp.Qam = 0;
-        } else if (mVoRH.equals(getResources().getString(R.string.v))) {
+        } else if (qam.equals(getString(R.string.v))) {
             newTp.Qam = 1;
         }
         SWPDBaseManager.getInstance().addChannelInfo(newTp);
-        updateTpList();
+        int position = findTpPosition(newTp.Freq, newTp.Symbol, newTp.Qam);
+        updateTpList(position <= -1 ? mAdapter.getCount() : position);
     }
 
     private void editTp(String freq, String symbol, String qam) {
@@ -308,9 +304,9 @@ public class TpListingActivity extends BaseActivity {
         ChannelNew_t editTp = mAdapter.getItem(mSelectPosition);
         editTp.Freq = TextUtils.isEmpty(freq) ? 0 : Integer.parseInt(freq);
         editTp.Symbol = TextUtils.isEmpty(symbol) ? 0 : Integer.parseInt(symbol);
-        if (qam.equals(getResources().getString(R.string.h))) {
+        if (qam.equals(getString(R.string.h))) {
             editTp.Qam = 0;
-        } else if (qam.equals(getResources().getString(R.string.v))) {
+        } else if (qam.equals(getString(R.string.v))) {
             editTp.Qam = 1;
         }
         SWPDBaseManager.getInstance().setSatChannelInfo(editTp);
@@ -323,7 +319,7 @@ public class TpListingActivity extends BaseActivity {
         if (mAdapter.getCount() > 0) {
             ChannelNew_t channelNew_t = mAdapter.getItem(mSelectPosition);
             SWPDBaseManager.getInstance().delChannelInfo(channelNew_t);
-            updateTpList();
+            updateTpList(0);
         }
     }
 
@@ -333,6 +329,18 @@ public class TpListingActivity extends BaseActivity {
 
     private boolean isParamOver(String freq, String symbol) {
         return Integer.parseInt(freq) >= FREQ_SYMBOL_MAX_LIMIT && Integer.parseInt(symbol) >= FREQ_SYMBOL_MAX_LIMIT;
+    }
+
+    private int findTpPosition(int freq, int symbol, int qam) {
+        if (mAdapter.getCount() >= 0) {
+            for (int i = 0; i < mAdapter.getCount(); i++) {
+                ChannelNew_t tp = mAdapter.getItem(i);
+                if (tp.Freq == freq && tp.Symbol == symbol && tp.Qam == qam) {
+                    return i;
+                }
+            }
+        }
+        return -1;
     }
 
     @Override
