@@ -402,18 +402,14 @@ public class ChannelEditActivity extends BaseActivity {
             }
 
             int favChannelInFavGroupPosition = isChannelInFavGroup(favChannelList, favChannelInfo);
-            Log.i("test", "favIndex = " + favIndex + ", is in fav group = " + favChannelInFavGroupPosition);
             if (favChannelInFavGroupPosition == -1) {
                 if (checkMap.get(favIndex)) {
-                    Log.i("test", "list add fav channel");
                     favChannelList.add(favChannelInfo);
                 }
             } else {
                 if (checkMap.get(favIndex)) {
-                    Log.i("test", "list update fav channel");
                     favChannelList.set(favChannelInFavGroupPosition, favChannelInfo);
                 } else {
-                    Log.i("test", "list remove fav channel");
                     favChannelList.remove(favChannelInFavGroupPosition);
                 }
             }
