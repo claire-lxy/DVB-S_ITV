@@ -45,6 +45,7 @@ public class SearchChannelDialog extends BaseDialogFragment {
         }
         if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER && event.getAction() == KeyEvent.ACTION_UP && mInit) {
             if (getDialog() != null && getDialog().isShowing() && mOnSearchListener != null) {
+                getDialog().dismiss();
                 mOnSearchListener.onKeyCenter();
                 return true;
             }

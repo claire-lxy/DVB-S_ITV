@@ -234,7 +234,7 @@ public class BlindActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(BlindActivity.this, TpBlindActivity.class);
-                intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mCurrentSatellite);
+                intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, getSatList().get(mCurrentSatellite).SatIndex);
                 startActivity(intent);
                 finish();
             }
@@ -263,7 +263,7 @@ public class BlindActivity extends BaseActivity {
         // LNB POWER
         satInfo_t.LnbPower = isLnbPowerOn() ? 1 : 0;
 
-        SWPDBaseManager.getInstance().setSatInfo(mCurrentSatellite, satInfo_t);  //将卫星信息设置到对应的bean类中,保存更改的信息
+        SWPDBaseManager.getInstance().setSatInfo(satInfo_t.SatIndex, satInfo_t);  //将卫星信息设置到对应的bean类中,保存更改的信息
         mSatList = SWPDBaseManager.getInstance().getSatList(); // 更新卫星列表
     }
 

@@ -112,6 +112,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
         mCheckSignalHelper.stopCheckSignal();
         SWDVBManager.getInstance().unRegMsgHandler(Constants.SCAN_CALLBACK_MSG_ID, mSearchMsgCB);
         SWPSearchManager.getInstance().seatchStop(false);
+        SatelliteActivity.satList.clear();
     }
 
     private void initIntent() {
@@ -248,8 +249,6 @@ public class ScanTVandRadioActivity extends BaseActivity {
                     .setOnPositiveListener("", new OnCommPositiveListener() {
                         @Override
                         public void onPositiveListener() {
-                            SatelliteActivity.satList.clear();
-                            SWPSearchManager.getInstance().seatchStop(false);
                             finish();
                         }
                     }).show(getSupportFragmentManager(), CommRemindDialog.TAG);

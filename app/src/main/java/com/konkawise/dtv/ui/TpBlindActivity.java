@@ -16,6 +16,7 @@ import com.konkawise.dtv.SWDVBManager;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.SWPSearchManager;
+import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.adapter.BlindTpAdapter;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.bean.BlindTpModel;
@@ -117,8 +118,8 @@ public class TpBlindActivity extends BaseActivity {
         super.onPause();
         SWDVBManager.getInstance().unRegMsgHandler(Constants.SCAN_CALLBACK_MSG_ID, mSearchMsgCB);
         SWPSearchManager.getInstance().seatchStop(false);
-        SWFtaManager.getInstance().blindScanStop();
         stopBlindScanProgressTimer();
+        stopBlindScan();
     }
 
     private void initRecyclerView() {
@@ -187,16 +188,31 @@ public class TpBlindActivity extends BaseActivity {
                 @Override
                 public void run() {
                     if (scanProgress != null) {
-                        if (scanProgress.currStep <= scanProgress.endStep) {
+                        if (scanProgress.currStep < scanProgress.endStep) {
                             String progress = scanProgress.currStep + "%";
                             context.tv_progress_tp.setText(progress);
                             context.progress_tp_blind.setMax(scanProgress.endStep);
                             context.progress_tp_blind.setProgress(scanProgress.currStep);
+                        } else {
+                            if (scanProgress.currStep < 1000) {
+                                context.tv_progress_tp.setText("0%");
+                                context.progress_tp_blind.setProgress(0);
+                                context.stopBlindScanProgressTimer();
+                            }
                         }
                     }
                 }
             });
         }
+    }
+
+    private void stopBlindScan() {
+        ThreadPoolManager.getInstance().execute(new Runnable() {
+            @Override
+            public void run() {
+                SWFtaManager.getInstance().blindScanStop();
+            }
+        });
     }
 
     private class BlindSearchMsgCB extends SearchMsgCB {
@@ -222,7 +238,6 @@ public class TpBlindActivity extends BaseActivity {
         @Override
         public int PSearch_PROG_ONETSOK(int AllNum, int CurrIndex, int Sat,
                                         int freq, int symbol, int qam) {
-            stopBlindScanProgressTimer();
             PSRNum_t psr = SWPSearchManager.getInstance().getProgNumOfThisSarch(Sat, freq);
             if (null == psr) return 1;
 
@@ -392,8 +407,6 @@ public class TpBlindActivity extends BaseActivity {
                     .setOnPositiveListener("", new OnCommPositiveListener() {
                         @Override
                         public void onPositiveListener() {
-                            SWFtaManager.getInstance().blindScanStop();
-                            SWPSearchManager.getInstance().seatchStop(false);
                             finish();
                         }
                     }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
