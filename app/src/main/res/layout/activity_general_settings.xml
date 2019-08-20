@@ -125,34 +125,67 @@
                 tools:ignore="ContentDescription" />
         </RelativeLayout>
 
-        <!-- Aspect radio mode -->
+        <!-- Ratio mode -->
         <RelativeLayout
-            android:id="@+id/item_aspect_radio"
+            android:id="@+id/item_ratio_mode"
             style="@style/ItemGroupStyle"
             android:layout_below="@id/item_pf_timeout"
             android:background="@drawable/dvb_btn_fragment_selector">
 
             <TextView
                 style="@style/ItemTitleStyle"
-                android:text="@string/aspect_ratio_mode"
+                android:text="@string/ratio_mode"
                 tools:ignore="RelativeOverlap" />
 
             <ImageView
-                android:id="@+id/iv_aspect_radio_left"
+                android:id="@+id/iv_ratio_left"
                 style="@style/ItemArrowLeftStyle"
-                android:layout_toStartOf="@+id/tv_aspect_radio"
-                android:layout_toLeftOf="@+id/tv_aspect_radio"
+                android:layout_toStartOf="@+id/tv_ratio"
+                android:layout_toLeftOf="@+id/tv_ratio"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
-                android:id="@+id/tv_aspect_radio"
+                android:id="@+id/tv_ratio"
                 style="@style/ItemContentStyle"
-                android:layout_toStartOf="@+id/iv_aspect_radio_right"
-                android:layout_toLeftOf="@+id/iv_aspect_radio_right" />
+                android:layout_toStartOf="@+id/iv_ratio_right"
+                android:layout_toLeftOf="@+id/iv_ratio_right" />
 
             <ImageView
-                android:id="@+id/iv_aspect_radio_right"
+                android:id="@+id/iv_ratio_right"
+                style="@style/ItemArrowRightStyle"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <!-- Aspect mode -->
+        <RelativeLayout
+            android:id="@+id/item_aspect_mode"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/item_ratio_mode"
+            android:background="@drawable/dvb_btn_fragment_selector">
+
+            <TextView
+                style="@style/ItemTitleStyle"
+                android:text="@string/aspect_mode"
+                tools:ignore="RelativeOverlap" />
+
+            <ImageView
+                android:id="@+id/iv_aspect_left"
+                style="@style/ItemArrowLeftStyle"
+                android:layout_toStartOf="@+id/tv_aspect"
+                android:layout_toLeftOf="@+id/tv_aspect"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_aspect"
+                style="@style/ItemContentStyle"
+                android:layout_toStartOf="@+id/iv_aspect_right"
+                android:layout_toLeftOf="@+id/iv_aspect_right" />
+
+            <ImageView
+                android:id="@+id/iv_aspect_right"
                 style="@style/ItemArrowRightStyle"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
@@ -162,7 +195,7 @@
         <RelativeLayout
             android:id="@+id/item_switch_channel"
             style="@style/ItemGroupStyle"
-            android:layout_below="@id/item_aspect_radio"
+            android:layout_below="@id/item_aspect_mode"
             android:background="@drawable/dvb_btn_fragment_selector">
 
             <TextView
@@ -260,45 +293,11 @@
                 tools:ignore="ContentDescription" />
         </RelativeLayout>
 
-        <!-- Teletext Language -->
-        <RelativeLayout
-            android:id="@+id/item_teletext_language"
-            style="@style/ItemGroupStyle"
-            android:layout_below="@id/item_second_audio_language"
-            android:background="@drawable/dvb_btn_fragment_selector">
-
-            <TextView
-                style="@style/ItemTitleStyle"
-                android:text="@string/teletext_language"
-                tools:ignore="RelativeOverlap" />
-
-            <ImageView
-                android:id="@+id/iv_teletext_language_left"
-                style="@style/ItemArrowLeftStyle"
-                android:layout_toStartOf="@+id/tv_teletext_language"
-                android:layout_toLeftOf="@+id/tv_teletext_language"
-                android:visibility="invisible"
-                tools:ignore="ContentDescription" />
-
-            <TextView
-                android:id="@+id/tv_teletext_language"
-                style="@style/ItemContentStyle"
-                android:layout_toStartOf="@+id/iv_teletext_language_right"
-                android:layout_toLeftOf="@+id/iv_teletext_language_right"
-                android:text="@string/language" />
-
-            <ImageView
-                android:id="@+id/iv_teletext_language_right"
-                style="@style/ItemArrowRightStyle"
-                android:visibility="invisible"
-                tools:ignore="ContentDescription" />
-        </RelativeLayout>
-
         <!-- Subtitle Language -->
         <RelativeLayout
             android:id="@+id/item_subtitle_language"
             style="@style/ItemGroupStyle"
-            android:layout_below="@id/item_teletext_language"
+            android:layout_below="@id/item_second_audio_language"
             android:background="@drawable/dvb_btn_fragment_selector">
 
             <TextView
@@ -332,6 +331,7 @@
         <RelativeLayout
             android:id="@+id/item_auto_start"
             style="@style/ItemGroupStyle"
+            android:visibility="gone"
             android:layout_below="@id/item_subtitle_language"
             android:background="@drawable/dvb_btn_fragment_selector">
 

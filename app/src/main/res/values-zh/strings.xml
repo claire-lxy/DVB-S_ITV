@@ -77,7 +77,8 @@
 	<string name="t2_setting">T/T2 Settings</string>
     <string name="subtitles_setting">Subtitle Display</string>
     <string name="timeout">P/F Bar Timeout</string>
-    <string name="aspect_ratio_mode">Aspect ratio mode</string>
+    <string name="ratio_mode">Ratio Mode</string>
+    <string name="aspect_mode">Aspect mode</string>
     <string name="switch_channel_mode">Switch channel mode</string>
     <string name="first_audio_language">First Audio Language</string>
     <string name="second_audio_language">Second Audio Language</string>
