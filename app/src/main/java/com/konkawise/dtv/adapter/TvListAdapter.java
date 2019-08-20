@@ -24,7 +24,7 @@ public class TvListAdapter extends BaseListViewAdapter<PDPMInfo_t> {
         holder.setText(R.id.tv_prog_num, Topmost.LCNON ? String.valueOf(item.PShowNo) : String.valueOf(position + 1))
                 .setText(R.id.tv_prog_name, item.Name)
                 .setVisibility(R.id.iv_prog_play, mSelectPosition == position ? View.VISIBLE : View.GONE)
-                .setVisibility(R.id.iv_prog_fav, item.FavFlag == 1 ? View.VISIBLE : View.INVISIBLE)
+                .setVisibility(R.id.iv_prog_fav, item.FavFlag >= 1 ? View.VISIBLE : View.INVISIBLE)
                 .setVisibility(R.id.iv_prog_lock, item.LockFlag == 1 ? View.VISIBLE : View.INVISIBLE)
                 .setVisibility(R.id.iv_prog_pay, item.CasFlag == 1 ? View.VISIBLE : View.INVISIBLE);
     }

@@ -1,5 +1,6 @@
 package com.konkawise.dtv;
 
+import android.annotation.NonNull;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.SparseArray;
@@ -389,5 +390,27 @@ public class SWPDBaseManager {
 
     public boolean isProgCanPlay() {
         return getCurrProgInfo() != null;
+    }
+
+    /**
+     * 根据频道FavFlag标志获取频道所在喜爱分组数组
+     *
+     * @return ['0', '0', '0', '0', '0', '0', '0', '1'] 如果频道在某个喜爱分组中为1，否则为0
+     */
+    public char[] getProgInfoFavGroupArray(@NonNull PDPMInfo_t progInfo) {
+        int[] favIndexArray = getFavIndexArray();
+        char[] favGroupArray = new char[favIndexArray.length];
+
+        StringBuilder sb = new StringBuilder(favIndexArray.length);
+        String favFlagBinaryStr = Integer.toBinaryString(progInfo.FavFlag);
+        favFlagBinaryStr = sb.append(favFlagBinaryStr).reverse().toString();
+        for (int i = 0; i < favIndexArray.length; i++) {
+            if (favFlagBinaryStr.length() - 1 < i) {
+                favGroupArray[i] = '0';
+            } else {
+                favGroupArray[i] = favFlagBinaryStr.charAt(i);
+            }
+        }
+        return favGroupArray;
     }
 }

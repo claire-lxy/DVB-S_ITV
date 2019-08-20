@@ -14,8 +14,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
-import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
-
 public class RecordListAdapter extends BaseListViewAdapter<RecordInfo> {
     private int currSelectPosition;
     private boolean darked = false;

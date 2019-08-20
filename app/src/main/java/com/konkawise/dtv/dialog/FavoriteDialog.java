@@ -1,7 +1,6 @@
 package com.konkawise.dtv.dialog;
 
 import android.text.TextUtils;
-import android.util.SparseArray;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -10,9 +9,6 @@ import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.adapter.CheckGroupAdapter;
 import com.konkawise.dtv.base.BaseDialogFragment;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -55,8 +51,6 @@ public class FavoriteDialog extends BaseDialogFragment {
     private String mTitle;
     private boolean mMulti;
 
-    private SparseArray<List<PDPMInfo_t>> mFavoriteChannelsMap;
-
     @Override
     protected int getLayoutId() {
         return R.layout.dialog_check_group_layout;
@@ -66,39 +60,19 @@ public class FavoriteDialog extends BaseDialogFragment {
     protected void setup(View view) {
         mTvTitle.setText(mTitle);
 
-        if (mFavoriteChannelsMap != null && mFavoriteChannelsMap.size() > 0) {
-            mAdapter = new CheckGroupAdapter(getContext(), SWPDBaseManager.getInstance().getFavoriteGroupNameList(mFavoriteChannelsMap.size()));
-            mListView.setAdapter(mAdapter);
-        }
+        mAdapter = new CheckGroupAdapter(getContext(), SWPDBaseManager.getInstance().getFavoriteGroupNameList(SWPDBaseManager.getInstance().getFavIndexArray().length));
+        mListView.setAdapter(mAdapter);
 
-        // 如果是多选，都不选中
-        if (!mMulti) {
-            for (int checkIndex : findChannelFavoriteIndexs()) {
-                mAdapter.setCheck(checkIndex);
+        if (mCurrChannelInfo != null) {
+            char[] favGroupArray = SWPDBaseManager.getInstance().getProgInfoFavGroupArray(mCurrChannelInfo);
+            if (!mMulti) {
+                for (int i = 0; i < favGroupArray.length; i++) {
+                    if (favGroupArray[i] == '1') {
+                        mAdapter.setCheck(i);
+                    }
+                }
             }
         }
-    }
-
-    private List<Integer> findChannelFavoriteIndexs() {
-        List<Integer> checkIndexs = new ArrayList<>();
-        if (mFavoriteChannelsMap == null || mFavoriteChannelsMap.size() == 0) return checkIndexs;
-
-        for (int i = 0; i < mFavoriteChannelsMap.size(); i++ ) {
-            if (isChannelFavorite(mFavoriteChannelsMap.get(i))) {
-                checkIndexs.add(i);
-            }
-        }
-        return checkIndexs;
-    }
-
-    private boolean isChannelFavorite(List<PDPMInfo_t> favList) {
-        if (favList == null || favList.isEmpty() || mCurrChannelInfo == null) return false;
-        for (PDPMInfo_t channelInfo : favList) {
-            if (channelInfo.ProgIndex == mCurrChannelInfo.ProgIndex) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public FavoriteDialog title(String title) {
@@ -111,8 +85,7 @@ public class FavoriteDialog extends BaseDialogFragment {
         return this;
     }
 
-    public FavoriteDialog setData(SparseArray<List<PDPMInfo_t>> map, PDPMInfo_t channelInfo) {
-        this.mFavoriteChannelsMap = map;
+    public FavoriteDialog setData(PDPMInfo_t channelInfo) {
         this.mCurrChannelInfo = channelInfo;
         return this;
     }

@@ -2,6 +2,7 @@ package com.konkawise.dtv.ui;
 
 import android.support.annotation.IntDef;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.view.KeyEvent;
@@ -350,21 +351,23 @@ public class ChannelEditActivity extends BaseActivity {
     }
 
     private void showFavDialog() {
+        if (mAdapter.getCount() <= 0) return;
+
         new FavoriteDialog()
-                .setData(mEditFavChannelsMap, mAdapter.getItem(mCurrSelectPosition))
+                .setData(mAdapter.getItem(mCurrSelectPosition))
                 .title(getString(R.string.dialog_favorite_title))
                 .multi(isMulti())
                 .setOnCheckGroupCallback(new OnCheckGroupCallback() {
                     @Override
                     public void callback(SparseBooleanArray checkMap) {
-                        for (int favIndex = 0; favIndex < mEditFavChannelsMap.size(); favIndex++) {
-                            if (mEditFavChannelsMap.get(favIndex) == null) continue;
-
-                            if (checkMap.get(favIndex)) {
-                                addFav(favIndex);
-                            } else {
-                                removeFav(favIndex);
+                        if (isMulti()) {
+                            for (int i = 0; i < mAdapter.getData().size(); i++) {
+                                if (mAdapter.getSelectMap().get(i)) {
+                                    editFavorite(i, checkMap);
+                                }
                             }
+                        } else {
+                            editFavorite(mCurrSelectPosition, checkMap);
                         }
 
                         mAdapter.clearSelect();
@@ -379,73 +382,47 @@ public class ChannelEditActivity extends BaseActivity {
                 }).show(getSupportFragmentManager(), FavoriteDialog.TAG);
     }
 
-    private void addFav(int favIndex) {
-        List<PDPMInfo_t> favChannelList = mEditFavChannelsMap.get(favIndex);
-        if (mAdapter.getData() == null || mAdapter.getData().isEmpty()) return;
-
-        if (isMulti()) {
-            for (int i = 0; i < mAdapter.getData().size(); i++) {
-                if (mAdapter.getSelectMap().get(i)) {
-                    addFav(favIndex, i, favChannelList);
-                }
-            }
-        } else {
-            addFav(favIndex, mCurrSelectPosition, favChannelList);
-        }
-    }
-
-    private void removeFav(int favIndex) {
-        List<PDPMInfo_t> favChannelList = mEditFavChannelsMap.get(favIndex);
-        if (mAdapter.getData() == null || mAdapter.getData().isEmpty()) return;
-
-        if (isMulti()) {
-            for (int i = 0; i < mAdapter.getData().size(); i++) {
-                if (mAdapter.getSelectMap().get(i)) {
-                    removeFav(favIndex, i, favChannelList);
-                }
-            }
-        } else {
-            removeFav(favIndex, mCurrSelectPosition, favChannelList);
-        }
-    }
-
-    private void addFav(int favIndex, int position, List<PDPMInfo_t> favChannelList) {
-        PDPMInfo_t favChannelInfo = mAdapter.getItem(position);
-        if (isChannelInFavGroup(favChannelList, favChannelInfo) == -1) {
-            favChannelInfo.FavFlag = 1;
-            favChannelList.add(favChannelInfo);
-            mEditFavChannelsMap.put(favIndex, favChannelList);
-            // 同步修改Channel显示喜爱图标
-            mAdapter.updateData(position, favChannelInfo);
-        }
-    }
-
-    private void removeFav(int favIndex, int position, List<PDPMInfo_t> favChannelList) {
-        PDPMInfo_t favChannelInfo = mAdapter.getItem(position);
-        int removeIndex = isChannelInFavGroup(favChannelList, favChannelInfo);
-        if (removeIndex != -1) {
-            favChannelList.remove(removeIndex);
-            mEditFavChannelsMap.put(favIndex, favChannelList);
-
-            // 频道也不在其他喜爱分组中，同步修改Channel隐藏喜爱图标
-            if (!isChannelInOtherFavGroup(favIndex, favChannelInfo)) {
-                favChannelInfo.FavFlag = 0;
-                mAdapter.updateData(position, favChannelInfo);
-            }
-        }
-    }
-
     /**
-     * @param exceptFavIndex 要排除查找的喜爱分组索引
+     * 频道编辑，Fav
      */
-    private boolean isChannelInOtherFavGroup(int exceptFavIndex, PDPMInfo_t favChannelInfo) {
-        for (int i = 0; i < mEditFavChannelsMap.size(); i++) {
-            if (i == exceptFavIndex) continue;
-            if (isChannelInFavGroup(mEditFavChannelsMap.get(i), favChannelInfo) != -1) {
-                return true;
-            }
+    private void editFavorite(int position, SparseBooleanArray checkMap) {
+        StringBuilder sb = new StringBuilder(mEditFavChannelsMap.size());
+        for (int i = mEditFavChannelsMap.size() - 1; i >= 0; i--) {
+            sb.append(checkMap.get(i) ? "1" : "0"); // 拼接喜爱分组二进制
         }
-        return false;
+        int binaryFavFlag = Integer.valueOf(sb.toString(), 2);
+        int hexFavFlag = Integer.valueOf(Integer.toHexString(binaryFavFlag), 16);
+        PDPMInfo_t favChannelInfo = mAdapter.getItem(position);
+        favChannelInfo.FavFlag = hexFavFlag;
+
+        for (int favIndex = mEditFavChannelsMap.size() - 1; favIndex >= 0; favIndex--) {
+            List<PDPMInfo_t> favChannelList = mEditFavChannelsMap.get(favIndex);
+            if (favChannelList == null) {
+                favChannelList = new ArrayList<>();
+            }
+
+            int favChannelInFavGroupPosition = isChannelInFavGroup(favChannelList, favChannelInfo);
+            Log.i("test", "favIndex = " + favIndex + ", is in fav group = " + favChannelInFavGroupPosition);
+            if (favChannelInFavGroupPosition == -1) {
+                if (checkMap.get(favIndex)) {
+                    Log.i("test", "list add fav channel");
+                    favChannelList.add(favChannelInfo);
+                }
+            } else {
+                if (checkMap.get(favIndex)) {
+                    Log.i("test", "list update fav channel");
+                    favChannelList.set(favChannelInFavGroupPosition, favChannelInfo);
+                } else {
+                    Log.i("test", "list remove fav channel");
+                    favChannelList.remove(favChannelInFavGroupPosition);
+                }
+            }
+
+            mEditFavChannelsMap.put(favIndex, favChannelList);
+        }
+
+        // 同步修改Channel显示喜爱图标
+        mAdapter.updateData(position, favChannelInfo);
     }
 
     /**
@@ -515,7 +492,7 @@ public class ChannelEditActivity extends BaseActivity {
     }
 
     /**
-     * 频道编辑 lock、skip
+     * 频道编辑，lock、skip
      */
     private void editChannel(@EditType int editType) {
         List<PDPMInfo_t> channelList = mAdapter.getData();
