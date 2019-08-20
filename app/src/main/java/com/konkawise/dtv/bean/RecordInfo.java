@@ -7,7 +7,7 @@ import vendor.konka.hardware.dtvmanager.V1_0.HPVR_RecFile_t;
 
 public class RecordInfo implements Serializable{
     private File recordFile;
-    private HPVR_RecFile_t hpvrRecFileT;
+    private static HPVR_RecFile_t mHpvrRecFileT;
 
     public RecordInfo() {
 
@@ -15,7 +15,7 @@ public class RecordInfo implements Serializable{
 
     public RecordInfo(File recordFile, HPVR_RecFile_t hpvrRecFileT) {
         this.recordFile = recordFile;
-        this.hpvrRecFileT = hpvrRecFileT;
+        mHpvrRecFileT = hpvrRecFileT;
     }
 
     public File getFile() {
@@ -23,7 +23,7 @@ public class RecordInfo implements Serializable{
     }
 
     public HPVR_RecFile_t getHpvrRecFileT() {
-        return hpvrRecFileT;
+        return mHpvrRecFileT;
     }
 
     public void setRecordFile(File recordFile) {
@@ -31,6 +31,6 @@ public class RecordInfo implements Serializable{
     }
 
     public void setHpvrRecFileT(HPVR_RecFile_t hpvrRecFileT) {
-        this.hpvrRecFileT = hpvrRecFileT;
+        mHpvrRecFileT = hpvrRecFileT;
     }
 }

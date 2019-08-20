@@ -14,6 +14,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
+import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
+
 public class RecordListAdapter extends BaseListViewAdapter<RecordInfo> {
     private int currSelectPosition;
     private boolean darked = false;
@@ -30,7 +32,7 @@ public class RecordListAdapter extends BaseListViewAdapter<RecordInfo> {
                 .setText(R.id.tv_record_channel_file_size, Formatter.formatFileSize(mContext, item.getFile().length()))
                 .setText(R.id.tv_record_channel_date, getModifiedTime(item.getFile().lastModified()))
                 .setVisibility(R.id.iv_item_record_select, !mSelectMap.get(position) ? View.INVISIBLE : View.VISIBLE)
-                .setVisibility(R.id.iv_item_record_lock, 0 == 0 ? View.INVISIBLE : View.VISIBLE);
+                .setVisibility(R.id.iv_item_record_lock, item.getHpvrRecFileT() != null && item.getHpvrRecFileT().LockType == 1 ? View.VISIBLE : View.INVISIBLE);
         if (currSelectPosition == position && darked) {
             holder.getView(R.id.ll_root_group2).setBackgroundColor(mContext.getResources().getColor(R.color.channel_edit_gray));
         } else {
@@ -38,7 +40,7 @@ public class RecordListAdapter extends BaseListViewAdapter<RecordInfo> {
         }
     }
 
-    public static String getModifiedTime(long time) {
+    static String getModifiedTime(long time) {
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         cal.setTimeInMillis(time);

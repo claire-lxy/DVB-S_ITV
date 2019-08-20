@@ -95,6 +95,7 @@ public class Constants {
         String INTENT_TIMESHIFT_RECORD_FROM = "from";
         String INTENT_TIMESHIFT_TIME = "time";
         String INTENT_RECORD_INFO = "recordinfo";
+        String INTENT_RECORD_LIST = "recordlist";
     }
 
     public interface RequestCode {

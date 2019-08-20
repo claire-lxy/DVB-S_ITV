@@ -31,6 +31,8 @@ import com.sw.dvblib.DJAPVR;
 import com.sw.dvblib.msg.cb.AVMsgCB;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import butterknife.BindView;
@@ -38,6 +40,8 @@ import vendor.konka.hardware.dtvmanager.V1_0.HPVR_Progress_t;
 
 public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiveListener {
     private static final String TAG = "RecordPlayer";
+
+    private static final boolean LOOPER = false;
 
     static final int TYPE_PLAY = 0;
     static final int TYPE_PAUSE = 1;
@@ -88,7 +92,9 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     private int seekNum = 1;
     private int seekType = SEEK_TYPE_NO;
 
-    RecordInfo recordInfo;
+    private RecordInfo recordInfo;
+    private int currRecordPosition;
+    private List<RecordInfo> recordList = new ArrayList<>();
 
     private AVMsgCB mPvrMsgCB = new PVRMsgCB();
 
@@ -120,7 +126,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
                     } else {
                         progress = hpvrProgressT.currentMs;
                         secondProgress = hpvrProgressT.endMs;
-                        if (context.seekNum >= 2 && context.gotoShiftEnd(progress, secondProgress)) {
+                        if (context.seekNum >= 2 && context.gotoShiftEnd(progress, secondProgress, context.seekNum)) {
                             context.resumeFromSeek();
                         }
                     }
@@ -339,42 +345,6 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     }
 
     private void play() {
-        /*
-        switchPlayTypeUI(TYPE_PLAY, -1);
-        String path = "/storage/sda1/HISI8.0/4.mp4";
-        try {
-            player.reset();
-            player.setDataSource(path);
-            player.prepare();
-            player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mp) {
-                    Log.i(TAG, "PLAY");
-                    showControlUI(true);
-                    initUIContent();
-                    sendUpgradePrgressMsg(new HandlerMsgModel(PlayHandler.MSG_UPGRADE_PROGRESS));
-                    player.start();
-                    if (from == FROM_TOPMOST) {
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                pause();
-                            }
-                        }, 800);
-                    }
-                }
-            });
-
-            player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-                    stop();
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        */
         Log.i(TAG, "PLAY");
         if (from == FROM_TOPMOST) {
             playTimeShift();
@@ -392,6 +362,29 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         DJAPVR.CreateInstance().startPlay(recordInfo.getFile().getParent() + "/", recordInfo.getFile().getName(), 0);
     }
 
+    private void playNextRecord() {
+        DJAPVR.CreateInstance().stopPlay();
+        if (recordList == null || recordList.size() == 0) {
+            recordList = (List<RecordInfo>) getIntent().getSerializableExtra(Constants.IntentKey.INTENT_RECORD_LIST);
+            for (int i = 0; i < recordList.size(); i++) {
+                if (recordList.contains(recordInfo)) {
+                    currRecordPosition = i;
+                    break;
+                }
+            }
+        }
+        currRecordPosition++;
+        if (currRecordPosition >= recordList.size())
+            currRecordPosition = 0;
+
+        recordInfo = recordList.get(currRecordPosition);
+        Log.i(TAG, "playNextRecord:" + recordInfo.getFile().getName());
+        switchPlayTypeUI(TYPE_PLAY, -1);
+        showControlUI(true);
+        initUIContent(0);
+        DJAPVR.CreateInstance().startPlay(recordInfo.getFile().getParent() + "/", recordInfo.getFile().getName(), 0);
+    }
+
     private void playTimeShift() {
         totalDuration = getIntent().getIntExtra(Constants.IntentKey.INTENT_TIMESHIFT_TIME, 0) * 60 * 1000;
         switchPlayTypeUI(TYPE_PAUSE, -1);
@@ -401,8 +394,8 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         DJAPVR.CreateInstance().beginTimeshift();
     }
 
-    private boolean gotoShiftEnd(int currMS, int endMS) {
-        return Math.abs(currMS / 1000 - endMS / 1000) <= 2;
+    private boolean gotoShiftEnd(int currMS, int endMS, int seekNum) {
+        return Math.abs(currMS / 1000 - endMS / 1000) <= seekNum;
     }
 
     private void resume() {
@@ -517,13 +510,28 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
                 }
             } else {
                 if (p3 == 1) {
-                    finish();
+                    if (LOOPER) {
+                        playNextRecord();
+                    } else {
+                        finish();
+                    }
                 } else if (p3 == 2) {
                     resumeFromSeek();
                 }
 
             }
             return super.PVRPlay_MODULE(p0, p1, p2, p3, p4);
+        }
+
+        @Override
+        public int PVRPlay_PlaybackFailed(int p0, int p1, int p2, int p3, int p4) {
+            Log.i(TAG, "PVRPlay_PlaybackFailed---p0:" + p0 + " p1:" + p1 + " p2:" + p2 + " p3:" + p3 + " p4:" + p4);
+            if (from == FROM_RECORD_LIST && LOOPER) {
+                playNextRecord();
+            } else {
+                finish();
+            }
+            return super.PVRPlay_PlaybackFailed(p0, p1, p2, p3, p4);
         }
     }
 

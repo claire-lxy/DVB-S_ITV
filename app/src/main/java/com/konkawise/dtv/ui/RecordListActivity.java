@@ -21,11 +21,14 @@ import com.konkawise.dtv.bean.UsbInfo;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.PasswordDialog;
+import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.permission.OnRequestPermissionResultListener;
 import com.konkawise.dtv.permission.PermissionHelper;
 import com.konkawise.dtv.weaktool.WeakRunnable;
+import com.sw.dvblib.DJAPVR;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -34,6 +37,7 @@ import butterknife.BindView;
 import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
+import vendor.konka.hardware.dtvmanager.V1_0.HPVR_RecFile_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 
 public class RecordListActivity extends BaseActivity implements UsbManager.OnUsbReceiveListener {
@@ -80,12 +84,14 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         intent.setClass(this, RecordPlayer.class);
         intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, RecordPlayer.FROM_RECORD_LIST);
         intent.putExtra(Constants.IntentKey.INTENT_RECORD_INFO, mAdapter.getItem(position));
+        intent.putExtra(Constants.IntentKey.INTENT_RECORD_LIST, (Serializable) mAdapter.getData());
         startActivity(intent);
     }
 
     private int mCurrDevicePostion;
     private int mCurrRecordPosition;
     private List<UsbInfo> mUsbInfos = new ArrayList<>();
+    List<HPVR_RecFile_t> ltHpvrRecFileTS = new ArrayList<>();
     private DeviceGroupAdapter deviceGroupAdapter;
     private RecordListAdapter mAdapter;
     private LoadRecordListRunnable loadRecordListRunnable;
@@ -98,6 +104,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     @Override
     protected void setup() {
         UsbManager.getInstance().registerUsbReceiveListener(this);
+        ltHpvrRecFileTS = DJAPVR.CreateInstance().getRecordFileList(0, -1);
 
         mAdapter = new RecordListAdapter(this, new ArrayList<>());
         mListView.setAdapter(mAdapter);
@@ -105,7 +112,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         mDeviceListView.setAdapter(deviceGroupAdapter);
         mUsbInfos.addAll(UsbManager.getInstance().getUsbInfos(this));
 
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
             if (ActivityCompat.checkSelfPermission(this, Constants.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 new PermissionHelper(this)
                         .permissions(new String[]{Constants.READ_EXTERNAL_STORAGE, Constants.WRITE_EXTERNAL_STORAGE})
@@ -214,9 +221,15 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         return ltDeviceNames;
     }
 
-    private void renameChannel(String newName) {
-//        mAdapter.getItem(mCurrRecordPosition).Name = newName;
-//        mAdapter.notifyDataSetChanged();
+    private void renameChannel(String oldName, String newName, boolean override) {
+        String path = mUsbInfos.get(mCurrDevicePostion).path + "/PVR/";
+        if (renameFile(path + oldName, path + newName, override)) {
+            Log.i(TAG, "notifyDataSetChanged");
+            mAdapter.getItem(mCurrRecordPosition).setRecordFile(new File(path + newName));
+            mAdapter.getItem(mCurrRecordPosition).getHpvrRecFileT().filename = newName;
+            mAdapter.notifyDataSetChanged();
+        }
+
     }
 
     private void lockChannels() {
@@ -243,22 +256,29 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     }
 
     private void deleteChannels() {
-//        List<PDPMInfo_t> recordList = mAdapter.getData();
-//        if (recordList == null || recordList.isEmpty()) return;
-//
-//        if (isMulti()) {
-//            for (int i = 0; i < recordList.size(); i++) {
-//                if (mAdapter.getSelectMap().get(i)) {
-//                    deleteChannel(recordList, i);
-//                }
-//            }
-//        } else {
-//            deleteChannel(recordList, mCurrRecordPosition);
-//        }
+        List<RecordInfo> recordList = mAdapter.getData();
+        if (recordList == null || recordList.isEmpty()) return;
+
+        List<RecordInfo> removeInfos = new ArrayList<>();
+        if (isMulti()) {
+            for (int i = 0; i < recordList.size(); i++) {
+                if (mAdapter.getSelectMap().get(i)) {
+                    removeInfos.add(recordList.get(i));
+                }
+            }
+        } else {
+            removeInfos.add(recordList.get(mCurrRecordPosition));
+        }
+        deleteChannel(recordList, removeInfos);
+        mAdapter.clearSelect();
+        mAdapter.updateData(recordList);
     }
 
-    private void deleteChannel(List<PDPMInfo_t> recordList, int position) {
-
+    private void deleteChannel(List<RecordInfo> recordList, List<RecordInfo> removeInfos) {
+        for (RecordInfo info : removeInfos) {
+            info.getFile().delete();
+        }
+        recordList.removeAll(removeInfos);
     }
 
     private void showPasswordDialog() {
@@ -272,18 +292,21 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     }
 
     private void showRenameDialog() {
-//        if (mAdapter.getCount() <= 0 || mCurrRecordPosition >= mAdapter.getCount()) return;
-//        new RenameDialog()
-//                .setProgNo(mAdapter.getItem(mCurrRecordPosition).PShowNo)
-//                .setOldName(mAdapter.getItem(mCurrRecordPosition).Name)
-//                .setEditLisener(new RenameDialog.EditTextLisener() {
-//                    @Override
-//                    public void setEdit(String newName) {
-//                        if (TextUtils.isEmpty(newName)) return;
-//
-//                        renameChannel(newName);
-//                    }
-//                });
+        if (mAdapter.getCount() <= 0 || mCurrRecordPosition >= mAdapter.getCount()) return;
+        String oldName = mAdapter.getItem(mCurrRecordPosition).getHpvrRecFileT().filename;
+        new RenameDialog()
+                .setProgNo(mCurrRecordPosition + 1)
+                .setOldName(oldName)
+                .setEditLisener(new RenameDialog.EditTextLisener() {
+                    @Override
+                    public void setEdit(String newName) {
+                        if (TextUtils.isEmpty(newName)) return;
+                        if (!newName.substring(newName.length() - 3, newName.length()).equals(".ts")) {
+                            newName = newName + ".ts";
+                        }
+                        renameChannel(oldName, newName, true);
+                    }
+                }).show(getSupportFragmentManager(), RenameDialog.TAG);
     }
 
     private void showDeleteDialog() {
@@ -370,6 +393,14 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
             if (f.isFile() && filterTSFile(f)) {
                 RecordInfo recordInfo = new RecordInfo();
                 recordInfo.setRecordFile(f);
+                if (ltHpvrRecFileTS != null && ltHpvrRecFileTS.size() > 0) {
+                    for (HPVR_RecFile_t hpvrRecFileT : ltHpvrRecFileTS) {
+                        if ((hpvrRecFileT.path + "/" + hpvrRecFileT.filename).equals(f.getPath())) {
+                            recordInfo.setHpvrRecFileT(hpvrRecFileT);
+                            break;
+                        }
+                    }
+                }
                 ltRecordInfo.add(recordInfo);
             }
         }
@@ -399,8 +430,37 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         return position;
     }
 
+    /**
+     * 修改文件名
+     *
+     * @param oldFilePath 原文件路径
+     * @param newFilePath 新文件名称
+     * @param overriding  判断标志(如果存在相同名的文件是否覆盖)
+     * @return
+     */
+    public static boolean renameFile(String oldFilePath, String newFilePath, boolean overriding) {
+        Log.i(TAG, "old file:" + oldFilePath + " new file:" + newFilePath);
+        File oldfile = new File(oldFilePath);
+        if (!oldfile.exists()) {
+            return false;
+        }
+        File newFile = new File(newFilePath);
+        if (!newFile.exists()) {
+            return oldfile.renameTo(newFile);
+        } else {
+            if (overriding) {
+                newFile.delete();
+                return oldfile.renameTo(newFile);
+            } else {
+                return false;
+            }
+        }
+    }
+
     @Override
     public void onUsbReceive(int usbObserveType, Set<UsbInfo> usbInfos, UsbInfo currUsbInfo) {
+        ltHpvrRecFileTS = DJAPVR.CreateInstance().getRecordFileList(0, -1);
+
         UsbInfo selectInfo = null;
         if (mUsbInfos != null && mUsbInfos.size() > 0)
             selectInfo = mUsbInfos.get(mCurrDevicePostion);
