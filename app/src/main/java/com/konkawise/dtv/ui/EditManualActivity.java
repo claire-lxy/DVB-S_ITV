@@ -20,6 +20,7 @@ import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.AutoDiSEqCDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.dialog.ScanDialog;
+import com.konkawise.dtv.utils.EditUtils;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
 

@@ -37,41 +37,41 @@ import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 public class ScanTVandRadioActivity extends BaseActivity {
     private final static String TAG = ScanTVandRadioActivity.class.getSimpleName();
 
-    @BindView(R.id.blind_tv_recycleview)
-    RecyclerView mTvRecyclerView;
+    @BindView(R.id.rv_tv_list)
+    RecyclerView mRvTv;
 
-    @BindView(R.id.blind_radio_recycleview2)
-    RecyclerView mRadioRecyclerView;
+    @BindView(R.id.rv_radio_list)
+    RecyclerView mRvRadio;
 
-    @BindView(R.id.tv_tvandradio)
-    TextView mTv_tvandradio;
+    @BindView(R.id.tv_tv_and_radio_progress)
+    TextView mTvTvAndRadioProgress;
 
-    @BindView(R.id.progress_tv_and_radio)
-    ProgressBar progress_tv_and_radio;
+    @BindView(R.id.pb_tv_and_radio)
+    ProgressBar mPbTvAndRadio;
 
     @BindView(R.id.tv_satellite_name)
-    TextView tv_satellite_name;
+    TextView mTvSatelliteName;
 
-    @BindView(R.id.tv_scand_tp)
-    TextView tv_scand_tp;
+    @BindView(R.id.tv_scan_tp)
+    TextView mTvScanTp;
 
-    @BindView(R.id.tv_new_tv_num)
-    TextView mTv_new_tv_num;
+    @BindView(R.id.tv_tv_num)
+    TextView mTvTvNum;
 
     @BindView(R.id.tv_radio_num)
-    TextView tv_radio_num;
+    TextView mTvRadioNum;
 
-    @BindView(R.id.tv_scan_progress_l)
-    TextView tv_scan_progress_l;
+    @BindView(R.id.tv_scan_strenth_progress)
+    TextView mTvScanStrengthProgress;
 
-    @BindView(R.id.progress_scan_l)
-    ProgressBar progress_scan_l;
+    @BindView(R.id.pb_scan_strength)
+    ProgressBar mPbScanStrength;
 
-    @BindView(R.id.tv_scan_progress_q)
-    TextView tv_scan_progress_q;
+    @BindView(R.id.tv_scan_quality_progress)
+    TextView mTvScanQualityProgress;
 
-    @BindView(R.id.progress_q_scan)
-    ProgressBar progress_q_scan;
+    @BindView(R.id.pb_scan_quality)
+    ProgressBar mPbScanQuality;
 
     private TvAndRadioRecycleViewAdapter mTvAdapter;
     private TvAndRadioRecycleViewAdapter mRadioAdapter;
@@ -123,7 +123,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
             searchMultiSatellite();
         } else if (mSatList.size() == 0 && isFromSatelliteActivity()) {
             setSatInfo();
-            tv_satellite_name.setText(SWPDBaseManager.getInstance().getSatInfo(SWPDBaseManager.getInstance().findPositionBySatIndex(getSatelliteIndex())).sat_name);
+            mTvSatelliteName.setText(SWPDBaseManager.getInstance().getSatInfo(SWPDBaseManager.getInstance().findPositionBySatIndex(getSatelliteIndex())).sat_name);
             SWPSearchManager.getInstance().searchByNet(getSatelliteIndex());
         }
 
@@ -133,17 +133,17 @@ public class ScanTVandRadioActivity extends BaseActivity {
             int Symbol = getSymbol();
             int Qam = getQam();
 
-            tv_satellite_name.setText(SWPDBaseManager.getInstance().getSatInfo(satIndex).sat_name);
+            mTvSatelliteName.setText(SWPDBaseManager.getInstance().getSatInfo(satIndex).sat_name);
             SWPSearchManager.getInstance().searchByOneTS(satIndex, freq, Symbol, Qam);
         }
 
         if (isFromT2AutoSearch()) {
-            tv_satellite_name.setText(R.string.installation_t2);
+            mTvSatelliteName.setText(R.string.installation_t2);
             SWPSearchManager.getInstance().searchByNet(getSatelliteIndex());
         }
 
         if (isFromT2ManualSearchActivity()) {
-            tv_satellite_name.setText(R.string.installation_t2);
+            mTvSatelliteName.setText(R.string.installation_t2);
             int freq = getFreq();
             int satIndex = getSatelliteIndex();
             int Symbol = getSymbol();
@@ -194,31 +194,31 @@ public class ScanTVandRadioActivity extends BaseActivity {
             @Override
             public void signal(int strength, int quality) {
                 String strengthPercent = strength + "%";
-                tv_scan_progress_l.setText(strengthPercent);
-                progress_scan_l.setProgress(strength);
+                mTvScanStrengthProgress.setText(strengthPercent);
+                mPbScanStrength.setProgress(strength);
 
                 String qualityPercent = quality + "%";
-                tv_scan_progress_q.setText(qualityPercent);
-                progress_q_scan.setProgress(quality);
+                mTvScanQualityProgress.setText(qualityPercent);
+                mPbScanQuality.setProgress(quality);
             }
         });
     }
 
     private void initRecyclerView() {
-        mTvRecyclerView.setHasFixedSize(true);
-        mTvRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRvTv.setHasFixedSize(true);
+        mRvTv.setLayoutManager(new LinearLayoutManager(this));
         mTvAdapter = new TvAndRadioRecycleViewAdapter(this, new ArrayList<>());
-        mTvRecyclerView.setAdapter(mTvAdapter);
+        mRvTv.setAdapter(mTvAdapter);
 
-        mRadioRecyclerView.setHasFixedSize(true);
-        mRadioRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRvRadio.setHasFixedSize(true);
+        mRvRadio.setLayoutManager(new LinearLayoutManager(this));
         mRadioAdapter = new TvAndRadioRecycleViewAdapter(this, new ArrayList<>());
-        mRadioRecyclerView.setAdapter(mRadioAdapter);
+        mRvRadio.setAdapter(mRadioAdapter);
     }
 
     private void searchMultiSatellite() {
         String satelliteName = mSatList.get(mutiSateIndex).sat_name + "(" + (mutiSateIndex + 1) + "/" + mSatList.size() + ")";
-        tv_satellite_name.setText(satelliteName);
+        mTvSatelliteName.setText(satelliteName);
         SWPSearchManager.getInstance().searchByNet(mSatList.get(mutiSateIndex).SatIndex);
     }
 
@@ -268,9 +268,9 @@ public class ScanTVandRadioActivity extends BaseActivity {
                 bf = 100;
             }
             String percent = bf + "%";
-            mTv_tvandradio.setText(percent);
-            progress_tv_and_radio.setMax(max_step);
-            progress_tv_and_radio.setProgress(step);
+            mTvTvAndRadioProgress.setText(percent);
+            mPbTvAndRadio.setMax(max_step);
+            mPbTvAndRadio.setProgress(step);
         }
 
         @Override
@@ -314,21 +314,21 @@ public class ScanTVandRadioActivity extends BaseActivity {
             updateTvList(pdpInfo_ts);
             updateRadioList(pdpInfo_ts);
 
-            mTv_new_tv_num.setText(String.valueOf(mTvAdapter.getItemCount()));
-            tv_radio_num.setText(String.valueOf(mRadioAdapter.getItemCount()));
+            mTvTvNum.setText(String.valueOf(mTvAdapter.getItemCount()));
+            mTvRadioNum.setText(String.valueOf(mRadioAdapter.getItemCount()));
             return 0;
         }
 
         private void updateTvList(ArrayList<PDPInfo_t> pdpInfoList) {
             List<PDPInfo_t> tvList = getTvList(pdpInfoList);
             mTvAdapter.addData(tvList);
-            mTvRecyclerView.scrollToPosition(mTvAdapter.getItemCount() - 1);
+            mRvTv.scrollToPosition(mTvAdapter.getItemCount() - 1);
         }
 
         private void updateRadioList(ArrayList<PDPInfo_t> pdpInfoList) {
             List<PDPInfo_t> radioList = getRadioList(pdpInfoList);
             mRadioAdapter.addData(radioList);
-            mRadioRecyclerView.scrollToPosition(mRadioAdapter.getItemCount() - 1);
+            mRvRadio.scrollToPosition(mRadioAdapter.getItemCount() - 1);
         }
 
         private List<PDPInfo_t> getTvList(ArrayList<PDPInfo_t> pdpInfoList) {
@@ -373,7 +373,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
                 return 1;
             }
             SatelliteActivity.satList.clear();
-            SWPDBaseManager.getInstance().setCurrProgType(SWFtaManager.getInstance().getCurrScanMode() == 2 ? 1 : 0, 0);
+            SWPDBaseManager.getInstance().setCurrProgType(SWFtaManager.getInstance().getCurrScanMode() == 2 ? SWPDBaseManager.PROG_TYPE_RADIO : SWPDBaseManager.PROG_TYPE_TV, 0);
             SWPSearchManager.getInstance().seatchStop(true);
             showSearchResultDialog();
             return 0;
@@ -382,14 +382,14 @@ public class ScanTVandRadioActivity extends BaseActivity {
         private void updateScan(int freq, int symbol, int qam, int num, int index) {
             String tpName = freq + Utils.getVorH(ScanTVandRadioActivity.this, qam) + symbol;
             String tp = tpName + "(" + index + "/" + num + ")";
-            tv_scand_tp.setText(tp);
+            mTvScanTp.setText(tp);
             onUpdateSearchProgress(num, index);
         }
     }
 
     private void showSearchResultDialog() {
-        int tvSize = Integer.valueOf(mTv_new_tv_num.getText().toString());
-        int radioSize = Integer.valueOf(tv_radio_num.getText().toString());
+        int tvSize = Integer.valueOf(mTvTvNum.getText().toString());
+        int radioSize = Integer.valueOf(mTvRadioNum.getText().toString());
         EventBus.getDefault().post(new ProgramUpdateEvent(tvSize, radioSize));
 
         new SearchResultDialog()

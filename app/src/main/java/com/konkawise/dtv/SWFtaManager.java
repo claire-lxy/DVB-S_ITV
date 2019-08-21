@@ -1,7 +1,5 @@
 package com.konkawise.dtv;
 
-import android.text.TextUtils;
-
 import com.sw.dvblib.SWFta;
 
 import vendor.konka.hardware.dtvmanager.V1_0.HPDPPlayInfo_t;

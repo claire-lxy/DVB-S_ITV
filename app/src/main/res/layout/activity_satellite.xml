@@ -120,7 +120,7 @@
                     android:textSize="17sp" />
 
                 <TextView
-                    android:id="@+id/tv_lnb_power_freq"
+                    android:id="@+id/tv_freq"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -142,7 +142,7 @@
                     android:textSize="17sp" />
 
                 <TextView
-                    android:id="@+id/tv_lnb_power_diseqc"
+                    android:id="@+id/tv_diseqc"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -164,7 +164,7 @@
                     android:textSize="17sp" />
 
                 <TextView
-                    android:id="@+id/tv_lnb_power_motor"
+                    android:id="@+id/tv_motor_type"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"

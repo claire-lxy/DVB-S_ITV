@@ -24,6 +24,7 @@
     <string name="auto_diseqc">Auto DiSEqC</string>
     <string name="auto">Auto</string>
     <string name="tp">TP</string>
+    <string name="scan_tp_title">Scanning TPs</string>
     <string name="tp1">TP:</string>
     <string name="edit">Edit</string>
     <string name="scan">Scan</string>
@@ -121,7 +122,7 @@
     <string name="blind_scan">Blind Scan</string>
     <string name="epg">EPG</string>
     <string name="clear_channel">Clear Channel</string>
-    <string name="factory_reset">Factory Reset</string>
+    <string name="data_reset">Data Reset</string>
     <string name="Channel_management">Channel Manager</string>
     <string name="dtv_setting">DTV Setting</string>
 
@@ -401,7 +402,7 @@
     <string name="motor_move_step_stop">Stop</string>
     <string name="motor_move_step_east">East</string>
     <string name="motor_move_step_west">West</string>
-    <string name="motor_type_diseqc">DisEqc1.2</string>
+    <string name="motor_type_diseqc">DiSEqC 1.2</string>
     <string name="motor_type_usals">USALS</string>
     <string name="motor_type_off">OFF</string>
     <string name="motor_usals_command_title">Command</string>

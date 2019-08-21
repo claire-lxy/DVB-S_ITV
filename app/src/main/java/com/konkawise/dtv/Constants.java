@@ -75,6 +75,7 @@ public class Constants {
         String INTENT_TP_NAME = "tpName";
         String INTENT_LNB = "lnb";
         String INTENT_DISEQC = "diseqc";
+        String INTENT_MOTOR_TYPE = "motorType";
         String INTENT_FREQ = "freq";
         String INTENT_SYMBOL = "symbol";
         String INTENT_QAM = "qam";

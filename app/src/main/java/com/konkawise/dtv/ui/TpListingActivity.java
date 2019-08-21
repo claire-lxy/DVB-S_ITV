@@ -41,32 +41,35 @@ public class TpListingActivity extends BaseActivity {
     private static final String TAG = "TpListingActivity";
     private static final int FREQ_SYMBOL_MAX_LIMIT = 65535;
 
-    @BindView(R.id.tp_listing_listview)
+    @BindView(R.id.lv_tp_list)
     ListView mListView;
 
-    @BindView(R.id.tv_tp_id_lnb)
-    TextView tv_tp_id_lnb;
+    @BindView(R.id.tv_lnb)
+    TextView mTvLnb;
 
-    @BindView(R.id.tv_tp_lnb_power)
-    TextView tv_tp_lnb_power;
+    @BindView(R.id.tv_lnb_power)
+    TextView mTvLnbPower;
 
-    @BindView(R.id.tv_lnb_tp_power_freq)
-    TextView tv_lnb_tp_power_freq;
+    @BindView(R.id.tv_freq)
+    TextView mTvFreq;
 
-    @BindView(R.id.tv_lnb_tp_power_diseqc)
-    TextView tv_lnb_tp_power_diseqc;
+    @BindView(R.id.tv_diseqc)
+    TextView mTvDiSEqC;
 
-    @BindView(R.id.tv_tp_progress_i)
-    TextView tv_tp_progress_i;
+    @BindView(R.id.tv_motor_type)
+    TextView mTvMotorType;
 
-    @BindView(R.id.progress_tp_i)
-    ProgressBar progress_tp_i;
+    @BindView(R.id.tv_strength_progress)
+    TextView mTvStrengthProgress;
 
-    @BindView(R.id.tv_tp_progress_q)
-    TextView mTv_tp_progress_q;
+    @BindView(R.id.pb_strength)
+    ProgressBar mPbStrength;
 
-    @BindView(R.id.progress_tp_q)
-    ProgressBar mProgress_tp_q;
+    @BindView(R.id.tv_quality_progress)
+    TextView mTvQualityProgress;
+
+    @BindView(R.id.pb_quality)
+    ProgressBar mPbQuality;
 
     @BindView(R.id.tv_bottom_bar_green)
     TextView mTvBottomBarGreen;
@@ -77,15 +80,15 @@ public class TpListingActivity extends BaseActivity {
     @BindView(R.id.tv_bottom_bar_blue)
     TextView mTvBottomBarBlue;
 
-    @OnItemSelected(R.id.tp_listing_listview)
+    @OnItemSelected(R.id.lv_tp_list)
     void onItemSelect(int position) {
         mSelectPosition = position;
 
         if (SWPDBaseManager.getInstance().getSatList().size() - 1 > 0 && position < SWPDBaseManager.getInstance().getSatList().size()) {
             SatInfo_t satInfo_t = SWPDBaseManager.getInstance().getSatList().get(position);
-            tv_tp_lnb_power.setText(Utils.getOnorOff(this, satInfo_t.LnbPower));
+            mTvLnbPower.setText(Utils.getOnorOff(this, satInfo_t.LnbPower));
         }
-        tv_lnb_tp_power_freq.setText(getTpName());
+        mTvFreq.setText(getTpName());
         SWFtaManager.getInstance().tunerLockFreq(getIndex(), getFreq(), getSymbol(), getQam(), 1, 0);
     }
 
@@ -106,8 +109,9 @@ public class TpListingActivity extends BaseActivity {
         initCheckSignal();
         initTpList();
 
-        tv_tp_id_lnb.setText(getLnb());
-        tv_lnb_tp_power_diseqc.setText(getIntent().getStringExtra(Constants.IntentKey.INTENT_DISEQC));
+        mTvLnb.setText(getLnb());
+        mTvDiSEqC.setText(getIntent().getStringExtra(Constants.IntentKey.INTENT_DISEQC));
+        mTvMotorType.setText(getIntent().getStringExtra(Constants.IntentKey.INTENT_MOTOR_TYPE));
     }
 
     @Override
@@ -134,12 +138,12 @@ public class TpListingActivity extends BaseActivity {
             @Override
             public void signal(int strength, int quality) {
                 String strengthPercent = strength + "%";
-                tv_tp_progress_i.setText(strengthPercent);
-                progress_tp_i.setProgress(strength);
+                mTvStrengthProgress.setText(strengthPercent);
+                mPbStrength.setProgress(strength);
 
                 String qualityPercent = quality + "%";
-                mTv_tp_progress_q.setText(qualityPercent);
-                mProgress_tp_q.setProgress(quality);
+                mTvQualityProgress.setText(qualityPercent);
+                mPbQuality.setProgress(quality);
             }
         });
     }
@@ -201,7 +205,7 @@ public class TpListingActivity extends BaseActivity {
         if (mAdapter.getCount() <= 0) return "";
 
         ChannelNew_t channel = mAdapter.getItem(mSelectPosition);
-        if (channel == null) return "";
+        if (channel == null || channel.Freq <= 0) return "";
         return channel.Freq + Utils.getVorH(this, channel.Qam) + channel.Symbol;
     }
 
@@ -312,7 +316,7 @@ public class TpListingActivity extends BaseActivity {
         SWPDBaseManager.getInstance().setSatChannelInfo(editTp);
         updateTpList(mSelectPosition);
 
-        tv_lnb_tp_power_freq.setText(getTpName());
+        mTvFreq.setText(getTpName());
     }
 
     private void deleteTp() {

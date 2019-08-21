@@ -86,7 +86,7 @@
             <EditText
                 android:id="@+id/et_lnb"
                 android:layout_width="130dp"
-                android:layout_height="20dp"
+                android:layout_height="18dp"
                 android:layout_centerVertical="true"
                 android:layout_gravity="center_vertical"
                 android:layout_marginLeft="12dp"
@@ -99,6 +99,7 @@
                 android:gravity="center"
                 android:inputType="number"
                 android:maxLength="4"
+                android:textSize="13sp"
                 android:visibility="gone"
                 tools:ignore="Autofill,LabelFor"
                 tools:text="0" />
@@ -269,9 +270,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="64dp"
                 android:layout_marginLeft="64dp"
-                android:padding="3dp"
                 android:background="@drawable/btn_translate_bg_shape"
                 android:gravity="center"
+                android:padding="3dp"
                 android:text="@string/menu"
                 android:textSize="15sp" />
 

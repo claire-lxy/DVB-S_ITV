@@ -47,7 +47,7 @@
             android:orientation="horizontal">
 
             <android.support.v7.widget.RecyclerView
-                android:id="@+id/blind_tv_recycleview"
+                android:id="@+id/rv_tv_list"
                 android:layout_width="0dp"
                 android:layout_height="244dp"
                 android:layout_weight="1" />
@@ -58,7 +58,7 @@
                 android:background="@drawable/vertical_line" />
 
             <android.support.v7.widget.RecyclerView
-                android:id="@+id/blind_radio_recycleview2"
+                android:id="@+id/rv_radio_list"
                 android:layout_width="0dp"
                 android:layout_height="244dp"
                 android:layout_weight="1" />
@@ -85,14 +85,14 @@
                 android:text="@string/progress" />
 
             <TextView
-                android:id="@+id/tv_tvandradio"
+                android:id="@+id/tv_tv_and_radio_progress"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginLeft="16dp" />
 
             <ProgressBar
-                android:id="@+id/progress_tv_and_radio"
+                android:id="@+id/pb_tv_and_radio"
                 style="@style/mProgress_horizontal1"
                 android:layout_width="300dp"
                 android:layout_height="8dp"
@@ -127,7 +127,7 @@
             </RelativeLayout>
 
             <TextView
-                android:id="@+id/tv_scand_tp"
+                android:id="@+id/tv_scan_tp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
@@ -148,7 +148,7 @@
                 android:text="@string/new_tv" />
 
             <TextView
-                android:id="@+id/tv_new_tv_num"
+                android:id="@+id/tv_tv_num"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -186,14 +186,14 @@
                     android:textSize="20sp" />
 
                 <TextView
-                    android:id="@+id/tv_scan_progress_l"
+                    android:id="@+id/tv_scan_strenth_progress"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:layout_marginLeft="16dp" />
 
                 <ProgressBar
-                    android:id="@+id/progress_scan_l"
+                    android:id="@+id/pb_scan_strength"
                     style="@style/pfBar_mProgress_horizontal1"
                     android:layout_width="260dp"
                     android:layout_height="6dp"
@@ -220,14 +220,14 @@
                     android:textSize="20sp" />
 
                 <TextView
-                    android:id="@+id/tv_scan_progress_q"
+                    android:id="@+id/tv_scan_quality_progress"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginLeft="8dp" />
 
                 <ProgressBar
-                    android:id="@+id/progress_q_scan"
+                    android:id="@+id/pb_scan_quality"
                     style="@style/pfBar_mProgress_horizontal2"
                     android:layout_width="260dp"
                     android:layout_height="6dp"

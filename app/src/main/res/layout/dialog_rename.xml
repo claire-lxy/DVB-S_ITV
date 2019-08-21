@@ -82,7 +82,6 @@
             android:background="@drawable/comm_edit_bg"
             android:gravity="center_vertical"
             android:paddingLeft="5dp"
-            android:textColorHint="@android:color/black"
             android:textColor="@android:color/black"
             android:textSize="15sp" />
     </LinearLayout>

@@ -25,7 +25,7 @@
                 tools:ignore="ContentDescription" />
 
             <ListView
-                android:id="@+id/tp_listing_listview"
+                android:id="@+id/lv_tp_list"
                 android:layout_width="match_parent"
                 android:layout_height="375dp"
                 android:layout_marginTop="10dp"
@@ -91,7 +91,7 @@
                             android:textSize="17sp" />
 
                         <TextView
-                            android:id="@+id/tv_tp_id_lnb"
+                            android:id="@+id/tv_lnb"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
@@ -118,7 +118,7 @@
                         </RelativeLayout>
 
                         <TextView
-                            android:id="@+id/tv_tp_lnb_power"
+                            android:id="@+id/tv_lnb_power"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
@@ -140,7 +140,7 @@
                             android:textSize="17sp" />
 
                         <TextView
-                            android:id="@+id/tv_lnb_tp_power_freq"
+                            android:id="@+id/tv_freq"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
@@ -162,7 +162,7 @@
                             android:textSize="17sp" />
 
                         <TextView
-                            android:id="@+id/tv_lnb_tp_power_diseqc"
+                            android:id="@+id/tv_diseqc"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
@@ -184,6 +184,7 @@
                             android:textSize="17sp" />
 
                         <TextView
+                            android:id="@+id/tv_motor_type"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
@@ -203,14 +204,13 @@
                             android:textSize="17sp" />
 
                         <TextView
-                            android:id="@+id/tv_tp_progress_i"
+                            android:id="@+id/tv_strength_progress"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginLeft="10dp"
-                            android:text="000" />
+                            android:layout_marginLeft="10dp" />
 
                         <ProgressBar
-                            android:id="@+id/progress_tp_i"
+                            android:id="@+id/pb_strength"
                             style="@style/pfBar_mProgress_horizontal1"
                             android:layout_width="400dp"
                             android:layout_height="5dp"
@@ -233,14 +233,14 @@
                             android:textSize="17sp" />
 
                         <TextView
-                            android:id="@+id/tv_tp_progress_q"
+                            android:id="@+id/tv_quality_progress"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="10dp"
                             android:layout_marginLeft="10dp" />
 
                         <ProgressBar
-                            android:id="@+id/progress_tp_q"
+                            android:id="@+id/pb_quality"
                             style="@style/pfBar_mProgress_horizontal2"
                             android:layout_width="400dp"
                             android:layout_height="5dp"

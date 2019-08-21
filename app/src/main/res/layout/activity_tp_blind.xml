@@ -21,16 +21,16 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/txt_tp_tv"
+                android:id="@+id/tv_blind_title"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="center_horizontal"
                 android:gravity="center"
-                android:text="@string/tp"
+                android:text="@string/scan_tp_title"
                 android:textSize="18sp" />
 
             <LinearLayout
-                android:id="@+id/ll_tv_radio"
+                android:id="@+id/ll_scan_tv_and_radio"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:visibility="gone">
@@ -59,21 +59,21 @@
             android:background="#c0bfbf" />
 
         <android.support.v7.widget.RecyclerView
-            android:id="@+id/blind_recycleview"
+            android:id="@+id/rv_blind_list"
             android:layout_width="match_parent"
             android:layout_height="244dp"
             android:layout_marginTop="5dp"
             android:focusable="false" />
 
         <LinearLayout
-            android:id="@+id/ll_recycel"
+            android:id="@+id/ll_tv_and_radio_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:visibility="gone">
 
             <android.support.v7.widget.RecyclerView
-                android:id="@+id/blind_tv_recycleview_left"
+                android:id="@+id/rv_tv_list"
                 android:layout_width="0dp"
                 android:layout_height="244dp"
                 android:layout_marginStart="10dp"
@@ -88,7 +88,7 @@
                 android:background="#c0bfbf" />
 
             <android.support.v7.widget.RecyclerView
-                android:id="@+id/blind_radio_recycleview_right"
+                android:id="@+id/rv_radio_list"
                 android:layout_width="0dp"
                 android:layout_height="244dp"
                 android:layout_marginStart="10dp"
@@ -118,7 +118,7 @@
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/tv_new_tp"
+                    android:id="@+id/tv_tp_num_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
@@ -134,7 +134,7 @@
                     android:text="0"/>
 
                 <TextView
-                    android:id="@+id/radio_tp"
+                    android:id="@+id/tv_radio_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="30dp"
@@ -143,7 +143,7 @@
                     android:visibility="invisible" />
 
                 <TextView
-                    android:id="@+id/radio_tp_num"
+                    android:id="@+id/tv_radio_num"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
@@ -169,14 +169,14 @@
                     android:text="@string/porgress" />
 
                 <TextView
-                    android:id="@+id/tv_progress_tp"
+                    android:id="@+id/tv_blind_progress"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
                     android:layout_marginLeft="20dp" />
 
                 <ProgressBar
-                    android:id="@+id/progress_tp_blind"
+                    android:id="@+id/pb_blind"
                     style="@style/pfBar_mProgress_horizontal2"
                     android:layout_width="300dp"
                     android:layout_height="6dp"

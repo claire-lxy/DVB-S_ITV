@@ -17,6 +17,7 @@ import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.ScanDialog;
+import com.konkawise.dtv.utils.EditUtils;
 import com.konkawise.dtv.utils.Utils;
 
 import java.util.List;

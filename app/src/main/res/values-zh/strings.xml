@@ -24,6 +24,7 @@
     <string name="auto_diseqc">自动 DisEqc</string>
     <string name="auto">自动</string>
     <string name="tp">频点</string>
+    <string name="scan_tp_title">扫描频点</string>
     <string name="tp1">频点:</string>
     <string name="edit">编辑</string>
     <string name="scan">扫描</string>
@@ -121,7 +122,7 @@
     <string name="blind_scan">盲扫</string>
     <string name="epg">Epg</string>
     <string name="clear_channel">清除节目</string>
-    <string name="factory_reset">恢复出厂设置</string>
+    <string name="data_reset">数据重置</string>
     <string name="Channel_management">节目管理</string>
     <string name="dtv_setting">DTV设置</string>
 
@@ -401,7 +402,7 @@
     <string name="motor_move_step_stop">Stop</string>
     <string name="motor_move_step_east">East</string>
     <string name="motor_move_step_west">West</string>
-    <string name="motor_type_diseqc">DisEqc1.2</string>
+    <string name="motor_type_diseqc">DiSEqC 1.2</string>
     <string name="motor_type_usals">USALS</string>
     <string name="motor_type_off">OFF</string>
     <string name="motor_usals_command_title">Command</string>
