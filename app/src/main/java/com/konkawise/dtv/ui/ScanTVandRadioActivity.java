@@ -23,6 +23,7 @@ import com.konkawise.dtv.dialog.SearchResultDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
+import com.sw.dvblib.SWPDBase;
 import com.sw.dvblib.msg.cb.SearchMsgCB;
 
 import org.greenrobot.eventbus.EventBus;
@@ -373,7 +374,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
                 return 1;
             }
             SatelliteActivity.satList.clear();
-            SWPDBaseManager.getInstance().setCurrProgType(SWFtaManager.getInstance().getCurrScanMode() == 2 ? SWPDBaseManager.PROG_TYPE_RADIO : SWPDBaseManager.PROG_TYPE_TV, 0);
+            SWPDBaseManager.getInstance().setCurrProgType(SWFtaManager.getInstance().getCurrScanMode() == 2 ? SWPDBase.SW_GBPROG : SWPDBase.SW_TVPROG, 0);
             SWPSearchManager.getInstance().seatchStop(true);
             showSearchResultDialog();
             return 0;

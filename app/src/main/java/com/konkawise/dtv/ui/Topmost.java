@@ -58,6 +58,7 @@ import com.konkawise.dtv.dialog.SubtitleDialog;
 import com.konkawise.dtv.dialog.TeletextDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
 import com.konkawise.dtv.event.RecordStateChangeEvent;
+import com.konkawise.dtv.event.ReloadSatEvent;
 import com.konkawise.dtv.service.BookService;
 import com.konkawise.dtv.service.PowerService;
 import com.konkawise.dtv.utils.TimeUtils;
@@ -68,6 +69,7 @@ import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
 import com.sw.dvblib.SWDVB;
 import com.sw.dvblib.SWFta;
+import com.sw.dvblib.SWPDBase;
 import com.sw.dvblib.msg.cb.AVMsgCB;
 
 import org.greenrobot.eventbus.EventBus;
@@ -170,11 +172,11 @@ public class Topmost extends BaseActivity {
     @BindView(R.id.item_clear_channel)
     TextView mItemClearChannel;
 
-    @BindView(R.id.item_factory_reset)
-    TextView mItemFactoryReset;
-
     @BindView(R.id.item_dtv_setting)
     TextView mItemDtvSetting;
+
+    @BindView(R.id.item_data_reset)
+    TextView mItemDataReset;
 
     @OnItemSelected(R.id.lv_prog_list)
     void onItemSelect(int position) {
@@ -296,7 +298,12 @@ public class Topmost extends BaseActivity {
         }
     }
 
-    @OnClick(R.id.item_factory_reset)
+    @OnClick(R.id.item_dtv_setting)
+    void dtvSetting() {
+        startActivity(new Intent(this, DTVSettingActivity.class));
+    }
+
+    @OnClick(R.id.item_data_reset)
     void factoryReset() {
         if (SWFtaManager.getInstance().isOpenMenuLock() && !mPasswordEntered) {
             showPasswordDialog(new PasswordDialog.OnPasswordInputListener() {
@@ -304,18 +311,13 @@ public class Topmost extends BaseActivity {
                 public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
                     if (isValid) {
                         mPasswordEntered = true;
-                        showFactoryResetDialog();
+                        showDataResetDialog();
                     }
                 }
             });
         } else {
-            showFactoryResetDialog();
+            showDataResetDialog();
         }
-    }
-
-    @OnClick(R.id.item_dtv_setting)
-    void dtvSetting() {
-        startActivity(new Intent(this, DTVSettingActivity.class));
     }
 
     private int mNewProgNum;
@@ -490,7 +492,7 @@ public class Topmost extends BaseActivity {
     protected void onPause() {
         super.onPause();
         hideSurface();
-        UIApiManager.getInstance().stopPlay(0);
+        UIApiManager.getInstance().stopPlay(SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_PD_SwitchMode.ordinal()));
         SWDVBManager.getInstance().unRegMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, mAvMsgCB);
         stopRecord();
         if (isFinishing()) {
@@ -822,13 +824,21 @@ public class Topmost extends BaseActivity {
                 public void run() {
                     context.mPbLoadingChannel.setVisibility(View.GONE);
                     if (progList != null && !progList.isEmpty()) {
+                        // 可能切换了频道类型，需要和当前最新的频道做对比
+                        PDPMInfo_t oldProgInfo = context.mProgListAdapter.getItem(context.mCurrSelectProgPosition);
+
                         context.mProgListAdapter.updateData(progList);
                         PDPMInfo_t progInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
                         if (progInfo != null) {
                             context.mCurrSelectProgPosition = context.getPositionByProgNum(progInfo.ProgNo);
                             progInfo = context.mProgListAdapter.getItem(context.mCurrSelectProgPosition);
                             context.updateProgListSelection(progInfo.ProgNo);
-                            context.playProg(progInfo.ProgNo); // 更新完成频道列表，切换播放
+
+                            // 更新完成频道列表，如果播放的不是当前频道或者切换了频道类型则切换播放
+                            if (progInfo.ProgNo != SWPDBaseManager.getInstance().getCurrProgNo() ||
+                                    (oldProgInfo != null && oldProgInfo.ProgType != progInfo.ProgType)) {
+                                context.playProg(progInfo.ProgNo);
+                            }
                         }
                     } else {
                         context.mProgListAdapter.updateData(new ArrayList<>());
@@ -884,6 +894,13 @@ public class Topmost extends BaseActivity {
             List<SatInfo_t> allSatList = SWPDBaseManager.getInstance().getAllSatListContainFav(context);
             if (allSatList != null && !allSatList.isEmpty()) {
                 context.mSatList = new ArrayList<>(allSatList);
+
+                context.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        context.mTvSatelliteName.setText(context.mSatList.get(context.mCurrSatPosition).sat_name);
+                    }
+                });
             } else {
                 context.mSatList = new ArrayList<>();
             }
@@ -915,7 +932,6 @@ public class Topmost extends BaseActivity {
             @Override
             public void surfaceDestroyed(SurfaceHolder holder) {
                 Log.i(TAG, "topmost surface destroy");
-                //               UIApiManager.getInstance().stopPlay(0);
             }
         });
     }
@@ -1139,7 +1155,7 @@ public class Topmost extends BaseActivity {
     }
 
     private void playProg(int progNum, boolean immediately) {
-        UIApiManager.getInstance().stopPlay(0); // 切台之前暂停当前频道播放
+        UIApiManager.getInstance().stopPlay(SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_PD_SwitchMode.ordinal())); // 切台之前暂停当前频道播放
         mCurrSelectProgPosition = getPositionByProgNum(progNum); // 记录下当前播放频道的position
         SWPDBaseManager.getInstance().setCurrProgNo(progNum);
         removePlayProgMsg();
@@ -1225,7 +1241,7 @@ public class Topmost extends BaseActivity {
     }
 
     private void showRadioBackground() {
-        mIvRadioBackground.setVisibility(SWPDBaseManager.getInstance().getCurrProgType() == 1 ? View.VISIBLE : View.INVISIBLE);
+        mIvRadioBackground.setVisibility(SWPDBaseManager.getInstance().getCurrProgType() == SWPDBase.SW_GBPROG ? View.VISIBLE : View.INVISIBLE);
     }
 
     private void checkLaunchSettingPassword() {
@@ -1392,13 +1408,14 @@ public class Topmost extends BaseActivity {
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
 
-    private void showFactoryResetDialog() {
-        new CommTipsDialog().title(getString(R.string.factory_reset)).content(getString(R.string.factory_reset_content))
+    private void showDataResetDialog() {
+        new CommTipsDialog().title(getString(R.string.data_reset)).content(getString(R.string.factory_reset_content))
                 .setOnPositiveListener("", new OnCommPositiveListener() {
                     @Override
                     public void onPositiveListener() {
                         SWFtaManager.getInstance().factoryReset();
                         toggleMenu();
+                        showRadioBackground();
                         showSettingPasswordDialog();
                     }
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
@@ -1565,6 +1582,7 @@ public class Topmost extends BaseActivity {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             new CommTipsDialog()
                     .content(getString(R.string.dialog_quit_record_content))
+                    .negativeFocus(true)
                     .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
                         @Override
                         public void onPositiveListener() {
@@ -1611,27 +1629,35 @@ public class Topmost extends BaseActivity {
     }
 
     private void toggleProgList() {
+        toggleProgList(true);
+    }
+
+    private void toggleProgList(boolean isQuitShowPf) {
         startTranslateAnimation(mProgListShow ? -mProgListMenu.getLeft() : 0f,
                 mProgListShow ? 0f : -mProgListMenu.getLeft(), mProgListMenu, null);
         mProgListShow = !mProgListShow;
-        if (!mProgListShow) {
-            showPfInfo();
+        if (!mProgListShow && isQuitShowPf) {
+            mProgHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    showPfInfo();
+                }
+            }, 300);
         }
     }
 
     private void toggleMenu() {
-        if (mMenuShow) {
-            mPasswordEntered = false;
-        }
+        if (mMenuShow) mPasswordEntered = false;
         startTranslateAnimation(mMenuShow ? -mMenu.getLeft() : 0f,
                 mMenuShow ? 0f : -mMenu.getLeft(), mMenu, new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        if (mMenuShow) {
-                            restoreMenuItem(); // menu隐藏动画执行结束，恢复menu的item显示
-                        }
+                        if (mMenuShow) restoreMenuItem(); // menu隐藏动画执行结束，恢复menu的item显示
                         mMenuShow = !mMenuShow;
+                        if (!mMenuShow) {
+                            showPfInfo();
+                        }
                     }
                 });
     }
@@ -1667,6 +1693,7 @@ public class Topmost extends BaseActivity {
         mItemEpg.setVisibility(isShowInstallation ? View.GONE : View.VISIBLE);
         mItemChannelManage.setVisibility(isShowInstallation ? View.GONE : View.VISIBLE);
         mItemDtvSetting.setVisibility(isShowInstallation ? View.GONE : View.VISIBLE);
+        mItemDataReset.setVisibility(isShowInstallation ? View.GONE : View.VISIBLE);
     }
 
     private void toggleChannelManageItem() {
@@ -1678,8 +1705,8 @@ public class Topmost extends BaseActivity {
         mItemChannelEdit.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
         mItemChannelFavorite.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
         mItemClearChannel.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
-        mItemFactoryReset.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
         mItemDtvSetting.setVisibility(isShowChannelManage ? View.GONE : View.VISIBLE);
+        mItemDataReset.setVisibility(isShowChannelManage ? View.GONE : View.VISIBLE);
     }
 
     private boolean isShowInstallation() {
@@ -1703,7 +1730,6 @@ public class Topmost extends BaseActivity {
         mItemChannelEdit.setVisibility(View.GONE);
         mItemChannelFavorite.setVisibility(View.GONE);
         mItemClearChannel.setVisibility(View.GONE);
-        mItemFactoryReset.setVisibility(View.GONE);
         mItemDtvSetting.setVisibility(View.VISIBLE);
     }
 
@@ -1802,14 +1828,21 @@ public class Topmost extends BaseActivity {
         // TV/RADIO
         if (keyCode == KeyEvent.KEYCODE_TV_RADIO_SERVICE) {
             stopRecord();
-            SWPDBaseManager.getInstance().setCurrProgType(SWPDBaseManager.getInstance().getCurrProgType() == 1 ? 0 : 1, 0);
-            updateProgList();
+            int currProgType = SWPDBaseManager.getInstance().getCurrProgType();
+            int group = currProgType == SWPDBase.SW_GBPROG ? SWPDBase.SW_TVPROG : SWPDBase.SW_GBPROG;
+            int num = SWPDBaseManager.getInstance().getProgNumOfType(group, 0);
+            if (num > 0) {
+                SWPDBaseManager.getInstance().setCurrProgType(currProgType == SWPDBase.SW_GBPROG ?
+                        SWPDBase.SW_TVPROG : SWPDBase.SW_GBPROG, 0);
+                onProgramUpdate(new ProgramUpdateEvent(true));
+            }
             return true;
         }
 
         if (keyCode == KeyEvent.KEYCODE_MENU) {
             dismissPfBarScanDialog();
             if (!mMenuShow) {
+                if (mProgListShow) toggleProgList(false); // 隐藏正在显示的频道列表
                 mItemInstallation.requestFocus();
                 toggleMenu();
             }
@@ -1922,12 +1955,16 @@ public class Topmost extends BaseActivity {
 
         // 如果处于booking录制状态，拦截提示退出
         if (interceptEventWhenRecord(event)) {
-            sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
-            showQuitRecordDialog(event);
+            if (isPfBarShowing()) {
+                dismissPfBarScanDialog();
+            } else {
+                sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
+                showQuitRecordDialog(event);
+            }
             return true;
         }
 
-        // 频道列表上下切换
+        // 频道列表上下左右切换
         if (mProgListShow && mProgListAdapter.getCount() > 0) {
             if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN
                     && event.getAction() == KeyEvent.ACTION_DOWN
@@ -2122,7 +2159,6 @@ public class Topmost extends BaseActivity {
                 keyCode != KeyEvent.KEYCODE_PROG_BLUE &&
                 keyCode != KeyEvent.KEYCODE_DPAD_LEFT &&
                 keyCode != KeyEvent.KEYCODE_DPAD_RIGHT &&
-                keyCode != KeyEvent.KEYCODE_DPAD_CENTER &&
                 keyCode != KeyEvent.KEYCODE_VOLUME_MUTE &&
                 keyCode != KeyEvent.KEYCODE_UNKNOWN &&
                 keyCode != KeyEvent.KEYCODE_VOLUME_UP &&
@@ -2170,13 +2206,29 @@ public class Topmost extends BaseActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onReceiveProgramUpdate(ProgramUpdateEvent event) {
+    public void onProgramUpdate(ProgramUpdateEvent event) {
+        Log.i(TAG, "onProgramUpdate");
         if (event.tvSize != 0 || event.radioSize != 0 || event.isProgramEdit) {
-            mSatList = null; // 置空重新加载
-            updateSatList();
-            mProgListMap.clear(); // 更新频道列表前清空缓存
-            updateProgList();
+            reloadSat();
+            reloadProg();
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onReloadSat(ReloadSatEvent event) {
+        Log.i(TAG, "onReloadSat");
+        reloadSat();
+    }
+
+    private void reloadSat() {
+        mCurrSatPosition = 0;
+        mSatList = null; // 置空重新加载
+        updateSatList();
+    }
+
+    private void reloadProg() {
+        mProgListMap.clear(); // 更新频道列表前清空缓存
+        updateProgList();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

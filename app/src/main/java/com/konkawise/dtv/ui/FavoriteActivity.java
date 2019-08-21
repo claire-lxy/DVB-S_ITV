@@ -18,9 +18,13 @@ import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.OnCommNegativeListener;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.RenameDialog;
+import com.konkawise.dtv.event.ProgramUpdateEvent;
+import com.konkawise.dtv.event.ReloadSatEvent;
 import com.konkawise.dtv.view.TVListView;
 import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.sw.dvblib.SWPDBase;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,6 +116,7 @@ public class FavoriteActivity extends BaseActivity {
     private int mFavoriteChannelIndex;
 
     private boolean mFavoriteChannelFocus = false;
+    private boolean mFavEdit;
 
     @Override
     public int getLayoutId() {
@@ -120,9 +125,17 @@ public class FavoriteActivity extends BaseActivity {
 
     @Override
     protected void setup() {
-        SWPDBaseManager.getInstance().setCurrProgType(SWPDBase.SW_WHOLE_GROUP, 0);
+        SWPDBaseManager.getInstance().setCurrGroup(SWPDBase.SW_WHOLE_GROUP, 0);
         initFavoriteGroup();
         initFavoriteChannel();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (isFinishing() && mFavEdit) {
+            EventBus.getDefault().post(new ReloadSatEvent());
+        }
     }
 
     private void initFavoriteGroup() {
@@ -194,6 +207,8 @@ public class FavoriteActivity extends BaseActivity {
                         removeFAVChannels(ltRemoves, mFavoriteGroupIndex - 1);
                         mFavoriteChannelAdapter.clearSelect();
                         mFavoriteChannelAdapter.updateData(mFavoriteChannelsMap.get(mFavoriteGroupIndex - 1));
+
+                        mFavEdit = true;
                     }
                 })
                 .setOnNegativeListener("", new OnCommNegativeListener() {
@@ -225,6 +240,8 @@ public class FavoriteActivity extends BaseActivity {
                             public void setEdit(String name) {
                                 PreferenceManager.getInstance().putString("fav" + (mFavoriteGroupIndex - 1), name);
                                 mFavoriteGroupAdapter.updateData(mFavoriteGroupIndex - 1, name);
+
+                                mFavEdit = true;
                             }
                         }).show(getSupportFragmentManager(), RenameDialog.TAG);
 

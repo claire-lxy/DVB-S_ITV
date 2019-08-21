@@ -23,6 +23,7 @@ import com.konkawise.dtv.RealTimeManager;
 import com.konkawise.dtv.SWBookingManager;
 import com.konkawise.dtv.SWDVBManager;
 import com.konkawise.dtv.SWEpgManager;
+import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.SWTimerManager;
 import com.konkawise.dtv.ThreadPoolManager;
@@ -46,6 +47,8 @@ import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
 import com.sw.dvblib.SWBooking;
+import com.sw.dvblib.SWFta;
+import com.sw.dvblib.SWPDBase;
 import com.sw.dvblib.msg.cb.AVMsgCB;
 
 import org.greenrobot.eventbus.EventBus;
@@ -260,7 +263,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
 
     @Override
     protected void setup() {
-        SWPDBaseManager.getInstance().setCurrProgType(0, 0);
+        SWPDBaseManager.getInstance().setCurrProgType(SWPDBase.SW_TVPROG, 0);
         mEpgMsgHandler = new EpgMsgHandler(this);
         EventBus.getDefault().register(this);
 
@@ -285,7 +288,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
         super.onPause();
         RealTimeManager.getInstance().unregister(this);
         SWDVBManager.getInstance().unRegMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, mPlayMsgCB);
-        UIApiManager.getInstance().stopPlay(0); // 跳转或销毁界面要停止播放
+        UIApiManager.getInstance().stopPlay(SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_PD_SwitchMode.ordinal())); // 跳转或销毁界面要停止播放
     }
 
     @Override

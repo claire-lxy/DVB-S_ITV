@@ -44,14 +44,14 @@ public class SatelliteActivity extends BaseActivity {
     @BindView(R.id.tv_lnb_power)
     TextView mTvLnbPower;
 
-    @BindView(R.id.tv_lnb_power_freq)
-    TextView mTvLnbPowerFreq;
+    @BindView(R.id.tv_freq)
+    TextView mTvFreq;
 
-    @BindView(R.id.tv_lnb_power_diseqc)
-    TextView mTvLnbPowerDiseqc;
+    @BindView(R.id.tv_diseqc)
+    TextView mTvDiSEqC;
 
-    @BindView(R.id.tv_lnb_power_motor)
-    TextView mTvLnbPowerMotor;
+    @BindView(R.id.tv_motor_type)
+    TextView mTvMotorType;
 
     @BindView(R.id.tv_bottom_bar_blue)
     TextView mTvBottomBarBlue;
@@ -136,7 +136,7 @@ public class SatelliteActivity extends BaseActivity {
                             Intent intent = new Intent(SatelliteActivity.this, ScanTVandRadioActivity.class);
                             intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mAdapter.getItem(mCurrPosition).SatIndex);
                             intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_ACTIVITY, 1);
-                            intent.putExtra(Constants.IntentKey.INTENT_TP_NAME, mTvLnbPowerFreq.getText().toString().trim());
+                            intent.putExtra(Constants.IntentKey.INTENT_TP_NAME, mTvFreq.getText().toString().trim());
                             startActivity(intent);
                             finish();
                         }
@@ -147,7 +147,7 @@ public class SatelliteActivity extends BaseActivity {
             Intent intent = new Intent(this, EditManualActivity.class);
             intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mAdapter.getItem(mCurrPosition).SatIndex);
             intent.putExtra(Constants.IntentKey.INTENT_LNB, mTvLnb.getText().toString().trim());
-            intent.putExtra(Constants.IntentKey.INTENT_DISEQC, mTvLnbPowerDiseqc.getText().toString());
+            intent.putExtra(Constants.IntentKey.INTENT_DISEQC, mTvDiSEqC.getText().toString());
             startActivityForResult(intent, REQUEST_CODE_SATELLITE_EDIT);
         }
 
@@ -155,7 +155,8 @@ public class SatelliteActivity extends BaseActivity {
             Intent intent = new Intent(this, TpListingActivity.class);
             intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mAdapter.getItem(mCurrPosition).SatIndex);
             intent.putExtra(Constants.IntentKey.INTENT_LNB, mTvLnb.getText().toString().trim());
-            intent.putExtra(Constants.IntentKey.INTENT_DISEQC, mTvLnbPowerDiseqc.getText().toString());
+            intent.putExtra(Constants.IntentKey.INTENT_DISEQC, mTvDiSEqC.getText().toString());
+            intent.putExtra(Constants.IntentKey.INTENT_MOTOR_TYPE, mTvMotorType.getText().toString());
             startActivityForResult(intent, REQUEST_CODE_TP_EDIT);
         }
 
@@ -219,13 +220,22 @@ public class SatelliteActivity extends BaseActivity {
                     public void run() {
                         context.mTvLnbPower.setText(Utils.getOnorOff(context, satInfo_t.LnbPower));
                         context.mTvLnb.setText(Utils.getLNB(satInfo_t));
-                        context.mTvLnbPowerDiseqc.setText(Utils.getDiseqc(satInfo_t, context.getResources().getStringArray(R.array.DISEQC)));
+                        context.mTvDiSEqC.setText(Utils.getDiseqc(satInfo_t, context.getResources().getStringArray(R.array.DISEQC)));
+                        String motorType = "";
+                        if (satInfo_t.diseqc12 == 0) {
+                            motorType = context.getString(R.string.motor_type_off);
+                        } else if (satInfo_t.diseqc12 == 1) {
+                            motorType = context.getString(R.string.motor_type_diseqc);
+                        } else if (satInfo_t.diseqc12 == 2) {
+                            motorType = context. getString(R.string.motor_type_usals);
+                        }
+                        context.mTvMotorType.setText(motorType);
 
-                        if (channel_t1 != null) {
+                        if (channel_t1 != null && channel_t1.Freq > 0) {
                             String tpName = channel_t1.Freq + Utils.getVorH(context, channel_t1.Qam) + channel_t1.Symbol;
-                            context.mTvLnbPowerFreq.setText(tpName);
+                            context.mTvFreq.setText(tpName);
                         } else {
-                            context.mTvLnbPowerFreq.setText("");
+                            context.mTvFreq.setText("");
                         }
                     }
                 });

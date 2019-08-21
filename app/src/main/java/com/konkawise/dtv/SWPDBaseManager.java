@@ -319,7 +319,7 @@ public class SWPDBaseManager {
         if (allSatList != null && !allSatList.isEmpty()) {
             int[] favIndexArray = getFavIndexArray();
             for (int favIndex : favIndexArray) {
-                int favProgNum = SWPDBase.CreateInstance().getProgNumOfGroup(SWPDBase.SW_FAV_GROUP, favIndex);
+                int favProgNum = getProgNumOfGroup(SWPDBase.SW_FAV_GROUP, favIndex);
                 if (favProgNum > 0) {
                     SatInfo_t favSatInfo = new SatInfo_t();
                     favSatInfo.SatIndex = favIndex + RANGE_SAT_INDEX; // 存入favIndex，方便切换时获取对应的喜爱分组频道列表展示，加上一个大数值与其他SatIndex区分
@@ -330,6 +330,27 @@ public class SWPDBaseManager {
             return allSatList;
         }
         return null;
+    }
+
+    /**
+     * 根据group获取对应的列表数量（获取radio列表不正确）
+     *
+     * @param group SWPDBase.SW_XXX
+     * @param param 所在分组，如果没有传0
+     * @return
+     */
+    public int getProgNumOfGroup(int group, int param) {
+        return SWPDBase.CreateInstance().getProgNumOfGroup(group, param);
+    }
+
+    /**
+     * 根据group获取对应的列表数量
+     *
+     * @param type  SWPDBase.SW_XXX
+     * @param param 所在分组，如果没有传0
+     */
+    public int getProgNumOfType(int type, int param) {
+        return SWPDBase.CreateInstance().getProgNumOfType(type, param);
     }
 
     /**

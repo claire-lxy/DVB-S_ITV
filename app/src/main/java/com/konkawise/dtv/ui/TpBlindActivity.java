@@ -25,6 +25,7 @@ import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.SearchResultDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
+import com.sw.dvblib.SWPDBase;
 import com.sw.dvblib.msg.cb.SearchMsgCB;
 
 import org.greenrobot.eventbus.EventBus;
@@ -292,7 +293,7 @@ public class TpBlindActivity extends BaseActivity {
 
         @Override
         public int PSearch_PROG_SEARCHFINISH(int AllNum, int Curr) {
-            SWPDBaseManager.getInstance().setCurrProgType(SWFtaManager.getInstance().getCurrScanMode() == 2 ? SWPDBaseManager.PROG_TYPE_RADIO : SWPDBaseManager.PROG_TYPE_TV, 0);
+            SWPDBaseManager.getInstance().setCurrProgType(SWFtaManager.getInstance().getCurrScanMode() == 2 ? SWPDBase.SW_GBPROG : SWPDBase.SW_TVPROG, 0);
             SWPSearchManager.getInstance().seatchStop(true);
             showSearchResultDialog();
             return 0;

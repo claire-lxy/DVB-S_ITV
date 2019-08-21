@@ -60,7 +60,7 @@
             android:paddingLeft="40dp"
             android:text="@string/manual_installation"
             android:textSize="15sp"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/item_blind_scan"
@@ -72,7 +72,7 @@
             android:paddingLeft="40dp"
             android:text="@string/blind_scan"
             android:textSize="15sp"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/item_epg"
@@ -150,18 +150,6 @@
             android:visibility="gone" />
 
         <TextView
-            android:id="@+id/item_factory_reset"
-            android:layout_width="match_parent"
-            android:layout_height="36dp"
-            android:background="@drawable/dvb_btn_selector"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:paddingLeft="40dp"
-            android:text="@string/factory_reset"
-            android:textSize="15sp"
-            android:visibility="gone" />
-
-        <TextView
             android:id="@+id/item_dtv_setting"
             android:layout_width="match_parent"
             android:layout_height="36dp"
@@ -170,6 +158,17 @@
             android:gravity="center_vertical"
             android:paddingLeft="40dp"
             android:text="@string/dtv_setting"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/item_data_reset"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:background="@drawable/dvb_btn_selector"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:paddingLeft="40dp"
+            android:text="@string/data_reset"
             android:textSize="15sp" />
     </LinearLayout>
 </LinearLayout>

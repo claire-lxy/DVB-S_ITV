@@ -227,12 +227,11 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
     }
 
     private String getInformation(EpgEvent_t info) {
-        if (info == null) {
-            return mContext.getString(R.string.no_information);
+        if (info != null && info.utcStartData > 0 && info.utcStartTime > 0) {
+            return new DateModel(SWTimerManager.getInstance().getStartTime(info),
+                    SWTimerManager.getInstance().getEndTime(info)).getFormatHourAndMinute() + " " + info.memEventName;
         }
-
-        return new DateModel(SWTimerManager.getInstance().getStartTime(info),
-                SWTimerManager.getInstance().getEndTime(info)).getFormatHourAndMinute() + " " + info.memEventName;
+        return mContext.getString(R.string.no_information);
     }
 
     public void updatePfInformation(int mCurrSelectProgPosition) {
