@@ -1731,6 +1731,7 @@ public class Topmost extends BaseActivity {
         mItemChannelFavorite.setVisibility(View.GONE);
         mItemClearChannel.setVisibility(View.GONE);
         mItemDtvSetting.setVisibility(View.VISIBLE);
+        mItemDataReset.setVisibility(View.VISIBLE);
     }
 
     private boolean isMenuTopFocused() {
