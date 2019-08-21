@@ -7,10 +7,13 @@ import android.support.v4.app.ActivityCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;
+import com.konkawise.dtv.SWDJAPVRManager;
 import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.UsbManager;
 import com.konkawise.dtv.adapter.DeviceGroupAdapter;
@@ -25,7 +28,6 @@ import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.permission.OnRequestPermissionResultListener;
 import com.konkawise.dtv.permission.PermissionHelper;
 import com.konkawise.dtv.weaktool.WeakRunnable;
-import com.sw.dvblib.DJAPVR;
 
 import java.io.File;
 import java.io.Serializable;
@@ -49,6 +51,9 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     @BindView(R.id.lv_record_channel_list)
     ListView mListView;
 
+    @BindView(R.id.ly_bottom)
+    LinearLayout lyBottom;
+
     @OnItemSelected(R.id.lv_deivce)
     void onDeviceItemSelect(int position) {
         Log.i(TAG, "refresh record data--");
@@ -60,6 +65,11 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     @OnFocusChange(R.id.lv_deivce)
     void onDeviceItemFocus(boolean focus) {
         Log.i(TAG, "device focus--" + focus);
+        if (focus) {
+            dissmissBottomItem();
+        } else {
+            showBottomItem();
+        }
         updateDeviceGroup(mCurrDevicePostion, !focus);
     }
 
@@ -104,7 +114,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     @Override
     protected void setup() {
         UsbManager.getInstance().registerUsbReceiveListener(this);
-        ltHpvrRecFileTS = DJAPVR.CreateInstance().getRecordFileList(0, -1);
+        ltHpvrRecFileTS = SWDJAPVRManager.getInstance().getRecordFileList(0, -1);
 
         mAdapter = new RecordListAdapter(this, new ArrayList<>());
         mListView.setAdapter(mAdapter);
@@ -221,6 +231,14 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         return ltDeviceNames;
     }
 
+    private void showBottomItem() {
+        lyBottom.setVisibility(View.VISIBLE);
+    }
+
+    private void dissmissBottomItem() {
+        lyBottom.setVisibility(View.INVISIBLE);
+    }
+
     private void renameChannel(String oldName, String newName, boolean override) {
         String path = mUsbInfos.get(mCurrDevicePostion).path + "/PVR/";
         if (renameFile(path + oldName, path + newName, override)) {
@@ -328,23 +346,31 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_PROG_RED) {
-            mAdapter.setSelect(mCurrRecordPosition);
-            return true;
+            if (lyBottom.getVisibility() == View.VISIBLE) {
+                mAdapter.setSelect(mCurrRecordPosition);
+                return true;
+            }
         }
 
         if (keyCode == KeyEvent.KEYCODE_PROG_GREEN) {
-            showRenameDialog();
-            return true;
+            if (lyBottom.getVisibility() == View.VISIBLE) {
+                showRenameDialog();
+                return true;
+            }
         }
 
         if (keyCode == KeyEvent.KEYCODE_PROG_BLUE) {
-            showDeleteDialog();
-            return true;
+            if (lyBottom.getVisibility() == View.VISIBLE) {
+                showDeleteDialog();
+                return true;
+            }
         }
 
         if (keyCode == KeyEvent.KEYCODE_PROG_YELLOW) {
-            lockChannels();
-            return true;
+            if (lyBottom.getVisibility() == View.VISIBLE) {
+                lockChannels();
+                return true;
+            }
         }
 
         if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
@@ -459,7 +485,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
 
     @Override
     public void onUsbReceive(int usbObserveType, Set<UsbInfo> usbInfos, UsbInfo currUsbInfo) {
-        ltHpvrRecFileTS = DJAPVR.CreateInstance().getRecordFileList(0, -1);
+        ltHpvrRecFileTS = SWDJAPVRManager.getInstance().getRecordFileList(0, -1);
 
         UsbInfo selectInfo = null;
         if (mUsbInfos != null && mUsbInfos.size() > 0)

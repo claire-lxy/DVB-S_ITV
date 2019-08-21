@@ -64,6 +64,7 @@
             android:listSelector="@drawable/dvb_btn_selector" />
 
         <LinearLayout
+            android:id="@+id/ly_bottom"
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:background="@mipmap/tv_and_radio_bg"

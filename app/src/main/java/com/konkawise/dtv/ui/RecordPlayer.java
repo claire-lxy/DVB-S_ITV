@@ -2,6 +2,7 @@ package com.konkawise.dtv.ui;
 
 import android.os.Looper;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
@@ -16,7 +17,10 @@ import android.widget.TextView;
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.HandlerMsgManager;
 import com.konkawise.dtv.R;
+import com.konkawise.dtv.SWDJAPVRManager;
 import com.konkawise.dtv.SWDVBManager;
+import com.konkawise.dtv.SWFtaManager;
+import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.UIApiManager;
 import com.konkawise.dtv.UsbManager;
 import com.konkawise.dtv.base.BaseActivity;
@@ -27,7 +31,7 @@ import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.SeekTimeDialog;
 import com.konkawise.dtv.weaktool.WeakHandler;
-import com.sw.dvblib.DJAPVR;
+import com.sw.dvblib.SWFta;
 import com.sw.dvblib.msg.cb.AVMsgCB;
 
 import java.text.MessageFormat;
@@ -111,7 +115,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         protected void handleMsg(Message msg) {
             RecordPlayer context = mWeakReference.get();
             if (msg.what == MSG_UPGRADE_PROGRESS) {
-                HPVR_Progress_t hpvrProgressT = DJAPVR.CreateInstance().getPlayProgress();
+                HPVR_Progress_t hpvrProgressT = SWDJAPVRManager.getInstance().getPlayProgress();
                 int volid = hpvrProgressT.valid;
                 int progress = 0;
                 int secondProgress = 0;
@@ -131,12 +135,11 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
                         }
                     }
                 }
-                context.initUIContent(context.totalDuration);
+                context.initUIContent("", context.totalDuration);
                 context.refreshUI(progress, secondProgress);
                 context.sendUpgradePrgressMsg(new HandlerMsgModel(MSG_UPGRADE_PROGRESS, 1000L));
             } else if (msg.what == MSG_DISMISS_CONTROL_UI) {
-                context.tvProgNum.setVisibility(View.INVISIBLE);
-                context.lyControl.setVisibility(View.INVISIBLE);
+                context.dismissControlUI();
             }
         }
     }
@@ -208,6 +211,11 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
             sendDissControlUIMsg(new HandlerMsgModel(PlayHandler.MSG_DISMISS_CONTROL_UI, 4000L));
     }
 
+    private void dismissControlUI() {
+        tvProgNum.setVisibility(View.INVISIBLE);
+        lyControl.setVisibility(View.INVISIBLE);
+    }
+
     private void switchPlayTypeUI(int playType, int seekNum) {
         currType = playType;
         switch (playType) {
@@ -253,8 +261,11 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
             sbProgress.setSecondaryProgress(secondProgress / 1000);
     }
 
-    private void initUIContent(int endMs) {
-        Log.i(TAG, "tatal duration:" + endMs);
+    private void initUIContent(String progNum, int endMs) {
+        Log.i(TAG, "progNum:" + progNum + "tatal duration:" + endMs);
+        if (!TextUtils.isEmpty(progNum)) {
+            tvProgNum.setText(progNum);
+        }
         if (!initUIContextFlg) {
             sbProgress.setMax(endMs / 1000);
             tvTotalTime.setText(formatDuration(endMs));
@@ -280,11 +291,12 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_CENTER:
+            case KeyEvent.KEYCODE_SHIFT_RIGHT:
                 if (currType == TYPE_PLAY) {
                     pause();
                     new SeekTimeDialog()
-                            .setCurrTime(DJAPVR.CreateInstance().getPlayProgress().currentMs > 0 ? DJAPVR.CreateInstance().getPlayProgress().currentMs : 0)
-                            .setTimeLimit(DJAPVR.CreateInstance().getPlayProgress().endMs > 0 ? DJAPVR.CreateInstance().getPlayProgress().endMs : 0)
+                            .setCurrTime(SWDJAPVRManager.getInstance().getPlayProgress().currentMs > 0 ? SWDJAPVRManager.getInstance().getPlayProgress().currentMs : 0)
+                            .setTimeLimit(SWDJAPVRManager.getInstance().getPlayProgress().endMs > 0 ? SWDJAPVRManager.getInstance().getPlayProgress().endMs : 0)
                             .setTimeListener(new SeekTimeDialog.OnTimeListener() {
                                 @Override
                                 public void time(int hour, int minute, int second) {
@@ -313,16 +325,21 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
 
             case KeyEvent.KEYCODE_MEDIA_STOP:
             case KeyEvent.KEYCODE_BACK:
-                new CommTipsDialog()
-                        .title(getString(R.string.dialog_exit_pvr_tips))
-                        .content(getString(R.string.dialog_exit_timeshift_content))
-                        .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
-                            @Override
-                            public void onPositiveListener() {
+                if (lyControl.getVisibility() == View.VISIBLE) {
+                    dismissControlUI();
+                } else {
+                    new CommTipsDialog()
+                            .title(getString(R.string.dialog_exit_pvr_tips))
+                            .content(getString(R.string.dialog_exit_timeshift_content))
+                            .negativeFocus(true)
+                            .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
+                                @Override
+                                public void onPositiveListener() {
 
-                                finish();
-                            }
-                        }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
+                                    finish();
+                                }
+                            }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
+                }
                 return true;
 
             case KeyEvent.KEYCODE_MEDIA_REWIND:
@@ -356,14 +373,14 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     private void playRecord() {
         switchPlayTypeUI(TYPE_PLAY, -1);
         showControlUI(true);
-        initUIContent(0);
         sendUpgradePrgressMsg(new HandlerMsgModel(PlayHandler.MSG_UPGRADE_PROGRESS));
         recordInfo = (RecordInfo) getIntent().getSerializableExtra(Constants.IntentKey.INTENT_RECORD_INFO);
-        DJAPVR.CreateInstance().startPlay(recordInfo.getFile().getParent() + "/", recordInfo.getFile().getName(), 0);
+        initUIContent(recordInfo.getFile().getName(), 0);
+        SWDJAPVRManager.getInstance().startPlay(recordInfo.getFile().getParent() + "/", recordInfo.getFile().getName(), 0);
     }
 
     private void playNextRecord() {
-        DJAPVR.CreateInstance().stopPlay();
+        SWDJAPVRManager.getInstance().stopPlay();
         if (recordList == null || recordList.size() == 0) {
             recordList = (List<RecordInfo>) getIntent().getSerializableExtra(Constants.IntentKey.INTENT_RECORD_LIST);
             for (int i = 0; i < recordList.size(); i++) {
@@ -381,17 +398,20 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         Log.i(TAG, "playNextRecord:" + recordInfo.getFile().getName());
         switchPlayTypeUI(TYPE_PLAY, -1);
         showControlUI(true);
-        initUIContent(0);
-        DJAPVR.CreateInstance().startPlay(recordInfo.getFile().getParent() + "/", recordInfo.getFile().getName(), 0);
+        initUIContent(recordInfo.getFile().getName(), 0);
+        SWDJAPVRManager.getInstance().startPlay(recordInfo.getFile().getParent() + "/", recordInfo.getFile().getName(), 0);
     }
 
     private void playTimeShift() {
         totalDuration = getIntent().getIntExtra(Constants.IntentKey.INTENT_TIMESHIFT_TIME, 0) * 60 * 1000;
+        if (totalDuration == 0) {
+            totalDuration = SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_TimeshiftMaxMin.ordinal()) * 60 * 1000;
+        }
         switchPlayTypeUI(TYPE_PAUSE, -1);
         showControlUI(false);
-        initUIContent(totalDuration);
+        initUIContent(getIntent().getStringExtra(Constants.IntentKey.INTENT_TIMESHIFT_PROGNUM) + "  " + SWPDBaseManager.getInstance().getCurrProgInfo().Name, totalDuration);
         sendUpgradePrgressMsg(new HandlerMsgModel(PlayHandler.MSG_UPGRADE_PROGRESS));
-        DJAPVR.CreateInstance().beginTimeshift();
+        SWDJAPVRManager.getInstance().beginTimeshift();
     }
 
     private boolean gotoShiftEnd(int currMS, int endMS, int seekNum) {
@@ -405,22 +425,22 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         switchPlayTypeUI(TYPE_PLAY, -1);
         showControlUI(true);
 //        playHandler.sendEmptyMessage(PlayHandler.MSG_UPGRADE_PROGRESS);  //导致暂停图标不显示，后续需排查原因
-        DJAPVR.CreateInstance().playResume();
+        SWDJAPVRManager.getInstance().playResume();
     }
 
     private void jump(int currMS) {
         Log.i(TAG, "jump:" + currMS);
         switchPlayTypeUI(TYPE_PLAY, -1);
         showControlUI(true);
-        DJAPVR.CreateInstance().playSeek(currMS);
-        DJAPVR.CreateInstance().playResume();
+        SWDJAPVRManager.getInstance().playSeek(currMS);
+        SWDJAPVRManager.getInstance().playResume();
     }
 
     private void pause() {
         Log.i(TAG, "pause");
         switchPlayTypeUI(TYPE_PAUSE, -1);
         showControlUI(false);
-        DJAPVR.CreateInstance().playPause();
+        SWDJAPVRManager.getInstance().playPause();
     }
 
     private void recordSeekTypeNum(int seekType) {
@@ -453,15 +473,15 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         if (type == SEEK_TYPE_NO) {
             switchPlayTypeUI(TYPE_PLAY, -1);
             showControlUI(true);
-            DJAPVR.CreateInstance().setPlaySpeed(getSelectPosition(new int[]{1, 2, 4, 8, 16, 32, 64, 128}, seekNum) + 8);
+            SWDJAPVRManager.getInstance().setPlaySpeed(getSelectPosition(new int[]{1, 2, 4, 8, 16, 32, 64, 128}, seekNum) + 8);
         } else if (type == SEEK_TYPE_LEFT) {
             switchPlayTypeUI(TYPE_SEEK_BACK, seekNum);
             showControlUI(false);
-            DJAPVR.CreateInstance().setPlaySpeed(getSelectPosition(new int[]{1, 2, 4, 8, 16, 32, 64, 128}, seekNum));
+            SWDJAPVRManager.getInstance().setPlaySpeed(getSelectPosition(new int[]{1, 2, 4, 8, 16, 32, 64, 128}, seekNum));
         } else {
             switchPlayTypeUI(TYPE_SEEK_FORWARD, seekNum);
             showControlUI(false);
-            DJAPVR.CreateInstance().setPlaySpeed(getSelectPosition(new int[]{1, 2, 4, 8, 16, 32, 64, 128}, seekNum) + 8);
+            SWDJAPVRManager.getInstance().setPlaySpeed(getSelectPosition(new int[]{1, 2, 4, 8, 16, 32, 64, 128}, seekNum) + 8);
         }
     }
 
@@ -479,9 +499,9 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         switchPlayTypeUI(TYPE_STOP, -1);
         showControlUI(false);
         if (from == FROM_TOPMOST)
-            DJAPVR.CreateInstance().stopTimeshift();
+            SWDJAPVRManager.getInstance().stopTimeshift();
         else
-            DJAPVR.CreateInstance().stopPlay();
+            SWDJAPVRManager.getInstance().stopPlay();
     }
 
     private void sendUpgradePrgressMsg(HandlerMsgModel progMsg) {

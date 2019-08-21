@@ -4,6 +4,7 @@ import com.sw.dvblib.DJAPVR;
 
 import java.util.ArrayList;
 
+import vendor.konka.hardware.dtvmanager.V1_0.HPVR_Progress_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HPVR_RecFile_t;
 
 public class SWDJAPVRManager {
@@ -63,6 +64,34 @@ public class SWDJAPVRManager {
 
     public int stopPlay() {
         return DJAPVR.CreateInstance().stopPlay();
+    }
+
+    public int beginTimeshift() {
+        return DJAPVR.CreateInstance().beginTimeshift();
+    }
+
+    public int stopTimeshift() {
+        return DJAPVR.CreateInstance().stopTimeshift();
+    }
+
+    public HPVR_Progress_t getPlayProgress() {
+        return DJAPVR.CreateInstance().getPlayProgress();
+    }
+
+    public int playSeek(int time_ms) {
+        return DJAPVR.CreateInstance().playSeek(time_ms);
+    }
+
+    public int setPlaySpeed(int speed) {
+        return DJAPVR.CreateInstance().setPlaySpeed(speed);
+    }
+
+    public int playPause() {
+        return DJAPVR.CreateInstance().playPause();
+    }
+
+    public int playResume() {
+        return DJAPVR.CreateInstance().playResume();
     }
 
     public void setRecording(boolean recording) {
