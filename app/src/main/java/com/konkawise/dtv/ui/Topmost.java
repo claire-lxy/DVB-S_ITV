@@ -1736,7 +1736,12 @@ public class Topmost extends BaseActivity {
                 return true;
             }
 
-            showInputPvrMinuteDialog(Constants.PVR_TYPE_TIMESHIFT);
+//            showInputPvrMinuteDialog(Constants.PVR_TYPE_TIMESHIFT);
+            Intent intent = new Intent();
+            intent.setClass(Topmost.this, RecordPlayer.class);
+            intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, RecordPlayer.FROM_TOPMOST);
+            intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_PROGNUM, mTvProgNum.getText().toString());
+            startActivity(intent);
             return true;
         }
 
@@ -1753,7 +1758,12 @@ public class Topmost extends BaseActivity {
                 return true;
             }
 
-            showInputPvrMinuteDialog(Constants.PVR_TYPE_TIMESHIFT);
+//            showInputPvrMinuteDialog(Constants.PVR_TYPE_TIMESHIFT);
+            Intent intent = new Intent();
+            intent.setClass(Topmost.this, RecordPlayer.class);
+            intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, RecordPlayer.FROM_TOPMOST);
+            intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_PROGNUM, mTvProgNum.getText().toString());
+            startActivity(intent);
             return true;
         }
 

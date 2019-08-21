@@ -11,8 +11,8 @@
         android:id="@+id/tv_item_record_channel_num"
         android:layout_width="38dp"
         android:layout_height="40dp"
-        android:layout_marginLeft="40dp"
-        android:layout_marginStart="40dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginStart="15dp"
         android:gravity="center"
         android:textSize="16sp"
         tools:text="1" />
@@ -21,8 +21,8 @@
         android:id="@+id/iv_item_record_select"
         android:layout_width="38dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="34dp"
-        android:layout_marginStart="34dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
         android:src="@mipmap/channel_mannanger_gou"
         android:visibility="invisible"
         tools:ignore="ContentDescription" />
@@ -31,8 +31,8 @@
         android:id="@+id/iv_item_record_lock"
         android:layout_width="38dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="34dp"
-        android:layout_marginStart="34dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
         android:src="@mipmap/channel_edit_lock"
         android:visibility="invisible"
         tools:ignore="ContentDescription" />
@@ -54,6 +54,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:gravity="center"
         android:textSize="16sp"
         tools:text="37 MB" />
 
