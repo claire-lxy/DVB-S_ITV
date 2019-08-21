@@ -20,7 +20,6 @@ import com.konkawise.dtv.SWEpgManager;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.SWTimerManager;
-import com.konkawise.dtv.UIApiManager;
 import com.konkawise.dtv.WeakToolManager;
 import com.konkawise.dtv.base.BaseDialog;
 import com.konkawise.dtv.bean.DateModel;
@@ -176,24 +175,22 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
 
         @Override
         protected void runTimer() {
-            EpgEvent_t currPfInfo = UIApiManager.getInstance().getCurrProgPFInfo();
+            PDPMInfo_t currProgInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
+            EpgEvent_t currPfInfo = null;
             EpgEvent_t nextPfInfo = null;
-            EpgEvent_t pfInfo = null;
-            if (currPfInfo != null) {
-                nextPfInfo = SWEpgManager.getInstance().getNextEitOfService(currPfInfo.sNextveit_index);
-                if (nextPfInfo != null) {
-                    pfInfo = SWEpgManager.getInstance().getNextEitOfService(nextPfInfo.sNextveit_index);
-                }
+            if (currProgInfo != null) {
+                currPfInfo = SWEpgManager.getInstance().getPfEitOfServID(currProgInfo.Sat, currProgInfo.TsID, currProgInfo.ServID, 0);
+                nextPfInfo = SWEpgManager.getInstance().getPfEitOfServID(currProgInfo.Sat, currProgInfo.TsID, currProgInfo.ServID, 1);
             }
 
+            final EpgEvent_t currPf = currPfInfo;
             final EpgEvent_t nextPf = nextPfInfo;
-            final EpgEvent_t nnextPf = pfInfo;
             PfBarScanDialog dialog = mWeakReference.get();
             dialog.sHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    dialog.updateProgInfo(currPfInfo);
-                    dialog.updateProgInformation(nextPf, nnextPf);
+                    dialog.updateProgInfo(currPf);
+                    dialog.updateProgInformation(currPf, nextPf);
                 }
             });
         }
@@ -218,15 +215,15 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
             mTvRateNum.setText(String.valueOf(currPfInfo != null ? currPfInfo.Rating : 0));
             mTvSoundNum.setText(String.valueOf(currProgInfo.audioDB.audioName.size()));
 
-            mIvProgFav.setVisibility(currProgInfo.FavFlag == 1 ? View.VISIBLE : View.INVISIBLE);
+            mIvProgFav.setVisibility(currProgInfo.FavFlag >= 1 ? View.VISIBLE : View.INVISIBLE);
             mIvProgLock.setVisibility(currProgInfo.LockFlag == 1 ? View.VISIBLE : View.INVISIBLE);
             mIvProgPay.setVisibility(currProgInfo.CasFlag == 1 ? View.VISIBLE : View.INVISIBLE);
         }
     }
 
-    private void updateProgInformation(EpgEvent_t nextPfInfo, EpgEvent_t pfInfo) {
-        if (nextPfInfo != null) mTvInformation1.setText(getInformation(nextPfInfo));
-        if (pfInfo != null) mTvInformation2.setText(getInformation(pfInfo));
+    private void updateProgInformation(EpgEvent_t currPfInfo, EpgEvent_t nextPfInfo) {
+        mTvInformation1.setText(getInformation(currPfInfo));
+        mTvInformation2.setText(getInformation(nextPfInfo));
     }
 
     private String getInformation(EpgEvent_t info) {

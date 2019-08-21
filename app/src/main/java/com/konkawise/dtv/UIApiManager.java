@@ -84,11 +84,4 @@ public class UIApiManager {
     public ArrayList<EpgEvent_t> getCurrProgSchInfo(int dayIndex) {
         return UIAPI.CreateInstance().getCurrProgSchInfo(dayIndex);
     }
-
-    /**
-     * PfBar播放当前节目信息
-     */
-    public EpgEvent_t getCurrProgPFInfo() {
-        return UIAPI.CreateInstance().getCurrProgPFInfo();
-    }
 }

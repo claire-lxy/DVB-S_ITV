@@ -207,9 +207,10 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
             switch (msg.what) {
                 case MSG_PLAY_SELECT_PROG:
                     int conditon = msg.arg1;
-                    int ProgNo = context.mProgAdapter.getItem(context.mCurrProgSelectPosition).ProgNo;
-                    SWPDBaseManager.getInstance().setCurrProgNo(ProgNo);
-                    UIApiManager.getInstance().startPlayProgNo(ProgNo, conditon);
+                    PDPMInfo_t currProgInfo = context.mProgAdapter.getItem(context.mCurrProgSelectPosition);
+                    SWPDBaseManager.getInstance().setCurrProgNo(currProgInfo.ProgNo);
+                    UIApiManager.getInstance().startPlayProgNo(currProgInfo.ProgNo, conditon);
+                    SWEpgManager.getInstance().sentDataReq(currProgInfo.Sat, currProgInfo.TsID, currProgInfo.ServID); // 通知底层立即搜索该频道的EPG
                     break;
                 case MSG_PROG_CHANGE_LOAD:
                     context.updateEpgChannel(msg.arg1);
