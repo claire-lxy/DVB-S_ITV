@@ -1398,7 +1398,6 @@ public class Topmost extends BaseActivity {
                     @Override
                     public void onPositiveListener() {
                         SWFtaManager.getInstance().factoryReset();
-                        SWFtaManager.getInstance().setCommPWDInfo(SWFta.E_E2PP.E2P_Password.ordinal(), "null");
                         toggleMenu();
                         showSettingPasswordDialog();
                     }
@@ -1517,6 +1516,7 @@ public class Topmost extends BaseActivity {
             @Override
             public void onSavePassword(String password) {
                 SWFtaManager.getInstance().setCommPWDInfo(SWFta.E_E2PP.E2P_Password.ordinal(), password);
+                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_FirstOpen.ordinal(), 0);
 
                 dismissSettingPasswordDialog();
 

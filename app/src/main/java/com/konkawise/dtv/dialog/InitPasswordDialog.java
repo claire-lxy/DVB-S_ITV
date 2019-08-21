@@ -1,6 +1,7 @@
 package com.konkawise.dtv.dialog;
 
 import android.content.DialogInterface;
+import android.text.Editable;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -14,6 +15,7 @@ import com.konkawise.dtv.view.LastInputEditText;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import butterknife.OnTextChanged;
 
 public class InitPasswordDialog extends BaseDialogFragment {
     public static final String TAG = "InitPasswordDialog";
@@ -34,6 +36,13 @@ public class InitPasswordDialog extends BaseDialogFragment {
             if (mOnSavePasswordListener != null) {
                 mOnSavePasswordListener.onSavePassword(mEtInitPassword.getText().toString());
             }
+        }
+    }
+
+    @OnTextChanged(value = R.id.et_init_password, callback = OnTextChanged.Callback.AFTER_TEXT_CHANGED)
+    void initPasswordTextChange(Editable editable) {
+        if (editable.length() >= 4) {
+            mEtConfirmInitPassword.requestFocus();
         }
     }
 

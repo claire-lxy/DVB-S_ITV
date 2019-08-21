@@ -231,8 +231,12 @@ public class SWFtaManager {
         SWFta.CreateInstance().setDiskUUID(uuid);
     }
 
+    /**
+     * 是否为第一次开启启动没有密码
+     * <p>
+     * SWFta.E_E2PP.E2P_FirstOpen.ordinal()==1表示第一次启动，SWFta.E_E2PP.E2P_FirstOpen.ordinal()==0表示不是第一次启动
+     */
     public boolean isPasswordEmpty() {
-        String password = getCommPWDInfo(SWFta.E_E2PP.E2P_Password.ordinal());
-        return TextUtils.isEmpty(password) || TextUtils.equals(password, "null");
+        return getCommE2PInfo(SWFta.E_E2PP.E2P_FirstOpen.ordinal()) == 1;
     }
 }
