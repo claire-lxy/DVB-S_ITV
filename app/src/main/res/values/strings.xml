@@ -43,6 +43,7 @@
     <string name="q">Q</string>
     <string name="rename">Rename</string>
     <string name="lock">Lock</string>
+    <string name="unlock">unLock</string>
     <string name="skip">Skip</string>
     <string name="pid">PID</string>
     <string name="single_satellite_search">Single Satellite Search</string>

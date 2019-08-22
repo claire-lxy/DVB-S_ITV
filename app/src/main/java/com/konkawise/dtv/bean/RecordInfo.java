@@ -7,7 +7,7 @@ import vendor.konka.hardware.dtvmanager.V1_0.HPVR_RecFile_t;
 
 public class RecordInfo implements Serializable{
     private File recordFile;
-    private static HPVR_RecFile_t mHpvrRecFileT;
+    private HPVR_RecFile_t mHpvrRecFileT;
 
     public RecordInfo() {
 

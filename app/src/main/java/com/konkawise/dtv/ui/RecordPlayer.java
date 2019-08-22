@@ -374,7 +374,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         switchPlayTypeUI(TYPE_PLAY, -1);
         showControlUI(true);
         sendUpgradePrgressMsg(new HandlerMsgModel(PlayHandler.MSG_UPGRADE_PROGRESS));
-        recordInfo = (RecordInfo) getIntent().getSerializableExtra(Constants.IntentKey.INTENT_RECORD_INFO);
+        recordInfo = RecordListActivity.mAdapter.getItem(getIntent().getIntExtra(Constants.IntentKey.INTENT_RECORD_POSITION, 0));
         initUIContent(recordInfo.getFile().getName(), 0);
         SWDJAPVRManager.getInstance().startPlay(recordInfo.getFile().getParent() + "/", recordInfo.getFile().getName(), 0);
     }
@@ -382,7 +382,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     private void playNextRecord() {
         SWDJAPVRManager.getInstance().stopPlay();
         if (recordList == null || recordList.size() == 0) {
-            recordList = (List<RecordInfo>) getIntent().getSerializableExtra(Constants.IntentKey.INTENT_RECORD_LIST);
+            recordList = RecordListActivity.mAdapter.getData();
             for (int i = 0; i < recordList.size(); i++) {
                 if (recordList.contains(recordInfo)) {
                     currRecordPosition = i;

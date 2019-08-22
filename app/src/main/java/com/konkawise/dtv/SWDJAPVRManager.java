@@ -94,6 +94,10 @@ public class SWDJAPVRManager {
         return DJAPVR.CreateInstance().playResume();
     }
 
+    public int lockRecordFile(String path, String fname, int lock) {
+        return DJAPVR.CreateInstance().lockRecordFile(path, fname, lock);
+    }
+
     public void setRecording(boolean recording) {
         this.mRecording = recording;
     }

@@ -3,6 +3,7 @@ package com.konkawise.dtv.ui;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.text.TextUtils;
 import android.util.Log;
@@ -10,6 +11,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;
@@ -30,7 +32,6 @@ import com.konkawise.dtv.permission.PermissionHelper;
 import com.konkawise.dtv.weaktool.WeakRunnable;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -40,10 +41,12 @@ import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
 import vendor.konka.hardware.dtvmanager.V1_0.HPVR_RecFile_t;
-import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 
 public class RecordListActivity extends BaseActivity implements UsbManager.OnUsbReceiveListener {
     private static final String TAG = "RecordListActivity";
+
+    private static final int TYPE_PASSWORD_PLAY = 0;
+    private static final int TYPE_PASSWORD_UNLOCK = 1;
 
     @BindView(R.id.lv_deivce)
     ListView mDeviceListView;
@@ -53,6 +56,9 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
 
     @BindView(R.id.ly_bottom)
     LinearLayout lyBottom;
+
+    @BindView(R.id.tv_lock)
+    TextView tvLock;
 
     @OnItemSelected(R.id.lv_deivce)
     void onDeviceItemSelect(int position) {
@@ -77,6 +83,11 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     void onChannelItemSelect(int position) {
         Log.i(TAG, "Record selection:" + position);
         mCurrRecordPosition = position;
+        if (mAdapter.getItem(position).getHpvrRecFileT().LockType == 1) {
+            tvLock.setText(getResources().getString(R.string.unlock));
+        } else {
+            tvLock.setText(getResources().getString(R.string.lock));
+        }
     }
 
     @OnFocusChange(R.id.lv_record_channel_list)
@@ -87,15 +98,15 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
 
     @OnItemClick(R.id.lv_record_channel_list)
     void onChannelItemClick(int position) {
-//        if (mAdapter.getData().get(mCurrRecordPosition).LockFlag == 1) {
-//            showPasswordDialog();
-//        }
-        Intent intent = new Intent();
-        intent.setClass(this, RecordPlayer.class);
-        intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, RecordPlayer.FROM_RECORD_LIST);
-        intent.putExtra(Constants.IntentKey.INTENT_RECORD_INFO, mAdapter.getItem(position));
-        intent.putExtra(Constants.IntentKey.INTENT_RECORD_LIST, (Serializable) mAdapter.getData());
-        startActivity(intent);
+        if (mAdapter.getData().get(mCurrRecordPosition).getHpvrRecFileT() != null && mAdapter.getData().get(mCurrRecordPosition).getHpvrRecFileT().LockType == 1) {
+            showPasswordDialog(TYPE_PASSWORD_PLAY);
+        } else {
+            Intent intent = new Intent();
+            intent.setClass(this, RecordPlayer.class);
+            intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, RecordPlayer.FROM_RECORD_LIST);
+            intent.putExtra(Constants.IntentKey.INTENT_RECORD_POSITION, position);
+            startActivity(intent);
+        }
     }
 
     private int mCurrDevicePostion;
@@ -103,7 +114,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     private List<UsbInfo> mUsbInfos = new ArrayList<>();
     List<HPVR_RecFile_t> ltHpvrRecFileTS = new ArrayList<>();
     private DeviceGroupAdapter deviceGroupAdapter;
-    private RecordListAdapter mAdapter;
+    public static RecordListAdapter mAdapter;
     private LoadRecordListRunnable loadRecordListRunnable;
 
     @Override
@@ -250,27 +261,31 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
 
     }
 
-    private void lockChannels() {
-//        List<PDPMInfo_t> recordList = mAdapter.getData();
-//        if (recordList == null || recordList.isEmpty()) return;
-//
-//        if (isMulti()) {
-//            for (int i = 0; i < recordList.size(); i++) {
-//                if (mAdapter.getSelectMap().get(i)) {
-//                    lockChannel(recordList, i);
-//                }
-//            }
-//        } else {
-//            lockChannel(recordList, mCurrRecordPosition);
-//        }
-//
-//        mAdapter.clearSelect();
+    private void lockChannels(int lockType) {
+        List<RecordInfo> recordList = mAdapter.getData();
+        if (recordList == null || recordList.isEmpty()) return;
+
+        if (isMulti()) {
+            for (int i = 0; i < recordList.size(); i++) {
+                if (mAdapter.getSelectMap().get(i)) {
+                    lockChannel(recordList, i, lockType);
+                }
+            }
+        } else {
+            lockChannel(recordList, mCurrRecordPosition, lockType);
+        }
+
+        mAdapter.clearSelect();
+        mAdapter.updateData(recordList);
+        tvLock.setText(lockType == 1 ? getResources().getString(R.string.unlock) : getResources().getString(R.string.lock));
     }
 
-    private void lockChannel(List<PDPMInfo_t> recordList, int position) {
-//        PDPMInfo_t recordInfo = recordList.get(position);
-//        recordInfo.LockFlag = recordInfo.LockFlag == 1 ? 0 : 1;
-//        mAdapter.updateData(position, recordInfo);
+    private void lockChannel(List<RecordInfo> recordList, int position, int lockType) {
+        RecordInfo recordInfo = recordList.get(position);
+        recordInfo.getHpvrRecFileT().LockType = lockType;
+
+        Log.i(TAG, "lockPath:" + recordInfo.getFile().getParent() + "lockName:" + recordInfo.getFile().getName());
+        SWDJAPVRManager.getInstance().lockRecordFile(recordInfo.getFile().getParent(), recordInfo.getFile().getName(), lockType);
     }
 
     private void deleteChannels() {
@@ -299,11 +314,20 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         recordList.removeAll(removeInfos);
     }
 
-    private void showPasswordDialog() {
+    private void showPasswordDialog(int type) {
         new PasswordDialog()
                 .setOnPasswordInputListener(new PasswordDialog.OnPasswordInputListener() {
                     @Override
                     public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
+                        if (type == TYPE_PASSWORD_PLAY) {
+                            Intent intent = new Intent();
+                            intent.setClass(RecordListActivity.this, RecordPlayer.class);
+                            intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, RecordPlayer.FROM_RECORD_LIST);
+                            intent.putExtra(Constants.IntentKey.INTENT_RECORD_POSITION, mCurrRecordPosition);
+                            startActivity(intent);
+                        } else {
+                            lockChannels(0);
+                        }
 
                     }
                 }).show(getSupportFragmentManager(), PasswordDialog.TAG);
@@ -368,7 +392,11 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
 
         if (keyCode == KeyEvent.KEYCODE_PROG_YELLOW) {
             if (lyBottom.getVisibility() == View.VISIBLE) {
-                lockChannels();
+                if (mAdapter.getItem(mCurrRecordPosition).getHpvrRecFileT().LockType == 1) {
+                    showPasswordDialog(TYPE_PASSWORD_UNLOCK);
+                } else {
+                    lockChannels(1);
+                }
                 return true;
             }
         }
