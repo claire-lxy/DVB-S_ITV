@@ -50,7 +50,7 @@ public class RealTimeManager {
             UtcTime_t utcTime_t = new UtcTime_t();
             utcTime_t.utcdate = utcdate;
             utcTime_t.utctime = utctime;
-            SysTime_t sysTime = SWTimerManager.getInstance().mjdToLocal(utcTime_t, false);
+            SysTime_t sysTime = SWTimerManager.getInstance().mjdToLocal(utcTime_t);
             if (sysTime != null) {
                 String time = sysTime.Year + "-" +
                         (sysTime.Month < 10 ? "0" + sysTime.Month : sysTime.Month) + "-" +

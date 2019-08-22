@@ -74,89 +74,84 @@
 
                     <TextView
                         android:id="@+id/tv_current_date"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="5dp"
                         android:layout_marginLeft="5dp"
+                        android:layout_weight="1"
+                        android:textColor="@color/epg_text_normal"
+                        android:textSize="16sp"
+                        tools:text="2019-08-22" />
+
+                    <Button
+                        android:id="@+id/btn_date_0"
+                        android:layout_width="0dp"
+                        android:layout_height="25dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/dvb_btn_selector"
+                        android:text="@string/monday"
                         android:textColor="@color/epg_text_normal"
                         android:textSize="16sp" />
 
                     <Button
-                        android:id="@+id/btn_date_0"
-                        android:layout_width="70dp"
-                        android:layout_height="25dp"
-                        android:layout_marginStart="12dp"
-                        android:layout_marginLeft="12dp"
-                        android:background="@drawable/dvb_btn_selector"
-                        android:text="@string/monday"
-                        android:textColor="@color/epg_text_normal"
-                        android:textSize="18sp" />
-
-                    <Button
                         android:id="@+id/btn_date_1"
-                        android:layout_width="70dp"
+                        android:layout_width="0dp"
                         android:layout_height="25dp"
-                        android:layout_marginStart="18.5dp"
-                        android:layout_marginLeft="18.5dp"
+                        android:layout_weight="1"
                         android:background="@drawable/dvb_btn_selector"
                         android:text="@string/tuesday"
                         android:textColor="@color/epg_text_normal"
-                        android:textSize="18sp" />
+                        android:textSize="16sp" />
 
                     <Button
                         android:id="@+id/btn_date_2"
-                        android:layout_width="70dp"
+                        android:layout_width="0dp"
                         android:layout_height="25dp"
-                        android:layout_marginStart="18.5dp"
-                        android:layout_marginLeft="18.5dp"
+                        android:layout_weight="1"
                         android:background="@drawable/dvb_btn_selector"
                         android:text="@string/wednesday"
                         android:textColor="@color/epg_text_normal"
-                        android:textSize="18sp" />
+                        android:textSize="16sp" />
 
                     <Button
                         android:id="@+id/btn_date_3"
-                        android:layout_width="70dp"
+                        android:layout_width="0dp"
                         android:layout_height="25dp"
-                        android:layout_marginStart="18.5dp"
-                        android:layout_marginLeft="18.5dp"
+                        android:layout_weight="1"
                         android:background="@drawable/dvb_btn_selector"
                         android:text="@string/thursday"
                         android:textColor="@color/epg_text_normal"
-                        android:textSize="18sp" />
+                        android:textSize="16sp" />
 
                     <Button
                         android:id="@+id/btn_date_4"
-                        android:layout_width="70dp"
+                        android:layout_width="0dp"
                         android:layout_height="25dp"
-                        android:layout_marginStart="18.5dp"
-                        android:layout_marginLeft="18.5dp"
+                        android:layout_weight="1"
                         android:background="@drawable/dvb_btn_selector"
                         android:text="@string/friday"
                         android:textColor="@color/epg_text_normal"
-                        android:textSize="18sp" />
+                        android:textSize="16sp" />
 
                     <Button
                         android:id="@+id/btn_date_5"
-                        android:layout_width="70dp"
+                        android:layout_width="0dp"
                         android:layout_height="25dp"
-                        android:layout_marginStart="18.5dp"
-                        android:layout_marginLeft="18.5dp"
+                        android:layout_weight="1"
                         android:background="@drawable/dvb_btn_selector"
                         android:text="@string/saturday"
                         android:textColor="@color/epg_text_normal"
-                        android:textSize="18sp" />
+                        android:textSize="16sp" />
 
                     <Button
                         android:id="@+id/btn_date_6"
-                        android:layout_width="70dp"
+                        android:layout_width="0dp"
                         android:layout_height="25dp"
-                        android:layout_marginStart="18.5dp"
-                        android:layout_marginLeft="18.5dp"
+                        android:layout_weight="1"
                         android:background="@drawable/dvb_btn_selector"
                         android:text="@string/sunday"
                         android:textColor="@color/epg_text_normal"
-                        android:textSize="18sp" />
+                        android:textSize="16sp" />
                 </LinearLayout>
 
                 <View

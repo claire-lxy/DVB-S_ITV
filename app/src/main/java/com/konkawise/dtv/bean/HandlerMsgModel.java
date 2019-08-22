@@ -21,6 +21,11 @@ public class HandlerMsgModel {
         this.arg1 = arg1;
     }
 
+    public HandlerMsgModel(int what, Object obj) {
+        this.what = what;
+        this.obj = obj;
+    }
+
     public HandlerMsgModel(int what, int arg1, long delay) {
         this.what = what;
         this.arg1 = arg1;

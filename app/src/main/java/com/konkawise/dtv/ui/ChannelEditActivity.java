@@ -2,7 +2,6 @@ package com.konkawise.dtv.ui;
 
 import android.support.annotation.IntDef;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.view.KeyEvent;

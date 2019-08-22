@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ListView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -106,6 +107,10 @@ public abstract class BaseListViewAdapter<T> extends BaseAdapter {
     public void clearData() {
         mDatas.clear();
         notifyDataSetChanged();
+    }
+
+    public boolean isPositionValid(ListView listView) {
+        return getCount() > 0 && listView.getSelectedItemPosition() < getCount();
     }
 
     public BaseListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
