@@ -49,6 +49,26 @@
     <string name="single_satellite_search">单卫星搜索</string>
     <string name="multi_satellite_search">多卫星搜索</string>
 
+    <!--Audio Language Type-->
+    <string name="audio_language_type_private">PRIVATE</string>
+    <string name="audio_language_type_mpeg1">MPEG1</string>
+    <string name="audio_language_type_mpeg2">MPEG2</string>
+    <string name="audio_language_type_aac">AAC</string>
+    <string name="audio_language_type_ac3">AC3</string>
+    <string name="audio_language_type_ac3_plus">AC3+</string>
+    <string name="audio_language_type_dts">DTS</string>
+    <string name="audio_language_type_lpcm">LPCM</string>
+    <string name="audio_language_type_wm9">WM9</string>
+    <string name="audio_language_type_mheg">MHEG</string>
+    <string name="audio_language_type_dsm_cc">DSM CC</string>
+    <string name="audio_language_type_h2221">TYPE H2221</string>
+    <string name="audio_language_type_a">TYPE A</string>
+    <string name="audio_language_type_b">TYPE B</string>
+    <string name="audio_language_type_c">TYPE C</string>
+    <string name="audio_language_type_d">TYPE D</string>
+    <string name="audio_language_type_aux">TYPE AUX</string>
+    <string name="audio_language_type_unknown">Unknown</string>
+
     <!--Motor-->
     <string name="motor_01">马达</string>
 
@@ -76,7 +96,7 @@
 
     <!--DVB setting-->
     <string name="general_setting">General Setting</string>
-	<string name="t2_setting">T/T2 Settings</string>
+    <string name="t2_setting">T/T2 Settings</string>
     <string name="subtitles_setting">Subtitle Display</string>
     <string name="timeout">P/F Bar Timeout</string>
     <string name="ratio_mode">Ratio Mode</string>
@@ -88,7 +108,7 @@
     <string name="teletext_language">Teletext Language</string>
     <string name="subtitle_language">Subtitle Language</string>
     <string name="switch_channel_block">Blank</string>
-	<string name="scart">SCART</string>
+    <string name="scart">SCART</string>
     <string name="scart_mode_rgb">RGB</string>
     <string name="scart_mode_cvbs">CVBS</string>
     <string name="auto_start">Auto Start</string>
