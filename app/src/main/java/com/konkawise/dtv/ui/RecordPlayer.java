@@ -27,20 +27,29 @@ import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.bean.HandlerMsgModel;
 import com.konkawise.dtv.bean.RecordInfo;
 import com.konkawise.dtv.bean.UsbInfo;
+import com.konkawise.dtv.dialog.AudioDialog;
+import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.SeekTimeDialog;
+import com.konkawise.dtv.dialog.SubtitleDialog;
+import com.konkawise.dtv.dialog.TeletextDialog;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.sw.dvblib.SWFta;
 import com.sw.dvblib.msg.cb.AVMsgCB;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
 import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.HPVR_Progress_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HSubtitle_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HTeletext_t;
+import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 
 public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiveListener {
     private static final String TAG = "RecordPlayer";
@@ -357,8 +366,101 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
             case KeyEvent.KEYCODE_INFO:
                 showControlUI(true);
                 return true;
+
+            case KeyEvent.KEYCODE_MEDIA_AUDIO_TRACK:
+                showAudioDialog();
+                return true;
+
+            case KeyEvent.KEYCODE_F3:
+                showSubtitleDialog();
+                return true;
+
+            case KeyEvent.KEYCODE_TV_TELETEXT:
+                showTeletextDialog();
+                return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    private void showAudioDialog() {
+        new AudioDialog().title(getString(R.string.audio)).where(AudioDialog.WHERE_RECORDPLAYER).show(getSupportFragmentManager(), AudioDialog.TAG);
+    }
+
+    private void showSubtitleDialog() {
+
+        int currSubtitle = 0;
+        int serviceid;
+        if (from == FROM_TOPMOST) {
+            serviceid = SWPDBaseManager.getInstance().getCurrProgInfo().ServID;
+        } else {
+            serviceid = recordInfo.getHpvrRecFileT().ServId;
+        }
+        Log.i("testljm","serviceid2:"+serviceid);
+        int num = SWFtaManager.getInstance().getSubtitleNum(serviceid);
+        final int[] pids = new int[num];
+        List<HashMap<String, Object>> subtitles = new ArrayList<>();
+        HashMap<String, Object> off = new HashMap<>();
+        off.put(Constants.SUBTITLE_NAME, "OFF");
+        subtitles.add(off);
+        for (int index = 0; index < num; index++) {
+            HSubtitle_t subtitle = SWFtaManager.getInstance().getSubtitleInfo(serviceid, index);
+            if (subtitle.used != 0) {
+                pids[index] = subtitle.Pid;
+                HashMap<String, Object> map = new HashMap<>();
+                map.put(Constants.SUBTITLE_NAME, subtitle.Name);
+                map.put(Constants.SUBTITLE_ORG_TYPE, subtitle.OrgType == 0);
+                map.put(Constants.SUBTITLE_TYPE, (subtitle.Type >= 0x20 && subtitle.Type <= 0x24) || subtitle.Type == 0x05);
+                subtitles.add(map);
+                if (SWFtaManager.getInstance().getCurSubtitleInfo(serviceid).Name.equals(subtitle.Name))
+                    currSubtitle = index;
+            }
+        }
+
+        new SubtitleDialog()
+                .title(getString(R.string.subtitle))
+                .content(subtitles)
+                .position(currSubtitle)
+                .setOnDismissListener(new SubtitleDialog.OnDismissListener() {
+                    @Override
+                    public void onDismiss(SubtitleDialog dialog, int position, String checkContent) {
+                        if (position > 0)
+                            SWFtaManager.getInstance().openSubtitle(pids[position - 1]);
+                    }
+                }).show(getSupportFragmentManager(), SubtitleDialog.TAG);
+    }
+
+    private void showTeletextDialog() {
+
+        int currTeleText = 0;
+        int serviceid;
+        if (from == FROM_TOPMOST) {
+            serviceid = SWPDBaseManager.getInstance().getCurrProgInfo().ServID;
+        } else {
+            serviceid = recordInfo.getHpvrRecFileT().ServId;
+        }
+        int num = SWFtaManager.getInstance().getTeletextNum(serviceid);
+        final int[] pids = new int[num];
+        String[] teletextNames = new String[num + 1];
+        teletextNames[0] = "OFF";
+        for (int index = 0; index < num; index++) {
+            HTeletext_t teletext = SWFtaManager.getInstance().getTeletextInfo(serviceid, index);
+            if (teletext.used != 0) {
+                teletextNames[index + 1] = teletext.Name;
+                pids[index] = teletext.Pid;
+            }
+        }
+
+        new TeletextDialog()
+                .title(getString(R.string.teletext))
+                .content(Arrays.asList(teletextNames))
+                .position(currTeleText)
+                .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
+                    @Override
+                    public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
+                        if (position > 0)
+                            SWFtaManager.getInstance().openTeletext(pids[position - 1]);
+                    }
+                }).show(getSupportFragmentManager(), "teletext");
     }
 
     private void play() {

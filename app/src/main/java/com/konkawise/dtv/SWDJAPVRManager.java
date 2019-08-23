@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 import vendor.konka.hardware.dtvmanager.V1_0.HPVR_Progress_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HPVR_RecFile_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_AudDB_t;
 
 public class SWDJAPVRManager {
     private boolean mRecording;
@@ -96,6 +97,18 @@ public class SWDJAPVRManager {
 
     public int lockRecordFile(String path, String fname, int lock) {
         return DJAPVR.CreateInstance().lockRecordFile(path, fname, lock);
+    }
+
+    public HProg_AudDB_t getAudioList() {
+        return DJAPVR.CreateInstance().getAudioList();
+    }
+
+    public int getCurrAudioIndex() {
+        return DJAPVR.CreateInstance().getCurrAudioIndex();
+    }
+
+    public int setAudioPid(int audPID, int audioType) {
+        return DJAPVR.CreateInstance().setAudioPid(audPID, audioType);
     }
 
     public void setRecording(boolean recording) {

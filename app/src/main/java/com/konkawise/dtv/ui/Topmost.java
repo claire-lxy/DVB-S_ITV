@@ -1468,6 +1468,7 @@ public class Topmost extends BaseActivity {
         for (int index = 0; index < num; index++) {
             HSubtitle_t subtitle = SWFtaManager.getInstance().getSubtitleInfo(serviceid, index);
             if (subtitle.used != 0) {
+                pids[index] = subtitle.Pid;
                 HashMap<String, Object> map = new HashMap<>();
                 map.put(Constants.SUBTITLE_NAME, subtitle.Name);
                 map.put(Constants.SUBTITLE_ORG_TYPE, subtitle.OrgType == 0);
@@ -1525,7 +1526,7 @@ public class Topmost extends BaseActivity {
     private void showAudioDialog() {
         if (!SWPDBaseManager.getInstance().isProgCanPlay()) return;
 
-        new AudioDialog().title(getString(R.string.audio)).show(getSupportFragmentManager(), AudioDialog.TAG);
+        new AudioDialog().title(getString(R.string.audio)).where(AudioDialog.WHERE_TOPMOST).show(getSupportFragmentManager(), AudioDialog.TAG);
     }
 
     private void showSettingPasswordDialog() {

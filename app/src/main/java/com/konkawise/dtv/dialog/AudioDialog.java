@@ -13,12 +13,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.konkawise.dtv.R;
+import com.konkawise.dtv.SWDJAPVRManager;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.base.BaseDialogFragment;
 import com.sw.dvblib.SWFta;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindArray;
 import butterknife.BindView;
@@ -29,6 +31,9 @@ public class AudioDialog extends BaseDialogFragment {
     public static final String TAG = "AudioDialog";
     private static final int ITEM_AUDIO_TRACK = 1;
     private static final int ITEM_AUDIO_LANGUAGE = 2;
+
+    public static final int WHERE_TOPMOST = 0;
+    public static final int WHERE_RECORDPLAYER = 1;
 
     @BindView(R.id.tv_title)
     TextView mTv_title;
@@ -55,7 +60,10 @@ public class AudioDialog extends BaseDialogFragment {
     String[] mAudioTrackArray;
 
     private String mTitle;
+    private int where;
     private String[] mAudioLanguageArray;
+    private List<Integer> audioTypeList = new ArrayList<>();
+    private List<Integer> audioPidList = new ArrayList<>();
     private int mCurrentSelectItem = ITEM_AUDIO_TRACK;
     private int audioTrackPosition;
     private int audioLanguagePosition;
@@ -72,18 +80,35 @@ public class AudioDialog extends BaseDialogFragment {
         audioTrackPosition = SWFtaManager.getInstance().getCurrProgParam(SWFta.OSDFTA_TRACK);
         mTvAudioTrack.setText(mAudioTrackArray[audioTrackPosition]);
 
-        audioLanguagePosition = SWFtaManager.getInstance().getCurrProgParam(SWFta.OSDFTA_AUDIO);
-        ArrayList<String> audioNameList = SWPDBaseManager.getInstance().getCurrProgInfo().audioDB.audioName;
-        ArrayList<Integer> audioTypeList = SWPDBaseManager.getInstance().getCurrProgInfo().audioDB.ucAudStrType;
-        mAudioLanguageArray = new String[audioNameList.size()];
-        for (int i = 0, j = 1; i < audioNameList.size(); i++) {
-            Log.i(TAG, "audioNameList[" + i + "] : " + audioNameList.get(i) + " AudioTypeList[" + i + "] : " + audioTypeList.get(i));
-            mAudioLanguageArray[i] = audioNameList.get(i);
-            if (mAudioLanguageArray[i].equals("Audio"))
-                mAudioLanguageArray[i] = "Audio" + j++;
-            mAudioLanguageArray[i] = mAudioLanguageArray[i] + "(" + getAudioNameByType(audioTypeList.get(i)) + ")";
+        if (where == WHERE_TOPMOST) {
+            audioLanguagePosition = SWFtaManager.getInstance().getCurrProgParam(SWFta.OSDFTA_AUDIO);
+            ArrayList<String> audioNameList = SWPDBaseManager.getInstance().getCurrProgInfo().audioDB.audioName;
+            audioTypeList = SWPDBaseManager.getInstance().getCurrProgInfo().audioDB.ucAudStrType;
+            mAudioLanguageArray = new String[audioNameList.size()];
+            for (int i = 0, j = 1; i < audioNameList.size(); i++) {
+                Log.i(TAG, "audioNameList[" + i + "]: " + audioNameList.get(i) + " AudioTypeList[" + i + "]: " + audioTypeList.get(i));
+                mAudioLanguageArray[i] = audioNameList.get(i);
+                if (mAudioLanguageArray[i].equals("Audio"))
+                    mAudioLanguageArray[i] = "Audio" + j++;
+                mAudioLanguageArray[i] = mAudioLanguageArray[i] + "(" + getAudioNameByType(audioTypeList.get(i)) + ")";
+            }
+            mTvAudioLanguage.setText(mAudioLanguageArray[audioLanguagePosition]);
+        } else {
+            audioLanguagePosition = SWDJAPVRManager.getInstance().getCurrAudioIndex();
+            ArrayList<String> audioNameList = SWDJAPVRManager.getInstance().getAudioList().audioName;
+            audioTypeList = SWDJAPVRManager.getInstance().getAudioList().ucAudStrType;
+            audioPidList = SWDJAPVRManager.getInstance().getAudioList().sAudPid;
+            mAudioLanguageArray = new String[audioNameList.size()];
+            for (int i = 0, j = 1; i < audioNameList.size(); i++) {
+                Log.i(TAG, "audioNameList2[" + i + "] : " + audioNameList.get(i) + " AudioTypeList2[" + i + "] : " + audioTypeList.get(i));
+                mAudioLanguageArray[i] = audioNameList.get(i);
+                if (mAudioLanguageArray[i].equals("Audio"))
+                    mAudioLanguageArray[i] = "Audio" + j++;
+                mAudioLanguageArray[i] = mAudioLanguageArray[i] + "(" + getAudioNameByType(audioTypeList.get(i)) + ")";
+            }
+            mTvAudioLanguage.setText(mAudioLanguageArray[audioLanguagePosition]);
         }
-        mTvAudioLanguage.setText(mAudioLanguageArray[audioLanguagePosition]);
+
 
         Log.i(TAG, "position = " + audioLanguagePosition);
         Log.i(TAG, "length = " + mAudioLanguageArray.length);
@@ -156,6 +181,11 @@ public class AudioDialog extends BaseDialogFragment {
         return this;
     }
 
+    public AudioDialog where(int where) {
+        this.where = where;
+        return this;
+    }
+
     public AudioDialog content(String[] content) {
         this.mAudioLanguageArray = content == null ? new String[0] : content;
         return this;
@@ -221,7 +251,12 @@ public class AudioDialog extends BaseDialogFragment {
                         if (--audioLanguagePosition < 0)
                             audioLanguagePosition = mAudioLanguageArray.length - 1;
                         mTvAudioLanguage.setText(mAudioLanguageArray[audioLanguagePosition]);
-                        SWFtaManager.getInstance().setCurrProgParam(SWFta.OSDFTA_AUDIO, audioLanguagePosition);
+                        if (where == WHERE_TOPMOST) {
+                            SWFtaManager.getInstance().setCurrProgParam(SWFta.OSDFTA_AUDIO, audioLanguagePosition);
+                        } else {
+                            SWDJAPVRManager.getInstance().setAudioPid(audioPidList.get(audioLanguagePosition), audioTypeList.get(audioLanguagePosition));
+                        }
+
                         break;
                 }
             }
