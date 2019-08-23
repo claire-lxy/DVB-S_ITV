@@ -215,7 +215,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         @Override
         protected void loadBackground() {
             RecordListActivity context = mWeakReference.get();
-            List<RecordInfo> ltRecordFiles = context.queryRecordFiles(context.mUsbInfos.get(context.mCurrDevicePostion).path + "/DTVRecordFiles/");
+            List<RecordInfo> ltRecordFiles = context.queryRecordFiles(context.mUsbInfos.get(context.mCurrDevicePostion).path + "/"+Constants.RECORD_LIST_PATH);
             context.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {

@@ -1,6 +1,7 @@
 package com.konkawise.dtv.weaktool;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 
 import com.konkawise.dtv.WeakToolManager;
@@ -11,6 +12,12 @@ public abstract class WeakHandler<T extends WeakToolInterface> extends Handler i
     protected WeakReference<T> mWeakReference;
 
     public WeakHandler(T view) {
+        mWeakReference = new WeakReference<>(view);
+        WeakToolManager.getInstance().addWeakTool(view, this);
+    }
+
+    public WeakHandler(T view, Looper looper) {
+        super(looper);
         mWeakReference = new WeakReference<>(view);
         WeakToolManager.getInstance().addWeakTool(view, this);
     }

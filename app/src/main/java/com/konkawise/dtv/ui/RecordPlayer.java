@@ -1,5 +1,7 @@
 package com.konkawise.dtv.ui;
 
+import android.os.Bundle;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
@@ -53,6 +55,8 @@ import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 
 public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiveListener {
     private static final String TAG = "RecordPlayer";
+
+    private static final String HANDLER_THREAD_NAME = "pvr_thread";
 
     private static final boolean LOOPER = false;
 
@@ -110,6 +114,8 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     private List<RecordInfo> recordList = new ArrayList<>();
 
     private AVMsgCB mPvrMsgCB = new PVRMsgCB();
+    private HandlerThread pvrThread;
+    private PVRHandler pvrHandler;
 
     private static class PlayHandler extends WeakHandler<RecordPlayer> {
 
@@ -153,6 +159,62 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         }
     }
 
+    private static class PVRHandler extends WeakHandler<RecordPlayer> {
+        static final int MSG_BEGIN_TIMESHIFT = 0;
+        static final int MSG_STOP_TIMESHIFT = 1;
+        static final int MSG_PLAY_RESUME = 2;
+        static final int MSG_START_PLAY = 3;
+        static final int MSG_STOP_PLAY = 4;
+        static final int MSG_PLAY_SEEK = 5;
+        static final int MSG_PLAY_SPEED = 6;
+        static final int MSG_PLAY_PAUSE = 7;
+
+        static final String KEY_PATH = "path";
+        static final String KEY_FNAME = "fname";
+        static final String KEY_LOOP = "loop";
+
+        public PVRHandler(RecordPlayer view, Looper looper) {
+            super(view, looper);
+        }
+
+        @Override
+        protected void handleMsg(Message msg) {
+            switch (msg.what) {
+                case MSG_BEGIN_TIMESHIFT:
+                    SWDJAPVRManager.getInstance().beginTimeshift();
+                    break;
+
+                case MSG_STOP_TIMESHIFT:
+                    SWDJAPVRManager.getInstance().stopTimeshift();
+                    break;
+
+                case MSG_PLAY_RESUME:
+                    SWDJAPVRManager.getInstance().playResume();
+                    break;
+
+                case MSG_START_PLAY:
+                    Bundle bundle = msg.getData();
+                    SWDJAPVRManager.getInstance().startPlay(bundle.getString(KEY_PATH), bundle.getString(KEY_FNAME), bundle.getInt(KEY_LOOP));
+                    break;
+
+                case MSG_STOP_PLAY:
+                    SWDJAPVRManager.getInstance().stopPlay();
+                    break;
+
+                case MSG_PLAY_SEEK:
+                    SWDJAPVRManager.getInstance().playSeek(msg.arg1);
+                    break;
+
+                case MSG_PLAY_SPEED:
+                    SWDJAPVRManager.getInstance().setPlaySpeed(msg.arg1);
+                    break;
+
+                case MSG_PLAY_PAUSE:
+                    SWDJAPVRManager.getInstance().playPause();
+            }
+        }
+    }
+
     @Override
     protected int getLayoutId() {
         return R.layout.activity_record_player;
@@ -187,6 +249,9 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
 
     private void init() {
         playHandler = new PlayHandler(this);
+        pvrThread = new HandlerThread(HANDLER_THREAD_NAME);
+        pvrThread.start();
+        pvrHandler = new PVRHandler(this, pvrThread.getLooper());
 
         from = getIntent().getIntExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, 0);
 
@@ -395,7 +460,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         } else {
             serviceid = recordInfo.getHpvrRecFileT().ServId;
         }
-        Log.i("testljm","serviceid2:"+serviceid);
+        Log.i("testljm", "serviceid2:" + serviceid);
         int num = SWFtaManager.getInstance().getSubtitleNum(serviceid);
         final int[] pids = new int[num];
         List<HashMap<String, Object>> subtitles = new ArrayList<>();
@@ -478,11 +543,18 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         sendUpgradePrgressMsg(new HandlerMsgModel(PlayHandler.MSG_UPGRADE_PROGRESS));
         recordInfo = RecordListActivity.mAdapter.getItem(getIntent().getIntExtra(Constants.IntentKey.INTENT_RECORD_POSITION, 0));
         initUIContent(recordInfo.getFile().getName(), 0);
-        SWDJAPVRManager.getInstance().startPlay(recordInfo.getFile().getParent() + "/", recordInfo.getFile().getName(), 0);
+        Message msg = pvrHandler.obtainMessage();
+        msg.what = PVRHandler.MSG_START_PLAY;
+        Bundle bundle = new Bundle();
+        bundle.putString(PVRHandler.KEY_PATH, recordInfo.getFile().getParent() + "/");
+        bundle.putString(PVRHandler.KEY_FNAME, recordInfo.getFile().getName());
+        bundle.putInt(PVRHandler.KEY_LOOP, 0);
+        msg.setData(bundle);
+        pvrHandler.sendMessage(msg);
     }
 
     private void playNextRecord() {
-        SWDJAPVRManager.getInstance().stopPlay();
+        pvrHandler.sendEmptyMessage(PVRHandler.MSG_STOP_PLAY);
         if (recordList == null || recordList.size() == 0) {
             recordList = RecordListActivity.mAdapter.getData();
             for (int i = 0; i < recordList.size(); i++) {
@@ -501,7 +573,14 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         switchPlayTypeUI(TYPE_PLAY, -1);
         showControlUI(true);
         initUIContent(recordInfo.getFile().getName(), 0);
-        SWDJAPVRManager.getInstance().startPlay(recordInfo.getFile().getParent() + "/", recordInfo.getFile().getName(), 0);
+        Message msg = pvrHandler.obtainMessage();
+        msg.what = PVRHandler.MSG_START_PLAY;
+        Bundle bundle = new Bundle();
+        bundle.putString(PVRHandler.KEY_PATH, recordInfo.getFile().getParent() + "/");
+        bundle.putString(PVRHandler.KEY_FNAME, recordInfo.getFile().getName());
+        bundle.putInt(PVRHandler.KEY_LOOP, 0);
+        msg.setData(bundle);
+        pvrHandler.sendMessage(msg);
     }
 
     private void playTimeShift() {
@@ -513,7 +592,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         showControlUI(false);
         initUIContent(getIntent().getStringExtra(Constants.IntentKey.INTENT_TIMESHIFT_PROGNUM) + "  " + SWPDBaseManager.getInstance().getCurrProgInfo().Name, totalDuration);
         sendUpgradePrgressMsg(new HandlerMsgModel(PlayHandler.MSG_UPGRADE_PROGRESS));
-        SWDJAPVRManager.getInstance().beginTimeshift();
+        pvrHandler.sendEmptyMessage(PVRHandler.MSG_BEGIN_TIMESHIFT);
     }
 
     private boolean gotoShiftEnd(int currMS, int endMS, int seekNum) {
@@ -527,22 +606,25 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         switchPlayTypeUI(TYPE_PLAY, -1);
         showControlUI(true);
 //        playHandler.sendEmptyMessage(PlayHandler.MSG_UPGRADE_PROGRESS);  //导致暂停图标不显示，后续需排查原因
-        SWDJAPVRManager.getInstance().playResume();
+        pvrHandler.sendEmptyMessage(PVRHandler.MSG_PLAY_RESUME);
     }
 
     private void jump(int currMS) {
         Log.i(TAG, "jump:" + currMS);
         switchPlayTypeUI(TYPE_PLAY, -1);
         showControlUI(true);
-        SWDJAPVRManager.getInstance().playSeek(currMS);
-        SWDJAPVRManager.getInstance().playResume();
+        Message msg = pvrHandler.obtainMessage();
+        msg.what = PVRHandler.MSG_PLAY_SEEK;
+        msg.arg1 = currMS;
+        pvrHandler.sendMessage(msg);
+        pvrHandler.sendEmptyMessage(PVRHandler.MSG_PLAY_RESUME);
     }
 
     private void pause() {
         Log.i(TAG, "pause");
         switchPlayTypeUI(TYPE_PAUSE, -1);
         showControlUI(false);
-        SWDJAPVRManager.getInstance().playPause();
+        pvrHandler.sendEmptyMessage(PVRHandler.MSG_PLAY_PAUSE);
     }
 
     private void recordSeekTypeNum(int seekType) {
@@ -572,18 +654,23 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
 
     private void seek(int seekNum, int type) {
         Log.i(TAG, "seek");
+        Message msg = pvrHandler.obtainMessage(PVRHandler.MSG_PLAY_SPEED);
         if (type == SEEK_TYPE_NO) {
             switchPlayTypeUI(TYPE_PLAY, -1);
             showControlUI(true);
-            SWDJAPVRManager.getInstance().setPlaySpeed(getSelectPosition(new int[]{1, 2, 4, 8, 16, 32, 64, 128}, seekNum) + 8);
+            msg.arg1 = getSelectPosition(new int[]{1, 2, 4, 8, 16, 32, 64, 128}, seekNum) + 8;
+            pvrHandler.sendMessage(msg);
+
         } else if (type == SEEK_TYPE_LEFT) {
             switchPlayTypeUI(TYPE_SEEK_BACK, seekNum);
             showControlUI(false);
-            SWDJAPVRManager.getInstance().setPlaySpeed(getSelectPosition(new int[]{1, 2, 4, 8, 16, 32, 64, 128}, seekNum));
+            msg.arg1 = getSelectPosition(new int[]{1, 2, 4, 8, 16, 32, 64, 128}, seekNum);
+            pvrHandler.sendMessage(msg);
         } else {
             switchPlayTypeUI(TYPE_SEEK_FORWARD, seekNum);
             showControlUI(false);
-            SWDJAPVRManager.getInstance().setPlaySpeed(getSelectPosition(new int[]{1, 2, 4, 8, 16, 32, 64, 128}, seekNum) + 8);
+            msg.arg1 = getSelectPosition(new int[]{1, 2, 4, 8, 16, 32, 64, 128}, seekNum) + 8;
+            pvrHandler.sendMessage(msg);
         }
     }
 
@@ -601,9 +688,9 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         switchPlayTypeUI(TYPE_STOP, -1);
         showControlUI(false);
         if (from == FROM_TOPMOST)
-            SWDJAPVRManager.getInstance().stopTimeshift();
+            pvrHandler.sendEmptyMessage(PVRHandler.MSG_STOP_TIMESHIFT);
         else
-            SWDJAPVRManager.getInstance().stopPlay();
+            pvrHandler.sendEmptyMessage(PVRHandler.MSG_STOP_PLAY);
     }
 
     private void sendUpgradePrgressMsg(HandlerMsgModel progMsg) {
