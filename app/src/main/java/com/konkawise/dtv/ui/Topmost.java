@@ -585,6 +585,8 @@ public class Topmost extends BaseActivity {
             mRecordingLayout.setVisibility(View.GONE);
             mTvRecordingTime.setText(TimeUtils.getDecimalFormatTime(0));
             ToastUtils.showToast(R.string.toast_stop_record);
+
+            showPfInfo();
         }
     }
 
