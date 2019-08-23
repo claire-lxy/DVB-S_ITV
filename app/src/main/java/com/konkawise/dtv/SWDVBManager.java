@@ -36,9 +36,6 @@ public class SWDVBManager {
     }
 
     public void releaseResource() {
-        unRegMsgHandler(Constants.SCAN_CALLBACK_MSG_ID, null);
-        unRegMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, null);
-        RealTimeManager.getInstance().stop();
         SWDVB.Destory();
     }
 }

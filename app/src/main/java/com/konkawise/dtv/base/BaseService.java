@@ -39,6 +39,10 @@ public abstract class BaseService extends Service {
         }
     }
 
+    public static void pauseService(Intent intent) {
+        KonkaApplication.getContext().stopService(intent);
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;

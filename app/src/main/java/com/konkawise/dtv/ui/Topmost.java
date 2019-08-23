@@ -2232,7 +2232,6 @@ public class Topmost extends BaseActivity {
     }
 
     private void reloadSat() {
-        mCurrSatPosition = 0;
         mSatList = null; // 置空重新加载
         updateSatList();
     }

@@ -1,10 +1,12 @@
 package com.konkawise.dtv.service;
 
+import android.app.ActivityManager;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.WindowManager;
 
@@ -138,7 +140,9 @@ public class BookService extends BaseService implements WeakToolInterface {
         PDPInfo_t progInfo = SWPDBaseManager.getInstance().getProgInfoByServiceId(bookInfo.servid, bookInfo.tsid, bookInfo.sat);
         if (progInfo == null) return;
 
-        ScreenManager.getInstance().wakeupScreen(this); // 待机情况下唤醒设备显示弹框
+        // 待机情况下唤醒设备显示弹框
+        ScreenManager.getInstance().wakeupScreen(this);
+        startListenPower();
 
         BookingModel bookingModel = new BookingModel(bookInfo, progInfo);
         String channelName = bookingModel.getBookChannelName();
@@ -294,6 +298,31 @@ public class BookService extends BaseService implements WeakToolInterface {
     }
 
     /**
+     * 启动监听待机按键服务，主要解决在book到点唤醒屏幕后，在倒计时的时候直接再次待机导致book无法再启动
+     */
+    private void startListenPower() {
+        if (isAppInBackground()) {
+            PowerService.bootService(new Intent(this, PowerService.class));
+        }
+    }
+
+    private void stopListenPower() {
+        if (isAppInBackground()) {
+            PowerService.pauseService(new Intent(this, PowerService.class));
+        }
+    }
+
+    private boolean isAppInBackground() {
+        ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+        ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
+        if (cn != null) {
+            String pkgName = cn.getPackageName();
+            return TextUtils.isEmpty(pkgName) || !pkgName.equals(getPackageName());
+        }
+        return false;
+    }
+
+    /**
      * 立即跳转执行预录或播放
      */
     private void bookReady(HSubforProg_t bookInfo) {
@@ -317,6 +346,8 @@ public class BookService extends BaseService implements WeakToolInterface {
      * 取消book
      */
     private void cancelBook(HSubforProg_t bookInfo) {
+        stopListenPower();
+
         if (bookInfo != null) {
             SWBookingManager.getInstance().cancelSubForPlay(4, SWBookingManager.getInstance().getCancelBookProg(bookInfo));
             notifyBookUpdate(bookInfo);
@@ -329,6 +360,9 @@ public class BookService extends BaseService implements WeakToolInterface {
     private void startBook(int schtype, int lasttime) {
         removeHandlerMsg();
         dismissBookReadyDialog();
+
+        ScreenManager.getInstance().wakeupScreen(this);
+        stopListenPower();
 
         // 进入待机
         if (schtype == SWBooking.BookSchType.NONE.ordinal()) {
