@@ -62,6 +62,7 @@ public abstract class BaseDialogFragment extends DialogFragment {
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
         Dialog dialog = new Dialog(getContext());
+        dialog.setCancelable(true);
         dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
             @Override
             public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
