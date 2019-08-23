@@ -107,7 +107,7 @@
     <string name="language">English</string>
     <string name="teletext_language">Teletext Language</string>
     <string name="subtitle_language">Subtitle Language</string>
-    <string name="switch_channel_block">Blank</string>
+    <string name="switch_channel_block">Black</string>
     <string name="scart">SCART</string>
     <string name="scart_mode_rgb">RGB</string>
     <string name="scart_mode_cvbs">CVBS</string>
@@ -437,4 +437,6 @@
     <string name="motor_usals_command_calculate">Calculate</string>
     <string name="motor_usals_command_shift">Shift</string>
     <string name="motor_command_gotoref">Goto Ref</string>
+
+    <string name="empty_tp">No TP</string>
 </resources>

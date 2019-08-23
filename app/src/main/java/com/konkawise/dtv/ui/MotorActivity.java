@@ -339,7 +339,7 @@ public class MotorActivity extends BaseActivity {
         mTvSatellite.setText(TextUtils.isEmpty(satelliteName) ? "" : satelliteName);
 
         String tpName = getIntent().getStringExtra(Constants.IntentKey.INTENT_TP_NAME);
-        mTvTp.setText(TextUtils.isEmpty(tpName) ? "" : tpName);
+        mTvTp.setText(TextUtils.isEmpty(tpName) ? getString(R.string.empty_tp) : tpName);
 
         mTvStepSize.setText(mStepSizeArray[0]);
         mTvPosition.bringToFront();
@@ -1106,7 +1106,7 @@ public class MotorActivity extends BaseActivity {
      */
     private void getTPName(int index) {
         if (mTpList == null || mTpList.size() == 0) {
-            mTvTp.setText("");
+            mTvTp.setText(getString(R.string.empty_tp));
             return;
         }
         ChannelNew_t channelNew_t = mTpList.get(index);

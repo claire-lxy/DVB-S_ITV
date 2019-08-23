@@ -442,7 +442,7 @@ public class EditManualActivity extends BaseActivity {
     private void tpChange() {
         getTpList();
         if (mTpList == null || mTpList.size() == 0) {
-            mTvTp.setText("");
+            mTvTp.setText(getString(R.string.empty_tp));
             return;
         }
         ChannelNew_t channel = getTpList().get(mCurrentTp);
