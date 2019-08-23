@@ -1,6 +1,7 @@
 package com.konkawise.dtv.dialog;
 
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -23,6 +24,9 @@ public class FavoriteDialog extends BaseDialogFragment {
 
     @BindView(R.id.lv_check_group)
     ListView mListView;
+
+    @BindView(R.id.tv_sure)
+    TextView mBtnSure;
 
     @OnClick(R.id.tv_sure)
     void saveFavorite() {
@@ -62,6 +66,18 @@ public class FavoriteDialog extends BaseDialogFragment {
 
         mAdapter = new CheckGroupAdapter(getContext(), SWPDBaseManager.getInstance().getFavoriteGroupNameList(SWPDBaseManager.getInstance().getFavIndexArray().length));
         mListView.setAdapter(mAdapter);
+        mListView.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN && event.getAction() == KeyEvent.ACTION_DOWN) {
+                    if (mListView.getSelectedItemPosition() == mAdapter.getCount() - 1) {
+                        mBtnSure.requestFocus();
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
 
         if (mCurrChannelInfo != null) {
             char[] favGroupArray = SWPDBaseManager.getInstance().getProgInfoFavGroupArray(mCurrChannelInfo);
