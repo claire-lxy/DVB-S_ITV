@@ -263,8 +263,6 @@ public class GeneralSettingsActivity extends BaseActivity {
                                 mTvScart.setText(checkContent);
                                 scartPosition = Arrays.asList(mScartArray).indexOf(checkContent);
                                 SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_TV_SCART.ordinal(), scartPosition);
-                                SWFtaManager.getInstance().setRGBorCVBS(scartPosition);
-                                SWFta.GetInstance().activateE2PSetting(SWFta.E_E2PP.E2P_TV_SCART.ordinal());
                                 break;
                             case ITEM_SUBTITLE_DISPLAY:
                                 mTvSubtitleDisplay.setText(checkContent);
@@ -363,8 +361,6 @@ public class GeneralSettingsActivity extends BaseActivity {
                         scartPosition = mScartArray.length - 1;
                     mTvScart.setText(mScartArray[scartPosition]);
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_TV_SCART.ordinal(), scartPosition);
-                    SWFtaManager.getInstance().setRGBorCVBS(scartPosition);
-                    SWFta.GetInstance().activateE2PSetting(SWFta.E_E2PP.E2P_TV_SCART.ordinal());
                     break;
 
                 case ITEM_SUBTITLE_DISPLAY:
@@ -438,8 +434,6 @@ public class GeneralSettingsActivity extends BaseActivity {
 						scartPosition = 0;
 					mTvScart.setText(mScartArray[scartPosition]);
 					SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_TV_SCART.ordinal(), scartPosition);
-                    SWFtaManager.getInstance().setRGBorCVBS(scartPosition);
-                    SWFta.GetInstance().activateE2PSetting(SWFta.E_E2PP.E2P_TV_SCART.ordinal());
 					break;
 
                 case ITEM_SUBTITLE_DISPLAY:
