@@ -218,7 +218,7 @@
     <!-- dialog back -->
     <string name="back_infomation">如果退出，节目将不会保存</string>
 
-    <!--dialog_scan.xml-->
+    <!--dialog_scan_layout_layout.xml-->
     <string name="network">网络</string>
     <string name="nit_off">NIT 关闭</string>
     <string name="nit_on">NIT 开启</string>
@@ -234,7 +234,7 @@
     <string name="are_you_sure_clear_prog_data">确定要清除节目数据吗？</string>
     <string name="factory_reset_content">Do you want to reset all data and setting?</string>
 
-    <!--pf_info_popwindow.xmll-->
+    <!--dialog_pfbar_layout.xmll-->
     <string name="sub">SUB</string>
     <string name="txt">TXT</string>
     <string name="rate">RATE</string>

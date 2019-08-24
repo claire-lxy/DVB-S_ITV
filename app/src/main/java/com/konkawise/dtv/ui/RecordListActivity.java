@@ -340,10 +340,11 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         String oldName = mAdapter.getItem(mCurrRecordPosition).getHpvrRecFileT().filename;
         new RenameDialog()
                 .setProgNo(mCurrRecordPosition + 1)
-                .setOldName(oldName.substring(0, oldName.length() - 3))
-                .setEditLisener(new RenameDialog.EditTextLisener() {
+                .setName(oldName.substring(0, oldName.length() - 3))
+                .setNameHint(oldName.substring(0, oldName.length() - 3))
+                .setOnRenameEditListener(new RenameDialog.onRenameEditListener() {
                     @Override
-                    public void setEdit(String newName) {
+                    public void onRenameEdit(String newName) {
                         if (TextUtils.isEmpty(newName)) return;
                         if (!newName.substring(newName.length() - 3, newName.length()).equals(".ts")) {
                             newName = newName + "." + Constants.RECORD_FILE_TYPE;

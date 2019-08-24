@@ -13,7 +13,7 @@ public class CommCheckItemAdapter extends BaseListViewAdapter<String> {
     private int mSelectPosition;
 
     public CommCheckItemAdapter(Context context, List<String> datas) {
-        super(context, datas, R.layout.listview_book_type_item);
+        super(context, datas, R.layout.comm_check_list_item);
     }
 
     @Override

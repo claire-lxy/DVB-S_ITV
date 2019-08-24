@@ -64,7 +64,7 @@ public class SeekTimeDialog extends BaseDialogFragment {
 
     @Override
     protected int getLayoutId() {
-        return R.layout.dialog_seek_time;
+        return R.layout.dialog_seek_time_layout;
     }
 
     @Override

@@ -14,14 +14,14 @@ import java.util.List;
 public class BlindTpAdapter extends BaseRecyclerAdapter<BlindTpModel> {
 
     public BlindTpAdapter(Context context, List<BlindTpModel> datas) {
-        super(context, datas, R.layout.recycleview_pro_num_item);
+        super(context, datas, R.layout.blind_tp_prog_list_item);
     }
 
     @NonNull
     @Override
     public BaseRecyclerHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == BlindTpModel.VIEW_TYPE_TP) {
-            return new BaseRecyclerHolder(mInflater.inflate(R.layout.recycleview_tp_item, parent, false));
+            return new BaseRecyclerHolder(mInflater.inflate(R.layout.blind_tp_list_item, parent, false));
         } else {
             return super.onCreateViewHolder(parent, viewType);
         }

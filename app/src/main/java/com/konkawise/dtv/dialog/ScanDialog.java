@@ -134,7 +134,7 @@ public class ScanDialog extends BaseDialogFragment {
 
     @Override
     protected int getLayoutId() {
-        return R.layout.dialog_scan;
+        return R.layout.dialog_scan_layout;
     }
 
     @Override

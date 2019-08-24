@@ -67,7 +67,7 @@ public class InitPasswordDialog extends BaseDialogFragment {
 
     @Override
     protected int getLayoutId() {
-        return R.layout.dialog_init_password;
+        return R.layout.dialog_init_password_layout;
     }
 
     @Override

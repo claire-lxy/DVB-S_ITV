@@ -611,10 +611,10 @@ public class ChannelEditActivity extends BaseActivity {
         if (mAdapter.getCount() <= 0 || mCurrSelectPosition >= mAdapter.getCount()) return;
         new RenameDialog()
                 .setProgNo(mAdapter.getItem(mCurrSelectPosition).PShowNo)
-                .setOldName(mAdapter.getItem(mCurrSelectPosition).Name)
-                .setEditLisener(new RenameDialog.EditTextLisener() {
+                .setName(mAdapter.getItem(mCurrSelectPosition).Name)
+                .setOnRenameEditListener(new RenameDialog.onRenameEditListener() {
                     @Override
-                    public void setEdit(String newName) {
+                    public void onRenameEdit(String newName) {
                         if (TextUtils.isEmpty(newName)) return;
 
                         renameChannel(newName);

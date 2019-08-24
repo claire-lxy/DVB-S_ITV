@@ -111,7 +111,7 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
 
     @Override
     protected int getLayoutId() {
-        return R.layout.pf_info_popwindow;
+        return R.layout.dialog_pfbar_layout;
     }
 
     private void initBg() {

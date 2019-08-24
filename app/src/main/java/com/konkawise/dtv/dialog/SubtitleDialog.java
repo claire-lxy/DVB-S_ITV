@@ -27,10 +27,10 @@ public class SubtitleDialog extends BaseDialogFragment {
     public static final String TAG = "SubtitleDialog";
 
     @BindView(R.id.tv_title)
-    TextView mTv_title;
+    TextView mTvTitle;
 
     @BindView(R.id.lv_content)
-    ListView mLv_content;
+    ListView mLvContent;
 
     @OnItemClick(R.id.lv_content)
     void onItemClick(int position) {
@@ -53,13 +53,13 @@ public class SubtitleDialog extends BaseDialogFragment {
 
     @Override
     protected void setup(View view) {
-        mTv_title.setText(mTitle);
+        mTvTitle.setText(mTitle);
 
         mAdapter = new SubtitleAdapter(getContext(), mContent);
         mAdapter.setSelectItem(mSelectPosition);
-        mLv_content.setAdapter(mAdapter);
-        mLv_content.setSelection(mSelectPosition);
-        setListViewHeightBasedOnChildren(mLv_content);
+        mLvContent.setAdapter(mAdapter);
+        mLvContent.setSelection(mSelectPosition);
+        setListViewHeightBasedOnChildren(mLvContent);
     }
 
 	@Override
@@ -101,8 +101,8 @@ public class SubtitleDialog extends BaseDialogFragment {
         Object lastCheckContent = mAdapter.getItem(mSelectPosition);
         mAdapter.updateData(content);
         mSelectPosition = content.indexOf(lastCheckContent);
-        mLv_content.setSelection(mSelectPosition);
-        setListViewHeightBasedOnChildren(mLv_content);
+        mLvContent.setSelection(mSelectPosition);
+        setListViewHeightBasedOnChildren(mLvContent);
     }
 
     private void setListViewHeightBasedOnChildren(ListView listView) {

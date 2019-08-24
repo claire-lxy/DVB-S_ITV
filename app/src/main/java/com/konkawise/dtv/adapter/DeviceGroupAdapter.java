@@ -13,7 +13,7 @@ public class DeviceGroupAdapter extends BaseListViewAdapter<String> {
     private boolean darked = false;
 
     public DeviceGroupAdapter(Context context, List<String> ltDeviceNames) {
-        super(context, ltDeviceNames, R.layout.adapter_deivce_group);
+        super(context, ltDeviceNames, R.layout.deivce_group_list_item);
     }
 
     @Override

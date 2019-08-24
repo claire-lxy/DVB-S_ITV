@@ -3,13 +3,9 @@ package com.konkawise.dtv.dialog;
 import android.content.DialogInterface;
 import android.text.TextUtils;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.konkawise.dtv.R;
@@ -36,7 +32,7 @@ public class AudioDialog extends BaseDialogFragment {
     public static final int WHERE_RECORDPLAYER = 1;
 
     @BindView(R.id.tv_title)
-    TextView mTv_title;
+    TextView mTvTitle;
 
     @BindView(R.id.iv_audio_track_left)
     ImageView mIvAudioTrackLeft;
@@ -70,12 +66,12 @@ public class AudioDialog extends BaseDialogFragment {
 
     @Override
     protected int getLayoutId() {
-        return R.layout.dialog_audio;
+        return R.layout.dialog_audio_layout;
     }
 
     @Override
     protected void setup(View view) {
-        mTv_title.setText(mTitle);
+        mTvTitle.setText(mTitle);
 
         audioTrackPosition = SWFtaManager.getInstance().getCurrProgParam(SWFta.OSDFTA_TRACK);
         mTvAudioTrack.setText(mAudioTrackArray[audioTrackPosition]);
@@ -191,34 +187,6 @@ public class AudioDialog extends BaseDialogFragment {
         return this;
     }
 
-    public AudioDialog position(int selectPosition) {
-        return this;
-    }
-
-    public void updateContent(String[] content) {
-
-    }
-
-    private void setListViewHeightBasedOnChildren(ListView listView) {
-        ListAdapter listAdapter = listView.getAdapter();
-        if (listAdapter == null) {
-            return;
-        }
-        int totalHeight = 0;
-        for (int i = 0; i < listAdapter.getCount(); i++) {
-            View listItem = listAdapter.getView(i, null, listView);
-            listItem.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-            totalHeight += listItem.getMeasuredHeight();
-        }
-        ViewGroup.LayoutParams params = listView.getLayoutParams();
-        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
-        int lvLayoutHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 120, getResources().getDisplayMetrics());
-        if (lvLayoutHeight > params.height) {
-            params.height = lvLayoutHeight;
-        }
-        listView.setLayoutParams(params);
-    }
-
     @Override
     protected boolean onKeyListener(DialogInterface dialog, int keyCode, KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
@@ -294,13 +262,5 @@ public class AudioDialog extends BaseDialogFragment {
         ivLeft.setVisibility(mCurrentSelectItem == selectItem ? View.VISIBLE : View.INVISIBLE);
         textView.setBackgroundResource(mCurrentSelectItem == selectItem ? R.drawable.btn_red_bg_shape : 0);
         ivRight.setVisibility(mCurrentSelectItem == selectItem ? View.VISIBLE : View.INVISIBLE);
-    }
-
-    public AudioDialog setOnDismissListener(OnDismissListener listener) {
-        return this;
-    }
-
-    public interface OnDismissListener {
-        void onDismiss(AudioDialog dialog, int position, String checkContent);
     }
 }

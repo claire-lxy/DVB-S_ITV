@@ -232,13 +232,13 @@ public class FavoriteActivity extends BaseActivity {
             if (mBottomFavRename.getVisibility() == View.VISIBLE) {
                 new RenameDialog()
                         .setNameType(getString(R.string.edit_favorite_group_name))
-                        .setTv_name_num(String.valueOf(mFavoriteGroupIndex))
-                        .setOldName(mFavoriteGroupAdapter.getItem(mFavoriteGroupIndex - 1))
-                        .setEditLisener(new RenameDialog.EditTextLisener() {
+                        .setNum(String.valueOf(mFavoriteGroupIndex))
+                        .setName(mFavoriteGroupAdapter.getItem(mFavoriteGroupIndex - 1))
+                        .setOnRenameEditListener(new RenameDialog.onRenameEditListener() {
                             @Override
-                            public void setEdit(String name) {
-                                PreferenceManager.getInstance().putString("fav" + (mFavoriteGroupIndex - 1), name);
-                                mFavoriteGroupAdapter.updateData(mFavoriteGroupIndex - 1, name);
+                            public void onRenameEdit(String newName) {
+                                PreferenceManager.getInstance().putString("fav" + (mFavoriteGroupIndex - 1), newName);
+                                mFavoriteGroupAdapter.updateData(mFavoriteGroupIndex - 1, newName);
 
                                 mFavEdit = true;
                             }

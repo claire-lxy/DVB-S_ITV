@@ -239,19 +239,6 @@
         <item>@string/book_record</item>
     </string-array>
 
-    <string-array name="step_size">
-        <item>Continue</item>
-        <item>Step 1</item>
-        <item>Step 4</item>
-        <item>Step 8</item>
-        <item>Step 16</item>
-        <item>Step 32</item>
-        <item>1s</item>
-        <item>2s</item>
-        <item>3s</item>
-        <item>4s</item>
-    </string-array>
-
     <string-array name="diseqc_command">
         <item>@string/motor_command_savepos</item>
         <item>@string/motor_diseqc_command_recalculate</item>
@@ -270,9 +257,9 @@
     </string-array>
 
     <string-array name="motor_type">
+        <item>@string/motor_type_off</item>
         <item>@string/motor_type_diseqc</item>
         <item>@string/motor_type_usals</item>
-        <item>@string/motor_type_off</item>
     </string-array>
 
     <string-array name="move_step">
@@ -281,6 +268,20 @@
         <item>@string/motor_move_step_west</item>
     </string-array>
 
+    <string-array name="step_size">
+        <item>Continue</item>
+        <item>Step 1</item>
+        <item>Step 4</item>
+        <item>Step 8</item>
+        <item>Step 16</item>
+        <item>Step 32</item>
+        <item>1s</item>
+        <item>2s</item>
+        <item>3s</item>
+        <item>4s</item>
+    </string-array>
+
+    <!-- 与stop_move_time数据位置约定 -->
     <integer-array name="step_size_data">
         <item>0</item>
         <item>0xff</item>
@@ -292,6 +293,19 @@
         <item>2</item>
         <item>3</item>
         <item>4</item>
+    </integer-array>
+
+    <integer-array name="stop_move_time">
+        <item>0</item>
+        <item>8</item>
+        <item>68</item>
+        <item>125</item>
+        <item>250</item>
+        <item>500</item>
+        <item>1000</item>
+        <item>2000</item>
+        <item>3000</item>
+        <item>4000</item>
     </integer-array>
 
     <string-array name="scart">

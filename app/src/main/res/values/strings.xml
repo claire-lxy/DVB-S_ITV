@@ -216,7 +216,7 @@
     <!-- dialog back -->
     <string name="back_infomation">If you exit, the data will not save.</string>
 
-    <!--dialog_scan.xml-->
+    <!--dialog_scan_layout_layout.xml-->
     <string name="network">Network</string>
     <string name="nit_off">NIT OFF</string>
     <string name="nit_on">NIT ON</string>
@@ -232,7 +232,7 @@
     <string name="are_you_sure_clear_prog_data">Do you really want to Clear Channels?</string>
     <string name="factory_reset_content">Do you want to reset all data and setting?</string>
 
-    <!--pf_info_popwindow.xmll-->
+    <!--dialog_pfbar_layout.xmll-->
     <string name="sub">SUB</string>
     <string name="txt">TXT</string>
     <string name="rate">RATE</string>

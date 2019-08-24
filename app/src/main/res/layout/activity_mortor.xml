@@ -219,31 +219,10 @@
                     tools:ignore="RelativeOverlap" />
 
                 <TextView
-                    android:id="@+id/tv_sat_longitude_arrow"
-                    android:layout_width="40dp"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginEnd="-3dp"
-                    android:layout_marginRight="-3dp"
-                    android:layout_toStartOf="@+id/tv_sat_longitude"
-                    android:layout_toLeftOf="@+id/tv_sat_longitude"
-                    android:focusable="false"
-                    android:gravity="center_vertical|end"
-                    android:text="@string/west" />
-
-                <TextView
                     android:id="@+id/tv_sat_longitude"
-                    android:layout_width="100dp"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginRight="10dp"
+                    style="@style/ItemContentStyle"
                     android:layout_toStartOf="@+id/iv_sat_longitude_right"
                     android:layout_toLeftOf="@+id/iv_sat_longitude_right"
-                    android:background="@null"
-                    android:gravity="center"
                     android:textColor="@color/white" />
 
                 <ImageView
@@ -265,31 +244,10 @@
                     tools:ignore="RelativeOverlap" />
 
                 <TextView
-                    android:id="@+id/tv_local_longitude_arrow"
-                    android:layout_width="40dp"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginEnd="-3dp"
-                    android:layout_marginRight="-3dp"
-                    android:layout_toStartOf="@+id/tv_local_longitude"
-                    android:layout_toLeftOf="@+id/tv_local_longitude"
-                    android:focusable="false"
-                    android:gravity="center_vertical|end"
-                    android:text="@string/west" />
-
-                <TextView
                     android:id="@+id/tv_local_longitude"
-                    android:layout_width="100dp"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginRight="10dp"
+                    style="@style/ItemContentStyle"
                     android:layout_toStartOf="@+id/iv_local_longitude_right"
                     android:layout_toLeftOf="@+id/iv_local_longitude_right"
-                    android:background="@null"
-                    android:gravity="center"
                     android:textColor="@color/white" />
 
                 <ImageView
@@ -311,31 +269,10 @@
                     tools:ignore="RelativeOverlap" />
 
                 <TextView
-                    android:id="@+id/tv_local_latitude_arrow"
-                    android:layout_width="40dp"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginEnd="-3dp"
-                    android:layout_marginRight="-3dp"
-                    android:layout_toStartOf="@+id/tv_local_latitude"
-                    android:layout_toLeftOf="@+id/tv_local_latitude"
-                    android:focusable="false"
-                    android:gravity="center_vertical|end"
-                    android:text="@string/south" />
-
-                <TextView
                     android:id="@+id/tv_local_latitude"
-                    android:layout_width="100dp"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginRight="10dp"
+                    style="@style/ItemContentStyle"
                     android:layout_toStartOf="@+id/iv_local_latitude_right"
                     android:layout_toLeftOf="@+id/iv_local_latitude_right"
-                    android:background="@null"
-                    android:gravity="center"
                     android:textColor="@color/white" />
 
                 <ImageView
@@ -382,34 +319,34 @@
 
         <!--Command-->
         <RelativeLayout
-            android:id="@+id/item_diseqc_command"
+            android:id="@+id/item_command"
             style="@style/ItemGroupStyle"
             android:layout_below="@id/item_position"
             android:background="@drawable/dvb_btn_fragment_selector">
 
             <TextView
-                android:id="@+id/tv_diseqc_common_title"
+                android:id="@+id/tv_command_title"
                 style="@style/ItemTitleStyle"
                 android:text="@string/motor_diseqc_command"
                 tools:ignore="RelativeOverlap" />
 
             <ImageView
-                android:id="@+id/iv_diseqc_command_left"
+                android:id="@+id/iv_command_left"
                 style="@style/ItemArrowLeftStyle"
-                android:layout_toStartOf="@+id/tv_diseqc_command"
-                android:layout_toLeftOf="@+id/tv_diseqc_command"
+                android:layout_toStartOf="@+id/tv_command"
+                android:layout_toLeftOf="@+id/tv_command"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
-                android:id="@+id/tv_diseqc_command"
+                android:id="@+id/tv_command"
                 style="@style/ItemContentStyle"
-                android:layout_toStartOf="@+id/iv_diseqc_command_right"
-                android:layout_toLeftOf="@+id/iv_diseqc_command_right"
+                android:layout_toStartOf="@+id/iv_command_right"
+                android:layout_toLeftOf="@+id/iv_command_right"
                 android:text="@string/motor_save_position" />
 
             <ImageView
-                android:id="@+id/iv_diseqc_command_right"
+                android:id="@+id/iv_command_right"
                 style="@style/ItemArrowRightStyle"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />

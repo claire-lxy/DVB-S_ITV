@@ -68,7 +68,7 @@ public class Utils {
     }
 
     public static String getLNB(SatInfo_t satInfo_t) {
-        String lnb;
+        String lnb = "";
 
         if (satInfo_t.LnbType == 0) {
             if (satInfo_t.lnb_low == 9750) {
@@ -205,5 +205,46 @@ public class Utils {
         }
 
         return (int) pAngleDiff;
+    }
+
+    public static String getMotorType(Context context, SatInfo_t satInfo) {
+        if (satInfo == null) return "";
+
+        if (satInfo.diseqc12 == 0) {
+            return context.getString(R.string.motor_type_off);
+        } else if (satInfo.diseqc12 == 1) {
+            return context.getString(R.string.motor_type_diseqc);
+        } else if (satInfo.diseqc12 == 2) {
+            return context.getString(R.string.motor_type_usals);
+        }
+        return "";
+    }
+
+    public static String getLatLngStr(double currLatLng, int minLimit, int maxLimit, int num) {
+        double latlng = 0;
+        if (currLatLng >= minLimit) {
+            latlng = 10 * currLatLng + num;
+        } else if (currLatLng < -minLimit) {
+            latlng = 10 * currLatLng - num;
+        }
+
+        if (latlng > maxLimit) {
+            latlng = num;
+        } else if (latlng < -maxLimit) {
+            latlng = -num;
+        }
+        return adjustLatLng(latlng);
+    }
+
+    public static String adjustLatLng(double latlng) {
+        return String.valueOf((latlng >= 0 ? latlng : -latlng) / 10);
+    }
+
+    public static String getLongitude(double longitude) {
+        return longitude >= 0 ? "E    " + adjustLatLng(longitude): "W    " + adjustLatLng(longitude);
+    }
+
+    public static String getLatLatitude(double latitude) {
+        return latitude >= 0 ? "N    " + adjustLatLng(latitude): "S    " + adjustLatLng(latitude);
     }
 }

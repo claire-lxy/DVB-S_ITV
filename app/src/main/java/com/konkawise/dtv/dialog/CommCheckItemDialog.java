@@ -21,10 +21,10 @@ public class CommCheckItemDialog extends BaseDialogFragment {
     public static final String TAG = "CommCheckItemDialog";
 
     @BindView(R.id.tv_title)
-    TextView mTv_title;
+    TextView mTvTitle;
 
     @BindView(R.id.lv_content)
-    ListView mLv_content;
+    ListView mLvContent;
 
     @OnItemClick(R.id.lv_content)
     void onItemClick(int position) {
@@ -47,13 +47,13 @@ public class CommCheckItemDialog extends BaseDialogFragment {
 
     @Override
     protected void setup(View view) {
-        mTv_title.setText(mTitle);
+        mTvTitle.setText(mTitle);
 
         mAdapter = new CommCheckItemAdapter(getContext(), mContent);
         mAdapter.setSelectItem(mSelectPosition);
-        mLv_content.setAdapter(mAdapter);
-        mLv_content.setSelection(mSelectPosition);
-        setListViewHeightBasedOnChildren(mLv_content);
+        mLvContent.setAdapter(mAdapter);
+        mLvContent.setSelection(mSelectPosition);
+        setListViewHeightBasedOnChildren(mLvContent);
     }
 
     public CommCheckItemDialog title(String title) {
@@ -80,8 +80,8 @@ public class CommCheckItemDialog extends BaseDialogFragment {
 
         mAdapter.updateData(content);
         mAdapter.setSelectItem(mSelectPosition);
-        mLv_content.setSelection(mSelectPosition);
-        setListViewHeightBasedOnChildren(mLv_content);
+        mLvContent.setSelection(mSelectPosition);
+        setListViewHeightBasedOnChildren(mLvContent);
     }
 
     private void setListViewHeightBasedOnChildren(ListView listView) {

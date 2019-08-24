@@ -74,18 +74,17 @@ public class Constants {
         String INTENT_SATELLITE_INDEX = "satelliteIndex";
         String INTENT_SATELLITE_POSITION = "satelltePosition";
         String INTENT_SATELLITE_ACTIVITY = "satelliteActivity";
-        String INTENT_SATELLITE_NAME = "satelliteName";
+        String INTENT_EDIT_MANUAL_ACTIVITY = "editManualActivity";
+        String INTENT_TPLIST_ACTIVITY = "tpListActivity";
         String INTENT_T2_MANUAL_SEARCH_ACTIVITY = "t2ManualSearchActivity";
         String INTENT_T2_AUTO_SEARCH = "installationT2Activity";
         String INTENT_TP_NAME = "tpName";
         String INTENT_LNB = "lnb";
-        String INTENT_DISEQC = "diseqc";
+        String ITENT_DISEQC = "diseqc";
         String INTENT_MOTOR_TYPE = "motorType";
         String INTENT_FREQ = "freq";
         String INTENT_SYMBOL = "symbol";
         String INTENT_QAM = "qam";
-        String INTENT_TPLIST_ACTIVITY = "tpListActivity";
-        String INTENT_EDIT_MANUAL_ACTIVITY = "editManualActivity";
 
         String INTENT_T2_SETTING = "t2Setting";
 
@@ -93,7 +92,6 @@ public class Constants {
         String INTENT_BOOK_PROG_NUM = "bookProgNum";
         String INTENT_BOOK_PROG_TYPE = "bookProgType";
         String INTENT_BOOK_SECONDS = "bookSeconds";
-
 
         String INTENT_BOOK_UPDATE = "bookUpdate";
         String INTENT_CURRNT_TP = "currntTp";

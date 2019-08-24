@@ -3,261 +3,235 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@mipmap/background3">
+    android:background="@mipmap/background">
+
+    <LinearLayout
+        android:layout_width="235dp"
+        android:layout_height="match_parent"
+        android:background="@mipmap/left_background"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="220dp"
+            android:layout_height="110dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:src="@mipmap/logo"
+            tools:ignore="contentDescription" />
+
+        <ListView
+            android:id="@+id/lv_tp_list"
+            android:layout_width="match_parent"
+            android:layout_height="375dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="85dp"
+            android:divider="@null"
+            android:fadeScrollbars="false"
+            android:focusable="false"
+            android:listSelector="@drawable/dvb_btn_selector"
+            android:scrollbarThumbVertical="@mipmap/scroller_bg"
+            android:scrollbarTrackVertical="@mipmap/left_scroll_background" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@mipmap/background">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="84dp"
+        android:layout_marginBottom="84dp"
+        android:background="@mipmap/right_background"
+        android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="235dp"
-            android:layout_height="match_parent"
-            android:background="@mipmap/left_background"
-            android:orientation="vertical">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:text="@string/tp_listing"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-            <ImageView
-                android:layout_width="220dp"
-                android:layout_height="110dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="10dp"
-                android:src="@mipmap/logo"
-                tools:ignore="ContentDescription" />
-
-            <ListView
-                android:id="@+id/lv_tp_list"
-                android:layout_width="match_parent"
-                android:layout_height="375dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="85dp"
-                android:divider="@null"
-                android:fadeScrollbars="false"
-                android:focusable="false"
-                android:listSelector="@drawable/dvb_btn_selector"
-                android:scrollbarThumbVertical="@mipmap/scroller_bg"
-                android:scrollbarTrackVertical="@mipmap/left_scroll_background" />
-        </LinearLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1px"
+            android:background="#c0bfbf" />
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="375dp"
-            android:layout_marginTop="84dp"
-            android:layout_marginBottom="84dp"
-            android:background="@mipmap/right_background"
+            android:layout_height="265dp"
+            android:gravity="center_horizontal"
             android:orientation="vertical">
 
+            <!--LNB-->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="56dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingLeft="257dp"
+                    android:text="@string/lnb"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:id="@+id/tv_lnb"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="17sp" />
+            </LinearLayout>
+
+            <!--LNBPower -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:gravity="center">
 
                 <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="21dp"
-                    android:gravity="center_horizontal"
-                    android:text="@string/tp_listing"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingLeft="257dp"
+                    android:text="@string/lnb_power"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:id="@+id/tv_lnb_power"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="17sp" />
             </LinearLayout>
 
-            <View
+            <!--Freq-->
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="1px"
-                android:background="#c0bfbf" />
+                android:layout_height="wrap_content"
+                android:gravity="center">
 
-            <RelativeLayout
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingLeft="257dp"
+                    android:text="@string/freq"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:id="@+id/tv_freq"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="17sp" />
+            </LinearLayout>
+
+            <!--DisEqc-->
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:layout_height="wrap_content"
+                android:gravity="center">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="265dp"
-                    android:gravity="center_horizontal"
-                    android:orientation="vertical">
-                    <!--LNB-->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="56dp"
-                        android:gravity="center">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingLeft="257dp"
+                    android:text="@string/diseqc"
+                    android:textSize="17sp" />
 
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:paddingLeft="257dp"
-                            android:text="@string/lnb"
-                            android:textSize="17sp" />
+                <TextView
+                    android:id="@+id/tv_diseqc"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="17sp" />
+            </LinearLayout>
 
-                        <TextView
-                            android:id="@+id/tv_lnb"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:textSize="17sp" />
-                    </LinearLayout>
+            <!--Motor-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-                    <!--LNBPower -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center">
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingLeft="257dp"
+                    android:text="@string/motor"
+                    android:textSize="17sp" />
 
-                        <RelativeLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1">
+                <TextView
+                    android:id="@+id/tv_motor_type"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="17sp" />
+            </LinearLayout>
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:paddingLeft="257dp"
-                                android:text="@string/lnb_power"
-                                android:textSize="17sp" />
-                        </RelativeLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center">
 
-                        <TextView
-                            android:id="@+id/tv_lnb_power"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:textSize="17sp" />
-                    </LinearLayout>
+                <TextView
+                    android:layout_width="20dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/i"
+                    android:textSize="17sp" />
 
-                    <!--Freq-->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center">
+                <TextView
+                    android:id="@+id/tv_strength_progress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp" />
 
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:paddingLeft="257dp"
-                            android:text="@string/freq"
-                            android:textSize="17sp" />
+                <ProgressBar
+                    android:id="@+id/pb_strength"
+                    style="@style/pfBar_mProgress_horizontal1"
+                    android:layout_width="400dp"
+                    android:layout_height="5dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginLeft="6dp"
+                    android:indeterminate="false"
+                    android:indeterminateOnly="false"
+                    android:max="100" />
+            </LinearLayout>
 
-                        <TextView
-                            android:id="@+id/tv_freq"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:textSize="17sp" />
-                    </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center">
 
-                    <!--DisEqc-->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center">
+                <TextView
+                    android:layout_width="20dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/q"
+                    android:textSize="17sp" />
 
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:paddingLeft="257dp"
-                            android:text="@string/diseqc"
-                            android:textSize="17sp" />
+                <TextView
+                    android:id="@+id/tv_quality_progress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginLeft="10dp" />
 
-                        <TextView
-                            android:id="@+id/tv_diseqc"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:textSize="17sp" />
-                    </LinearLayout>
-
-                    <!--Motor-->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:paddingLeft="257dp"
-                            android:text="@string/motor"
-                            android:textSize="17sp" />
-
-                        <TextView
-                            android:id="@+id/tv_motor_type"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:textSize="17sp" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:gravity="center">
-
-                        <TextView
-                            android:layout_width="20dp"
-                            android:layout_height="wrap_content"
-                            android:text="@string/i"
-                            android:textSize="17sp" />
-
-                        <TextView
-                            android:id="@+id/tv_strength_progress"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginLeft="10dp" />
-
-                        <ProgressBar
-                            android:id="@+id/pb_strength"
-                            style="@style/pfBar_mProgress_horizontal1"
-                            android:layout_width="400dp"
-                            android:layout_height="5dp"
-                            android:layout_marginStart="6dp"
-                            android:layout_marginLeft="6dp"
-                            android:indeterminate="false"
-                            android:indeterminateOnly="false"
-                            android:max="100" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center">
-
-                        <TextView
-                            android:layout_width="20dp"
-                            android:layout_height="wrap_content"
-                            android:text="@string/q"
-                            android:textSize="17sp" />
-
-                        <TextView
-                            android:id="@+id/tv_quality_progress"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="10dp"
-                            android:layout_marginLeft="10dp" />
-
-                        <ProgressBar
-                            android:id="@+id/pb_quality"
-                            style="@style/pfBar_mProgress_horizontal2"
-                            android:layout_width="400dp"
-                            android:layout_height="5dp"
-                            android:layout_marginStart="5dp"
-                            android:layout_marginLeft="5dp"
-                            android:indeterminate="false"
-                            android:indeterminateOnly="false"
-                            android:max="100" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <include
-                    layout="@layout/bottom_bar_control_item"
-                    android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:layout_alignParentBottom="true" />
-            </RelativeLayout>
+                <ProgressBar
+                    android:id="@+id/pb_quality"
+                    style="@style/pfBar_mProgress_horizontal2"
+                    android:layout_width="400dp"
+                    android:layout_height="5dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginLeft="5dp"
+                    android:indeterminate="false"
+                    android:indeterminateOnly="false"
+                    android:max="100" />
+            </LinearLayout>
         </LinearLayout>
+
+        <include layout="@layout/bottom_bar_control_item" />
     </LinearLayout>
 </LinearLayout>

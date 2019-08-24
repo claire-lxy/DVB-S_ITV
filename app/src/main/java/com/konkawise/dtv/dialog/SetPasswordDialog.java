@@ -19,28 +19,28 @@ public class SetPasswordDialog extends BaseDialogFragment {
     public static final String TAG = "SetPasswordDialog";
 
     @BindView(R.id.et_confirm_password)
-    LastInputEditText mEt_confirm_Password;
+    LastInputEditText mEtConfirmPassword;
 
     @BindView(R.id.et_new_password)
-    LastInputEditText mEt_new_Password;
+    LastInputEditText mEtNewPassword;
 
     @BindView(R.id.et_current_password)
-    LastInputEditText mEt_curr_password;
+    LastInputEditText mEtCurrentPassword;
 
-    @BindView(R.id.tv_set_pwd_cancel)
+    @BindView(R.id.tv_set_password_cancel)
     TextView mBtnCancel;
 
-    @BindView(R.id.tv_set_pwd_ok)
+    @BindView(R.id.tv_set_password_sure)
     TextView mBtnSave;
 
     private OnSavePasswordListener mOnSavePasswordListener;
 
-    @OnClick(R.id.tv_set_pwd_ok)
+    @OnClick(R.id.tv_set_password_sure)
     void savePassword() {
         if (isPasswordValid()) {
             dismiss();
-            String currentPassword = mEt_curr_password.getText().toString();
-            String newPassword = mEt_new_Password.getText().toString();
+            String currentPassword = mEtCurrentPassword.getText().toString();
+            String newPassword = mEtNewPassword.getText().toString();
             if (mOnSavePasswordListener != null) {
                 mOnSavePasswordListener.onSavePassword(currentPassword, newPassword);
             }
@@ -48,9 +48,9 @@ public class SetPasswordDialog extends BaseDialogFragment {
     }
 
     private boolean isPasswordValid() {
-        String currentPassword = mEt_curr_password.getText().toString();
-        String newPassword = mEt_new_Password.getText().toString();
-        String confirmPassword = mEt_confirm_Password.getText().toString();
+        String currentPassword = mEtCurrentPassword.getText().toString();
+        String newPassword = mEtNewPassword.getText().toString();
+        String confirmPassword = mEtConfirmPassword.getText().toString();
         String password = SWFtaManager.getInstance().getCommPWDInfo(SWFta.E_E2PP.E2P_Password.ordinal());
         if (!currentPassword.equals(password)) {
             ToastUtils.showToast(R.string.toast_current_password_error);
@@ -63,7 +63,7 @@ public class SetPasswordDialog extends BaseDialogFragment {
         return true;
     }
 
-    @OnClick(R.id.tv_set_pwd_cancel)
+    @OnClick(R.id.tv_set_password_cancel)
     void cancelPassword() {
         dismiss();
         if (mOnSavePasswordListener != null) {
@@ -73,26 +73,26 @@ public class SetPasswordDialog extends BaseDialogFragment {
 
     @Override
     protected int getLayoutId() {
-        return R.layout.dialog_set_password;
+        return R.layout.dialog_set_password_layout;
     }
 
     @Override
     protected void setup(View view) {
         mBtnCancel.requestFocus();
 
-        mEt_curr_password.setOnKeyListener(new View.OnKeyListener() {
+        mEtCurrentPassword.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int keycode, KeyEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
                     switch (keycode) {
                         case KeyEvent.KEYCODE_DPAD_LEFT:
-                            mEt_curr_password.setText(EditUtils.getEditSubstring(mEt_curr_password));
+                            mEtCurrentPassword.setText(EditUtils.getEditSubstring(mEtCurrentPassword));
                             break;
                         case KeyEvent.KEYCODE_DPAD_DOWN:
-                            mEt_new_Password.postDelayed(new Runnable() {
+                            mEtNewPassword.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
-                                    mEt_new_Password.requestFocus();
+                                    mEtNewPassword.requestFocus();
                                 }
                             }, 100);
                             break;
@@ -101,27 +101,27 @@ public class SetPasswordDialog extends BaseDialogFragment {
                 return false;
             }
         });
-        mEt_new_Password.setOnKeyListener(new View.OnKeyListener() {
+        mEtNewPassword.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int keycode, KeyEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
                     switch (keycode) {
                         case KeyEvent.KEYCODE_DPAD_LEFT:
-                            mEt_new_Password.setText(EditUtils.getEditSubstring(mEt_new_Password));
+                            mEtNewPassword.setText(EditUtils.getEditSubstring(mEtNewPassword));
                             break;
                         case KeyEvent.KEYCODE_DPAD_DOWN:
-                            mEt_confirm_Password.postDelayed(new Runnable() {
+                            mEtConfirmPassword.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
-                                    mEt_confirm_Password.requestFocus();
+                                    mEtConfirmPassword.requestFocus();
                                 }
                             }, 100);
                             break;
                         case KeyEvent.KEYCODE_DPAD_UP:
-                            mEt_curr_password.postDelayed(new Runnable() {
+                            mEtCurrentPassword.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
-                                    mEt_curr_password.requestFocus();
+                                    mEtCurrentPassword.requestFocus();
                                 }
                             }, 100);
                             break;
@@ -130,13 +130,13 @@ public class SetPasswordDialog extends BaseDialogFragment {
                 return false;
             }
         });
-        mEt_confirm_Password.setOnKeyListener(new View.OnKeyListener() {
+        mEtConfirmPassword.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int keycode, KeyEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
                     switch (keycode) {
                         case KeyEvent.KEYCODE_DPAD_LEFT:
-                            mEt_confirm_Password.setText(EditUtils.getEditSubstring(mEt_confirm_Password));
+                            mEtConfirmPassword.setText(EditUtils.getEditSubstring(mEtConfirmPassword));
                             break;
                         case KeyEvent.KEYCODE_DPAD_DOWN:
                             mBtnCancel.postDelayed(new Runnable() {
@@ -147,10 +147,10 @@ public class SetPasswordDialog extends BaseDialogFragment {
                             }, 100);
                             break;
                         case KeyEvent.KEYCODE_DPAD_UP:
-                            mEt_new_Password.postDelayed(new Runnable() {
+                            mEtNewPassword.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
-                                    mEt_new_Password.requestFocus();
+                                    mEtNewPassword.requestFocus();
                                 }
                             }, 100);
                             break;

@@ -51,7 +51,6 @@ import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.HPVR_Progress_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HSubtitle_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HTeletext_t;
-import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 
 public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiveListener {
     private static final String TAG = "RecordPlayer";

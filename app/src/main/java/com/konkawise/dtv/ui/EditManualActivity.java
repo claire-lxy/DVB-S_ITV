@@ -2,6 +2,7 @@ package com.konkawise.dtv.ui;
 
 import android.content.Intent;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
@@ -166,6 +167,8 @@ public class EditManualActivity extends BaseActivity {
 
     private CheckSignalHelper mCheckSignalHelper;
 
+    private int mMotorType;
+
     @Override
     public int getLayoutId() {
         return R.layout.activity_edit_manual;
@@ -318,7 +321,6 @@ public class EditManualActivity extends BaseActivity {
         }
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
-            saveSatInfo();
             Intent intent = new Intent();
             intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_POSITION, mCurrentSatellite);
             setResult(RESULT_OK, intent);
@@ -335,10 +337,9 @@ public class EditManualActivity extends BaseActivity {
         }
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_YELLOW) {
-            Intent intent=new Intent(EditManualActivity.this,MotorActivity.class);
-            intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_NAME,mTvSatellite.getText());
-            intent.putExtra(Constants.IntentKey.INTENT_TP_NAME,mTvTp.getText());
-            intent.putExtra(Constants.IntentKey.INTENT_CURRNT_TP,mCurrentTp);
+            Intent intent = new Intent(EditManualActivity.this, MotorActivity.class);
+            intent.putExtra(Constants.IntentKey.INTENT_TP_NAME, mTvTp.getText());
+            intent.putExtra(Constants.IntentKey.INTENT_CURRNT_TP, mCurrentTp);
             intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, getSatList().get(mCurrentSatellite).SatIndex);
             startActivity(intent);
         }
@@ -396,12 +397,12 @@ public class EditManualActivity extends BaseActivity {
         new RenameDialog()
                 .setNameType(getResources().getString(R.string.edit_satellite_name))
                 .setProgNo(mCurrentSatellite + 1)
-                .setOldName(getSatList().get(mCurrentSatellite).sat_name)
-                .setEditLisener(new RenameDialog.EditTextLisener() {
+                .setName(getSatList().get(mCurrentSatellite).sat_name)
+                .setOnRenameEditListener(new RenameDialog.onRenameEditListener() {
                     @Override
-                    public void setEdit(String name) {
-                        if (name != null && name.length() > 0) {
-                            mTvSatellite.setText(name);
+                    public void onRenameEdit(String newName) {
+                        if (newName != null && newName.length() > 0) {
+                            mTvSatellite.setText(newName);
                         }
                     }
                 }).show(getSupportFragmentManager(), RenameDialog.TAG);

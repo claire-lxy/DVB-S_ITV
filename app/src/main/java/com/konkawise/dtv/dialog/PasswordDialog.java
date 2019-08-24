@@ -28,8 +28,8 @@ public class PasswordDialog extends BaseDialogFragment implements TextWatcher {
     public static final int CONTROL_ARROW_NEXT_PROG = 1 << 2;
     public static final int CONTROL_ARROW_LAST_PROG = 1 << 3;
 
-    @BindView(R.id.edit_pass)
-    LastInputEditText edit_pass;
+    @BindView(R.id.et_password)
+    LastInputEditText mEtPassword;
 
     @IntDef(flag = true, value = {
             CONTROL_ARROW_CURRENT_PROG, CONTROL_ARROW_NEXT_PROG, CONTROL_ARROW_LAST_PROG
@@ -46,27 +46,27 @@ public class PasswordDialog extends BaseDialogFragment implements TextWatcher {
 
     @Override
     protected int getLayoutId() {
-        return R.layout.dialog_password;
+        return R.layout.dialog_password_layout;
     }
 
     @Override
     protected void setup(View view) {
         // 防止软键盘弹出
-        edit_pass.postDelayed(new Runnable() {
+        mEtPassword.postDelayed(new Runnable() {
             @Override
             public void run() {
-                edit_pass.setFocusable(true);
-                edit_pass.requestFocus();
+                mEtPassword.setFocusable(true);
+                mEtPassword.requestFocus();
             }
         }, 500);
 
-        edit_pass.setOnKeyListener(new View.OnKeyListener() {
+        mEtPassword.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent event) {
                 switch (event.getKeyCode()) {
                     case KeyEvent.KEYCODE_DPAD_LEFT:
                         if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                            edit_pass.setText(EditUtils.getEditSubstring(edit_pass));
+                            mEtPassword.setText(EditUtils.getEditSubstring(mEtPassword));
                         }
                         return true;
                     case KeyEvent.KEYCODE_DPAD_CENTER:
@@ -75,13 +75,13 @@ public class PasswordDialog extends BaseDialogFragment implements TextWatcher {
                 return false;
             }
         });
-        edit_pass.addTextChangedListener(this);
+        mEtPassword.addTextChangedListener(this);
     }
 
     @Override
     public void dismiss() {
-        if (edit_pass != null) {
-            edit_pass.removeTextChangedListener(this);
+        if (mEtPassword != null) {
+            mEtPassword.removeTextChangedListener(this);
         }
         super.dismiss();
     }
@@ -111,7 +111,7 @@ public class PasswordDialog extends BaseDialogFragment implements TextWatcher {
             dismiss();
         } else {
             isPasswordValid = false;
-            edit_pass.setText("");
+            mEtPassword.setText("");
             mInputPasswordInvalidCount++;
             if (mInputPasswordInvalidCount >= 3 && mInvalidClose) {
                 reset();
@@ -129,7 +129,7 @@ public class PasswordDialog extends BaseDialogFragment implements TextWatcher {
 
     private void reset() {
         mCurrentPassword = null;
-        edit_pass.setText("");
+        mEtPassword.setText("");
         mInputPasswordInvalidCount = 0;
     }
 

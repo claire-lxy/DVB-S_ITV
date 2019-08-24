@@ -17,7 +17,7 @@ public class SearchChannelDialog extends BaseDialogFragment {
 
     @Override
     protected int getLayoutId() {
-        return R.layout.dialog_search_channel_remind;
+        return R.layout.dialog_search_channel_remind_layout;
     }
 
     @Override

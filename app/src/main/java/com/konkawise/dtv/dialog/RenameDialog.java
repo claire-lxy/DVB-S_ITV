@@ -16,27 +16,27 @@ import butterknife.OnClick;
 public class RenameDialog extends BaseDialogFragment {
     public static final String TAG = "RenameDialog";
 
-    @BindView(R.id.eidt_rename)
-    LastInputEditText eidt_rename;
+    @BindView(R.id.et_rename)
+    LastInputEditText mEtRename;
 
-    @BindView(R.id.tv_rename_canncle)
-    TextView tv_rename_canncle;
+    @BindView(R.id.tv_rename_cancel)
+    TextView mBtnCancel;
 
-    @BindView(R.id.tv_name_num)
-    TextView tv_name_num;
+    @BindView(R.id.tv_number)
+    TextView mTvNumber;
 
-    @BindView(R.id.tv_nametype)
-    TextView tv_name_type;
+    @BindView(R.id.tv_name_type)
+    TextView mTvNameType;
 
     @OnClick(R.id.tv_rename_sure)
     void ok() {
         dismiss();
-        if (eidt_rename.getText().toString().length() > 0) {
-            mEditTextLisener.setEdit(eidt_rename.getText().toString());
+        if (mEtRename.getText().toString().length() > 0) {
+            mEditTextListener.onRenameEdit(mEtRename.getText().toString());
         }
     }
 
-    @OnClick(R.id.tv_rename_canncle)
+    @OnClick(R.id.tv_rename_cancel)
     void cancels() {
         dismiss();
     }
@@ -44,36 +44,33 @@ public class RenameDialog extends BaseDialogFragment {
     private String mNum;
     private String mProgNo;
     private String mNameType;
-    private String mOldName;
+    private String mName;
+    private String mNameHint;
 
     @Override
     protected int getLayoutId() {
-        return R.layout.dialog_rename;
+        return R.layout.dialog_rename_layout;
     }
 
     @Override
     protected void setup(View view) {
-        if (!TextUtils.isEmpty(mNum)) {
-            tv_name_num.setText(mNum);
-        }
-        if (!TextUtils.isEmpty(mProgNo)) {
-            tv_name_num.setText(mProgNo);
-        }
-        tv_name_type.setText(TextUtils.isEmpty(mNameType) ? getStrings(R.string.channel_name) : mNameType);
-        eidt_rename.setHint(mOldName);
-        eidt_rename.setText(mOldName);
+        if (!TextUtils.isEmpty(mNum)) mTvNumber.setText(mNum);
+        if (!TextUtils.isEmpty(mProgNo)) mTvNumber.setText(mProgNo);
+        mTvNameType.setText(TextUtils.isEmpty(mNameType) ? getStrings(R.string.channel_name) : mNameType);
+        mEtRename.setHint(mNameHint);
+        mEtRename.setText(mName);
 
-        tv_rename_canncle.requestFocus();
-        eidt_rename.setOnKeyListener(new View.OnKeyListener() {
+        mBtnCancel.requestFocus();
+        mEtRename.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
                     switch (keyCode) {
                         case KeyEvent.KEYCODE_DPAD_LEFT:
-                            eidt_rename.setText(EditUtils.getEditSubstring(eidt_rename));
+                            mEtRename.setText(EditUtils.getEditSubstring(mEtRename));
                             return true;
                         case KeyEvent.KEYCODE_DPAD_DOWN:
-                            tv_rename_canncle.requestFocus();
+                            mBtnCancel.requestFocus();
                             return true;
                     }
                 }
@@ -82,7 +79,7 @@ public class RenameDialog extends BaseDialogFragment {
         });
     }
 
-    public RenameDialog setTv_name_num(String num) {
+    public RenameDialog setNum(String num) {
         this.mNum = TextUtils.isEmpty(num) ? "" : num;
         return this;
     }
@@ -97,19 +94,24 @@ public class RenameDialog extends BaseDialogFragment {
         return this;
     }
 
-    public RenameDialog setOldName(String name) {
-        this.mOldName = TextUtils.isEmpty(name) ? "" : name;
+    public RenameDialog setName(String name) {
+        this.mName = TextUtils.isEmpty(name) ? "" : name;
         return this;
     }
 
-    private EditTextLisener mEditTextLisener;
-
-    public RenameDialog setEditLisener(EditTextLisener lisener) {
-        mEditTextLisener = lisener;
+    public RenameDialog setNameHint(String hint) {
+        this.mNameHint = TextUtils.isEmpty(hint) ? mName : hint;
         return this;
     }
 
-    public interface EditTextLisener {
-        void setEdit(String name);
+    private onRenameEditListener mEditTextListener;
+
+    public RenameDialog setOnRenameEditListener(onRenameEditListener listener) {
+        mEditTextListener = listener;
+        return this;
+    }
+
+    public interface onRenameEditListener {
+        void onRenameEdit(String newName);
     }
 }

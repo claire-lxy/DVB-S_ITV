@@ -28,7 +28,7 @@ public class SearchProgramDialog extends BaseDialogFragment {
 
     @Override
     protected int getLayoutId() {
-        return R.layout.dialog_search_channel;
+        return R.layout.dialog_search_channel_layout;
     }
 
     @Override

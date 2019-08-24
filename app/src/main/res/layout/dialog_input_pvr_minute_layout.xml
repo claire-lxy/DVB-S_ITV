@@ -50,7 +50,6 @@
         android:layout_gravity="center"
         android:layout_margin="10dp"
         android:background="@drawable/dvb_delete_btn_selector"
-        android:focusable="true"
         android:gravity="center"
         android:paddingLeft="50dp"
         android:paddingTop="5dp"

@@ -16,7 +16,7 @@ public class TvListAdapter extends BaseListViewAdapter<PDPMInfo_t> {
     private int mSelectPosition;
 
     public TvListAdapter(Context context, List<PDPMInfo_t> datas) {
-        super(context, datas, R.layout.tv_listview_item);
+        super(context, datas, R.layout.prog_list_item);
     }
 
     @Override

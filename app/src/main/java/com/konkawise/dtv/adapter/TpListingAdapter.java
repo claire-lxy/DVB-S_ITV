@@ -13,7 +13,7 @@ import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
 public class TpListingAdapter extends BaseListViewAdapter<ChannelNew_t> {
 
     public TpListingAdapter(Context context, List<ChannelNew_t> datas) {
-        super(context, datas, R.layout.listview_tp_item);
+        super(context, datas, R.layout.tp_list_item);
     }
 
     @Override

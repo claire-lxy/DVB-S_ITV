@@ -12,7 +12,7 @@ import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
 public class TvAndRadioRecycleViewAdapter extends BaseRecyclerAdapter<PDPInfo_t> {
 
     public TvAndRadioRecycleViewAdapter(Context context, List<PDPInfo_t> datas) {
-        super(context, datas, R.layout.adapter_tv_and_radio_item);
+        super(context, datas, R.layout.tv_and_radio_list_item);
     }
 
     @Override

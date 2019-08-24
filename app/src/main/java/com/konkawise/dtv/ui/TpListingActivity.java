@@ -110,8 +110,8 @@ public class TpListingActivity extends BaseActivity {
         initTpList();
 
         mTvLnb.setText(getLnb());
-        mTvDiSEqC.setText(getIntent().getStringExtra(Constants.IntentKey.INTENT_DISEQC));
-        mTvMotorType.setText(getIntent().getStringExtra(Constants.IntentKey.INTENT_MOTOR_TYPE));
+        mTvDiSEqC.setText(getDiSEqC());
+        mTvMotorType.setText(getMotorType());
     }
 
     @Override
@@ -201,6 +201,18 @@ public class TpListingActivity extends BaseActivity {
         return lnb;
     }
 
+    private String getDiSEqC() {
+        String diseqc = getIntent().getStringExtra(Constants.IntentKey.ITENT_DISEQC);
+        if (TextUtils.isEmpty(diseqc)) return "";
+        return diseqc;
+    }
+
+    private String getMotorType() {
+        String motorType = getIntent().getStringExtra(Constants.IntentKey.INTENT_MOTOR_TYPE);
+        if (TextUtils.isEmpty(motorType)) return "";
+        return motorType;
+    }
+
     private String getTpName() {
         if (mAdapter.getCount() <= 0) return "";
 
@@ -234,7 +246,6 @@ public class TpListingActivity extends BaseActivity {
                         intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, getIndex());
                         intent.putExtra(Constants.IntentKey.INTENT_SYMBOL, getSymbol());
                         intent.putExtra(Constants.IntentKey.INTENT_QAM, getQam());
-                        intent.putExtra(Constants.IntentKey.INTENT_TP_NAME, getTpName());
                         intent.putExtra(Constants.IntentKey.INTENT_TPLIST_ACTIVITY, 2);
                         startActivity(intent);
                     }
