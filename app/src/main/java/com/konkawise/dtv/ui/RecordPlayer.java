@@ -135,16 +135,15 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
                 int progress = 0;
                 int secondProgress = 0;
                 if (volid == 0) {
-                    if (context.from == FROM_RECORD_LIST) {
-                        context.totalDuration = 0;
-                    }
+                    context.totalDuration = 0;
                 } else {
                     if (context.from == FROM_RECORD_LIST) {
                         context.totalDuration = hpvrProgressT.endMs;
-                        progress = hpvrProgressT.currentMs;
+                        progress = hpvrProgressT.currentMs - hpvrProgressT.startMs;
                     } else {
-                        progress = hpvrProgressT.currentMs;
+                        progress = hpvrProgressT.currentMs - hpvrProgressT.startMs;
                         secondProgress = hpvrProgressT.endMs;
+                        context.totalDuration = hpvrProgressT.endMs;
                         if (context.seekNum >= 2 && context.gotoShiftEnd(progress, secondProgress, context.seekNum)) {
                             context.resumeFromSeek();
                         }
@@ -340,11 +339,9 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         if (!TextUtils.isEmpty(progNum)) {
             tvProgNum.setText(progNum);
         }
-        if (!initUIContextFlg) {
-            sbProgress.setMax(endMs / 1000);
-            tvTotalTime.setText(formatDuration(endMs));
-        }
-        initUIContextFlg = endMs > 0;
+
+        sbProgress.setMax(endMs / 1000);
+        tvTotalTime.setText(formatDuration(endMs));
     }
 
     static String formatDuration(int milliseconds) {
@@ -458,6 +455,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         if (from == FROM_TOPMOST) {
             serviceid = SWPDBaseManager.getInstance().getCurrProgInfo().ServID;
         } else {
+            SWDJAPVRManager.getInstance().injectSubTTXAudio(recordInfo.getFile().getParent() + "/", recordInfo.getFile().getName());
             serviceid = recordInfo.getHpvrRecFileT().ServId;
         }
         Log.i("testljm", "serviceid2:" + serviceid);
@@ -584,13 +582,13 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     }
 
     private void playTimeShift() {
-        totalDuration = getIntent().getIntExtra(Constants.IntentKey.INTENT_TIMESHIFT_TIME, 0) * 60 * 1000;
-        if (totalDuration == 0) {
-            totalDuration = SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_TimeshiftMaxMin.ordinal()) * 60 * 1000;
-        }
+//        totalDuration = getIntent().getIntExtra(Constants.IntentKey.INTENT_TIMESHIFT_TIME, 0) * 60 * 1000;
+//        if (totalDuration == 0) {
+//            totalDuration = SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_TimeshiftMaxMin.ordinal()) * 60 * 1000;
+//        }
         switchPlayTypeUI(TYPE_PAUSE, -1);
         showControlUI(false);
-        initUIContent(getIntent().getStringExtra(Constants.IntentKey.INTENT_TIMESHIFT_PROGNUM) + "  " + SWPDBaseManager.getInstance().getCurrProgInfo().Name, totalDuration);
+        initUIContent(getIntent().getStringExtra(Constants.IntentKey.INTENT_TIMESHIFT_PROGNUM) + "  " + SWPDBaseManager.getInstance().getCurrProgInfo().Name, 0);
         sendUpgradePrgressMsg(new HandlerMsgModel(PlayHandler.MSG_UPGRADE_PROGRESS));
         pvrHandler.sendEmptyMessage(PVRHandler.MSG_BEGIN_TIMESHIFT);
     }

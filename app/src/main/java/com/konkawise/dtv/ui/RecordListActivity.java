@@ -215,7 +215,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         @Override
         protected void loadBackground() {
             RecordListActivity context = mWeakReference.get();
-            List<RecordInfo> ltRecordFiles = context.queryRecordFiles(context.mUsbInfos.get(context.mCurrDevicePostion).path + "/"+Constants.RECORD_LIST_PATH);
+            List<RecordInfo> ltRecordFiles = context.queryRecordFiles(context.mUsbInfos.get(context.mCurrDevicePostion).path + "/" + Constants.RECORD_LIST_PATH);
             context.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -250,8 +250,9 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     }
 
     private void renameChannel(String oldName, String newName, boolean override) {
-        String path = mUsbInfos.get(mCurrDevicePostion).path + "/PVR/";
-        if (renameFile(path + oldName, path + newName, override)) {
+        String path = mUsbInfos.get(mCurrDevicePostion).path + "/" + Constants.RECORD_LIST_PATH;
+        if (renameFile(path + oldName, path + newName, override) && renameFile(path + oldName + Constants.RECORD_CONFIG_FILE_TYPE,
+                path + newName + Constants.RECORD_CONFIG_FILE_TYPE, override)) {
             Log.i(TAG, "notifyDataSetChanged");
             mAdapter.getItem(mCurrRecordPosition).setRecordFile(new File(path + newName));
             mAdapter.getItem(mCurrRecordPosition).getHpvrRecFileT().filename = newName;
@@ -309,6 +310,8 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     private void deleteChannel(List<RecordInfo> recordList, List<RecordInfo> removeInfos) {
         for (RecordInfo info : removeInfos) {
             info.getFile().delete();
+            Log.i(TAG, "delete idx file:" + info.getFile().getPath() + Constants.RECORD_CONFIG_FILE_TYPE);
+            new File(info.getFile().getPath() + Constants.RECORD_CONFIG_FILE_TYPE).delete();
         }
         recordList.removeAll(removeInfos);
     }
@@ -337,13 +340,13 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         String oldName = mAdapter.getItem(mCurrRecordPosition).getHpvrRecFileT().filename;
         new RenameDialog()
                 .setProgNo(mCurrRecordPosition + 1)
-                .setOldName(oldName)
+                .setOldName(oldName.substring(0, oldName.length() - 3))
                 .setEditLisener(new RenameDialog.EditTextLisener() {
                     @Override
                     public void setEdit(String newName) {
                         if (TextUtils.isEmpty(newName)) return;
                         if (!newName.substring(newName.length() - 3, newName.length()).equals(".ts")) {
-                            newName = newName + ".ts";
+                            newName = newName + "." + Constants.RECORD_FILE_TYPE;
                         }
                         renameChannel(oldName, newName, true);
                     }
@@ -465,7 +468,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         String fileName = file.getName();
         String end = fileName
                 .substring(fileName.lastIndexOf(".") + 1, fileName.length());
-        return end.equals("ts");
+        return end.equals(Constants.RECORD_FILE_TYPE);
     }
 
     private int getdiskPosition(String uuid, List<UsbInfo> ltUsbInfos, int[] refresh) {

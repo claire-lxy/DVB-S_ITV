@@ -25,8 +25,9 @@ public class RecordListAdapter extends BaseListViewAdapter<RecordInfo> {
 
     @Override
     protected void convert(BaseListViewHolder holder, int position, RecordInfo item) {
+        String fName = item.getFile().getName();
         holder.setText(R.id.tv_item_record_channel_num, String.valueOf(position + 1))
-                .setText(R.id.tv_record_prog_name, item.getFile().getName())
+                .setText(R.id.tv_record_prog_name, fName.substring(0, fName.length() - 3))
                 .setText(R.id.tv_record_channel_file_size, Formatter.formatFileSize(mContext, item.getFile().length()))
                 .setText(R.id.tv_record_channel_date, getModifiedTime(item.getFile().lastModified()))
                 .setVisibility(R.id.iv_item_record_select, !mSelectMap.get(position) ? View.INVISIBLE : View.VISIBLE)

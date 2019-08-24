@@ -111,6 +111,10 @@ public class SWDJAPVRManager {
         return DJAPVR.CreateInstance().setAudioPid(audPID, audioType);
     }
 
+    public int injectSubTTXAudio(String path, String fname) {
+        return DJAPVR.CreateInstance().injectSubTTXAudio(path, fname);
+    }
+
     public void setRecording(boolean recording) {
         this.mRecording = recording;
     }
