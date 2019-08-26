@@ -30,7 +30,8 @@
             style="@style/ItemGroupStyle"
             android:layout_below="@id/pvr_setting_title_divider"
             android:layout_marginTop="30dp"
-            android:background="@drawable/dvb_btn_fragment_selector">
+            android:background="@drawable/dvb_btn_fragment_selector"
+            android:visibility="gone">
 
             <TextView
                 style="@style/ItemTitleStyle"
@@ -40,15 +41,15 @@
             <ImageView
                 android:id="@+id/iv_time_shift_length_left"
                 style="@style/ItemArrowLeftStyle"
-                android:layout_toStartOf="@+id/tv_time_shift_length"
                 android:layout_toLeftOf="@+id/tv_time_shift_length"
+                android:layout_toStartOf="@+id/tv_time_shift_length"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_time_shift_length"
                 style="@style/ItemContentStyle"
-                android:layout_toStartOf="@+id/iv_time_shift_length_right"
                 android:layout_toLeftOf="@+id/iv_time_shift_length_right"
+                android:layout_toStartOf="@+id/iv_time_shift_length_right"
                 android:background="@drawable/btn_red_bg_shape" />
 
             <ImageView
@@ -72,21 +73,22 @@
             <ImageView
                 android:id="@+id/iv_record_length_left"
                 style="@style/ItemArrowLeftStyle"
-                android:layout_toStartOf="@+id/tv_record_length"
                 android:layout_toLeftOf="@+id/tv_record_length"
-                android:visibility="invisible"
+                android:layout_toStartOf="@+id/tv_record_length"
+                android:visibility="visible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_record_length"
                 style="@style/ItemContentStyle"
+                android:layout_toLeftOf="@+id/iv_record_length_right"
                 android:layout_toStartOf="@+id/iv_record_length_right"
-                android:layout_toLeftOf="@+id/iv_record_length_right" />
+                android:background="@drawable/btn_red_bg_shape" />
 
             <ImageView
                 android:id="@+id/iv_record_length_right"
                 style="@style/ItemArrowRightStyle"
-                android:visibility="invisible"
+                android:visibility="visible"
                 tools:ignore="ContentDescription" />
         </RelativeLayout>
 
@@ -95,7 +97,8 @@
             android:id="@+id/item_record_type"
             style="@style/ItemGroupStyle"
             android:layout_below="@id/item_record_length"
-            android:background="@drawable/dvb_btn_fragment_selector">
+            android:background="@drawable/dvb_btn_fragment_selector"
+            android:visibility="gone">
 
             <TextView
                 style="@style/ItemTitleStyle"
@@ -105,16 +108,16 @@
             <ImageView
                 android:id="@+id/iv_record_type_left"
                 style="@style/ItemArrowLeftStyle"
-                android:layout_toStartOf="@+id/tv_record_type"
                 android:layout_toLeftOf="@+id/tv_record_type"
+                android:layout_toStartOf="@+id/tv_record_type"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_record_type"
                 style="@style/ItemContentStyle"
-                android:layout_toStartOf="@+id/iv_record_type_right"
-                android:layout_toLeftOf="@+id/iv_record_type_right" />
+                android:layout_toLeftOf="@+id/iv_record_type_right"
+                android:layout_toStartOf="@+id/iv_record_type_right" />
 
             <ImageView
                 android:id="@+id/iv_record_type_right"
@@ -138,16 +141,16 @@
             <ImageView
                 android:id="@+id/iv_device_name_left"
                 style="@style/ItemArrowLeftStyle"
-                android:layout_toStartOf="@+id/tv_device_name"
                 android:layout_toLeftOf="@+id/tv_device_name"
+                android:layout_toStartOf="@+id/tv_device_name"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_device_name"
                 style="@style/ItemContentStyle"
-                android:layout_toStartOf="@+id/iv_device_name_right"
                 android:layout_toLeftOf="@+id/iv_device_name_right"
+                android:layout_toStartOf="@+id/iv_device_name_right"
                 android:text="@string/device_none" />
 
             <ImageView
@@ -173,16 +176,16 @@
             <ImageView
                 android:id="@+id/iv_device_format_left"
                 style="@style/ItemArrowLeftStyle"
-                android:layout_toStartOf="@+id/tv_device_format"
                 android:layout_toLeftOf="@+id/tv_device_format"
+                android:layout_toStartOf="@+id/tv_device_format"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_device_format"
                 style="@style/ItemContentStyle"
-                android:layout_toStartOf="@+id/iv_device_format_right"
-                android:layout_toLeftOf="@+id/iv_device_format_right" />
+                android:layout_toLeftOf="@+id/iv_device_format_right"
+                android:layout_toStartOf="@+id/iv_device_format_right" />
 
             <ImageView
                 android:id="@+id/iv_device_format_right"
@@ -197,8 +200,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/item_device_format"
-            android:layout_marginStart="264dp"
             android:layout_marginLeft="264dp"
+            android:layout_marginStart="264dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:padding="8dp"
@@ -211,8 +214,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/tv_device_file_system"
-            android:layout_marginStart="264dp"
             android:layout_marginLeft="264dp"
+            android:layout_marginStart="264dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:padding="8dp"
@@ -225,8 +228,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/tv_device_free_space"
-            android:layout_marginStart="264dp"
             android:layout_marginLeft="264dp"
+            android:layout_marginStart="264dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:padding="8dp"
