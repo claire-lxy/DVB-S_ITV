@@ -381,7 +381,12 @@ public class ScanTVandRadioActivity extends BaseActivity {
         }
 
         private void updateScan(int freq, int symbol, int qam, int num, int index) {
-            String tpName = freq + Utils.getVorH(ScanTVandRadioActivity.this, qam) + symbol;
+            String tpName;
+            if (isFromT2AutoSearch() || isFromT2ManualSearchActivity()) {
+                tpName = freq/10+"."+freq%10+"MHz" + " / " +symbol+"M";
+            } else {
+                tpName = freq + Utils.getVorH(ScanTVandRadioActivity.this, qam) + symbol;
+            }
             String tp = tpName + "(" + index + "/" + num + ")";
             mTvScanTp.setText(tp);
             onUpdateSearchProgress(num, index);
