@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.konkawise.dtv.R;
+import com.konkawise.dtv.SWDJAPVRManager;
 import com.konkawise.dtv.base.BaseDialogFragment;
 
 import butterknife.BindView;
@@ -148,7 +149,7 @@ public class SeekTimeDialog extends BaseDialogFragment {
         h = Integer.valueOf((sbHour.length() == 2 && sbHour.charAt(0) == '0') ? sbHour.deleteCharAt(0).toString() : sbHour.toString());
         m = Integer.valueOf((sbMinute.length() == 2 && sbMinute.charAt(0) == '0') ? sbMinute.deleteCharAt(0).toString() : sbMinute.toString());
         s = Integer.valueOf((sbSecond.length() == 2 && sbSecond.charAt(0) == '0') ? sbSecond.deleteCharAt(0).toString() : sbSecond.toString());
-        return h * 60 * 60 + m * 60 + s <= totalDuration;
+        return (h * 60 * 60 + m * 60 + s)*1000 <= SWDJAPVRManager.getInstance().getPlayProgress().endMs;
     }
 
     public SeekTimeDialog setTimeLimit(int totalDuration) {

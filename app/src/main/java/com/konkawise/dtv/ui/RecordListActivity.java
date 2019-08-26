@@ -28,11 +28,14 @@ import com.konkawise.dtv.dialog.PasswordDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.permission.OnRequestPermissionResultListener;
 import com.konkawise.dtv.permission.PermissionHelper;
+import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.weaktool.WeakRunnable;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import butterknife.BindView;
@@ -82,7 +85,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     void onChannelItemSelect(int position) {
         Log.i(TAG, "Record selection:" + position);
         mCurrRecordPosition = position;
-        if (mAdapter.getItem(position).getHpvrRecFileT().LockType == 1) {
+        if (mAdapter.getItem(position).getHpvrRecFileT() != null && mAdapter.getItem(position).getHpvrRecFileT().LockType == 1) {
             tvLock.setText(getResources().getString(R.string.unlock));
         } else {
             tvLock.setText(getResources().getString(R.string.lock));
@@ -110,6 +113,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
 
     private int mCurrDevicePostion;
     private int mCurrRecordPosition;
+    private Map<String, List<RecordInfo>> fMaps = new HashMap<>();
     private List<UsbInfo> mUsbInfos = new ArrayList<>();
     List<HPVR_RecFile_t> ltHpvrRecFileTS = new ArrayList<>();
     private DeviceGroupAdapter deviceGroupAdapter;
@@ -159,6 +163,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        fMaps.clear();
         UsbManager.getInstance().unregisterUsbReceiveListener(this);
     }
 
@@ -255,7 +260,8 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
                 path + newName + Constants.RECORD_CONFIG_FILE_TYPE, override)) {
             Log.i(TAG, "notifyDataSetChanged");
             mAdapter.getItem(mCurrRecordPosition).setRecordFile(new File(path + newName));
-            mAdapter.getItem(mCurrRecordPosition).getHpvrRecFileT().filename = newName;
+            if (mAdapter.getItem(mCurrRecordPosition).getHpvrRecFileT() != null)
+                mAdapter.getItem(mCurrRecordPosition).getHpvrRecFileT().filename = newName;
             mAdapter.notifyDataSetChanged();
         }
 
@@ -277,12 +283,18 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
 
         mAdapter.clearSelect();
         mAdapter.updateData(recordList);
+        if(recordList.get(mCurrRecordPosition).getHpvrRecFileT() == null){
+            ToastUtils.showToast(R.string.lock_error);
+            tvLock.setText(getResources().getString(R.string.lock));
+            return;
+        }
         tvLock.setText(lockType == 1 ? getResources().getString(R.string.unlock) : getResources().getString(R.string.lock));
     }
 
     private void lockChannel(List<RecordInfo> recordList, int position, int lockType) {
         RecordInfo recordInfo = recordList.get(position);
-        recordInfo.getHpvrRecFileT().LockType = lockType;
+        if (recordInfo.getHpvrRecFileT() != null)
+            recordInfo.getHpvrRecFileT().LockType = lockType;
 
         Log.i(TAG, "lockPath:" + recordInfo.getFile().getParent() + "lockName:" + recordInfo.getFile().getName());
         SWDJAPVRManager.getInstance().lockRecordFile(recordInfo.getFile().getParent(), recordInfo.getFile().getName(), lockType);
@@ -337,7 +349,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
 
     private void showRenameDialog() {
         if (mAdapter.getCount() <= 0 || mCurrRecordPosition >= mAdapter.getCount()) return;
-        String oldName = mAdapter.getItem(mCurrRecordPosition).getHpvrRecFileT().filename;
+        String oldName = mAdapter.getItem(mCurrRecordPosition).getFile().getName();
         new RenameDialog()
                 .setProgNo(mCurrRecordPosition + 1)
                 .setName(oldName.substring(0, oldName.length() - 3))
@@ -395,7 +407,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
 
         if (keyCode == KeyEvent.KEYCODE_PROG_YELLOW) {
             if (lyBottom.getVisibility() == View.VISIBLE) {
-                if (mAdapter.getItem(mCurrRecordPosition).getHpvrRecFileT().LockType == 1) {
+                if (mAdapter.getItem(mCurrRecordPosition).getHpvrRecFileT() != null && mAdapter.getItem(mCurrRecordPosition).getHpvrRecFileT().LockType == 1) {
                     showPasswordDialog(TYPE_PASSWORD_UNLOCK);
                 } else {
                     lockChannels(1);
@@ -439,6 +451,9 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
 
     private List<RecordInfo> queryRecordFiles(String path) {
         Log.i(TAG, "record filePath---:" + path);
+        if (fMaps.containsKey(path)) {
+            return fMaps.get(path);
+        }
 
         List<RecordInfo> ltRecordInfo = new ArrayList<>();
         File dF = new File(path);
@@ -461,6 +476,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
                 ltRecordInfo.add(recordInfo);
             }
         }
+        fMaps.put(path, ltRecordInfo);
         Log.i(TAG, "record file size:" + ltRecordInfo.size());
         return ltRecordInfo;
     }
