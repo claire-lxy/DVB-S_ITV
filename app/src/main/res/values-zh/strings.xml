@@ -43,6 +43,7 @@
     <string name="q">Q</string>
     <string name="rename">重命名</string>
     <string name="lock">加锁</string>
+    <string name="lock_error">加锁失败!</string>
     <string name="unlock">解锁</string>
     <string name="skip">跳跃</string>
     <string name="pid">PID</string>
