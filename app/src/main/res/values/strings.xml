@@ -393,6 +393,8 @@
     <string name="toast_start_record">Start Recording!</string>
     <string name="toast_stop_record">Record End!</string>
     <string name="toast_no_storage_device">No Storage Device!</string>
+    <string name="toast_storage_inserted">The storage device is inserted!</string>
+    <string name="toast_storage_out">The storage device is out!</string>
     <string name="toast_program_playing">Program is playing!</string>
     <string name="toast_start_record_failed">Start record failed!</string>
     <string name="toast_pvr_minute_empty">Minute(s) is empty!</string>

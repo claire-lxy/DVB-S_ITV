@@ -367,6 +367,7 @@ public class Topmost extends BaseActivity {
         public int ProgPlay_SWAV_USBAttach() {
             Log.i(TAG, "usb attach");
             mUsbAttach = true;
+            ToastUtils.showToast(R.string.toast_storage_inserted);
             return super.ProgPlay_SWAV_USBAttach();
         }
 
@@ -374,6 +375,7 @@ public class Topmost extends BaseActivity {
         public int ProgPlay_SWAV_USBDetach() {
             Log.i(TAG, "usb detach");
             mUsbAttach = false;
+            ToastUtils.showToast(R.string.toast_storage_out);
             stopRecord();
             return super.ProgPlay_SWAV_USBDetach();
         }
