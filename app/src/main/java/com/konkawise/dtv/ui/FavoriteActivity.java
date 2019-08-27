@@ -172,6 +172,7 @@ public class FavoriteActivity extends BaseActivity {
         protected void loadBackground() {
             FavoriteActivity context = mWeakReference.get();
 
+            context.mFavoriteChannelsMap = SWPDBaseManager.getInstance().getFavChannelMap();
             List<PDPMInfo_t> favoriteChannels = context.mFavoriteChannelsMap.get(favIndex);
             if (favoriteChannels == null) {
                 favoriteChannels = SWPDBaseManager.getInstance().getFavListByIndex(favIndex);
@@ -221,11 +222,7 @@ public class FavoriteActivity extends BaseActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            for (int i = 0; i < mFavoriteChannelsMap.size(); i++) {
-                List<PDPMInfo_t> pdpmInfo_ts = mFavoriteChannelsMap.get(i);
-                if (pdpmInfo_ts == null || pdpmInfo_ts.isEmpty()) continue;
-                SWPDBaseManager.getInstance().editFavProgList(i, getFavList(pdpmInfo_ts), pdpmInfo_ts.size(), 1);
-            }
+            SWPDBaseManager.getInstance().setFavChannelMap(mFavoriteChannelsMap);
         }
 
         if (keyCode == KeyEvent.KEYCODE_PROG_GREEN) {

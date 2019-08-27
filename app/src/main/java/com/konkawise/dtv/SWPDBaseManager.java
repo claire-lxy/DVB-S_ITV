@@ -9,6 +9,7 @@ import com.sw.dvblib.SWPDBase;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
 import vendor.konka.hardware.dtvmanager.V1_0.Channel_t;
@@ -19,6 +20,8 @@ import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 
 public class SWPDBaseManager {
     public static final int RANGE_SAT_INDEX = 10000;
+
+    private SparseArray<List<PDPMInfo_t>> mFavChannelsMap = new SparseArray<>();  //缓存喜爱列表，避免多次从底层获取数据
 
     private static class SWPDBaseManagerHolder {
         private static SWPDBaseManager INSTANCE = new SWPDBaseManager();
@@ -351,6 +354,26 @@ public class SWPDBaseManager {
      */
     public int getProgNumOfType(int type, int param) {
         return SWPDBase.CreateInstance().getProgNumOfType(type, param);
+    }
+
+    public SparseArray<List<PDPMInfo_t>> getFavChannelMap() {
+        if (mFavChannelsMap.size() > 0) {
+            return mFavChannelsMap;
+        }
+
+        int[] favIndexArray = getFavIndexArray();
+        for (int i = 0; i < favIndexArray.length; i++) {
+            mFavChannelsMap.put(i, SWPDBaseManager.getInstance().getFavListByIndex(favIndexArray[i]));
+        }
+        return mFavChannelsMap;
+    }
+
+    public void setFavChannelMap(SparseArray<List<PDPMInfo_t>> mFavChannelsMap) {
+        this.mFavChannelsMap = mFavChannelsMap;
+    }
+
+    public void clearFavChannelMap(){
+        this.mFavChannelsMap.clear();
     }
 
     /**

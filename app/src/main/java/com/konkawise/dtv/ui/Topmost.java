@@ -1406,6 +1406,7 @@ public class Topmost extends BaseActivity {
                     @Override
                     public void onPositiveListener() {
                         SWFtaManager.getInstance().clearChannel();
+                        SWPDBaseManager.getInstance().clearFavChannelMap();
                         mCurrSatPosition = 0;
                         mProgListAdapter.clearData(); // 同步清空频道列表
                     }
@@ -1417,6 +1418,7 @@ public class Topmost extends BaseActivity {
                 .setOnPositiveListener("", new OnCommPositiveListener() {
                     @Override
                     public void onPositiveListener() {
+                        SWPDBaseManager.getInstance().clearFavChannelMap();
                         SWFtaManager.getInstance().factoryReset();
                         toggleMenu();
                         showRadioBackground();

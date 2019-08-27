@@ -162,10 +162,7 @@ public class ChannelEditActivity extends BaseActivity {
         @Override
         protected void loadBackground() {
             ChannelEditActivity context = mWeakReference.get();
-            int[] favIndexArray = SWPDBaseManager.getInstance().getFavIndexArray();
-            for (int i = 0; i < favIndexArray.length; i++) {
-                context.mFavChannelsMap.put(i, SWPDBaseManager.getInstance().getFavListByIndex(favIndexArray[i]));
-            }
+            context.mFavChannelsMap = SWPDBaseManager.getInstance().getFavChannelMap();
 
             context.mEditFavChannelsMap = mWeakReference.get().mFavChannelsMap.clone();
         }
@@ -313,6 +310,7 @@ public class ChannelEditActivity extends BaseActivity {
             SWPDBaseManager.getInstance().editFavProgList(i,
                     getFavoriteProgIndexs(mFavChannelsMap.get(i)), mFavChannelsMap.get(i).size(), 1);
         }
+        SWPDBaseManager.getInstance().setFavChannelMap(mFavChannelsMap);
     }
 
     /**
