@@ -14,6 +14,8 @@ import android.widget.TextView;
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWBookingManager;
+import com.konkawise.dtv.SWPDBaseManager;
+import com.konkawise.dtv.annotation.BookType;
 import com.konkawise.dtv.base.BaseDialogFragment;
 import com.konkawise.dtv.bean.BookParameterModel;
 import com.konkawise.dtv.bean.BookingModel;
@@ -21,8 +23,10 @@ import com.konkawise.dtv.utils.EditUtils;
 import com.konkawise.dtv.utils.TimeUtils;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.sw.dvblib.SWBooking;
+import com.sw.dvblib.SWPDBase;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindArray;
@@ -48,9 +52,9 @@ public class BookDialog extends BaseDialogFragment {
     private static final int ITEM_END_TIME = 7;
 
     // book type
-    private static final int BOOK_TYPE_STANDBY = 0;
-    private static final int BOOK_TYPE_PLAY = 1;
-    private static final int BOOK_TYPE_RECORD = 2;
+    private static final int BOOK_TYPE_STANDBY = -1; // modify 0
+    private static final int BOOK_TYPE_PLAY = 0; // modify 1
+    private static final int BOOK_TYPE_RECORD = 1; // modify 2
 
     // book mode
     private static final int BOOK_MODE_ONCE = 0;
@@ -188,7 +192,6 @@ public class BookDialog extends BaseDialogFragment {
     @BindArray(R.array.book_mode)
     String[] mBookModeArray;
 
-    @BindArray(R.array.book_channel_type)
     String[] mBookChannelTypeArray;
 
     @BindArray(R.array.book_date_weekly)
@@ -231,7 +234,7 @@ public class BookDialog extends BaseDialogFragment {
             mBookModel.bookInfo.minute = startTime.Minute;
 
             mBookModel.bookInfo.sat = mBookModel.progInfo.Sat;
-            mBookModel.bookInfo.tsid = mBookModel.progInfo.Freq;
+            mBookModel.bookInfo.tsid = mBookModel.progInfo.TsID;
             mBookModel.bookInfo.servid = mBookModel.progInfo.ServID;
             // 需要添加默认值，否则接口调用会出现崩溃情况
             mBookModel.bookInfo.name = SWBookingManager.DEFAULT_BOOK_CONTENT;
@@ -364,7 +367,7 @@ public class BookDialog extends BaseDialogFragment {
 
     private boolean isHourAndMinuteValid() {
         if (mBookModel == null) return false;
-       
+
         String startHour = mEtBookStartTimeHour.getText().toString();
         String startMinute = mEtBookStartTimeMinute.getText().toString();
 
@@ -482,7 +485,18 @@ public class BookDialog extends BaseDialogFragment {
 
     private String mTitle;
     private BookingModel mBookModel;
-    private List<PDPInfo_t> mProgList;
+    @BookType
+    private int mBookType;
+
+    // 主要操作的频道列表
+    private List<PDPInfo_t> mProgList = new ArrayList<>();
+    // 当前播放类型的频道列表，TV or Radio
+    private List<PDPInfo_t> mCurrTypeProgList;
+    // 其他播放类型的频道列表，TV or Radio
+    private List<PDPInfo_t> mAnotherTypeProgList;
+    // 记录原始的频道类型，主要用于TV和Radio列表都存在时，切换Channel Type时通知更新mProgList列表
+    private int mOriginChannelTypePosition;
+
     private int mChannelNamePosition;
 
     @Override
@@ -500,8 +514,10 @@ public class BookDialog extends BaseDialogFragment {
         mTvBookMode.setText(getBookModelText());
         mCurrModePosition = getPosition(mTvBookMode.getText().toString(), mBookModeArray);
 
+        mBookChannelTypeArray = getBookChannelTypeArray();
         mTvBookChannelType.setText(getBookChannelTypeText());
         mCurrChannelTypePosition = getPosition(mTvBookChannelType.getText().toString(), mBookChannelTypeArray);
+        mOriginChannelTypePosition = mCurrChannelTypePosition;
 
         mTvBookChannelName.setText(getBookChannelNameText());
 
@@ -530,7 +546,7 @@ public class BookDialog extends BaseDialogFragment {
         mEtBookEndTimeHour.setOnKeyListener(new EditKeyListener(mEtBookEndTimeHour, mEtBookEndTimeMinute, mEtBookEndTimeMinute));
         mEtBookEndTimeMinute.setOnKeyListener(new EditKeyListener(mEtBookEndTimeMinute, mEtBookEndTimeHour, mEtBookEndTimeHour));
 
-        notifyItemFocusChange();
+        notifySomeItemFocusableChange();
         notifyBookDateItemChange();
         itemFocusChange();
     }
@@ -550,7 +566,8 @@ public class BookDialog extends BaseDialogFragment {
         } else if (mBookModel.bookInfo.schtype == SWBooking.BookSchType.RECORD.ordinal()) {
             return mBookTypeArray[BOOK_TYPE_RECORD];
         }
-        return mBookTypeArray[BOOK_TYPE_STANDBY];
+//        return mBookTypeArray[BOOK_TYPE_STANDBY]; // modify
+        return mBookTypeArray[BOOK_TYPE_RECORD];
     }
 
     private String getBookModelText() {
@@ -570,22 +587,48 @@ public class BookDialog extends BaseDialogFragment {
         return mBookModeArray[0];
     }
 
+    private String[] getBookChannelTypeArray() {
+        if (isBookEdit() && mBookModel != null) {
+            if (mBookModel.bookInfo.type == SWBooking.BookType.TV.ordinal()) {
+                return getResources().getStringArray(R.array.book_channel_type_tv);
+            } else {
+                return getResources().getStringArray(R.array.book_channel_type_radio);
+            }
+        } else {
+            if (mCurrTypeProgList != null && !mCurrTypeProgList.isEmpty() && mAnotherTypeProgList != null && !mAnotherTypeProgList.isEmpty()) {
+                return getResources().getStringArray(R.array.book_channel_type);
+            } else {
+                int currProgType = SWPDBaseManager.getInstance().getCurrProgType();
+                if (currProgType == SWPDBase.SW_TVPROG) {
+                    return getResources().getStringArray(R.array.book_channel_type_tv);
+                } else {
+                    return getResources().getStringArray(R.array.book_channel_type_radio);
+                }
+            }
+        }
+    }
+
     private String getBookChannelTypeText() {
         if (mBookModel == null) {
-            return mBookChannelTypeArray[0];
+            int currProgType = SWPDBaseManager.getInstance().getCurrProgType();
+            if (currProgType > mBookChannelTypeArray.length - 1) {
+                return mBookChannelTypeArray[0];
+            } else {
+                return mBookChannelTypeArray[currProgType];
+            }
         }
 
         if (mBookModel.bookInfo.type == SWBooking.BookType.TV.ordinal()) {
-            return mBookChannelTypeArray[0];
+            return getStrings(R.string.tv);
         } else if (mBookModel.bookInfo.type == SWBooking.BookType.RADIO.ordinal()) {
-            return mBookChannelTypeArray[1];
+            return getStrings(R.string.radio);
         }
-        return mBookChannelTypeArray[0];
+        return getStrings(R.string.tv);
     }
 
     private String getBookChannelNameText() {
         if (mProgList != null && !mProgList.isEmpty()) {
-            return mBookModel == null ? mProgList.get(0).Name : mProgList.get(mChannelNamePosition).Name;
+            return mProgList.get(mChannelNamePosition).Name;
         }
         return "";
     }
@@ -712,8 +755,19 @@ public class BookDialog extends BaseDialogFragment {
         return this;
     }
 
-    public BookDialog progList(List<PDPInfo_t> progList) {
-        this.mProgList = progList;
+    public BookDialog bookType(@BookType int bookType) {
+        this.mBookType = bookType;
+        return this;
+    }
+
+    public BookDialog currTypeProgList(List<PDPInfo_t> currTypeProgList) {
+        this.mCurrTypeProgList = currTypeProgList;
+        mProgList.addAll(mCurrTypeProgList);
+        return this;
+    }
+
+    public BookDialog anotherTypeProgList(List<PDPInfo_t> anotherTypeProgList) {
+        this.mAnotherTypeProgList = anotherTypeProgList;
         return this;
     }
 
@@ -771,18 +825,26 @@ public class BookDialog extends BaseDialogFragment {
                     break;
                 case ITEM_START_TIME:
                     if (mCurrTypePosition != BOOK_TYPE_STANDBY && mCurrModePosition == BOOK_MODE_DAILY) {
-                        mCurrentSelectItem -= 2; // select channel name
+                        if (isBookEdit()) {
+                            mCurrentSelectItem -= 4; // select mode
+                        } else {
+                            mCurrentSelectItem -= 2; // select channel name
+                        }
                     } else if (mCurrTypePosition == BOOK_TYPE_STANDBY && mCurrModePosition == BOOK_MODE_DAILY) {
                         mCurrentSelectItem -= 4; // select mode
                     } else {
-                        --mCurrentSelectItem;
+                        --mCurrentSelectItem; // select date
                     }
                     break;
                 case ITEM_DATE:
                     if (mCurrTypePosition == BOOK_TYPE_STANDBY) {
                         mCurrentSelectItem -= 3; // select mode
                     } else {
-                        --mCurrentSelectItem;
+                        if (isBookEdit()) {
+                            mCurrentSelectItem -= 3; // select mode
+                        } else {
+                            --mCurrentSelectItem; // select channel name
+                        }
                     }
                     break;
                 case ITEM_BUTTON_FOCUS:
@@ -810,7 +872,7 @@ public class BookDialog extends BaseDialogFragment {
                     if (mCurrModePosition == BOOK_MODE_DAILY) {
                         mCurrentSelectItem += 2; // select mode
                     } else {
-                        ++mCurrentSelectItem;
+                        ++mCurrentSelectItem; // select channel type
                     }
                     break;
                 case ITEM_MODE:
@@ -821,7 +883,15 @@ public class BookDialog extends BaseDialogFragment {
                             mCurrentSelectItem += 3; // select date
                         }
                     } else {
-                        ++mCurrentSelectItem;
+                        if (isBookEdit()) {
+                            if (mCurrModePosition == BOOK_MODE_DAILY) {
+                                mCurrentSelectItem += 4; // select start time
+                            } else {
+                                mCurrentSelectItem += 3; // select date
+                            }
+                        } else {
+                            ++mCurrentSelectItem; // select type
+                        }
                     }
                     break;
                 case ITEM_START_TIME:
@@ -851,7 +921,7 @@ public class BookDialog extends BaseDialogFragment {
                 case ITEM_TYPE:
                     if (--mCurrTypePosition < 0) mCurrTypePosition = mBookTypeArray.length - 1;
                     mTvBookType.setText(mBookTypeArray[mCurrTypePosition]);
-                    notifyItemFocusChange();
+                    notifySomeItemFocusableChange();
                     break;
 
                 case ITEM_MODE:
@@ -864,6 +934,7 @@ public class BookDialog extends BaseDialogFragment {
                     if (--mCurrChannelTypePosition < 0)
                         mCurrChannelTypePosition = mBookChannelTypeArray.length - 1;
                     mTvBookChannelType.setText(mBookChannelTypeArray[mCurrChannelTypePosition]);
+                    notifyChannelListChange();
                     break;
 
                 case ITEM_CHANNEL_NAME:
@@ -895,7 +966,7 @@ public class BookDialog extends BaseDialogFragment {
                 case ITEM_TYPE:
                     if (++mCurrTypePosition >= mBookTypeArray.length) mCurrTypePosition = 0;
                     mTvBookType.setText(mBookTypeArray[mCurrTypePosition]);
-                    notifyItemFocusChange();
+                    notifySomeItemFocusableChange();
                     break;
 
                 case ITEM_MODE:
@@ -908,6 +979,7 @@ public class BookDialog extends BaseDialogFragment {
                     if (++mCurrChannelTypePosition >= mBookChannelTypeArray.length)
                         mCurrChannelTypePosition = 0;
                     mTvBookChannelType.setText(mBookChannelTypeArray[mCurrChannelTypePosition]);
+                    notifyChannelListChange();
                     break;
 
                 case ITEM_CHANNEL_NAME:
@@ -954,10 +1026,14 @@ public class BookDialog extends BaseDialogFragment {
 
         mBookModel.bookInfo.schtype = getBookType();
         mBookModel.bookInfo.repeatway = getBookMode();
-        mBookModel.bookInfo.type = getBookChannelType();
         mBookModel.bookInfo.schway = SWBooking.BookWay.MANUAL.ordinal();
-        if (mProgList != null && !mProgList.isEmpty()) {
-            mBookModel.progInfo = mProgList.get(mChannelNamePosition);
+
+        // 添加时才更新频道类型和频道
+        if (!isBookEdit()) {
+            if (mProgList != null && !mProgList.isEmpty()) {
+                mBookModel.progInfo = mProgList.get(mChannelNamePosition);
+            }
+            mBookModel.bookInfo.type = getBookChannelType();
         }
     }
 
@@ -997,33 +1073,37 @@ public class BookDialog extends BaseDialogFragment {
         return SWBooking.BookType.TV.ordinal();
     }
 
+    private boolean isBookEdit() {
+        return mBookType == Constants.BOOK_TYPE_EDIT;
+    }
+
     /**
      * if BookType is record, ChannelType、ChannelName、BookEndTime focusable
      * if BookType is standby, ChannelType、ChannelName、BookEndTime no focusable
      * if BookType is play, ChannelType、ChannelName focusable, BookEndTime no focusable
      */
-    private void notifyItemFocusChange() {
+    private void notifySomeItemFocusableChange() {
         if (mCurrTypePosition == BOOK_TYPE_RECORD) {
-            mItemBookChannelType.setBackgroundResource(0);
-
-            mItemBookChannelName.setBackgroundResource(0);
-
+            mItemBookChannelType.setBackgroundResource(isBookEdit() ? R.color.color_4D4D4D : 0);
+            mItemBookChannelName.setBackgroundResource(isBookEdit() ? R.color.color_4D4D4D : 0);
+            mItemBookChannelType.setFocusable(!isBookEdit());
+            mItemBookChannelName.setFocusable(!isBookEdit());
             mItemBookEndTime.setBackgroundResource(0);
         }
 
         if (mCurrTypePosition == BOOK_TYPE_STANDBY) {
             mItemBookChannelType.setBackgroundResource(R.color.color_4D4D4D);
-
             mItemBookChannelName.setBackgroundResource(R.color.color_4D4D4D);
-
+            mItemBookChannelType.setFocusable(!isBookEdit());
+            mItemBookChannelName.setFocusable(!isBookEdit());
             mItemBookEndTime.setBackgroundResource(R.color.color_4D4D4D);
         }
 
         if (mCurrTypePosition == BOOK_TYPE_PLAY) {
-            mItemBookChannelType.setBackgroundResource(0);
-
-            mItemBookChannelName.setBackgroundResource(0);
-
+            mItemBookChannelType.setBackgroundResource(isBookEdit() ? R.color.color_4D4D4D : 0);
+            mItemBookChannelName.setBackgroundResource(isBookEdit() ? R.color.color_4D4D4D : 0);
+            mItemBookChannelType.setFocusable(!isBookEdit());
+            mItemBookChannelName.setFocusable(!isBookEdit());
             mItemBookEndTime.setBackgroundResource(R.color.color_4D4D4D);
         }
     }
@@ -1062,6 +1142,19 @@ public class BookDialog extends BaseDialogFragment {
         }
     }
 
+    private void notifyChannelListChange() {
+        if (mBookChannelTypeArray.length > 1 && !isBookEdit()) {
+            mProgList.clear();
+            if (mOriginChannelTypePosition == mCurrChannelTypePosition) {
+                mProgList.addAll(mCurrTypeProgList);
+            } else {
+                mProgList.addAll(mAnotherTypeProgList);
+            }
+            mChannelNamePosition = 0;
+            mTvBookChannelName.setText(mProgList.get(mChannelNamePosition).Name);
+        }
+    }
+
     private void itemFocusChange() {
         itemChange(ITEM_TYPE, mItemBookType, mIvBookTypeLeft, mIvBookTypeRight, mTvBookType);
         itemChange(ITEM_MODE, mItemBookMode, mIvBookModeLeft, mIvBookModeRight, mTvBookMode);
@@ -1075,13 +1168,13 @@ public class BookDialog extends BaseDialogFragment {
     }
 
     private void channelTypeItemFocusChange() {
-        if (mCurrTypePosition != BOOK_TYPE_STANDBY) {
+        if (mCurrTypePosition != BOOK_TYPE_STANDBY && !isBookEdit()) {
             itemChange(ITEM_CHANNEL_TYPE, mItemBookChannelType, mIvBookChannelTypeLeft, mIvBookChannelTypeRight, mTvBookChannelType);
         }
     }
 
     private void channelNameItemFocusChange() {
-        if (mCurrTypePosition != BOOK_TYPE_STANDBY) {
+        if (mCurrTypePosition != BOOK_TYPE_STANDBY && !isBookEdit()) {
             itemChange(ITEM_CHANNEL_NAME, mItemBookChannelName, mIvBookChannelNameLeft, mIvBookChannelNameRight, mTvBookChannelName);
         }
     }

@@ -3,34 +3,24 @@ package com.konkawise.dtv.ui;
 import android.content.Intent;
 
 import com.konkawise.dtv.R;
+import com.konkawise.dtv.SWPDBaseManager;
+import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.PasswordDialog;
 import com.konkawise.dtv.utils.ToastUtils;
 
-import butterknife.OnClick;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * 创建者      lj DELL
- * 创建时间    2018/12/9 14:51
- * 描述        DTV设置界面
- * <p>
- * 更新者      $Author$
- * <p>
- * 更新时间    $Date$
- * 更新描述    ${TODO}
- */
+import butterknife.OnClick;
+import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
+
 public class DTVSettingActivity extends BaseActivity {
+
+    private List<PDPInfo_t> mProgList = new ArrayList<>();
 
     @OnClick(R.id.rl_general_settings)
     void generalSetting() {
-//        new InstallationSelectDialog().setOnInstallationSelectListener(new InstallationSelectDialog.OnInstallationSelectListener() {
-//            @Override
-//            public void onInstallationSelect(int installationType) {
-//                Intent intent = new Intent(DTVSettingActivity.this, GeneralSettingsActivity.class);
-//                intent.putExtra(Constants.IntentKey.INTENT_T2_SETTING, installationType == Constants.INSTALLATION_TYPE_T2);
-//                startActivity(intent);
-//            }
-//        }).show(getSupportFragmentManager(), InstallationSelectDialog.TAG);
         Intent intent = new Intent(this, GeneralSettingsActivity.class);
         startActivity(intent);
     }
@@ -52,6 +42,10 @@ public class DTVSettingActivity extends BaseActivity {
 
     @OnClick(R.id.rl_book_list)
     void bookList() {
+        if (mProgList.isEmpty())  {
+            ToastUtils.showToast(R.string.dialog_no_search);
+            return;
+        }
         startActivity(new Intent(this, BookListActivity.class));
     }
 
@@ -67,7 +61,15 @@ public class DTVSettingActivity extends BaseActivity {
 
     @Override
     protected void setup() {
-
+        ThreadPoolManager.getInstance().execute(new Runnable() {
+            @Override
+            public void run() {
+                List<PDPInfo_t> progList = SWPDBaseManager.getInstance().getCurrGroupProgInfoList();
+                if (progList != null && !progList.isEmpty()) {
+                    mProgList.addAll(progList);
+                }
+            }
+        });
     }
 
     private void showPasswordDialog() {

@@ -26,7 +26,7 @@ public class SWDJAPVRManager {
     /**
      * 开始录制
      *
-     * @param delay 底层启动录制需要时间，delay值每500毫秒左右+1传递检查返回值
+     * @param delay 底层启动录制需要时间，直接传递1
      * @return 0：启动成功  -4：正在启动需要继续等待  other:启动失败
      */
     public int startRecord(int delay) {
@@ -36,7 +36,7 @@ public class SWDJAPVRManager {
     /**
      * 开始录制
      *
-     * @param delay      底层启动录制需要时间，delay值每n毫秒左右+1传递检查返回值
+     * @param delay      底层启动录制需要时间，直接传递1
      * @param recordPath 流录制的盘符路径，如/storage/sda1
      * @return 0：启动成功  -4：正在启动需要继续等待  other:启动失败
      */
@@ -52,11 +52,11 @@ public class SWDJAPVRManager {
     }
 
     public int getRecordFileNum() {
-        return DJAPVR.CreateInstance().getRecordFileNum();
+        return DJAPVR.CreateInstance().getRecordFileNum(null);
     }
 
     public ArrayList<HPVR_RecFile_t> getRecordFileList(int begin, int limit) {
-        return DJAPVR.CreateInstance().getRecordFileList(begin, limit);
+        return DJAPVR.CreateInstance().getRecordFileList(null, begin, limit);
     }
 
     public int startPlay(String path, String fname, int loop) {

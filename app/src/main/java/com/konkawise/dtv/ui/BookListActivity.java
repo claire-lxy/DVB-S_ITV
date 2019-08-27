@@ -14,6 +14,7 @@ import com.konkawise.dtv.RealTimeManager;
 import com.konkawise.dtv.SWBookingManager;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.adapter.BookListAdapter;
+import com.konkawise.dtv.annotation.BookType;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.bean.BookParameterModel;
 import com.konkawise.dtv.bean.BookingModel;
@@ -57,7 +58,8 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
     private BookListAdapter mAdapter;
     private int mCurrSelectPosition;
     private LoadBookingTask mLoadBookingTask;
-    private List<PDPInfo_t> mAllProgList;
+    private List<PDPInfo_t> mCurrTypeProgList;
+    private List<PDPInfo_t> mAnotherTypeProgList;
 
     @Override
     public int getLayoutId() {
@@ -121,7 +123,8 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
         protected List<BookingModel> backgroundExecute(Void... param) {
             BookListActivity context = mWeakReference.get();
 
-            context.mAllProgList = SWPDBaseManager.getInstance().getCurrGroupProgInfoList();
+            context.mCurrTypeProgList = SWPDBaseManager.getInstance().getCurrGroupProgInfoList();
+            context.mAnotherTypeProgList = SWPDBaseManager.getInstance().getAnotherTypeProgInfoList();
 
             return SWBookingManager.getInstance().getBookingModelList();
         }
@@ -155,14 +158,16 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
 
-    private void showBookDialog(String title, final int bookingType) {
-        List<PDPInfo_t> progList = getProgList(bookingType);
+    private void showBookDialog(String title, @BookType final int bookingType) {
+        List<PDPInfo_t> progList = getCurrTypeProgList();
         if (progList == null || progList.isEmpty()) return;
 
         new BookDialog()
                 .title(title)
                 .bookModel(bookingType == Constants.BOOK_TYPE_ADD ? null : mAdapter.getItem(mCurrSelectPosition))
-                .progList(progList)
+                .bookType(bookingType)
+                .currTypeProgList(progList)
+                .anotherTypeProgList(getAnotherTypeProgList(bookingType)) // if book type is edit, it will be null
                 .channelNamePosition(getChannelNamePosition(bookingType))
                 .setOnBookCallbackListener(new BookDialog.OnBookCallbackListener() {
                     @Override
@@ -183,9 +188,9 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
                                 ToastUtils.showToast(R.string.toast_book_limit);
                                 break;
                             case Constants.BOOK_CONFLICT_ADD: // 当前参数的book有冲突，如果是添加需要先删除后再添加
-                                SWBookingManager.getInstance().addProg(pm.bookConflict, pm.conflictBookProg, pm.bookingModel.bookInfo);
                                 int conflictPosition = findConflictBookProgPosition(pm.conflictBookProg);
                                 if (conflictPosition != -1) {
+                                    SWBookingManager.getInstance().addProg(pm.bookConflict, pm.conflictBookProg, pm.bookingModel.bookInfo);
                                     mAdapter.removeData(conflictPosition);
                                     mAdapter.addData(mAdapter.getCount(), pm.bookingModel);
                                 }
@@ -236,15 +241,22 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
     }
 
     private int getChannelNamePosition(int bookingType) {
-        if (bookingType == Constants.BOOK_TYPE_EDIT) {
-            BookingModel bookingModel = mAdapter.getItem(mCurrSelectPosition);
-            if (bookingModel != null) {
-                List<PDPInfo_t> progList = getProgList(bookingType);
-                if (progList != null && !progList.isEmpty()) {
-                    for (int i = 0; i < progList.size(); i++) {
-                        if (progList.get(i).Name.equals(bookingModel.progInfo.Name)) {
-                            return i;
-                        }
+        List<PDPInfo_t> progList = getCurrTypeProgList();
+        if (progList != null && !progList.isEmpty()) {
+            String progName = "";
+            if (bookingType == Constants.BOOK_TYPE_ADD) {
+                progName = SWPDBaseManager.getInstance().getCurrProgInfo().Name;
+            } else if (bookingType == Constants.BOOK_TYPE_EDIT) {
+                BookingModel bookingModel = mAdapter.getItem(mCurrSelectPosition);
+                if (bookingModel != null) {
+                    progName = bookingModel.progInfo.Name;
+                }
+            }
+
+            if (!TextUtils.isEmpty(progName)) {
+                for (int i = 0; i < progList.size(); i++) {
+                    if (progList.get(i).Name.equals(progName)) {
+                        return i;
                     }
                 }
             }
@@ -252,22 +264,22 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
         return 0;
     }
 
-    private List<PDPInfo_t> getProgList(int bookingType) {
+    private List<PDPInfo_t> getCurrTypeProgList() {
+        if (mCurrTypeProgList != null && !mCurrTypeProgList.isEmpty()) {
+            return mCurrTypeProgList;
+        }
+        return SWPDBaseManager.getInstance().getCurrGroupProgInfoList();
+    }
+
+    private List<PDPInfo_t> getAnotherTypeProgList(int bookingType) {
         switch (bookingType) {
             case Constants.BOOK_TYPE_ADD:
-                if (mAllProgList != null && !mAllProgList.isEmpty()) {
-                    return mAllProgList;
+                if (mAnotherTypeProgList != null && !mAnotherTypeProgList.isEmpty()) {
+                    return mAnotherTypeProgList;
                 }
-                return SWPDBaseManager.getInstance().getCurrGroupProgInfoList();
+                return SWPDBaseManager.getInstance().getAnotherTypeProgInfoList();
             case Constants.BOOK_TYPE_EDIT:
-                List<BookingModel> bookingModels = mAdapter.getData();
-                List<PDPInfo_t> progList = new ArrayList<>();
-                if (bookingModels != null && !bookingModels.isEmpty()) {
-                    for (BookingModel bookingModel : bookingModels) {
-                        progList.add(bookingModel.progInfo);
-                    }
-                }
-                return progList;
+                return null;
         }
         return null;
     }

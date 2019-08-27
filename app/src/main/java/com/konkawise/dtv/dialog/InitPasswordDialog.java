@@ -46,6 +46,13 @@ public class InitPasswordDialog extends BaseDialogFragment {
         }
     }
 
+    @OnTextChanged(value = R.id.et_confirm_init_password, callback = OnTextChanged.Callback.AFTER_TEXT_CHANGED)
+    void confirmPasswordTextChange(Editable editable) {
+        if (editable.length() >= 4) {
+            mBtnSave.requestFocus();
+        }
+    }
+
     private OnSavePasswordListener mOnSavePasswordListener;
     private OnKeyListener mOnKeyListener;
 

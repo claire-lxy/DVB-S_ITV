@@ -25,9 +25,6 @@ import butterknife.BindArray;
 import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 
-/**
- * 盲扫界面
- */
 public class BlindActivity extends BaseActivity {
     private static final String TAG = "BlindActivity";
     private static final int ITEM_SATELLITE = 1;
@@ -247,23 +244,27 @@ public class BlindActivity extends BaseActivity {
     private void saveSatInfo() {
         if (isSatelliteEmpty()) return;
 
-        SatInfo_t satInfo_t = SWPDBaseManager.getInstance().getSatList().get(mCurrentSatellite);
+        SatInfo_t satInfo = SWPDBaseManager.getInstance().getSatList().get(mCurrentSatellite);
 
         String lnb = mEtLnb.getText().toString();
         if (TextUtils.isEmpty(lnb)) lnb = "0";
-        Utils.satLNB(satInfo_t, mCurrentLnb, mCurrentLnb == 0 ? Integer.parseInt(lnb) : 0);
+        satInfo.LnbType = Utils.getLnbType(mCurrentLnb);
+        satInfo.lnb_low = Utils.getLnbLow(mCurrentLnb, mCurrentLnb == 0 ? Integer.parseInt(lnb) : 0);
+        satInfo.lnb_high = Utils.getLnbHeight(mCurrentLnb);
         if (mCurrentLnb == 0) {
             PreferenceManager.getInstance().putString(String.valueOf(mCurrentSatellite), lnb);
         }
 
-        // diseqc
-        Utils.setDescNum(satInfo_t, mCurrentDiseqc, mDiseqcArray);
-        // 22KHZ
-        satInfo_t.switch_22k = is22kHzOn() ? 1 : 0;
-        // LNB POWER
-        satInfo_t.LnbPower = isLnbPowerOn() ? 1 : 0;
+        satInfo.diseqc10_pos = Utils.getDiSEqC10Pos(mCurrentDiseqc);
+        satInfo.diseqc10_tone = Utils.getDiSEqC10Tone(mCurrentDiseqc);
+//        satInfo.diseqc12_pos = Utils.getDiSEqC12Pos(mCurrentDiseqc);
+//        satInfo.diseqc12 = Utils.getDiSEqC12(mCurrentDiseqc);
+        satInfo.skewonoff = Utils.getSkewOnOff(mCurrentDiseqc);
 
-        SWPDBaseManager.getInstance().setSatInfo(satInfo_t.SatIndex, satInfo_t);  //将卫星信息设置到对应的bean类中,保存更改的信息
+        satInfo.switch_22k = is22kHzOn() ? 1 : 0;
+        satInfo.LnbPower = isLnbPowerOn() ? 1 : 0;
+
+        SWPDBaseManager.getInstance().setSatInfo(satInfo.SatIndex, satInfo);
         mSatList = SWPDBaseManager.getInstance().getSatList(); // 更新卫星列表
     }
 
@@ -356,7 +357,7 @@ public class BlindActivity extends BaseActivity {
         lnbChange();
 
         mCurrentDiseqc = getCurrDiseqc();
-        String diseqc = Utils.getDiseqc(getSatList().get(mCurrentSatellite), mDiseqcArray);
+        String diseqc = Utils.getDiSEqC(getSatList().get(mCurrentSatellite), mDiseqcArray);
         mTvDiSEqC.setText(TextUtils.isEmpty(diseqc) ? mDiseqcArray[0] : diseqc);
 
         mTvLnbPower.setText(getSatList().get(mCurrentSatellite).LnbPower == 1 ?
@@ -383,7 +384,7 @@ public class BlindActivity extends BaseActivity {
     private int getCurrDiseqc() {
         if (isSatelliteEmpty()) return 0;
 
-        String diseqc = Utils.getDiseqc(getSatList().get(mCurrentSatellite), mDiseqcArray);
+        String diseqc = Utils.getDiSEqC(getSatList().get(mCurrentSatellite), mDiseqcArray);
         for (int i = 0; i < mDiseqcArray.length; i++) {
             if (diseqc.equals(mDiseqcArray[i])) return i;
         }
@@ -394,7 +395,7 @@ public class BlindActivity extends BaseActivity {
     private int getCurrLnb() {
         if (isSatelliteEmpty()) return 0;
 
-        String lnb = Utils.getLNB(getSatList().get(mCurrentSatellite));
+        String lnb = Utils.getLnb(getSatList().get(mCurrentSatellite));
         for (int i = 0; i < mLnbArray.length; i++) {
             if (TextUtils.equals(lnb, mLnbArray[i])) {
                 return i;

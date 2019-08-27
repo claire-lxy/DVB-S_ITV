@@ -34,17 +34,6 @@ import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 
-/**
- * 创建者      lj DELL
- * 创建时间    2018/12/9 15:24
- * 描述       喜好列表编辑界面
- *
- * <p>
- * 更新者      $Author$
- * <p>
- * 更新时间    $Date$
- * 更新描述    ${TODO}
- */
 public class FavoriteActivity extends BaseActivity {
     private static final String TAG = "FavoriteActivity";
 

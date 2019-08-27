@@ -124,11 +124,16 @@ public class ScanTVandRadioActivity extends BaseActivity {
             searchMultiSatellite();
         } else if (mSatList.size() == 0 && isFromSatelliteActivity()) {
             setSatInfo();
-            mTvSatelliteName.setText(SWPDBaseManager.getInstance().getSatInfo(SWPDBaseManager.getInstance().findPositionBySatIndex(getSatelliteIndex())).sat_name);
+            mTvSatelliteName.setText(SWPDBaseManager.getInstance().getSatInfo(getSatelliteIndex()).sat_name);
             SWPSearchManager.getInstance().searchByNet(getSatelliteIndex());
         }
 
-        if (isFromTpListingActivity() || isFromEditManualActivity()) {
+        if (isFromEditManualActivity()) {
+            mTvSatelliteName.setText(SWPDBaseManager.getInstance().getSatInfo(getSatelliteIndex()).sat_name);
+            SWPSearchManager.getInstance().searchByNet(getSatelliteIndex());
+        }
+
+        if (isFromTpListingActivity()) {
             int freq = getFreq();
             int satIndex = getSatelliteIndex();
             int Symbol = getSymbol();

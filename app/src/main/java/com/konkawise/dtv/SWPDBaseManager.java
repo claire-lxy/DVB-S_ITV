@@ -143,8 +143,30 @@ public class SWPDBaseManager {
     }
 
     public List<PDPInfo_t> getCurrGroupProgInfoList() {
-        setCurrGroup(SWPDBase.SW_TOTAL_GROUP, 1);
-        return SWPDBase.CreateInstance().getCurrGroupProgInfoList();
+        List<PDPInfo_t> progInfoList = new ArrayList<>();
+        List<PDPMInfo_t> wholeGroupProgList = getWholeGroupProgList();
+        if (wholeGroupProgList != null && !wholeGroupProgList.isEmpty()) {
+            for (PDPMInfo_t progInfo : wholeGroupProgList) {
+                PDPInfo_t info = new PDPInfo_t();
+                info.Sat = progInfo.Sat;
+                info.Freq = progInfo.Freq;
+                info.TsID = progInfo.TsID;
+                info.ServID = progInfo.ServID;
+                info.ServType = progInfo.ServType;
+                info.Name = progInfo.Name;
+                progInfoList.add(info);
+            }
+        }
+        return progInfoList;
+    }
+
+    public List<PDPInfo_t> getAnotherTypeProgInfoList() {
+        int currProgType = SWPDBaseManager.getInstance().getCurrProgType();
+        setCurrProgType(currProgType == SWPDBase.SW_GBPROG ? SWPDBase.SW_TVPROG : SWPDBase.SW_GBPROG, 0);
+        List<PDPInfo_t> progInfoList = getCurrGroupProgInfoList();
+        setCurrProgType(currProgType, 0);
+
+        return progInfoList;
     }
 
     /**
@@ -287,16 +309,11 @@ public class SWPDBaseManager {
      * 根据serviceId、tsid、sat获取对应的频道
      */
     public PDPInfo_t getProgInfoByServiceId(int serviceid, int tsid, int sat) {
-        return SWPDBase.CreateInstance().getProgInfoOfServiceID(serviceid, tsid, sat);
-    }
-
-    /**
-     * 当前频道是否加锁
-     */
-    public boolean isProgLock() {
-        PDPMInfo_t currProgInfo = getCurrProgInfo();
-        if (currProgInfo == null) return false;
-        return currProgInfo.LockFlag == 1;
+        PDPInfo_t progInfo = SWPDBase.CreateInstance().getProgInfoOfServiceID(serviceid, tsid, sat);
+        if (progInfo != null) {
+            progInfo.TsID = progInfo.Freq; // 底层获取到的tsid是对应在Freq，手动修改一次
+        }
+        return progInfo;
     }
 
     /**
@@ -340,7 +357,6 @@ public class SWPDBaseManager {
      *
      * @param group SWPDBase.SW_XXX
      * @param param 所在分组，如果没有传0
-     * @return
      */
     public int getProgNumOfGroup(int group, int param) {
         return SWPDBase.CreateInstance().getProgNumOfGroup(group, param);

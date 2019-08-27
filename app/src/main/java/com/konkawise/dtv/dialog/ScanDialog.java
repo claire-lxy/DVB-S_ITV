@@ -1,8 +1,10 @@
 package com.konkawise.dtv.dialog;
 
 import android.content.DialogInterface;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -185,7 +187,11 @@ public class ScanDialog extends BaseDialogFragment {
         mCurrScanMode = SWFtaManager.getInstance().getCurrScanMode();
         mTvScanMode.setText(mScanModeArray[mCurrScanMode]);
 
-        // channelType
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) mItemChannelType.getLayoutParams();
+        if (lp != null) {
+            lp.bottomMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, getResources().getDisplayMetrics());
+            mItemChannelType.setLayoutParams(lp);
+        }
     }
 
     private void showManualSearchInstallationItem() {
@@ -197,9 +203,11 @@ public class ScanDialog extends BaseDialogFragment {
         mCurrScanMode = SWFtaManager.getInstance().getCurrScanMode();
         mTvScanMode.setText(mScanModeArray[mCurrScanMode]);
 
-        // channelType
-
-        // scanType
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) mItemScanType.getLayoutParams();
+        if (lp != null) {
+            lp.bottomMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 20, getResources().getDisplayMetrics());
+            mItemScanType.setLayoutParams(lp);
+        }
     }
 
     @Override

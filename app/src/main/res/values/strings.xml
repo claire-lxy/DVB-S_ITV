@@ -400,6 +400,8 @@
     <string name="toast_start_record_failed">Start record failed!</string>
     <string name="toast_pvr_minute_empty">Minute(s) is empty!</string>
     <string name="toast_pvr_minute_invalid">Minute(s) invalid!</string>
+    <string name="toast_no_radio">No Radio!</string>
+    <string name="toast_no_tv">No TV!</string>
 
     <string name="dialog_try_auto_diseqc">Scanning DiSEqC Port Index {0}.Try [{1}/{2}] times...</string>
     <string name="dialog_auto_diseqc_title">Information</string>
@@ -422,6 +424,8 @@
     <string name="dialog_no_search">No Program!</string>
     <string name="dialog_search_result_tv">TV: {0}</string>
     <string name="dialog_search_result_radio">Radio: {0}</string>
+
+    <string name="dialog_positive_exit_app">Exit</string>
 
     <string name="motor_move_step_stop">Stop</string>
     <string name="motor_move_step_east">East</string>

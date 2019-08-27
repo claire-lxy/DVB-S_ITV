@@ -41,9 +41,6 @@ import vendor.konka.hardware.dtvmanager.V1_0.PSSParam_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.ScanProgress_t;
 
-/**
- * 盲扫点击点击start按钮之后显示盲扫结果
- */
 public class TpBlindActivity extends BaseActivity {
     public static String TAG = TpBlindActivity.class.getSimpleName();
 
@@ -141,8 +138,7 @@ public class TpBlindActivity extends BaseActivity {
     }
 
     private void setupBlindSatInfo() {
-        // 盲扫没有固定频点
-        SatInfo_t satInfo = SWPDBaseManager.getInstance().getSatList().get(getSatelliteIndex());
+        SatInfo_t satInfo = SWPDBaseManager.getInstance().getSatList().get(SWPDBaseManager.getInstance().findPositionBySatIndex(getSatelliteIndex()));
         SatInfo_t setupInfo = SWPDBaseManager.getInstance().getSatInfo(getSatelliteIndex());
         setupInfo.LnbType = satInfo.LnbType;
         setupInfo.LnbPower = satInfo.LnbPower;

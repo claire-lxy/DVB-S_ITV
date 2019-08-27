@@ -1,5 +1,6 @@
 package com.konkawise.dtv.dialog;
 
+import android.text.InputFilter;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -46,6 +47,7 @@ public class RenameDialog extends BaseDialogFragment {
     private String mNameType;
     private String mName;
     private String mNameHint;
+    private int mMaxLength;
 
     @Override
     protected int getLayoutId() {
@@ -59,6 +61,7 @@ public class RenameDialog extends BaseDialogFragment {
         mTvNameType.setText(TextUtils.isEmpty(mNameType) ? getStrings(R.string.channel_name) : mNameType);
         mEtRename.setHint(mNameHint);
         mEtRename.setText(mName);
+        if (mMaxLength > 0) mEtRename.setFilters(new InputFilter[]{new InputFilter.LengthFilter(mMaxLength)});
 
         mBtnCancel.requestFocus();
         mEtRename.setOnKeyListener(new View.OnKeyListener() {
@@ -101,6 +104,11 @@ public class RenameDialog extends BaseDialogFragment {
 
     public RenameDialog setNameHint(String hint) {
         this.mNameHint = TextUtils.isEmpty(hint) ? mName : hint;
+        return this;
+    }
+
+    public RenameDialog setMaxLength(int maxLength) {
+        this.mMaxLength = maxLength;
         return this;
     }
 

@@ -498,6 +498,7 @@ public class Topmost extends BaseActivity {
         SWDVBManager.getInstance().unRegMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, mAvMsgCB);
         stopRecord();
         if (isFinishing()) {
+            RealTimeManager.getInstance().stop();
             SWDVBManager.getInstance().releaseResource();
         }
     }
@@ -509,7 +510,7 @@ public class Topmost extends BaseActivity {
             toggleProgList();
         }
         if (mMenuShow) {
-            toggleMenu();
+            toggleMenu(true);
         }
     }
 
@@ -531,13 +532,13 @@ public class Topmost extends BaseActivity {
     private boolean handleBook() {
         int bookType = getIntent().getIntExtra(Constants.IntentKey.INTENT_BOOK_TYPE, -1);
         int recordSeconds = getIntent().getIntExtra(Constants.IntentKey.INTENT_BOOK_SECONDS, -1);
-        int progType = getIntent().getIntExtra(Constants.IntentKey.INTENT_BOOK_PROG_TYPE, -1);
-        int progNum = getIntent().getIntExtra(Constants.IntentKey.INTENT_BOOK_PROG_NUM, -1);
-        Log.i(TAG, "bookType = " + bookType + ", recordSeconds = " + recordSeconds + ", progType = " + progType + ", progNum = " + progNum);
+        int serviceid = getIntent().getIntExtra(Constants.IntentKey.INTENT_BOOK_SERVICEID, -1);
+        int tsid = getIntent().getIntExtra(Constants.IntentKey.INTENT_BOOK_TSID, -1);
+        int sat = getIntent().getIntExtra(Constants.IntentKey.INTENT_BOOK_SAT, -1);
+        Log.i(TAG, "bookType = " + bookType + ", recordSeconds = " + recordSeconds + ", serviceid = " + serviceid + ", tsid = " + tsid + ", sat = " + sat);
         if (bookType == BookService.ACTION_BOOKING_PLAY) {
-            if (progType != -1 && progNum != -1) {
-                SWPDBaseManager.getInstance().setCurrProgType(progType, 0);
-                playProg(progNum);
+            if (serviceid != -1 && tsid != -1 && sat != -1) {
+                SWFtaManager.getInstance().forcePlayProgByServiceId(serviceid, tsid, sat);
                 return true;
             }
         } else if (bookType == BookService.ACTION_BOOKING_RECORD) {
@@ -546,14 +547,13 @@ public class Topmost extends BaseActivity {
                 return false;
             }
 
-            if (progType != -1 && progNum != -1 && recordSeconds != -1) {
+            if (serviceid != -1 && tsid != -1 && sat != -1 && recordSeconds != -1) {
                 startRecord(new OnCommCallback() {
                     @Override
                     public void callback(Object object) {
                         int recordFlag = (int) object;
                         if (recordFlag == 0) {
-                            SWPDBaseManager.getInstance().setCurrProgType(progType, 0);
-                            playProg(progNum, true);
+                            SWFtaManager.getInstance().forcePlayProgByServiceId(serviceid, tsid, sat);
                             startRecordingTimer(recordSeconds);
                             SWBookingManager.getInstance().setRecording(true);
                             sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
@@ -610,6 +610,7 @@ public class Topmost extends BaseActivity {
     }
 
     private static class WaitingStartRecordRunnable extends WeakRunnable<Topmost> {
+        private static final long MAX_TRY_RECORD_TIME = 5000;
         private OnCommCallback callback;
         private Set<UsbInfo> mUsbInfos;
 
@@ -620,8 +621,9 @@ public class Topmost extends BaseActivity {
 
         @Override
         protected void loadBackground() {
-            int recordDelay = 0;
+            int recordDelay = 1;
             int result = -4;
+            long tryStartRecordTime = 0;
             while (true) {
                 if (mUsbInfos == null)
                     mUsbInfos = UsbManager.getInstance().queryUsbInfos(mWeakReference.get());
@@ -644,13 +646,14 @@ public class Topmost extends BaseActivity {
                 }
 
                 if (result != -4) break;
+                if (tryStartRecordTime >= MAX_TRY_RECORD_TIME) break;
 
                 try {
                     Thread.sleep(100);
+                    tryStartRecordTime += 100;
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                recordDelay++;
             }
 
             final int startRecordResult = result;
@@ -1300,16 +1303,21 @@ public class Topmost extends BaseActivity {
             mSearchChannelDialog = new SearchChannelDialog()
                     .setOnSearchChannelListener(new SearchChannelDialog.OnSearchListener() {
                         @Override
-                        public void onKeyBack() {
+                        public void onBackSearch() {
                             mSearchChannelDialog = null;
                             mItemInstallation.requestFocus();
                             toggleMenu();
                         }
 
                         @Override
-                        public void onKeyCenter() {
+                        public void onStartSearch() {
                             mSearchChannelDialog = null;
                             startActivity(new Intent(Topmost.this, BlindActivity.class));
+                        }
+
+                        @Override
+                        public void onExitSearch() {
+                            finish();
                         }
                     });
         }
@@ -1420,8 +1428,8 @@ public class Topmost extends BaseActivity {
                     public void onPositiveListener() {
                         SWPDBaseManager.getInstance().clearFavChannelMap();
                         SWFtaManager.getInstance().factoryReset();
-                        toggleMenu();
-                        showRadioBackground();
+                        toggleMenu(true);
+                        mIvRadioBackground.setVisibility(View.GONE); // 隐藏音频背景
                         showSettingPasswordDialog();
                     }
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
@@ -1654,6 +1662,10 @@ public class Topmost extends BaseActivity {
     }
 
     private void toggleMenu() {
+        toggleMenu(false);
+    }
+
+    private void toggleMenu(boolean isStop) {
         if (mMenuShow) mPasswordEntered = false;
         startTranslateAnimation(mMenuShow ? -mMenu.getLeft() : 0f,
                 mMenuShow ? 0f : -mMenu.getLeft(), mMenu, new AnimatorListenerAdapter() {
@@ -1662,8 +1674,13 @@ public class Topmost extends BaseActivity {
                         super.onAnimationEnd(animation);
                         if (mMenuShow) restoreMenuItem(); // menu隐藏动画执行结束，恢复menu的item显示
                         mMenuShow = !mMenuShow;
+
                         if (!mMenuShow) {
-                            showPfInfo();
+                            if (mProgListAdapter.getCount() > 0) {
+                                showPfInfo();
+                            } else {
+                                if (!isStop) showSearchChannelDialog();
+                            }
                         }
                     }
                 });
@@ -1853,6 +1870,8 @@ public class Topmost extends BaseActivity {
                 SWPDBaseManager.getInstance().setCurrProgType(currProgType == SWPDBase.SW_GBPROG ?
                         SWPDBase.SW_TVPROG : SWPDBase.SW_GBPROG, 0);
                 onProgramUpdate(new ProgramUpdateEvent(true));
+            } else {
+                ToastUtils.showToast(group == SWPDBase.SW_GBPROG ? R.string.toast_no_radio : R.string.toast_no_tv);
             }
             return true;
         }

@@ -181,6 +181,13 @@ public class SWFtaManager {
         return SWFta.CreateInstance().getCurrPlayInfo(param);
     }
 
+    /**
+     * 根据serviceid、tsid和sat播放book
+     */
+    public void forcePlayProgByServiceId(int serviceId, int tsid, int sat) {
+        SWFta.CreateInstance().forcePlayProgByServiceID(serviceId, tsid, sat);
+    }
+
     public long dismissTimeout() {
         return getCommE2PInfo(SWFta.E_E2PP.E2P_PD_dispalytime.ordinal()) * 1000;
     }

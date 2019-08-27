@@ -7,8 +7,26 @@ import android.view.View;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.base.BaseDialogFragment;
 
+import butterknife.OnClick;
+
 public class SearchChannelDialog extends BaseDialogFragment {
     public static final String TAG = "SearchChannelDialog";
+
+    @OnClick(R.id.btn_start_search)
+    void search() {
+        if (getDialog() != null) getDialog().dismiss();
+        if (mOnSearchListener != null) {
+            mOnSearchListener.onStartSearch();
+        }
+    }
+
+    @OnClick(R.id.btn_exit_search)
+    void exit() {
+        if (getDialog() != null) getDialog().dismiss();
+        if (mOnSearchListener != null) {
+            mOnSearchListener.onExitSearch();
+        }
+    }
 
     // 存在进入app时会调用onKeyListener响应ok键，规避响应处理
     private boolean mInit = false;
@@ -38,18 +56,10 @@ public class SearchChannelDialog extends BaseDialogFragment {
             if (getDialog() != null) {
                 getDialog().dismiss();
                 if (mOnSearchListener != null) {
-                    mOnSearchListener.onKeyBack();
+                    mOnSearchListener.onBackSearch();
                 }
             }
             return true;
-        }
-        if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER && event.getAction() == KeyEvent.ACTION_UP && mInit) {
-            if (getDialog() != null && getDialog().isShowing() && mOnSearchListener != null) {
-                getDialog().dismiss();
-                mOnSearchListener.onKeyCenter();
-                return true;
-            }
-
         }
         return super.onKeyListener(dialog, keyCode, event);
     }
@@ -60,8 +70,10 @@ public class SearchChannelDialog extends BaseDialogFragment {
     }
 
     public interface OnSearchListener {
-        void onKeyBack();
+        void onBackSearch();
 
-        void onKeyCenter();
+        void onStartSearch();
+
+        void onExitSearch();
     }
 }

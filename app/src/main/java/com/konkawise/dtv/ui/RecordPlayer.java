@@ -37,7 +37,6 @@ import com.konkawise.dtv.dialog.SeekTimeDialog;
 import com.konkawise.dtv.dialog.SubtitleDialog;
 import com.konkawise.dtv.dialog.TeletextDialog;
 import com.konkawise.dtv.weaktool.WeakHandler;
-import com.sw.dvblib.SWFta;
 import com.sw.dvblib.msg.cb.AVMsgCB;
 
 import java.text.MessageFormat;

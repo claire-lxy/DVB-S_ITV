@@ -16,7 +16,6 @@ import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWBookingManager;
 import com.konkawise.dtv.SWDJAPVRManager;
 import com.konkawise.dtv.SWDVBManager;
-import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.SWTimerManager;
 import com.konkawise.dtv.ScreenManager;
@@ -45,7 +44,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.text.MessageFormat;
 
 import vendor.konka.hardware.dtvmanager.V1_0.HForplayprog_t;
-import vendor.konka.hardware.dtvmanager.V1_0.HPDPPlayInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
@@ -327,7 +325,7 @@ public class BookService extends BaseService implements WeakToolInterface {
      */
     private void bookReady(HSubforProg_t bookInfo) {
         if (bookInfo != null) {
-            startBook(bookInfo.schtype, bookInfo.lasttime);
+            startBook(bookInfo.schtype, bookInfo.lasttime, bookInfo.sat, bookInfo.tsid, bookInfo.servid);
             notifyBookUpdate(bookInfo);
         }
     }
@@ -338,7 +336,7 @@ public class BookService extends BaseService implements WeakToolInterface {
     private void bookReady() {
         HForplayprog_t readyBookInfo = SWBookingManager.getInstance().getCurrSubForPlay();
         if (readyBookInfo != null) {
-            startBook(readyBookInfo.schtype, readyBookInfo.lasttime);
+            startBook(readyBookInfo.schtype, readyBookInfo.lasttime, readyBookInfo.sat, readyBookInfo.tsid, readyBookInfo.servid);
         }
     }
 
@@ -357,7 +355,7 @@ public class BookService extends BaseService implements WeakToolInterface {
     /**
      * 启动book
      */
-    private void startBook(int schtype, int lasttime) {
+    private void startBook(int schtype, int lasttime, int sat, int tsid, int servid) {
         removeHandlerMsg();
         dismissBookReadyDialog();
 
@@ -378,12 +376,10 @@ public class BookService extends BaseService implements WeakToolInterface {
                 intent.putExtra(Constants.IntentKey.INTENT_BOOK_SECONDS, lasttime);
             }
 
-            HPDPPlayInfo_t playInfo = SWFtaManager.getInstance().getCurrPlayInfo(0);
-            if (playInfo != null) {
-                intent.putExtra(Constants.IntentKey.INTENT_BOOK_PROG_TYPE, playInfo.Progtype);
-                intent.putExtra(Constants.IntentKey.INTENT_BOOK_PROG_NUM, playInfo.Progno);
-                startActivity(intent);
-            }
+            intent.putExtra(Constants.IntentKey.INTENT_BOOK_SERVICEID, servid);
+            intent.putExtra(Constants.IntentKey.INTENT_BOOK_TSID, tsid);
+            intent.putExtra(Constants.IntentKey.INTENT_BOOK_SAT, sat);
+            startActivity(intent);
         }
     }
 

@@ -3,11 +3,6 @@ package com.konkawise.dtv;
 import android.Manifest;
 
 public class Constants {
-    // installation scan type, s2 or t2
-    public static final int INSTALLATION_S2_SCAN = 0x1001;
-    public static final int INSTALLATION_T2_AUTO_SEARCH = 0x1002;
-    public static final int INSTALLATION_T2_MANUAL_SEARCH = 0x1003;
-
     // support language
     public static final int LOCALE_TYPE_SYSTEM = 0x2001;
     public static final int LOCALE_TYPE_ITALIAN = 0x2002;
@@ -85,13 +80,13 @@ public class Constants {
         String INTENT_FREQ = "freq";
         String INTENT_SYMBOL = "symbol";
         String INTENT_QAM = "qam";
-
-        String INTENT_T2_SETTING = "t2Setting";
+        String INTENT_LONGITUDE = "longitude";
 
         String INTENT_BOOK_TYPE = "bookType";
-        String INTENT_BOOK_PROG_NUM = "bookProgNum";
-        String INTENT_BOOK_PROG_TYPE = "bookProgType";
         String INTENT_BOOK_SECONDS = "bookSeconds";
+        String INTENT_BOOK_SERVICEID = "serviceid";
+        String INTENT_BOOK_TSID = "tsid";
+        String INTENT_BOOK_SAT = "sat";
 
         String INTENT_BOOK_UPDATE = "bookUpdate";
         String INTENT_CURRNT_TP = "currntTp";
@@ -104,13 +99,13 @@ public class Constants {
 
     public interface RequestCode {
         int REQUEST_CODE_EPG_BOOK = 1;
+
+        int REQUEST_CODE_MOTOR = 2;
     }
 
     public interface PrefsKey {
         // language
         String LOCALE_TYPE = "localeType";
-
-        String SAVE_POSITION = "position";
 
         String SAVE_CHANNEL = "channel";
     }

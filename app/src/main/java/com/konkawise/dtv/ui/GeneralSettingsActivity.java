@@ -20,7 +20,7 @@ import butterknife.OnClick;
 
 public class GeneralSettingsActivity extends BaseActivity {
 
-    private static final String TAG = "KKDVB_" + GeneralSettingsActivity.class.getSimpleName();
+    private static final String TAG = "GeneralSettingsActivity";
     private static final int ITEM_SCART = 1;
     private static final int ITEM_SUBTITLE_DISPLAY = 2;
     private static final int ITEM_PFBAR_TIMEOUT = 3;

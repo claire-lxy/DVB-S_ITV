@@ -69,12 +69,22 @@ public class FavoriteDialog extends BaseDialogFragment {
         mListView.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN && event.getAction() == KeyEvent.ACTION_DOWN) {
-                    if (mListView.getSelectedItemPosition() == mAdapter.getCount() - 1) {
-                        mBtnSure.requestFocus();
-                        return true;
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                        if (mListView.getSelectedItemPosition() == mAdapter.getCount() - 1) {
+                            mBtnSure.requestFocus();
+                            return true;
+                        }
+                    }
+
+                    if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+                        if (mListView.getSelectedItemPosition() == 0) {
+                            mListView.setSelection(mAdapter.getCount() - 1);
+                            return true;
+                        }
                     }
                 }
+
                 return false;
             }
         });

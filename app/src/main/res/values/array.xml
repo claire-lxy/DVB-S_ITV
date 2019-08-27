@@ -200,7 +200,7 @@
     </string-array>
 
     <string-array name="book_type">
-        <item>Standby</item>
+        <!--<item>Standby</item>-->
         <item>Play</item>
         <item>Record</item>
     </string-array>
@@ -214,6 +214,14 @@
 
     <string-array name="book_channel_type">
         <item>@string/tv</item>
+        <item>@string/radio</item>
+    </string-array>
+
+    <string-array name="book_channel_type_tv">
+        <item>@string/tv</item>
+    </string-array>
+
+    <string-array name="book_channel_type_radio">
         <item>@string/radio</item>
     </string-array>
 

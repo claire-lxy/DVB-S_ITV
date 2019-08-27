@@ -16,7 +16,8 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1px"
-        android:background="#c0bfbf" />
+        android:background="#c0bfbf"
+        android:visibility="gone"/>
 
     <TextView
         android:id="@+id/tv_pf_detail_information"
@@ -26,7 +27,8 @@
         android:maxLines="1"
         android:padding="10dp"
         android:text="@string/dialog_pf_no_detail"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:visibility="gone"/>
 
     <View
         android:layout_width="match_parent"

@@ -34,9 +34,6 @@ import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
 import vendor.konka.hardware.dtvmanager.V1_0.Channel_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 
-/**
- * Manual Installation 点击TP按钮界面
- */
 public class TpListingActivity extends BaseActivity {
     private static final String TAG = "TpListingActivity";
     private static final int FREQ_SYMBOL_MAX_LIMIT = 65535;
@@ -85,8 +82,8 @@ public class TpListingActivity extends BaseActivity {
         mSelectPosition = position;
 
         if (SWPDBaseManager.getInstance().getSatList().size() - 1 > 0 && position < SWPDBaseManager.getInstance().getSatList().size()) {
-            SatInfo_t satInfo_t = SWPDBaseManager.getInstance().getSatList().get(position);
-            mTvLnbPower.setText(Utils.getOnorOff(this, satInfo_t.LnbPower));
+            SatInfo_t satInfo = SWPDBaseManager.getInstance().getSatList().get(position);
+            mTvLnbPower.setText(satInfo.LnbPower == 0 ?  R.string.off : R.string.on);
         }
         mTvFreq.setText(getTpName());
         SWFtaManager.getInstance().tunerLockFreq(getIndex(), getFreq(), getSymbol(), getQam(), 1, 0);
@@ -362,18 +359,22 @@ public class TpListingActivity extends BaseActivity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_PROG_RED) {
             showScanDialog();
+            return true;
         }
 
         if (keyCode == KeyEvent.KEYCODE_PROG_GREEN) {
             showTpDialog(Constants.TP_TYPE_ADD);
+            return true;
         }
 
         if (keyCode == KeyEvent.KEYCODE_PROG_YELLOW) {
             showTpDialog(Constants.TP_TYPE_EDIT);
+            return true;
         }
 
         if (keyCode == KeyEvent.KEYCODE_PROG_BLUE) {
             showDeleteTpDialog();
+            return true;
         }
 
         if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
@@ -393,6 +394,7 @@ public class TpListingActivity extends BaseActivity {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             setResult(RESULT_OK);
             finish();
+            return true;
         }
 
         return super.onKeyDown(keyCode, event);

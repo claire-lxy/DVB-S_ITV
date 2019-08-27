@@ -79,4 +79,10 @@ public class PreferenceManager {
     private Object get(@PreferenceStrategy String strategy, String key) {
         return mPreferenceHelper.get(strategy, key);
     }
+
+    public void clear() {
+        for (int i = 0; i < 8; i++) {
+            putString("fav" + i, "");
+        }
+    }
 }
