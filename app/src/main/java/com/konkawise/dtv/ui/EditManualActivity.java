@@ -19,6 +19,7 @@ import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.base.BaseActivity;
+import com.konkawise.dtv.bean.LatLngModel;
 import com.konkawise.dtv.dialog.AutoDiSEqCDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.dialog.ScanDialog;
@@ -381,7 +382,8 @@ public class EditManualActivity extends BaseActivity {
         if (resultCode == Constants.RequestCode.REQUEST_CODE_MOTOR && data != null) {
             int longitude = data.getIntExtra(Constants.IntentKey.INTENT_LONGITUDE, 0);
             if (longitude != 0) {
-                mTvLongitude.setText(Utils.getLongitude(longitude));
+                LatLngModel latLngModel = new LatLngModel(LatLngModel.MODE_LONGITUDE, LatLngModel.LONGITUDE_THRESHOLD, longitude);
+                mTvLongitude.setText(latLngModel.getLatLngText());
             }
         }
     }
@@ -434,6 +436,7 @@ public class EditManualActivity extends BaseActivity {
             PreferenceManager.getInstance().putString(String.valueOf(mCurrentSatellite), lnb);
         }
 
+        satInfo.sat_name = mTvSatellite.getText().toString();
         satInfo.diseqc10_pos = Utils.getDiSEqC10Pos(mCurrentDiseqc);
         satInfo.diseqc10_tone = Utils.getDiSEqC10Tone(mCurrentDiseqc);
 //        satInfo.diseqc12_pos = Utils.getDiSEqC12Pos(mCurrentDiseqc);
@@ -559,7 +562,8 @@ public class EditManualActivity extends BaseActivity {
         String diSEqC = Utils.getDiSEqC(satList.get(mCurrentSatellite), mDiSEqCArray);
         mTvDiSEqC.setText(TextUtils.isEmpty(diSEqC) ? mDiSEqCArray[0] : diSEqC);
 
-        mTvLongitude.setText(Utils.getLongitude(satList.get(mCurrentSatellite).diseqc12_longitude));
+        LatLngModel latLngModel = new LatLngModel(LatLngModel.MODE_LONGITUDE, LatLngModel.LONGITUDE_THRESHOLD, satList.get(mCurrentSatellite).diseqc12_longitude);
+        mTvLongitude.setText(latLngModel.getLatLngText());
 
         mTvLnbPower.setText(satList.get(mCurrentSatellite).LnbPower == 1 ?
                 getResources().getString(R.string.on) : getResources().getString(R.string.off));

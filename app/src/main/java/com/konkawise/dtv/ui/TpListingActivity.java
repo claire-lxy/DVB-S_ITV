@@ -182,6 +182,11 @@ public class TpListingActivity extends BaseActivity {
                     if (satChannelInfoList != null && !satChannelInfoList.isEmpty()) {
                         context.mAdapter.updateData(satChannelInfoList);
                         context.mListView.setSelection(position);
+
+                        ChannelNew_t channel = context.mAdapter.getItem(position);
+                        if (channel != null) {
+                            SWFtaManager.getInstance().tunerLockFreq(context.getIndex(), channel.Freq, channel.Symbol, channel.Qam, 1, 0);
+                        }
                     }
                 }
             });
