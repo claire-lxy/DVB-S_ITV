@@ -159,6 +159,8 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
     }
 
     private void showBookDialog(String title, @BookType final int bookingType) {
+        if (bookingType == Constants.BOOK_TYPE_EDIT && mAdapter.getCount() <= 0) return;
+
         List<PDPInfo_t> progList = getCurrTypeProgList();
         if (progList == null || progList.isEmpty()) return;
 
