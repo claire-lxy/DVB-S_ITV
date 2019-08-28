@@ -136,7 +136,7 @@ public class ChannelEditActivity extends BaseActivity {
 
     @Override
     protected void setup() {
-        initFavoriteChannels();
+//        initFavoriteChannels();
         initChannelList();
         mTvSatelliteName.setText(R.string.all);
     }
@@ -162,7 +162,7 @@ public class ChannelEditActivity extends BaseActivity {
         @Override
         protected void loadBackground() {
             ChannelEditActivity context = mWeakReference.get();
-            context.mFavChannelsMap = SWPDBaseManager.getInstance().getFavChannelMap();
+            context.mFavChannelsMap = SWPDBaseManager.getInstance().getFavChannelMap(SWPDBaseManager.getInstance().getTotalGroupProgList());
 
             context.mEditFavChannelsMap = mWeakReference.get().mFavChannelsMap.clone();
         }
@@ -198,6 +198,10 @@ public class ChannelEditActivity extends BaseActivity {
                     }
                 }
             });
+            if(context.mCurrSatPosition == 0){
+                context.mFavChannelsMap = SWPDBaseManager.getInstance().getFavChannelMap(channelList);
+                context.mEditFavChannelsMap = mWeakReference.get().mFavChannelsMap.clone();
+            }
         }
     }
 

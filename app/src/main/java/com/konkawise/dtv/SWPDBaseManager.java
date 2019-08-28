@@ -3,6 +3,7 @@ package com.konkawise.dtv;
 import android.annotation.NonNull;
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.SparseArray;
 
 import com.sw.dvblib.SWPDBase;
@@ -372,14 +373,30 @@ public class SWPDBaseManager {
         return SWPDBase.CreateInstance().getProgNumOfType(type, param);
     }
 
-    public SparseArray<List<PDPMInfo_t>> getFavChannelMap() {
+    /**
+     * 通过已知的频道列表，解析出喜爱分组列表，并使用缓存，只需要从底层拿一次数据就可以
+     * @param ltChannels
+     * @return
+     */
+    public SparseArray<List<PDPMInfo_t>> getFavChannelMap(List<PDPMInfo_t> ltChannels) {
         if (mFavChannelsMap.size() > 0) {
             return mFavChannelsMap;
         }
 
+        if(ltChannels==null || ltChannels.size()==0){
+            ltChannels = getTotalGroupProgList();
+        }
+
         int[] favIndexArray = getFavIndexArray();
         for (int i = 0; i < favIndexArray.length; i++) {
-            mFavChannelsMap.put(i, SWPDBaseManager.getInstance().getFavListByIndex(favIndexArray[i]));
+            List<PDPMInfo_t> ltGroupInfos = new ArrayList<>();
+            for (int j = 0; j < ltChannels.size(); j++) {
+                Log.i("ljm", "channel name:"+ltChannels.get(j).Name);
+                if ((ltChannels.get(j).FavFlag & (0x0001 << i)) >> i == 1) {
+                    ltGroupInfos.add(ltChannels.get(j));
+                }
+            }
+            mFavChannelsMap.put(i, ltGroupInfos);
         }
         return mFavChannelsMap;
     }
@@ -388,7 +405,7 @@ public class SWPDBaseManager {
         this.mFavChannelsMap = mFavChannelsMap;
     }
 
-    public void clearFavChannelMap(){
+    public void clearFavChannelMap() {
         this.mFavChannelsMap.clear();
     }
 
