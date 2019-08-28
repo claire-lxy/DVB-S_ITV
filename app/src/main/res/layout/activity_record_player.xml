@@ -17,12 +17,12 @@
             android:id="@+id/iv_player_handler"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
-            android:layout_marginTop="30dp"
+            android:layout_alignParentTop="true"
             android:layout_marginEnd="30dp"
             android:layout_marginRight="30dp"
+            android:layout_marginTop="30dp"
             tools:ignore="ContentDescription" />
 
         <TextView
@@ -32,59 +32,68 @@
             android:layout_alignTop="@id/iv_player_handler"
             android:layout_marginEnd="10dp"
             android:layout_marginRight="10dp"
-            android:layout_toStartOf="@id/iv_player_handler"
             android:layout_toLeftOf="@id/iv_player_handler"
+            android:layout_toStartOf="@id/iv_player_handler"
             android:text="*2"
             android:textColor="@color/holo_red_light"
             android:textSize="30sp" />
 
-        <TextView
-            android:id="@+id/tv_prog_num"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_marginStart="16dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginBottom="50dp"
-            android:textColor="@color/white"
-            android:text="1.zing"
-            android:textSize="30sp" />
-
         <LinearLayout
-            android:id="@+id/ly_mediaplayer_control"
+            android:id="@+id/ly_bottom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingLeft="20dp"
-            android:paddingRight="20dp"
-            android:paddingBottom="16dp">
+            android:background="#55000000"
+            android:orientation="vertical">
 
             <TextView
-                android:id="@+id/tv_current_time"
+                android:id="@+id/tv_prog_num"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="00:00:00"
-                android:textColor="@color/white" />
+                android:layout_marginBottom="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="5dp"
+                android:text="1.zing"
+                android:textColor="@color/white"
+                android:textSize="30sp" />
 
-            <SeekBar
-                android:id="@+id/sb_progress"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:id="@+id/ly_mediaplayer_control"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:focusable="false"
-                android:maxHeight="2dp"
-                android:minHeight="2dp"
-                android:progressDrawable="@drawable/seekbar"
-                android:thumb="@drawable/seekbar_thum_nor" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingBottom="16dp"
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp">
 
-            <TextView
-                android:id="@+id/tv_total_time"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="00:00:00"
-                android:textColor="@color/white" />
+                <TextView
+                    android:id="@+id/tv_current_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="00:00:00"
+                    android:textColor="@color/white" />
+
+                <SeekBar
+                    android:id="@+id/sb_progress"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:focusable="false"
+                    android:maxHeight="2dp"
+                    android:minHeight="2dp"
+                    android:progressDrawable="@drawable/seekbar"
+                    android:thumb="@drawable/seekbar_thum_nor" />
+
+                <TextView
+                    android:id="@+id/tv_total_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="00:00:00"
+                    android:textColor="@color/white" />
+            </LinearLayout>
+
         </LinearLayout>
     </RelativeLayout>
 </FrameLayout>

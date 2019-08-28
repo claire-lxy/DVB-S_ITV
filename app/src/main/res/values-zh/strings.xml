@@ -270,6 +270,7 @@
 
     <string name="dialog_exit_pvr_tips">Tips</string>
     <string name="dialog_exit_timeshift_content">Program is timeshifting, do you want to stop it?</string>
+    <string name="dialog_exit_playback_content">Program is playback, do you want to stop it?</string>
 
     <!--sort_dialog-->
     <string name="please_search">没有节目，请搜索！</string>
