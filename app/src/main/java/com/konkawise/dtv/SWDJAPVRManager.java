@@ -26,7 +26,7 @@ public class SWDJAPVRManager {
     /**
      * 开始录制
      *
-     * @param delay 底层启动录制需要时间，直接传递1
+     * @param delay 底层启动录制需要时间，首次delay=0，如果失败，delay=1直到成功
      * @return 0：启动成功  -4：正在启动需要继续等待  other:启动失败
      */
     public int startRecord(int delay) {
@@ -36,7 +36,7 @@ public class SWDJAPVRManager {
     /**
      * 开始录制
      *
-     * @param delay      底层启动录制需要时间，直接传递1
+     * @param delay      底层启动录制需要时间，首次delay=0，如果失败，delay=1直到成功
      * @param recordPath 流录制的盘符路径，如/storage/sda1
      * @return 0：启动成功  -4：正在启动需要继续等待  other:启动失败
      */

@@ -25,6 +25,7 @@ import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.HandlerMsgManager;
+import com.konkawise.dtv.PreferenceManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.RealTimeManager;
 import com.konkawise.dtv.SWBookingManager;
@@ -621,18 +622,18 @@ public class Topmost extends BaseActivity {
 
         @Override
         protected void loadBackground() {
-            int recordDelay = 1;
+            int recordDelay = 0; // 首次设置delay为0
             int result = -4;
             long tryStartRecordTime = 0;
-            while (true) {
-                if (mUsbInfos == null)
-                    mUsbInfos = UsbManager.getInstance().queryUsbInfos(mWeakReference.get());
+            if (mUsbInfos == null)
+                mUsbInfos = UsbManager.getInstance().queryUsbInfos(mWeakReference.get());
+            UsbInfo foundUsbInfo = UsbManager.getInstance().isContainUsb(mUsbInfos, SWFtaManager.getInstance().getDiskUUID());
+            if (foundUsbInfo != null) SWFtaManager.getInstance().setDiskUUID(foundUsbInfo.uuid);
 
+            while (true) {
                 if (mUsbInfos != null && !mUsbInfos.isEmpty()) {
-                    UsbInfo foundUsbInfo = UsbManager.getInstance().isContainUsb(mUsbInfos, SWFtaManager.getInstance().getDiskUUID());
                     if (foundUsbInfo != null) {
                         result = SWDJAPVRManager.getInstance().startRecord(recordDelay, foundUsbInfo.path);
-                        SWFtaManager.getInstance().setDiskUUID(foundUsbInfo.uuid);
                         Log.i(TAG, "found, result = " + result + ", path = " + foundUsbInfo.path);
                     } else {
                         for (UsbInfo usbInfo : mUsbInfos) {
@@ -647,6 +648,7 @@ public class Topmost extends BaseActivity {
 
                 if (result != -4) break;
                 if (tryStartRecordTime >= MAX_TRY_RECORD_TIME) break;
+                recordDelay = 1; // 启动录制失败设置为1
 
                 try {
                     Thread.sleep(100);
@@ -1426,8 +1428,10 @@ public class Topmost extends BaseActivity {
                 .setOnPositiveListener("", new OnCommPositiveListener() {
                     @Override
                     public void onPositiveListener() {
+                        PreferenceManager.getInstance().clear();
                         SWPDBaseManager.getInstance().clearFavChannelMap();
                         SWFtaManager.getInstance().factoryReset();
+                        mProgListAdapter.clearData(); // 同步清空频道列表
                         toggleMenu(true);
                         mIvRadioBackground.setVisibility(View.GONE); // 隐藏音频背景
                         showSettingPasswordDialog();

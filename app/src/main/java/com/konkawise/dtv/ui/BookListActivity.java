@@ -359,7 +359,7 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
     public void onBookUpdate(BookUpdateEvent event) {
         if (event.bookInfo != null) {
             int position = findConflictBookProgPosition(event.bookInfo);
-            if (event.bookInfo.repeatway == SWBooking.BookRepeatWay.ONCE.ordinal()) {
+            if (event.bookInfo.repeatway == SWBooking.BookRepeatWay.ONCE.ordinal() && position > 0) {
                 mAdapter.removeData(position);
             }
         }

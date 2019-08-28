@@ -4,16 +4,11 @@ import android.content.Context;
 
 import com.konkawise.dtv.R;
 
-import java.text.DecimalFormat;
-
 import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 
 public class Utils {
     private static int[] lnbFreq0 = {5150, 5750, 9750, 10600, 11300};
     private static int[] lnbFreq1 = {5150, 5750, 9700, 10750, 9750, 10600};
-
-    // 取小数点后一位
-    private static final DecimalFormat sLatLngFormat = new DecimalFormat("##0.0");
 
     public static String getVorH(Context context, int qam) {
         return context.getResources().getString(qam == 0 ? R.string.h : R.string.v);

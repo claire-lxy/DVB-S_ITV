@@ -81,8 +81,11 @@ public class PreferenceManager {
     }
 
     public void clear() {
+        // clear fav name
         for (int i = 0; i < 8; i++) {
             putString("fav" + i, "");
         }
+
+        putInt(Constants.PrefsKey.SAVE_CHANNEL, 0);
     }
 }
