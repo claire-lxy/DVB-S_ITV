@@ -28,6 +28,7 @@ public abstract class BaseDialogFragment extends DialogFragment {
     private BaseActivity mActivity;
 
     private Unbinder mUnBinder;
+    private View mRootView;
 
     protected String getStrings(@StringRes int resId) {
         if (getContext() != null) {
@@ -49,9 +50,9 @@ public abstract class BaseDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View rootView = inflater.inflate(getLayoutId(), container, false);
-        mUnBinder = ButterKnife.bind(this, rootView);
-        return rootView;
+        mRootView = inflater.inflate(getLayoutId(), container, false);
+        mUnBinder = ButterKnife.bind(this, mRootView);
+        return mRootView;
     }
 
     @NonNull
@@ -77,6 +78,7 @@ public abstract class BaseDialogFragment extends DialogFragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        mRootView.requestFocus();
         setup(view);
         super.onViewCreated(view, savedInstanceState);
     }
