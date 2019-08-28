@@ -80,6 +80,9 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     @BindView(R.id.tv_seek_num)
     TextView tvSeekNum;
 
+    @BindView(R.id.ly_bottom)
+    LinearLayout lyBottom;
+
     @BindView(R.id.tv_prog_num)
     TextView tvProgNum;
 
@@ -276,15 +279,13 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
 
     private void showControlUI(boolean dismiss) {
         removeDissControlUIMsg();
-        tvProgNum.setVisibility(View.VISIBLE);
-        lyControl.setVisibility(View.VISIBLE);
+        lyBottom.setVisibility(View.VISIBLE);
         if (dismiss)
             sendDissControlUIMsg(new HandlerMsgModel(PlayHandler.MSG_DISMISS_CONTROL_UI, 4000L));
     }
 
     private void dismissControlUI() {
-        tvProgNum.setVisibility(View.INVISIBLE);
-        lyControl.setVisibility(View.INVISIBLE);
+        lyBottom.setVisibility(View.INVISIBLE);
     }
 
     private void switchPlayTypeUI(int playType, int seekNum) {
@@ -394,12 +395,12 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
 
             case KeyEvent.KEYCODE_MEDIA_STOP:
             case KeyEvent.KEYCODE_BACK:
-                if (lyControl.getVisibility() == View.VISIBLE) {
+                if (lyBottom.getVisibility() == View.VISIBLE) {
                     dismissControlUI();
                 } else {
                     new CommTipsDialog()
                             .title(getString(R.string.dialog_exit_pvr_tips))
-                            .content(getString(R.string.dialog_exit_timeshift_content))
+                            .content(getString(from == FROM_TOPMOST ? R.string.dialog_exit_timeshift_content : R.string.dialog_exit_playback_content))
                             .negativeFocus(true)
                             .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
                                 @Override
