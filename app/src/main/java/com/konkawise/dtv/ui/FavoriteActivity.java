@@ -113,7 +113,6 @@ public class FavoriteActivity extends BaseActivity {
 
     @Override
     protected void setup() {
-        SWPDBaseManager.getInstance().setCurrGroup(SWPDBase.SW_WHOLE_GROUP, 0);
         initFavoriteGroup();
         initFavoriteChannel();
     }
@@ -161,7 +160,7 @@ public class FavoriteActivity extends BaseActivity {
         protected void loadBackground() {
             FavoriteActivity context = mWeakReference.get();
 
-            context.mFavoriteChannelsMap = SWPDBaseManager.getInstance().getFavChannelMap();
+            context.mFavoriteChannelsMap = SWPDBaseManager.getInstance().getFavChannelMap(null);
             List<PDPMInfo_t> favoriteChannels = context.mFavoriteChannelsMap.get(favIndex);
             if (favoriteChannels == null) {
                 favoriteChannels = SWPDBaseManager.getInstance().getFavListByIndex(favIndex);
