@@ -6,7 +6,6 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -18,10 +17,10 @@ import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.base.BaseActivity;
+import com.konkawise.dtv.bean.LatLngModel;
 import com.konkawise.dtv.dialog.CommRemindDialog;
 import com.konkawise.dtv.dialog.OnCommCallback;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
-import com.konkawise.dtv.utils.EditUtils;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
 import com.konkawise.dtv.weaktool.WeakHandler;
@@ -159,9 +158,6 @@ public class MotorActivity extends BaseActivity {
     @BindView(R.id.tv_local_longitude)
     TextView mTvLocalLongitude;
 
-    @BindView(R.id.et_local_longitude)
-    EditText mEtLocalLongitude;
-
     @BindView(R.id.iv_local_longitude_right)
     ImageView mIvLocalLongitudeRight;
 
@@ -174,9 +170,6 @@ public class MotorActivity extends BaseActivity {
     @BindView(R.id.tv_local_latitude)
     TextView mTvLocalLatitude;
 
-    @BindView(R.id.et_local_latitude)
-    EditText mEtLocalLatitude;
-
     @BindView(R.id.iv_local_latitude_right)
     ImageView mIvLocalLatitudeRight;
 
@@ -188,9 +181,6 @@ public class MotorActivity extends BaseActivity {
 
     @BindView(R.id.tv_sat_longitude)
     TextView mTvSatLongitude;
-
-    @BindView(R.id.et_sat_longitude)
-    EditText mEtSatLongitude;
 
     @BindView(R.id.iv_sat_longitude_right)
     ImageView mIvSatLongitudeRight;
@@ -245,9 +235,9 @@ public class MotorActivity extends BaseActivity {
     private MotorCtrlRunnable mMotorRunnable;
     private SatInfo_t mSatInfo;
 
-    private double mSatLongitude;
-    private double mLocalLongitude;
-    private double mLocalLatitude;
+    private LatLngModel mSatLongitudeModel = new LatLngModel();
+    private LatLngModel mLocalLongitudeModel = new LatLngModel();
+    private LatLngModel mLocalLatitudeModel = new LatLngModel();
 
     @Override
     public int getLayoutId() {
@@ -280,8 +270,8 @@ public class MotorActivity extends BaseActivity {
         super.onStop();
         stopMotorCtrl();
         if (mSatInfo != null) saveLongitude();
-        SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SAT_Longitude.ordinal(), Utils.getSaveLongitudeValue(mLocalLongitude));
-        SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SAT_Latitude.ordinal(), Utils.getSaveLatitudeValue(mLocalLatitude));
+        SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SAT_Longitude.ordinal(), mLocalLongitudeModel.getValueForStorage());
+        SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SAT_Latitude.ordinal(), mLocalLatitudeModel.getValueForStorage());
     }
 
     private void stopMotorCtrl() {
@@ -318,9 +308,9 @@ public class MotorActivity extends BaseActivity {
         if (satList != null && !satList.isEmpty() && position < satList.size()) {
             mSatInfo = satList.get(position);
             if (mSatInfo != null) {
-                mSatLongitude = Utils.getLongitudeValue(mSatInfo.diseqc12_longitude);
-                mLocalLongitude = Utils.getLongitudeValue(SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SAT_Longitude.ordinal()));
-                mLocalLatitude = Utils.getLatitudeValue(SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SAT_Latitude.ordinal()));
+                mSatLongitudeModel = new LatLngModel(LatLngModel.MODE_LONGITUDE, LatLngModel.LONGITUDE_THRESHOLD, mSatInfo.diseqc12_longitude);
+                mLocalLongitudeModel = new LatLngModel(LatLngModel.MODE_LONGITUDE, LatLngModel.LONGITUDE_THRESHOLD, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SAT_Longitude.ordinal()));
+                mLocalLatitudeModel = new LatLngModel(LatLngModel.MODE_LATITUDE, LatLngModel.LATITUDE_THRESHOLD, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SAT_Latitude.ordinal()));
             }
         }
     }
@@ -341,7 +331,6 @@ public class MotorActivity extends BaseActivity {
         mPositionStep = mSatInfo != null ? mSatInfo.diseqc12 : 0;
         mTvPosition.setText(MessageFormat.format(getString(R.string.motor_position_text), String.valueOf(mPositionStep)));
     }
-
 
     private void tryLockTp() {
         if (mTpList != null && mTpList.size() != 0) {
@@ -412,8 +401,6 @@ public class MotorActivity extends BaseActivity {
                     case ITEM_LOCAL_LATITUDE:
                     case ITEM_POSITION:
                     case ITEM_COMMAND:
-                        latLngEditVisible(false);
-                        latLngSaveEdit();
                         position--;
                         break;
                 }
@@ -447,8 +434,6 @@ public class MotorActivity extends BaseActivity {
                     case ITEM_LOCAL_LONGITUDE:
                     case ITEM_LOCAL_LATITUDE:
                     case ITEM_POSITION:
-                        latLngEditVisible(false);
-                        latLngSaveEdit();
                         position++;
                         break;
                 }
@@ -490,13 +475,13 @@ public class MotorActivity extends BaseActivity {
                         tpChange();
                         break;
                     case ITEM_SAT_LONGITUDE:
-                        mEtSatLongitude.setText(EditUtils.getEditSubstring(mEtSatLongitude));
+                        mTvSatLongitude.setText(mSatLongitudeModel.deleteNumber());
                         break;
                     case ITEM_LOCAL_LONGITUDE:
-                        mEtLocalLongitude.setText(EditUtils.getEditSubstring(mEtLocalLongitude));
+                        mTvLocalLongitude.setText(mLocalLongitudeModel.deleteNumber());
                         break;
                     case ITEM_LOCAL_LATITUDE:
-                        mEtLocalLatitude.setText(EditUtils.getEditSubstring(mEtLocalLatitude));
+                        mTvLocalLatitude.setText(mLocalLatitudeModel.deleteNumber());
                         break;
                     case ITEM_POSITION:
                         if (--mPositionStep < MIN_POSITION) mPositionStep = MAX_POSITION;
@@ -565,31 +550,16 @@ public class MotorActivity extends BaseActivity {
                         tpChange();
                         break;
                     case ITEM_SAT_LONGITUDE:
-                        if (mEtSatLongitude.getVisibility() == View.VISIBLE) {
-                            latLngEditVisible(false);
-                            latLngSaveEdit();
-                        } else {
-                            mSatLongitude = -mSatLongitude;
-                            satLongitudeChange();
-                        }
+                        mSatLongitudeModel.switchDirection();
+                        satLongitudeChange();
                         break;
                     case ITEM_LOCAL_LONGITUDE:
-                        if (mEtLocalLongitude.getVisibility() == View.VISIBLE) {
-                            latLngEditVisible(false);
-                            latLngSaveEdit();
-                        } else {
-                            mLocalLongitude = -mLocalLongitude;
-                            localLongitudeChange();
-                        }
+                        mLocalLongitudeModel.switchDirection();
+                        localLongitudeChange();
                         break;
                     case ITEM_LOCAL_LATITUDE:
-                        if (mEtLocalLatitude.getVisibility() == View.VISIBLE) {
-                            latLngEditVisible(false);
-                            latLngSaveEdit();
-                        } else {
-                            mLocalLatitude = -mLocalLatitude;
-                            localLatitudeChange();
-                        }
+                        mLocalLatitudeModel.switchDirection();
+                        localLatitudeChange();
                         break;
                     case ITEM_POSITION:
                         if (++mPositionStep > MAX_POSITION) mPositionStep = MIN_POSITION;
@@ -713,7 +683,7 @@ public class MotorActivity extends BaseActivity {
 
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             Intent intent = new Intent();
-            intent.putExtra(Constants.IntentKey.INTENT_LONGITUDE, Utils.getSaveLongitudeValue(mSatLongitude));
+            intent.putExtra(Constants.IntentKey.INTENT_LONGITUDE, mSatLongitudeModel.getValueForStorage());
             setResult(Constants.RequestCode.REQUEST_CODE_MOTOR, intent);
             finish();
             return true;
@@ -741,17 +711,17 @@ public class MotorActivity extends BaseActivity {
 
     private void satLongitudeChange() {
         mLocalLongitudeLayout.setVisibility(mMotorType == MOROT_TYPE_USALS ? View.VISIBLE : View.GONE);
-        mTvSatLongitude.setText(Utils.getLongitude(mSatLongitude));
+        mTvSatLongitude.setText(mSatLongitudeModel.getLatLngText());
     }
 
     private void localLongitudeChange() {
         mLocalLongitudeLayout.setVisibility(mMotorType == MOROT_TYPE_USALS ? View.VISIBLE : View.GONE);
-        mTvLocalLongitude.setText(Utils.getLongitude(mLocalLongitude));
+        mTvLocalLongitude.setText(mLocalLongitudeModel.getLatLngText());
     }
 
     private void localLatitudeChange() {
         mLocalLongitudeLayout.setVisibility(mMotorType == MOROT_TYPE_USALS ? View.VISIBLE : View.GONE);
-        mTvLocalLatitude.setText(Utils.getLatLatitude(mLocalLatitude));
+        mTvLocalLatitude.setText(mLocalLatitudeModel.getLatLngText());
     }
 
     private void moveStepChange() {
@@ -872,67 +842,17 @@ public class MotorActivity extends BaseActivity {
     }
 
     public void latLngEditChange(int num, int position) {
-        latLngEditVisible(true);
         switch (position) {
             case ITEM_SAT_LONGITUDE:
-                latLngEdit(mEtSatLongitude, num);
+                mTvSatLongitude.setText(mSatLongitudeModel.inputNumber(num));
                 break;
             case ITEM_LOCAL_LONGITUDE:
-                latLngEdit(mEtLocalLongitude, num);
+                mTvLocalLongitude.setText(mLocalLongitudeModel.inputNumber(num));
                 break;
             case ITEM_LOCAL_LATITUDE:
-                latLngEdit(mEtLocalLatitude, num);
+                mTvLocalLatitude.setText(mLocalLatitudeModel.inputNumber(num));
                 break;
         }
-    }
-
-    private void latLngEdit(EditText editText, int num) {
-        String latLng = editText.getText().toString() + num;
-        editText.setText(latLng);
-        editText.setSelection(editText.getText().length());
-    }
-
-    private void latLngEditVisible(boolean visible) {
-        if (visible) mEtSatLongitude.requestFocus();
-        mEtSatLongitude.setVisibility(position == ITEM_SAT_LONGITUDE && visible ? View.VISIBLE : View.GONE);
-        mTvSatLongitude.setVisibility(position == ITEM_SAT_LONGITUDE && visible ? View.GONE : View.VISIBLE);
-
-        if (visible) mEtLocalLongitude.requestFocus();
-        mEtLocalLongitude.setVisibility(position == ITEM_LOCAL_LONGITUDE && visible ? View.VISIBLE : View.GONE);
-        mTvLocalLongitude.setVisibility(position == ITEM_LOCAL_LONGITUDE && visible ? View.GONE : View.VISIBLE);
-
-        if (visible) mEtLocalLatitude.requestFocus();
-        mEtLocalLatitude.setVisibility(position == ITEM_LOCAL_LATITUDE && visible ? View.VISIBLE : View.GONE);
-        mTvLocalLatitude.setVisibility(position == ITEM_LOCAL_LATITUDE && visible ? View.GONE : View.VISIBLE);
-    }
-
-    private void latLngSaveEdit() {
-        if (position == ITEM_SAT_LONGITUDE) {
-            mSatLongitude = latLngSave(mEtSatLongitude, mTvSatLongitude, position, mSatLongitude);
-        }
-        if (position == ITEM_LOCAL_LONGITUDE) {
-            mLocalLongitude = latLngSave(mEtLocalLongitude, mTvLocalLongitude, position, mLocalLongitude);
-        }
-        if (position == ITEM_LOCAL_LATITUDE) {
-            mLocalLatitude = latLngSave(mEtLocalLatitude, mTvLocalLatitude, position, mLocalLatitude);
-        }
-    }
-
-    private double latLngSave(EditText etLatLng, TextView tvLatLng, int currSelectItem, double originLatLng) {
-        double resultLatLng = originLatLng;
-        boolean isLatitude = currSelectItem == ITEM_LOCAL_LATITUDE;
-        String latLngStr = etLatLng.getText().toString();
-        if (TextUtils.isEmpty(latLngStr)) {
-            tvLatLng.setText(isLatitude ? Utils.getLatLatitude(originLatLng) : Utils.getLongitude(originLatLng));
-        } else {
-            double latLng = isLatitude ? Utils.getLatitudeValue(Double.valueOf(latLngStr)) : Utils.getLongitudeValue(Double.valueOf(latLngStr));
-            resultLatLng = originLatLng < 0 ? -latLng : latLng;
-            tvLatLng.setText(isLatitude ? Utils.getLatLatitude(resultLatLng) : Utils.getLongitude(resultLatLng));
-        }
-
-        etLatLng.setText("");
-        etLatLng.clearFocus();
-        return resultLatLng;
     }
 
     private void sendStopMessage(int data) {
@@ -966,7 +886,7 @@ public class MotorActivity extends BaseActivity {
 
     private void saveLongitude() {
         if (mSatInfo != null) {
-            mSatInfo.diseqc12_longitude = Utils.getSaveLongitudeValue(mSatLongitude);
+            mSatInfo.diseqc12_longitude = mSatLongitudeModel.getValueForStorage();
             SWPDBaseManager.getInstance().setSatInfo(mSatelliteIndex, mSatInfo);
         }
     }

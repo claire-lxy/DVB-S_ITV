@@ -127,30 +127,4 @@ public class Utils {
         }
         return "";
     }
-
-    public static double getLongitudeValue(double longitude) {
-        return Double.valueOf(sLatLngFormat.format(longitude > MAX_LONGITUDE ? longitude - LONGITUDE_REVERSE_VALUE : longitude));
-    }
-
-    public static double getLatitudeValue(double latitude) {
-        return Double.valueOf(sLatLngFormat.format(latitude > MAX_LATITUDE ? latitude - LATITUDE_REVERSE_VALUE : latitude));
-    }
-
-    public static int getSaveLongitudeValue(double longitude) {
-        return (int) (longitude > MAX_LONGITUDE ? longitude + LONGITUDE_REVERSE_VALUE : longitude);
-    }
-
-    public static int getSaveLatitudeValue(double latitude) {
-        return (int) (latitude > MAX_LATITUDE ? latitude + LATITUDE_REVERSE_VALUE : latitude);
-    }
-
-    public static String getLongitude(double originLongitude) {
-        double longitude = getLongitudeValue(originLongitude) / 10;
-        return longitude >= 0 ? "E    " + Math.abs(longitude) : "W    " + Math.abs(longitude);
-    }
-
-    public static String getLatLatitude(double originLatitude) {
-        double latitude = getLatitudeValue(originLatitude) / 10;
-        return latitude >= 0 ? "N    " + Math.abs(latitude) : "S    " + Math.abs(latitude);
-    }
 }
