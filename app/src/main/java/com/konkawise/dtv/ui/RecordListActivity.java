@@ -111,6 +111,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         }
     }
 
+    private String RECORD_LIST_PATH;
     private int mCurrDevicePostion;
     private int mCurrRecordPosition;
     private Map<String, List<RecordInfo>> fMaps = new HashMap<>();
@@ -129,6 +130,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     protected void setup() {
         UsbManager.getInstance().registerUsbReceiveListener(this);
         ltHpvrRecFileTS = SWDJAPVRManager.getInstance().getRecordFileList(0, -1);
+        RECORD_LIST_PATH = SWDJAPVRManager.getInstance().getRecordDirName() + "/";
 
         mAdapter = new RecordListAdapter(this, new ArrayList<>());
         mListView.setAdapter(mAdapter);
@@ -220,7 +222,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         @Override
         protected void loadBackground() {
             RecordListActivity context = mWeakReference.get();
-            List<RecordInfo> ltRecordFiles = context.queryRecordFiles(context.mUsbInfos.get(context.mCurrDevicePostion).path + "/" + Constants.RECORD_LIST_PATH);
+            List<RecordInfo> ltRecordFiles = context.queryRecordFiles(context.mUsbInfos.get(context.mCurrDevicePostion).path + "/" + context.RECORD_LIST_PATH);
             context.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -255,7 +257,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     }
 
     private void renameChannel(String oldName, String newName, boolean override) {
-        String path = mUsbInfos.get(mCurrDevicePostion).path + "/" + Constants.RECORD_LIST_PATH;
+        String path = mUsbInfos.get(mCurrDevicePostion).path + "/" + RECORD_LIST_PATH;
         if (renameFile(path + oldName, path + newName, override) && renameFile(path + oldName + Constants.RECORD_CONFIG_FILE_TYPE,
                 path + newName + Constants.RECORD_CONFIG_FILE_TYPE, override)) {
             Log.i(TAG, "notifyDataSetChanged");
@@ -283,7 +285,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
 
         mAdapter.clearSelect();
         mAdapter.updateData(recordList);
-        if(recordList.get(mCurrRecordPosition).getHpvrRecFileT() == null){
+        if (recordList.get(mCurrRecordPosition).getHpvrRecFileT() == null) {
             ToastUtils.showToast(R.string.lock_error);
             tvLock.setText(getResources().getString(R.string.lock));
             return;

@@ -61,7 +61,6 @@ public class Constants {
     public static final String STANDBY_DEEP_RESTART = "deep_restart"; // 系统唤醒重启
     public static final String STANDBY_SMART_SUSPEND = "smart_suspend"; // 系统唤醒返回Launcher
 
-    public static final String RECORD_LIST_PATH = "DTVRecordFiles/";
     public static final String RECORD_FILE_TYPE = "ts";
     public static final String RECORD_CONFIG_FILE_TYPE = ".idx";
 

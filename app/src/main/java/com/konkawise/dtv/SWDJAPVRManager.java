@@ -59,6 +59,10 @@ public class SWDJAPVRManager {
         return DJAPVR.CreateInstance().getRecordFileList(null, begin, limit);
     }
 
+    public String getRecordDirName() {
+        return DJAPVR.CreateInstance().getRecordDirName();
+    }
+
     public int startPlay(String path, String fname, int loop) {
         return DJAPVR.CreateInstance().startPlay(path, fname, loop);
     }
