@@ -10,7 +10,6 @@ import com.sw.dvblib.SWPDBase;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
 import vendor.konka.hardware.dtvmanager.V1_0.Channel_t;

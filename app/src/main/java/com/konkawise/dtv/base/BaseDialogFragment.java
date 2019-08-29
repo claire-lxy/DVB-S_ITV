@@ -25,7 +25,7 @@ import butterknife.Unbinder;
  * 跟随Activity生命周期消失的dialog
  */
 public abstract class BaseDialogFragment extends DialogFragment {
-    private BaseActivity mActivity;
+    protected BaseActivity mActivity;
 
     private Unbinder mUnBinder;
     private View mRootView;

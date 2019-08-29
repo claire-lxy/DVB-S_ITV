@@ -4,44 +4,40 @@ import android.Manifest;
 
 public class Constants {
     // support language
-    public static final int LOCALE_TYPE_SYSTEM = 0x2001;
-    public static final int LOCALE_TYPE_ITALIAN = 0x2002;
-    public static final int LOCALE_TYPE_ENGLISH = 0x2003;
-    public static final int LOCALE_TYPE_CHINESE = 0x2004;
+    public static final int LOCALE_TYPE_SYSTEM = 0x1001;
+    public static final int LOCALE_TYPE_ITALIAN = 0x1002;
+    public static final int LOCALE_TYPE_ENGLISH = 0x1003;
+    public static final int LOCALE_TYPE_CHINESE = 0x1004;
 
     // usb receive type
-    public static final int USB_TYPE_ATTACH = 0x3001;
-    public static final int USB_TYPE_DETACH = 0x3002;
-
-    // booking receive type
-    public static final int BOOKING_TYPE_PLAY_STANDBY = 0x4001;
-    public static final int BOOKING_TYPE_RECORD_STANDBY = 0x4002;
+    public static final int USB_TYPE_ATTACH = 0x2001;
+    public static final int USB_TYPE_DETACH = 0x2002;
 
     // book type
-    public static final int BOOK_TYPE_ADD = 0x5001; // 添加book
-    public static final int BOOK_TYPE_EDIT = 0x5002; // 编辑book
+    public static final int BOOK_TYPE_ADD = 0x3001; // 添加book
+    public static final int BOOK_TYPE_EDIT = 0x3002; // 编辑book
 
     // book conflict type
-    public static final int BOOK_CONFLICT_LIMIT = 0x6001; // book达到最大值32个，提示不能添加
-    public static final int BOOK_CONFLICT_NONE = 0x6002; // book没冲突，正常添加
-    public static final int BOOK_CONFLICT_ADD = 0x6003; // book冲突，需要先删除后添加
-    public static final int BOOK_CONFLICT_REPLACE = 0x6004; // book冲突，需要替换
+    public static final int BOOK_CONFLICT_LIMIT = 0x4001; // book达到最大值32个，提示不能添加
+    public static final int BOOK_CONFLICT_NONE = 0x4002; // book没冲突，正常添加
+    public static final int BOOK_CONFLICT_ADD = 0x4003; // book冲突，需要先删除后添加
+    public static final int BOOK_CONFLICT_REPLACE = 0x4004; // book冲突，需要替换
 
     // tp type
-    public static final int TP_TYPE_ADD = 0x7001;
-    public static final int TP_TYPE_EDIT = 0x7002;
+    public static final int TP_TYPE_ADD = 0x5001;
+    public static final int TP_TYPE_EDIT = 0x5002;
 
     // msg callback id
-    public static final int SCAN_CALLBACK_MSG_ID = 0x8001; // 频道扫描消息回调通道id
-    public static final int BOOK_CALLBACK_MSG_ID = 0x8002; // book消息回调通道id
-    public static final int LOCK_CALLBACK_MSG_ID = 0x8003; // 频道锁消息回调通道id
-    public static final int TIME_CALLBACK_MSG_ID = 0x8004; // 系统时间消息回调通道id
-    public static final int PVR_CALLBACK_MSG_ID = 0x8005; // PVR播放消息回调通道id
-    public static final int EPG_CALLBACK_MSG_ID = 0x8006; // EPG消息回调通道id
+    public static final int SCAN_CALLBACK_MSG_ID = 0x6001; // 频道扫描消息回调通道id
+    public static final int BOOK_CALLBACK_MSG_ID = 0x6002; // book消息回调通道id
+    public static final int LOCK_CALLBACK_MSG_ID = 0x6003; // 频道锁消息回调通道id
+    public static final int TIME_CALLBACK_MSG_ID = 0x6004; // 系统时间消息回调通道id
+    public static final int PVR_CALLBACK_MSG_ID = 0x6005; // PVR播放消息回调通道id
+    public static final int EPG_CALLBACK_MSG_ID = 0x6006; // EPG消息回调通道id
 
     // pvr type
-    public static final int PVR_TYPE_TIMESHIFT = 0x9001;
-    public static final int PVR_TYPE_RECORD = 0x9002;
+    public static final int PVR_TYPE_TIMESHIFT = 0x7001;
+    public static final int PVR_TYPE_RECORD = 0x7002;
 
     // DiSEqC index
     public static final int DISEQC_A = 0;
@@ -66,7 +62,7 @@ public class Constants {
 
     public interface IntentKey {
         String INTENT_SATELLITE_INDEX = "satelliteIndex";
-        String INTENT_SATELLITE_POSITION = "satelltePosition";
+        String INTENT_SATELLITE_POSITION = "satellitePosition";
         String INTENT_SATELLITE_ACTIVITY = "satelliteActivity";
         String INTENT_EDIT_MANUAL_ACTIVITY = "editManualActivity";
         String INTENT_TPLIST_ACTIVITY = "tpListActivity";
@@ -74,7 +70,7 @@ public class Constants {
         String INTENT_T2_AUTO_SEARCH = "installationT2Activity";
         String INTENT_TP_NAME = "tpName";
         String INTENT_LNB = "lnb";
-        String ITENT_DISEQC = "diseqc";
+        String ITENT_DISEQC = "DiSEqC";
         String INTENT_MOTOR_TYPE = "motorType";
         String INTENT_FREQ = "freq";
         String INTENT_SYMBOL = "symbol";
@@ -88,12 +84,12 @@ public class Constants {
         String INTENT_BOOK_SAT = "sat";
 
         String INTENT_BOOK_UPDATE = "bookUpdate";
-        String INTENT_CURRNT_TP = "currntTp";
+        String INTENT_CURRENT_TP = "currentTp";
 
         String INTENT_TIMESHIFT_RECORD_FROM = "from";
         String INTENT_TIMESHIFT_TIME = "time";
-        String INTENT_TIMESHIFT_PROGNUM = "prognum";
-        String INTENT_RECORD_POSITION = "recordposition";
+        String INTENT_TIMESHIFT_PROGNUM = "progNum";
+        String INTENT_RECORD_POSITION = "recordPosition";
     }
 
     public interface RequestCode {
@@ -103,7 +99,6 @@ public class Constants {
     }
 
     public interface PrefsKey {
-        // language
         String LOCALE_TYPE = "localeType";
 
         String SAVE_CHANNEL = "channel";

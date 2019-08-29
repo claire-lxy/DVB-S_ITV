@@ -28,9 +28,6 @@ public class SearchChannelDialog extends BaseDialogFragment {
         }
     }
 
-    // 存在进入app时会调用onKeyListener响应ok键，规避响应处理
-    private boolean mInit = false;
-
     private OnSearchListener mOnSearchListener;
 
     @Override
@@ -43,23 +40,12 @@ public class SearchChannelDialog extends BaseDialogFragment {
 
     }
 
-    public void resetInit() {
-        if (!mInit) {
-            mInit = true;
-        }
-    }
-
     @Override
     protected boolean onKeyListener(DialogInterface dialog, int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
-            // 解决直接调用dismiss存在失效问题
-            if (getDialog() != null) {
-                getDialog().dismiss();
-                if (mOnSearchListener != null) {
-                    mOnSearchListener.onBackSearch();
-                }
+            if (mOnSearchListener != null) {
+                mOnSearchListener.onBackSearch();
             }
-            return true;
         }
         return super.onKeyListener(dialog, keyCode, event);
     }

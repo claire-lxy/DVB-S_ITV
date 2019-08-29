@@ -13,7 +13,7 @@ import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.UsbManager;
-import com.konkawise.dtv.base.BaseActivity;
+import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.bean.UsbInfo;
 import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
@@ -31,7 +31,7 @@ import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsbReceiveListener {
+public class PVRSettingActivity extends BaseItemFocusChangeActivity implements UsbManager.OnUsbReceiveListener {
     private static final String TAG = "PVRSettingActivity";
 
     private static final int ITEM_TIME_SHIFT_LENGTH = 1;
@@ -451,16 +451,10 @@ public class PVRSettingActivity extends BaseActivity implements UsbManager.OnUsb
 
     private void itemFocusChange() {
         /*itemChange(ITEM_TIME_SHIFT_LENGTH, mIvTimeShiftLengthLeft, mIvTimeShiftLengthRight, mTvTimeShiftLength); */
-        itemChange(ITEM_RECORD_LENGTH, mIvRecordLengthLeft, mIvRecordLengthRight, mTvRecordLength);
+        itemChange(mCurrSelectItem, ITEM_RECORD_LENGTH, mIvRecordLengthLeft, mIvRecordLengthRight, mTvRecordLength);
         /*itemChange(ITEM_RECORD_TYPE, mIvRecordTypeLeft, mIvRecordTypeRight, mTvRecordType); */
-        itemChange(ITEM_DEVICE_NAME, mIvDeviceNameLeft, mIvDeviceNameRight, mTvDeviceName);
-        itemChange(ITEM_DEVICE_FORMAT, mIvDeviceFormatLeft, mIvDeviceFormatRight, mTvDeviceFormat);
-    }
-
-    private void itemChange(int selectItem, ImageView ivLeft, ImageView ivRight, TextView textView) {
-        ivLeft.setVisibility(mCurrSelectItem == selectItem ? View.VISIBLE : View.INVISIBLE);
-        textView.setBackgroundResource(mCurrSelectItem == selectItem ? R.drawable.btn_red_bg_shape : 0);
-        ivRight.setVisibility(mCurrSelectItem == selectItem ? View.VISIBLE : View.INVISIBLE);
+        itemChange(mCurrSelectItem, ITEM_DEVICE_NAME, mIvDeviceNameLeft, mIvDeviceNameRight, mTvDeviceName);
+        itemChange(mCurrSelectItem, ITEM_DEVICE_FORMAT, mIvDeviceFormatLeft, mIvDeviceFormatRight, mTvDeviceFormat);
     }
 
     @Override

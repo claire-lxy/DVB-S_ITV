@@ -21,7 +21,6 @@ import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.event.ReloadSatEvent;
 import com.konkawise.dtv.view.TVListView;
 import com.konkawise.dtv.weaktool.WeakRunnable;
-import com.sw.dvblib.SWPDBase;
 
 import org.greenrobot.eventbus.EventBus;
 

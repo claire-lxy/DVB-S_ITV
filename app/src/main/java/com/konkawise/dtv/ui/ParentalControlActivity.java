@@ -1,13 +1,12 @@
 package com.konkawise.dtv.ui;
 
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWFtaManager;
-import com.konkawise.dtv.base.BaseActivity;
+import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.SetPasswordDialog;
 import com.sw.dvblib.SWFta;
@@ -20,7 +19,7 @@ import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class ParentalControlActivity extends BaseActivity {
+public class ParentalControlActivity extends BaseItemFocusChangeActivity {
     private static final String TAG = "KKDVB_" + ParentalControlActivity.class.getSimpleName();
     private static final int ITEM_MENU_LOCK = 1;
     private static final int ITEM_CHANNEL_LOCK = 2;
@@ -46,7 +45,7 @@ public class ParentalControlActivity extends BaseActivity {
     ImageView mIvChannelLockRight;
 
     @BindView(R.id.iv_control_age_left)
-    ImageView mTvControlAgeLeft;
+    ImageView mIvControlAgeLeft;
 
     @BindView(R.id.tv_control_age)
     TextView mTvControlAge;
@@ -242,14 +241,8 @@ public class ParentalControlActivity extends BaseActivity {
     }
 
     private void itemFocusChange() {
-        itemChange(ITEM_MENU_LOCK, mIvMenuLockLeft, mIvMenuLockRight, mTvMenuLock);
-        itemChange(ITEM_CHANNEL_LOCK, mIvChannelLockLeft, mIvChannelLockRight, mTvChannelLock);
-        itemChange(ITEM_CONTROL_AGE, mTvControlAgeLeft, mIvControlAgeRight, mTvControlAge);
-    }
-
-    private void itemChange(int selectItem, ImageView ivLeft, ImageView ivRight, TextView textView) {
-        ivLeft.setVisibility(position == selectItem ? View.VISIBLE : View.INVISIBLE);
-        textView.setBackgroundResource(position == selectItem ? R.drawable.btn_red_bg_shape : 0);
-        ivRight.setVisibility(position == selectItem ? View.VISIBLE : View.INVISIBLE);
+        itemChange(position, ITEM_MENU_LOCK, mIvMenuLockLeft, mIvMenuLockRight, mTvMenuLock);
+        itemChange(position, ITEM_CHANNEL_LOCK, mIvChannelLockLeft, mIvChannelLockRight, mTvChannelLock);
+        itemChange(position, ITEM_CONTROL_AGE, mIvControlAgeLeft, mIvControlAgeRight, mTvControlAge);
     }
 }

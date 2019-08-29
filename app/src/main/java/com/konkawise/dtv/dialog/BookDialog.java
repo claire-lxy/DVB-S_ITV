@@ -16,7 +16,7 @@ import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWBookingManager;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.annotation.BookType;
-import com.konkawise.dtv.base.BaseDialogFragment;
+import com.konkawise.dtv.base.BaseItemFocusChangeDialogFragment;
 import com.konkawise.dtv.bean.BookParameterModel;
 import com.konkawise.dtv.bean.BookingModel;
 import com.konkawise.dtv.utils.EditUtils;
@@ -37,7 +37,7 @@ import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
 
-public class BookDialog extends BaseDialogFragment {
+public class BookDialog extends BaseItemFocusChangeDialogFragment {
     public static final String TAG = "BookDialog";
 
     private static final String DEFAULT_TIME = "00";
@@ -1156,12 +1156,12 @@ public class BookDialog extends BaseDialogFragment {
     }
 
     private void itemFocusChange() {
-        itemChange(ITEM_TYPE, mItemBookType, mIvBookTypeLeft, mIvBookTypeRight, mTvBookType);
-        itemChange(ITEM_MODE, mItemBookMode, mIvBookModeLeft, mIvBookModeRight, mTvBookMode);
+        itemChange(mCurrentSelectItem, ITEM_TYPE, mItemBookType, mIvBookTypeLeft, mIvBookTypeRight, mTvBookType);
+        itemChange(mCurrentSelectItem, ITEM_MODE, mItemBookMode, mIvBookModeLeft, mIvBookModeRight, mTvBookMode);
         channelTypeItemFocusChange();
         channelNameItemFocusChange();
         bookDateItemFocusChange();
-        itemChange(ITEM_START_TIME, mItemBookStartTime, null, null, null);
+        itemChange(mCurrentSelectItem, ITEM_START_TIME, mItemBookStartTime, null, null, null);
         bookEndTimeItemFocusChange();
 
         notifyEditFocusChange();
@@ -1169,30 +1169,30 @@ public class BookDialog extends BaseDialogFragment {
 
     private void channelTypeItemFocusChange() {
         if (mCurrTypePosition != BOOK_TYPE_STANDBY && !isBookEdit()) {
-            itemChange(ITEM_CHANNEL_TYPE, mItemBookChannelType, mIvBookChannelTypeLeft, mIvBookChannelTypeRight, mTvBookChannelType);
+            itemChange(mCurrentSelectItem, ITEM_CHANNEL_TYPE, mItemBookChannelType, mIvBookChannelTypeLeft, mIvBookChannelTypeRight, mTvBookChannelType);
         }
     }
 
     private void channelNameItemFocusChange() {
         if (mCurrTypePosition != BOOK_TYPE_STANDBY && !isBookEdit()) {
-            itemChange(ITEM_CHANNEL_NAME, mItemBookChannelName, mIvBookChannelNameLeft, mIvBookChannelNameRight, mTvBookChannelName);
+            itemChange(mCurrentSelectItem, ITEM_CHANNEL_NAME, mItemBookChannelName, mIvBookChannelNameLeft, mIvBookChannelNameRight, mTvBookChannelName);
         }
     }
 
     private void bookDateItemFocusChange() {
-        itemChange(ITEM_DATE, mItemBookDate, null, null, null);
+        itemChange(mCurrentSelectItem, ITEM_DATE, mItemBookDate, null, null, null);
 //        if (mCurrModePosition == BOOK_MODE_MONTHLY) {
 //            itemChange(ITEM_DATE, null, mIvBookDateMonthlyLeft, mIvBookDateMonthlyRight, mTvBookDateMonthly);
 //        }
 
         if (mCurrModePosition == BOOK_MODE_WEEKLY) {
-            itemChange(ITEM_DATE, null, mIvBookDateWeeklyLeft, mIvBookDateWeeklyRight, mTvBookDateWeekly);
+            itemChange(mCurrentSelectItem, ITEM_DATE, null, mIvBookDateWeeklyLeft, mIvBookDateWeeklyRight, mTvBookDateWeekly);
         }
     }
 
     private void bookEndTimeItemFocusChange() {
         if (mCurrTypePosition == BOOK_TYPE_RECORD) {
-            itemChange(ITEM_END_TIME, mItemBookEndTime, null, null, null);
+            itemChange(mCurrentSelectItem, ITEM_END_TIME, mItemBookEndTime, null, null, null);
         }
     }
 
@@ -1255,28 +1255,13 @@ public class BookDialog extends BaseDialogFragment {
         mBtnCancelBook.setFocusable(false);
 
         if (mCurrentSelectItem == ITEM_START_TIME) {
-            itemChange(ITEM_START_TIME, mItemBookStartTime, null, null, null);
+            itemChange(mCurrentSelectItem, ITEM_START_TIME, mItemBookStartTime, null, null, null);
             startTimeEditFocus(focusEdit);
         }
 
         if (mCurrentSelectItem == ITEM_END_TIME) {
-            itemChange(ITEM_END_TIME, mItemBookEndTime, null, null, null);
+            itemChange(mCurrentSelectItem, ITEM_END_TIME, mItemBookEndTime, null, null, null);
             endTimeEditFocus(focusEdit);
-        }
-    }
-
-    private void itemChange(int selectItem, ViewGroup itemGroup, ImageView ivLeft, ImageView ivRight, TextView textView) {
-        if (itemGroup != null) {
-            itemGroup.setBackgroundResource(mCurrentSelectItem == selectItem ? R.drawable.btn_translate_bg_select_shape : 0);
-        }
-        if (ivLeft != null) {
-            ivLeft.setVisibility(mCurrentSelectItem == selectItem ? View.VISIBLE : View.INVISIBLE);
-        }
-        if (ivRight != null) {
-            ivRight.setVisibility(mCurrentSelectItem == selectItem ? View.VISIBLE : View.INVISIBLE);
-        }
-        if (textView != null) {
-            textView.setBackgroundResource(mCurrentSelectItem == selectItem ? R.drawable.btn_red_bg_shape : 0);
         }
     }
 

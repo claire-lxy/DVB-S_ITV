@@ -13,7 +13,7 @@ import com.konkawise.dtv.PreferenceManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
-import com.konkawise.dtv.base.BaseActivity;
+import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.dialog.ScanDialog;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
 
@@ -23,7 +23,7 @@ import java.util.List;
 import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
 
-public class T2ManualSearchActivity extends BaseActivity {
+public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
     private static final int T2_SatIndex = 0;
     private static final int ITEM_TRANSPONDER = 1;
     private static final int ITEM_FREQUENCY = 2;
@@ -225,14 +225,8 @@ public class T2ManualSearchActivity extends BaseActivity {
     }
 
     private void itemFocusChange() {
-        itemChange(ITEM_TRANSPONDER, mIvTransponderLeft, mIvTransponderRight, mTvTransponder);
-        itemChange(ITEM_FREQUENCY, mIvFrequencyLeft, mIvFrequencyRight, mTvFrequency);
-        itemChange(ITEM_BANDWIDTH, mIvBandWidthLeft, mIvBandWidthRight, mTvBandWidth);
-    }
-
-    private void itemChange(int selectItem, ImageView ivLeft, ImageView ivRight, TextView textView) {
-        ivLeft.setVisibility(mCurrSelectItem == selectItem ? View.VISIBLE : View.INVISIBLE);
-        textView.setBackgroundResource(mCurrSelectItem == selectItem ? R.drawable.btn_red_bg_shape : 0);
-        ivRight.setVisibility(mCurrSelectItem == selectItem ? View.VISIBLE : View.INVISIBLE);
+        itemChange(mCurrSelectItem, ITEM_TRANSPONDER, mIvTransponderLeft, mIvTransponderRight, mTvTransponder);
+        itemChange(mCurrSelectItem, ITEM_FREQUENCY, mIvFrequencyLeft, mIvFrequencyRight, mTvFrequency);
+        itemChange(mCurrSelectItem, ITEM_BANDWIDTH, mIvBandWidthLeft, mIvBandWidthRight, mTvBandWidth);
     }
 }

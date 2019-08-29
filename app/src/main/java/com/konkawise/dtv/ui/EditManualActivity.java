@@ -18,7 +18,7 @@ import com.konkawise.dtv.PreferenceManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
-import com.konkawise.dtv.base.BaseActivity;
+import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.bean.LatLngModel;
 import com.konkawise.dtv.dialog.AutoDiSEqCDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
@@ -34,7 +34,7 @@ import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 
-public class EditManualActivity extends BaseActivity {
+public class EditManualActivity extends BaseItemFocusChangeActivity {
     private static final String TAG = "EditManualActivity";
     private static final int ITEM_SATELLITE = 1;
     private static final int ITEM_TP = 2;
@@ -341,7 +341,7 @@ public class EditManualActivity extends BaseActivity {
         if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_YELLOW) {
             Intent intent = new Intent(EditManualActivity.this, MotorActivity.class);
             intent.putExtra(Constants.IntentKey.INTENT_TP_NAME, mTvTp.getText());
-            intent.putExtra(Constants.IntentKey.INTENT_CURRNT_TP, mCurrentTp);
+            intent.putExtra(Constants.IntentKey.INTENT_CURRENT_TP, mCurrentTp);
             intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, getSatList().get(mCurrentSatellite).SatIndex);
             startActivityForResult(intent, Constants.RequestCode.REQUEST_CODE_MOTOR);
             return true;
@@ -615,40 +615,12 @@ public class EditManualActivity extends BaseActivity {
     }
 
     private void itemFocusChange() {
-        satelliteItemFocusChange();
-        tpItemFocusChange();
-        lnbItemFocusChange();
-        diseqcItemFocusChange();
+        itemChange(mCurrentSelectItem, ITEM_SATELLITE, mItemSatellite, mIvSatelliteLeft, mIvSatelliteRight, mTvSatellite);
+        itemChange(mCurrentSelectItem, ITEM_TP, mItemTp, mIvTpLeft, mIvTpRight, mTvTp);
+        itemChange(mCurrentSelectItem, ITEM_LNB, mItemLnb, mIvLnbLeft, mIvLnbRight, mTvLnb);
+        itemChange(mCurrentSelectItem, ITEM_DISEQC, mItemDiSEqC, mIvDiSEqCLeft, mIvDiSEqCRight, mTvDiSEqC);
+        itemChange(mCurrentSelectItem, ITEM_LNB_POWER, mItemLnbPower, mIvLnbPowerLeft, mIvLnbPowerRight, mTvLnbPower);
         notify22kChange();
-        lnbPowerItemFocusChange();
-    }
-
-    private void satelliteItemFocusChange() {
-        mItemSatellite.setBackgroundResource(mCurrentSelectItem == ITEM_SATELLITE ? R.drawable.btn_translate_bg_select_shape : 0);
-        mIvSatelliteLeft.setVisibility(mCurrentSelectItem == ITEM_SATELLITE ? View.VISIBLE : View.INVISIBLE);
-        mIvSatelliteRight.setVisibility(mCurrentSelectItem == ITEM_SATELLITE ? View.VISIBLE : View.INVISIBLE);
-        mTvSatellite.setBackgroundResource(mCurrentSelectItem == ITEM_SATELLITE ? R.drawable.btn_red_bg_shape : 0);
-    }
-
-    private void tpItemFocusChange() {
-        mItemTp.setBackgroundResource(mCurrentSelectItem == ITEM_TP ? R.drawable.btn_translate_bg_select_shape : 0);
-        mIvTpLeft.setVisibility(mCurrentSelectItem == ITEM_TP ? View.VISIBLE : View.INVISIBLE);
-        mIvTpRight.setVisibility(mCurrentSelectItem == ITEM_TP ? View.VISIBLE : View.INVISIBLE);
-        mTvTp.setBackgroundResource(mCurrentSelectItem == ITEM_TP ? R.drawable.btn_red_bg_shape : 0);
-    }
-
-    private void lnbItemFocusChange() {
-        mItemLnb.setBackgroundResource(mCurrentSelectItem == ITEM_LNB ? R.drawable.btn_translate_bg_select_shape : 0);
-        mIvLnbLeft.setVisibility(mCurrentSelectItem == ITEM_LNB ? View.VISIBLE : View.INVISIBLE);
-        mIvLnbRight.setVisibility(mCurrentSelectItem == ITEM_LNB ? View.VISIBLE : View.INVISIBLE);
-        mTvLnb.setBackgroundResource(mCurrentSelectItem == ITEM_LNB ? R.drawable.btn_red_bg_shape : 0);
-    }
-
-    private void diseqcItemFocusChange() {
-        mItemDiSEqC.setBackgroundResource(mCurrentSelectItem == ITEM_DISEQC ? R.drawable.btn_translate_bg_select_shape : 0);
-        mIvDiSEqCLeft.setVisibility(mCurrentSelectItem == ITEM_DISEQC ? View.VISIBLE : View.INVISIBLE);
-        mIvDiSEqCRight.setVisibility(mCurrentSelectItem == ITEM_DISEQC ? View.VISIBLE : View.INVISIBLE);
-        mTvDiSEqC.setBackgroundResource(mCurrentSelectItem == ITEM_DISEQC ? R.drawable.btn_red_bg_shape : 0);
     }
 
     private void hz22KItemFocusChange() {
@@ -659,17 +631,7 @@ public class EditManualActivity extends BaseActivity {
             mTv22khz.setBackgroundColor(0);
             mTv22khz.setText(getResources().getString(R.string.auto));
         } else {
-            mItem22khz.setBackgroundResource(mCurrentSelectItem == ITEM_22K ? R.drawable.btn_translate_bg_select_shape : 0);
-            mIv22khzLeft.setVisibility(mCurrentSelectItem == ITEM_22K ? View.VISIBLE : View.INVISIBLE);
-            mIv22khzRight.setVisibility(mCurrentSelectItem == ITEM_22K ? View.VISIBLE : View.INVISIBLE);
-            mTv22khz.setBackgroundResource(mCurrentSelectItem == ITEM_22K ? R.drawable.btn_red_bg_shape : 0);
+            itemChange(mCurrentSelectItem, ITEM_22K, mItem22khz, mIv22khzLeft, mIv22khzRight, mTv22khz);
         }
-    }
-
-    private void lnbPowerItemFocusChange() {
-        mItemLnbPower.setBackgroundResource(mCurrentSelectItem == ITEM_LNB_POWER ? R.drawable.btn_translate_bg_select_shape : 0);
-        mIvLnbPowerLeft.setVisibility(mCurrentSelectItem == ITEM_LNB_POWER ? View.VISIBLE : View.INVISIBLE);
-        mIvLnbPowerRight.setVisibility(mCurrentSelectItem == ITEM_LNB_POWER ? View.VISIBLE : View.INVISIBLE);
-        mTvLnbPower.setBackgroundResource(mCurrentSelectItem == ITEM_LNB_POWER ? R.drawable.btn_red_bg_shape : 0);
     }
 }

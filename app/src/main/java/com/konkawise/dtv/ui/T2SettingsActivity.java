@@ -1,13 +1,12 @@
 package com.konkawise.dtv.ui;
 
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWFtaManager;
-import com.konkawise.dtv.base.BaseActivity;
+import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.sw.dvblib.SWFta;
 
@@ -18,7 +17,7 @@ import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class T2SettingsActivity extends BaseActivity {
+public class T2SettingsActivity extends BaseItemFocusChangeActivity {
 
     private static final String TAG = "KKDVB_" + T2SettingsActivity.class.getSimpleName();
 	private static final int ITEM_ANTENNA_POWER = 1;
@@ -209,14 +208,8 @@ public class T2SettingsActivity extends BaseActivity {
     }
 
     private void itemFocusChange() {
-		itemChange(ITEM_ANTENNA_POWER, mIvAntennaPowerLeft, mIvAntennaPowerRight, mTvAntennaPower);
-		itemChange(ITEM_AREA_SETTING, mIvAreaSettingLeft, mIvAreaSettingRight, mTvAreaSetting);
-		itemChange(ITEM_LCN, mIvLcnLeft, mIvLcnRight, mTvLcn);
-    }
-
-    private void itemChange(int selectItem, ImageView ivLeft, ImageView ivRight, TextView textView) {
-        ivLeft.setVisibility(mCurrentSelectItem == selectItem ? View.VISIBLE : View.INVISIBLE);
-        textView.setBackgroundResource(mCurrentSelectItem == selectItem ? R.drawable.btn_red_bg_shape : 0);
-        ivRight.setVisibility(mCurrentSelectItem == selectItem ? View.VISIBLE : View.INVISIBLE);
+		itemChange(mCurrentSelectItem, ITEM_ANTENNA_POWER, mIvAntennaPowerLeft, mIvAntennaPowerRight, mTvAntennaPower);
+		itemChange(mCurrentSelectItem, ITEM_AREA_SETTING, mIvAreaSettingLeft, mIvAreaSettingRight, mTvAreaSetting);
+		itemChange(mCurrentSelectItem, ITEM_LCN, mIvLcnLeft,  mIvLcnRight, mTvLcn);
     }
 }

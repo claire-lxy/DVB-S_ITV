@@ -1,13 +1,12 @@
 package com.konkawise.dtv.ui;
 
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWFtaManager;
-import com.konkawise.dtv.base.BaseActivity;
+import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.sw.dvblib.SWFta;
 
@@ -18,7 +17,7 @@ import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class GeneralSettingsActivity extends BaseActivity {
+public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
 
     private static final String TAG = "GeneralSettingsActivity";
     private static final int ITEM_SCART = 1;
@@ -504,21 +503,15 @@ public class GeneralSettingsActivity extends BaseActivity {
     }
 
     private void itemFocusChange() {
-		itemChange(ITEM_SCART, mIvScartLeft, mIvScartRight, mTvScart);
-        itemChange(ITEM_SUBTITLE_DISPLAY, mIvSubtitleDisplayLeft, mIvSubtitleDisplayRight, mTvSubtitleDisplay);
-        itemChange(ITEM_PFBAR_TIMEOUT, mIvPfTimeoutLeft, mIvPfTimeoutRight, mTvPfTimeout);
-        itemChange(ITEM_RATIO_MODE, mIvRatioLeft, mIvRatioRight, mTvRatio);
-        itemChange(ITEM_ASPECT_MODE, mIvAspectLeft, mIvAspectRight, mTvAspect);
-        itemChange(ITEM_SWITCH_CHANNEL, mIvSwitchChannelLeft, mIvSwitchChannelRight, mTvSwitchChannel);
-        itemChange(ITEM_FIRST_AUDIO_LANGUAGE, mIvFirstAudioLanguageLeft, mIvFirstAudioLanguageRight, mTvFirstAudioLanguage);
-        itemChange(ITEM_SECOND_AUDIO_LANGUAGE, mIvSecondAudioLanguageLeft, mIvSecondAudioLanguageRight, mTvSecondAudioLanguage);
-        itemChange(ITEM_SUBTITLE_LANGUAGE, mIvSubtitleLanguageLeft, mIvSubtitleLanguageRight, mTvSubtitleLanguage);
-		itemChange(ITEM_AUTO_START, mIvAutoStartLeft, mIvAutoStartRight, mTvAutoStart);
-    }
-
-    private void itemChange(int selectItem, ImageView ivLeft, ImageView ivRight, TextView textView) {
-        ivLeft.setVisibility(mCurrentSelectItem == selectItem ? View.VISIBLE : View.INVISIBLE);
-        textView.setBackgroundResource(mCurrentSelectItem == selectItem ? R.drawable.btn_red_bg_shape : 0);
-        ivRight.setVisibility(mCurrentSelectItem == selectItem ? View.VISIBLE : View.INVISIBLE);
+		itemChange(mCurrentSelectItem, ITEM_SCART, mIvScartLeft, mIvScartRight, mTvScart);
+        itemChange(mCurrentSelectItem, ITEM_SUBTITLE_DISPLAY, mIvSubtitleDisplayLeft, mIvSubtitleDisplayRight, mTvSubtitleDisplay);
+        itemChange(mCurrentSelectItem, ITEM_PFBAR_TIMEOUT, mIvPfTimeoutLeft, mIvPfTimeoutRight, mTvPfTimeout);
+        itemChange(mCurrentSelectItem, ITEM_RATIO_MODE, mIvRatioLeft, mIvRatioRight, mTvRatio);
+        itemChange(mCurrentSelectItem, ITEM_ASPECT_MODE, mIvAspectLeft, mIvAspectRight, mTvAspect);
+        itemChange(mCurrentSelectItem, ITEM_SWITCH_CHANNEL, mIvSwitchChannelLeft, mIvSwitchChannelRight, mTvSwitchChannel);
+        itemChange(mCurrentSelectItem, ITEM_FIRST_AUDIO_LANGUAGE, mIvFirstAudioLanguageLeft, mIvFirstAudioLanguageRight, mTvFirstAudioLanguage);
+        itemChange(mCurrentSelectItem, ITEM_SECOND_AUDIO_LANGUAGE, mIvSecondAudioLanguageLeft, mIvSecondAudioLanguageRight, mTvSecondAudioLanguage);
+        itemChange(mCurrentSelectItem, ITEM_SUBTITLE_LANGUAGE, mIvSubtitleLanguageLeft, mIvSubtitleLanguageRight, mTvSubtitleLanguage);
+		itemChange(mCurrentSelectItem, ITEM_AUTO_START, mIvAutoStartLeft, mIvAutoStartRight, mTvAutoStart);
     }
 }

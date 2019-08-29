@@ -12,7 +12,7 @@ import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWDJAPVRManager;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
-import com.konkawise.dtv.base.BaseDialogFragment;
+import com.konkawise.dtv.base.BaseItemFocusChangeDialogFragment;
 import com.sw.dvblib.SWFta;
 
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import butterknife.BindArray;
 import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.HKKAV_StreamType_t;
 
-public class AudioDialog extends BaseDialogFragment {
+public class AudioDialog extends BaseItemFocusChangeDialogFragment {
 
     public static final String TAG = "AudioDialog";
     private static final int ITEM_AUDIO_TRACK = 1;
@@ -254,13 +254,7 @@ public class AudioDialog extends BaseDialogFragment {
     }
 
     private void itemFocusChange() {
-        itemChange(ITEM_AUDIO_TRACK, mIvAudioTrackLeft, mIvAudioTrackRight, mTvAudioTrack);
-        itemChange(ITEM_AUDIO_LANGUAGE, mIvAudioLanguageLeft, mIvAudioLanguageRight, mTvAudioLanguage);
-    }
-
-    private void itemChange(int selectItem, ImageView ivLeft, ImageView ivRight, TextView textView) {
-        ivLeft.setVisibility(mCurrentSelectItem == selectItem ? View.VISIBLE : View.INVISIBLE);
-        textView.setBackgroundResource(mCurrentSelectItem == selectItem ? R.drawable.btn_red_bg_shape : 0);
-        ivRight.setVisibility(mCurrentSelectItem == selectItem ? View.VISIBLE : View.INVISIBLE);
+        itemChange(mCurrentSelectItem, ITEM_AUDIO_TRACK, mIvAudioTrackLeft, mIvAudioTrackRight, mTvAudioTrack);
+        itemChange(mCurrentSelectItem, ITEM_AUDIO_LANGUAGE, mIvAudioLanguageLeft, mIvAudioLanguageRight, mTvAudioLanguage);
     }
 }

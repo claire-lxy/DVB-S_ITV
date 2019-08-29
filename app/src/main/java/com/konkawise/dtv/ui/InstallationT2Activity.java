@@ -39,7 +39,6 @@ public class InstallationT2Activity extends BaseActivity {
                 .setOnScanSearchListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        //T2??????
                         Intent intent = new Intent(InstallationT2Activity.this, ScanTVandRadioActivity.class);
                         intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, T2_SatIndex);//mCurrentSatellite == 0
                         intent.putExtra(Constants.IntentKey.INTENT_T2_AUTO_SEARCH, 5);

@@ -11,14 +11,14 @@ import android.widget.TextView;
 
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWFtaManager;
-import com.konkawise.dtv.base.BaseDialogFragment;
+import com.konkawise.dtv.base.BaseItemFocusChangeDialogFragment;
 import com.sw.dvblib.SWFta;
 
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class ScanDialog extends BaseDialogFragment {
+public class ScanDialog extends BaseItemFocusChangeDialogFragment {
     public static final String TAG = "ScanDialog";
 
     // S2
@@ -395,53 +395,34 @@ public class ScanDialog extends BaseDialogFragment {
     }
 
     private void itemFocusChange() {
-        scanModeItemFocusChange();
+        itemChange(mCurrSelectItem, ITEM_SCAN_MODE, mItemScanMode, mIvScanModeLeft, mIvScanModeRight, mTvScanMode);
         channelTypeItemFocusChange();
         scanTypeItemFocusChange();
         networkItemFocusChange();
         casSystemItemFocusChange();
     }
 
-    private void scanModeItemFocusChange() {
-        mItemScanMode.setBackgroundResource(mCurrSelectItem == ITEM_SCAN_MODE ? R.drawable.btn_translate_bg_select_shape : 0);
-        mIvScanModeLeft.setVisibility(mCurrSelectItem == ITEM_SCAN_MODE ? View.VISIBLE : View.INVISIBLE);
-        mTvScanMode.setBackgroundResource(mCurrSelectItem == ITEM_SCAN_MODE ? R.drawable.btn_red_bg_shape : 0);
-        mIvScanModeRight.setVisibility(mCurrSelectItem == ITEM_SCAN_MODE ? View.VISIBLE : View.INVISIBLE);
-    }
-
     private void channelTypeItemFocusChange() {
         if (mInstallationType == INSTALLATION_TYPE_AUTO_SEARCH || mInstallationType == INSTALLATION_TYPE_MANUAL_SEARCH) {
-            mItemChannelType.setBackgroundResource(mCurrSelectItem == ITEM_CHANNEL_TYPE ? R.drawable.btn_translate_bg_select_shape : 0);
-            mIvChannelTypeLeft.setVisibility(mCurrSelectItem == ITEM_CHANNEL_TYPE ? View.VISIBLE : View.INVISIBLE);
-            mTvChannelType.setBackgroundResource(mCurrSelectItem == ITEM_CHANNEL_TYPE ? R.drawable.btn_red_bg_shape : 0);
-            mIvChannelTypeRight.setVisibility(mCurrSelectItem == ITEM_CHANNEL_TYPE ? View.VISIBLE : View.INVISIBLE);
+            itemChange(mCurrSelectItem, ITEM_CHANNEL_TYPE, mItemChannelType, mIvChannelTypeLeft, mIvChannelTypeRight, mTvChannelType);
         }
     }
 
     private void scanTypeItemFocusChange() {
         if (mInstallationType == INSTALLATION_TYPE_MANUAL_SEARCH) {
-            mItemScanType.setBackgroundResource(mCurrSelectItem == ITEM_SCAN_TYPE ? R.drawable.btn_translate_bg_select_shape : 0);
-            mIvScanTypeLeft.setVisibility(mCurrSelectItem == ITEM_SCAN_TYPE ? View.VISIBLE : View.INVISIBLE);
-            mTvScanType.setBackgroundResource(mCurrSelectItem == ITEM_SCAN_TYPE ? R.drawable.btn_red_bg_shape : 0);
-            mIvScanTypeRight.setVisibility(mCurrSelectItem == ITEM_SCAN_TYPE ? View.VISIBLE : View.INVISIBLE);
+            itemChange(mCurrSelectItem, ITEM_SCAN_TYPE, mItemScanType, mIvScanTypeLeft, mIvScanTypeRight, mTvScanType);
         }
     }
 
     private void networkItemFocusChange() {
         if (mInstallationType == INSTALLATION_TYPE_S2_SEARCH) {
-            mItemNetwork.setBackgroundResource(mCurrSelectItem == ITEM_NETWORK ? R.drawable.btn_translate_bg_select_shape : 0);
-            mIvNetworkLeft.setVisibility(mCurrSelectItem == ITEM_NETWORK ? View.VISIBLE : View.INVISIBLE);
-            mTvNetwork.setBackgroundResource(mCurrSelectItem == ITEM_NETWORK ? R.drawable.btn_red_bg_shape : 0);
-            mIvNetworkRight.setVisibility(mCurrSelectItem == ITEM_NETWORK ? View.VISIBLE : View.INVISIBLE);
+            itemChange(mCurrSelectItem, ITEM_NETWORK, mItemNetwork, mIvNetworkLeft, mIvNetworkRight, mTvNetwork);
         }
     }
 
     private void casSystemItemFocusChange() {
         if (mInstallationType == INSTALLATION_TYPE_S2_SEARCH) {
-            mItemCasSystem.setBackgroundResource(mCurrSelectItem == ITEM_CAS_SYSTEM ? R.drawable.btn_translate_bg_select_shape : 0);
-            mIvCasSystemLeft.setVisibility(mCurrSelectItem == ITEM_CAS_SYSTEM ? View.VISIBLE : View.INVISIBLE);
-            mTvCasSystem.setBackgroundResource(mCurrSelectItem == ITEM_CAS_SYSTEM ? R.drawable.btn_red_bg_shape : 0);
-            mIvCasSystemRight.setVisibility(mCurrSelectItem == ITEM_CAS_SYSTEM ? View.VISIBLE : View.INVISIBLE);
+            itemChange(mCurrSelectItem, ITEM_CAS_SYSTEM, mItemCasSystem, mIvCasSystemLeft, mIvCasSystemRight, mTvCasSystem);
         }
     }
 

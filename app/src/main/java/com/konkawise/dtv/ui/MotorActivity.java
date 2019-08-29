@@ -16,7 +16,7 @@ import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.ThreadPoolManager;
-import com.konkawise.dtv.base.BaseActivity;
+import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.bean.LatLngModel;
 import com.konkawise.dtv.dialog.CommRemindDialog;
 import com.konkawise.dtv.dialog.OnCommCallback;
@@ -37,7 +37,7 @@ import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HMotorCtrlCode;
 import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 
-public class MotorActivity extends BaseActivity {
+public class MotorActivity extends BaseItemFocusChangeActivity {
     private static final String TAG = "MotorActivity";
     private static final int ITEM_MOTOR_TYPE = 1;
     private static final int ITEM_TP = 2;
@@ -300,7 +300,7 @@ public class MotorActivity extends BaseActivity {
     }
 
     private void initIntent() {
-        mCurrentTp = getIntent().getIntExtra(Constants.IntentKey.INTENT_CURRNT_TP, -1);
+        mCurrentTp = getIntent().getIntExtra(Constants.IntentKey.INTENT_CURRENT_TP, -1);
         mSatelliteIndex = getIntent().getIntExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, -1);
         mTpList = SWPDBaseManager.getInstance().getSatChannelInfoList(mSatelliteIndex);
         List<SatInfo_t> satList = SWPDBaseManager.getInstance().getSatList();
@@ -903,30 +903,25 @@ public class MotorActivity extends BaseActivity {
     }
 
     private void itemFocusChange() {
-        itemChange(ITEM_MOTOR_TYPE, mItemMotorType, mIvMotorTypeLeft, mIvMotorTypeRight, mTvMotorType);
-        itemChange(ITEM_TP, mItemTp, mIvTpLeft, mIvTpRight, mTvTp);
+        itemChange(position, ITEM_MOTOR_TYPE, mItemMotorType, mIvMotorTypeLeft, mIvMotorTypeRight, mTvMotorType);
+        itemChange(position, ITEM_TP, mItemTp, mIvTpLeft, mIvTpRight, mTvTp);
 
-        itemChange(ITEM_MOVE_STEPS, mItemMoveStep, mIvMoveStepLeft, mIvMoveStepRight, mTvMoveStep);
-        itemChange(ITEM_STEP_SIZE, mItemStepSize, mIvStepSizeLeft, mIvStepSizeRight, mTvStepSize);
+        itemChange(position, ITEM_MOVE_STEPS, mItemMoveStep, mIvMoveStepLeft, mIvMoveStepRight, mTvMoveStep);
+        itemChange(position, ITEM_STEP_SIZE, mItemStepSize, mIvStepSizeLeft, mIvStepSizeRight, mTvStepSize);
 
-        satLongitudeItemFocusChange();
-        localLongitudeItemFocusChange();
-        localLatitudeItemFocusChange();
+        itemChange(position, ITEM_SAT_LONGITUDE, mItemSatLongitude, null, mIvSatLongitudeRight, mTvSatLongitude);
+        itemChange(position, ITEM_LOCAL_LONGITUDE, mItemLocalLongitude, null, mIvLocalLongitudeRight, mTvLocalLongitude);
+        itemChange(position, ITEM_LOCAL_LATITUDE, mItemLocalLatitude, null, mIvLocalLatitudeRight, mTvLocalLatitude);
 
         positionItemFocusChange();
         commandItemFocusChange();
     }
-
-    private void satLongitudeItemFocusChange() {
-        itemChange(ITEM_SAT_LONGITUDE, mItemSatLongitude, null, mIvSatLongitudeRight, mTvSatLongitude);
-    }
-
-    private void localLongitudeItemFocusChange() {
-        itemChange(ITEM_LOCAL_LONGITUDE, mItemLocalLongitude, null, mIvLocalLongitudeRight, mTvLocalLongitude);
-    }
-
-    private void localLatitudeItemFocusChange() {
-        itemChange(ITEM_LOCAL_LATITUDE, mItemLocalLatitude, null, mIvLocalLatitudeRight, mTvLocalLatitude);
+    private void positionItemFocusChange() {
+        int selectItem = ITEM_POSITION;
+        if (mMotorType == MOROT_TYPE_DISEQC) {
+            selectItem = ITEM_POSITION_DIS;
+        }
+        itemChange(position, selectItem, mItemPosition, mIvPositionLeft, mIvPositionRight, mTvPosition);
     }
 
     private void commandItemFocusChange() {
@@ -934,31 +929,9 @@ public class MotorActivity extends BaseActivity {
         if (mMotorType == MOROT_TYPE_DISEQC) {
             selectItem = ITEM_DISEQC_COMMAND;
         }
-        itemChange(selectItem, mItemCommand, mIvDiSEqCCommandLeft, mIvCommandRight, mTvCommand);
+        itemChange(position, selectItem, mItemCommand, mIvDiSEqCCommandLeft, mIvCommandRight, mTvCommand);
     }
 
-    private void positionItemFocusChange() {
-        int selectItem = ITEM_POSITION;
-        if (mMotorType == MOROT_TYPE_DISEQC) {
-            selectItem = ITEM_POSITION_DIS;
-        }
-        itemChange(selectItem, mItemPosition, mIvPositionLeft, mIvPositionRight, mTvPosition);
-    }
-
-    private void itemChange(int selectItem, ViewGroup itemGroup, ImageView ivLeft, ImageView ivRight, TextView textView) {
-        if (itemGroup != null) {
-            itemGroup.setBackgroundResource(position == selectItem ? R.drawable.btn_translate_bg_select_shape : 0);
-        }
-        if (ivLeft != null) {
-            ivLeft.setVisibility(position == selectItem ? View.VISIBLE : View.INVISIBLE);
-        }
-        if (ivRight != null) {
-            ivRight.setVisibility(position == selectItem ? View.VISIBLE : View.INVISIBLE);
-        }
-        if (textView != null) {
-            textView.setBackgroundResource(position == selectItem ? R.drawable.btn_red_bg_shape : 0);
-        }
-    }
 
     private static class MotorCtrlModel {
         String title;
