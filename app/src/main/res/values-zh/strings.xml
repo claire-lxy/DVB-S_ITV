@@ -144,6 +144,8 @@
     <string name="blind_scan">盲扫</string>
     <string name="epg">Epg</string>
     <string name="clear_channel">清除节目</string>
+    <string name="restore_channel">备份节目</string>
+    <string name="backup_channel">恢复节目</string>
     <string name="data_reset">数据重置</string>
     <string name="Channel_management">节目管理</string>
     <string name="dtv_setting">DTV设置</string>

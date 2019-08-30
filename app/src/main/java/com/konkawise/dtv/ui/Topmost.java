@@ -173,6 +173,12 @@ public class Topmost extends BaseActivity {
     @BindView(R.id.item_clear_channel)
     TextView mItemClearChannel;
 
+    @BindView(R.id.item_restore_user_data)
+    TextView mItemRestoreUserData;
+
+    @BindView(R.id.item_backup_user_data)
+    TextView mItemBackupUserData;
+
     @BindView(R.id.item_dtv_setting)
     TextView mItemDtvSetting;
 
@@ -297,6 +303,16 @@ public class Topmost extends BaseActivity {
         } else {
             showClearChannelDialog();
         }
+    }
+
+    @OnClick(R.id.item_restore_user_data)
+    void restoreUserData() {
+
+    }
+
+    @OnClick(R.id.item_backup_user_data)
+    void backupUserData() {
+
     }
 
     @OnClick(R.id.item_dtv_setting)
@@ -926,6 +942,7 @@ public class Topmost extends BaseActivity {
                         getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
                 if (!handleBook()) {
                     if (SWPDBaseManager.getInstance().isProgCanPlay() && !SWFtaManager.getInstance().isPasswordEmpty()) {
+                        SWPDBaseManager.getInstance().setCurrGroup(SWPDBase.SW_WHOLE_GROUP, 1);
                         playProg(SWPDBaseManager.getInstance().getCurrProgNo(), true);
                     }
                 } else {
@@ -1733,6 +1750,8 @@ public class Topmost extends BaseActivity {
         mItemChannelEdit.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
         mItemChannelFavorite.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
         mItemClearChannel.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
+        mItemRestoreUserData.setVisibility(isShowChannelManage && SWPDBaseManager.getInstance().isProgCanPlay() ? View.VISIBLE : View.GONE);
+        mItemBackupUserData.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
         mItemDtvSetting.setVisibility(isShowChannelManage ? View.GONE : View.VISIBLE);
         mItemDataReset.setVisibility(isShowChannelManage ? View.GONE : View.VISIBLE);
     }
@@ -1758,6 +1777,8 @@ public class Topmost extends BaseActivity {
         mItemChannelEdit.setVisibility(View.GONE);
         mItemChannelFavorite.setVisibility(View.GONE);
         mItemClearChannel.setVisibility(View.GONE);
+        mItemRestoreUserData.setVisibility(View.GONE);
+        mItemBackupUserData.setVisibility(View.GONE);
         mItemDtvSetting.setVisibility(View.VISIBLE);
         mItemDataReset.setVisibility(View.VISIBLE);
     }
