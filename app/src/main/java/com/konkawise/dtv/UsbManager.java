@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.StatFs;
 import android.os.storage.StorageManager;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 import android.util.Log;
@@ -15,6 +16,7 @@ import com.konkawise.dtv.bean.UsbInfo;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 public class UsbManager {
+    public static final int USB_NOT_FOUND = -3;
     private static final String TAG = "UsbManager";
     private Set<UsbInfo> mUsbInfos = new LinkedHashSet<>();
     private List<OnUsbReceiveListener> mOnUsbReceiveListeners = new LinkedList<>();
@@ -143,6 +146,25 @@ public class UsbManager {
             }
         }
         return null;
+    }
+
+    /**
+     * 获取其他的USB信息
+     *
+     * @param usbInfos USB列表
+     * @param uuid     要排除筛选的USB uuid
+     */
+    public List<UsbInfo> getRemainUsbInfos(Collection<UsbInfo> usbInfos, @Nullable String uuid) {
+        if (usbInfos == null || usbInfos.isEmpty()) {
+            return null;
+        }
+
+        List<UsbInfo> remainUsbInfos = new ArrayList<>();
+        for (UsbInfo usbInfo : usbInfos) {
+            if (!TextUtils.isEmpty(uuid) && TextUtils.equals(usbInfo.uuid, uuid)) continue;
+            remainUsbInfos.add(usbInfo);
+        }
+        return remainUsbInfos;
     }
 
     public interface OnUsbReceiveListener {

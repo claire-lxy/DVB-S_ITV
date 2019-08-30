@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.RequiresApi;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.KeyEvent;
@@ -54,7 +55,6 @@ import com.konkawise.dtv.dialog.PasswordDialog;
 import com.konkawise.dtv.dialog.PfBarScanDialog;
 import com.konkawise.dtv.dialog.PfDetailDialog;
 import com.konkawise.dtv.dialog.SearchChannelDialog;
-import com.konkawise.dtv.dialog.SearchProgramDialog;
 import com.konkawise.dtv.dialog.SubtitleDialog;
 import com.konkawise.dtv.dialog.TeletextDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
@@ -79,6 +79,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -534,8 +535,7 @@ public class Topmost extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        dismissPfBarScanDialog();
-        dismissPasswordDialog();
+        dismissAllDialog();
         unregisterListener();
     }
 
@@ -544,6 +544,7 @@ public class Topmost extends BaseActivity {
         super.onNewIntent(intent);
         setIntent(intent);
         handleBook();
+//        setIntent(new Intent()); // 处理完后要重置为空，防止其他界面返回或跳转到Topmost使用上一个book跳转的intent
     }
 
     private boolean handleBook() {
@@ -587,11 +588,46 @@ public class Topmost extends BaseActivity {
     }
 
     private void startRecord(OnCommCallback callback) {
+        String uuid = SWFtaManager.getInstance().getDiskUUID();
+        Set<UsbInfo> usbInfos = UsbManager.getInstance().queryUsbInfos(this);
+        if (usbInfos == null || usbInfos.isEmpty()) callback.callback(UsbManager.USB_NOT_FOUND);
+
+        if (!TextUtils.isEmpty(uuid)) {
+            UsbInfo usbInfo = UsbManager.getInstance().isContainUsb(usbInfos, uuid);
+            if (usbInfo != null) {
+                executeRecord(usbInfo, callback);
+            } else {
+                checkRemainUsbRecord(usbInfos, uuid, callback);
+            }
+        } else {
+            checkRemainUsbRecord(usbInfos, "", callback);
+        }
+    }
+
+    private void checkRemainUsbRecord(Collection<UsbInfo> usbInfos, String uuid, OnCommCallback callback) {
+        List<UsbInfo> remainUsbInfos = UsbManager.getInstance().getRemainUsbInfos(usbInfos, uuid);
+        if (remainUsbInfos != null && remainUsbInfos.size() > 0) {
+            if (remainUsbInfos.size() == 1) {
+                UsbInfo usbInfo = remainUsbInfos.get(0);
+                if (usbInfo != null && !TextUtils.isEmpty(usbInfo.uuid)) {
+                    executeRecord(remainUsbInfos.get(0), callback);
+                }
+            } else {
+                showSelectUsbDialog(remainUsbInfos, callback);
+            }
+        } else {
+            callback.callback(UsbManager.USB_NOT_FOUND);
+        }
+    }
+
+    private void executeRecord(UsbInfo usbInfo, OnCommCallback callback) {
         if (mWaitingStartRecordRunnable == null) {
             mWaitingStartRecordRunnable = new WaitingStartRecordRunnable(this, callback);
         } else {
             ThreadPoolManager.getInstance().remove(mWaitingStartRecordRunnable);
         }
+        mWaitingStartRecordRunnable.usbInfo = usbInfo;
+        if (usbInfo != null) SWFtaManager.getInstance().setDiskUUID(usbInfo.uuid);
         ThreadPoolManager.getInstance().execute(mWaitingStartRecordRunnable);
     }
 
@@ -602,7 +638,7 @@ public class Topmost extends BaseActivity {
             cancelRecordingTimer();
             setRecordFlagStop();
             mRecordingLayout.setVisibility(View.GONE);
-            mTvRecordingTime.setText(TimeUtils.getDecimalFormatTime(0));
+            mTvRecordingTime.setText("00:00:00");
             ToastUtils.showToast(R.string.toast_stop_record);
 
             showPfInfo();
@@ -629,7 +665,7 @@ public class Topmost extends BaseActivity {
     private static class WaitingStartRecordRunnable extends WeakRunnable<Topmost> {
         private static final long MAX_TRY_RECORD_TIME = 5000;
         private OnCommCallback callback;
-        private Set<UsbInfo> mUsbInfos;
+        private UsbInfo usbInfo;
 
         WaitingStartRecordRunnable(Topmost view, OnCommCallback callback) {
             super(view);
@@ -639,28 +675,15 @@ public class Topmost extends BaseActivity {
         @Override
         protected void loadBackground() {
             int recordDelay = 0; // 首次设置delay为0
-            int result = -4;
+            int result;
             long tryStartRecordTime = 0;
-            if (mUsbInfos == null)
-                mUsbInfos = UsbManager.getInstance().queryUsbInfos(mWeakReference.get());
-            UsbInfo foundUsbInfo = UsbManager.getInstance().isContainUsb(mUsbInfos, SWFtaManager.getInstance().getDiskUUID());
-            if (foundUsbInfo != null) SWFtaManager.getInstance().setDiskUUID(foundUsbInfo.uuid);
-
             while (true) {
-                if (mUsbInfos != null && !mUsbInfos.isEmpty()) {
-                    if (foundUsbInfo != null) {
-                        result = SWDJAPVRManager.getInstance().startRecord(recordDelay, foundUsbInfo.path);
-                        Log.i(TAG, "found, result = " + result + ", path = " + foundUsbInfo.path);
-                    } else {
-                        for (UsbInfo usbInfo : mUsbInfos) {
-                            result = SWDJAPVRManager.getInstance().startRecord(recordDelay, usbInfo.path);
-                            SWFtaManager.getInstance().setDiskUUID(usbInfo.uuid);
-                            Log.i(TAG, "not found, result = " + result + ", path = " + usbInfo.path);
-                        }
-                    }
-                } else {
-                    result = -3;
+                if (usbInfo == null || TextUtils.isEmpty(usbInfo.path)) {
+                    result = UsbManager.USB_NOT_FOUND;
+                    break;
                 }
+
+                result = SWDJAPVRManager.getInstance().startRecord(recordDelay, usbInfo.path);
 
                 if (result != -4) break;
                 if (tryStartRecordTime >= MAX_TRY_RECORD_TIME) break;
@@ -687,6 +710,7 @@ public class Topmost extends BaseActivity {
     }
 
     private void startRecordingTimer(int recordSeconds) {
+        cancelRecordingTimer();
         mRecordingTimer = new Timer();
         mRecordingTimerTask = new RecordingTimerTask(this, recordSeconds);
         mRecordingTimer.schedule(mRecordingTimerTask, RECORDING_DELAY, RECORDING_PERIOD);
@@ -728,6 +752,7 @@ public class Topmost extends BaseActivity {
                     } else {
                         context.mTvRecordingTime.setText(TimeUtils.getDecimalFormatTime(++recordSeconds));
                     }
+                    Log.i("test", "record countdown = " + countDownSeconds);
                 }
             });
         }
@@ -1323,14 +1348,12 @@ public class Topmost extends BaseActivity {
                     .setOnSearchChannelListener(new SearchChannelDialog.OnSearchListener() {
                         @Override
                         public void onBackSearch() {
-                            mSearchChannelDialog = null;
                             mItemInstallation.requestFocus();
-                            toggleMenu();
+                            toggleMenu(true);
                         }
 
                         @Override
                         public void onStartSearch() {
-                            mSearchChannelDialog = null;
                             startActivity(new Intent(Topmost.this, BlindActivity.class));
                         }
 
@@ -1341,17 +1364,7 @@ public class Topmost extends BaseActivity {
                     });
         }
 
-        mSearchChannelDialog.show(getSupportFragmentManager(), SearchProgramDialog.TAG);
-
-        // 延时处理标志位，规避点击ok键进入apk dialog响应onKeyListener
-        mProgHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (mSearchChannelDialog != null) {
-                    mSearchChannelDialog.resetInit();
-                }
-            }
-        }, 1000);
+        mSearchChannelDialog.show(getSupportFragmentManager(), SearchChannelDialog.TAG);
     }
 
     private void showRemindSearchDialog() {
@@ -1436,6 +1449,7 @@ public class Topmost extends BaseActivity {
                         SWPDBaseManager.getInstance().clearFavChannelMap();
                         mCurrSatPosition = 0;
                         mProgListAdapter.clearData(); // 同步清空频道列表
+                        mIvRadioBackground.setVisibility(View.GONE); // 隐藏音频背景
                     }
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
@@ -1628,12 +1642,45 @@ public class Topmost extends BaseActivity {
         }
     }
 
+    private void showSelectUsbDialog(List<UsbInfo> usbInfos, OnCommCallback callback) {
+        List<String> usbInfoNames = new ArrayList<>();
+        for (UsbInfo usbInfo : usbInfos) usbInfoNames.add(usbInfo.fsLabel);
+
+        // 添加一个延时，防止无法弹出问题
+        mProgHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                new CommCheckItemDialog()
+                        .title(getString(R.string.dialog_usb_select_title))
+                        .content(usbInfoNames)
+                        .position(0)
+                        .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
+                            @Override
+                            public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
+                                UsbInfo usbInfo = usbInfos.get(position);
+                                if (usbInfo != null && !TextUtils.isEmpty(usbInfo.uuid)) {
+                                    executeRecord(usbInfos.get(position), callback);
+                                }
+                            }
+                        }).show(getSupportFragmentManager(), CommCheckItemDialog.TAG);
+            }
+        }, 200);
+    }
+
     private boolean isPfBarShowing() {
         return mPfBarScanDialog != null && mPfBarScanDialog.isShowing();
     }
 
     private boolean isPfDetailShowing() {
         return mPfDetailDialog != null && mPfDetailDialog.getDialog() != null;
+    }
+
+    private void dismissAllDialog() {
+        dismissPfBarScanDialog();
+        dismissPfDetailDialog();
+        dismissPasswordDialog();
+        dismissSettingPasswordDialog();
+        dismissSearchDialog();
     }
 
     private void dismissPfBarScanDialog() {
@@ -1661,6 +1708,13 @@ public class Topmost extends BaseActivity {
         if (mSettingPasswordDialog != null && mSettingPasswordDialog.getDialog() != null && mSettingPasswordDialog.isVisible()) {
             mSettingPasswordDialog.dismiss();
             mSettingPasswordDialog = null;
+        }
+    }
+
+    private void dismissSearchDialog() {
+        if (mSearchChannelDialog != null && mSearchChannelDialog.getDialog() != null && mSearchChannelDialog.isVisible()) {
+            mSearchChannelDialog.dismiss();
+            mSearchChannelDialog = null;
         }
     }
 
@@ -2244,6 +2298,7 @@ public class Topmost extends BaseActivity {
 
     @Override
     public boolean onHomeHandleCallback() {
+        dismissAllDialog();
         stopRecord();
         // 按下home时，iTV需要提前释放surface，SurfaceView隐藏时会主动回调onSurfaceDestroy更快销毁surface，让launcher能及时拿到surface显示出画面
         hideSurface();

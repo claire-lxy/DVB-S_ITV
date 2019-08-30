@@ -429,6 +429,7 @@
     <string name="dialog_search_result_radio">Radio: {0}</string>
 
     <string name="dialog_positive_exit_app">Exit</string>
+    <string name="dialog_usb_select_title">USB Select</string>
 
     <string name="motor_move_step_stop">Stop</string>
     <string name="motor_move_step_east">East</string>

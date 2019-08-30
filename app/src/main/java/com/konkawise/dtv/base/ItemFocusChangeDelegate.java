@@ -10,7 +10,7 @@ import com.konkawise.dtv.R;
 public class ItemFocusChangeDelegate {
 
     public void itemChange(int currSelectItem, int selectItem, ImageView ivLeft, ImageView ivRight, TextView textView) {
-        itemChange(currSelectItem, selectItem, ivLeft, ivRight, textView);
+        itemChange(currSelectItem, selectItem, null, ivLeft, ivRight, textView);
     }
 
     public void itemChange(int currSelectItem, int selectItem, ViewGroup itemGroup, ImageView ivLeft, ImageView ivRight, TextView textView) {

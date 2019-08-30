@@ -8,7 +8,7 @@ public abstract class BaseItemFocusChangeDialogFragment extends BaseDialogFragme
     private ItemFocusChangeDelegate mItemFocusChangeDelegate = new ItemFocusChangeDelegate();
 
     protected void itemChange(int currSelectItem, int selectItem, ImageView ivLeft, ImageView ivRight, TextView textView) {
-        mItemFocusChangeDelegate.itemChange(currSelectItem, selectItem, null, ivLeft, ivRight, textView);
+        mItemFocusChangeDelegate.itemChange(currSelectItem, selectItem, ivLeft, ivRight, textView);
     }
 
     protected void itemChange(int currSelectItem, int selectItem, ViewGroup itemGroup, ImageView ivLeft, ImageView ivRight, TextView textView) {
