@@ -8,7 +8,10 @@ import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.dialog.CommCheckItemDialog;
+import com.konkawise.dtv.event.ProgramUpdateEvent;
 import com.sw.dvblib.SWFta;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.Arrays;
 import java.util.List;
@@ -76,6 +79,7 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
     private int antennaPowerPosition;
     private int areaSettingPosition;
     private int lcnPosition;
+    private int originalLcnPosition;
 
     @Override
     public int getLayoutId() {
@@ -91,8 +95,18 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
 		mTvLcn.setText(mGeneralSwitchArray[lcnPosition]);
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(originalLcnPosition != lcnPosition){
+            EventBus.getDefault().post(new ProgramUpdateEvent(true));
+        }
+    }
+
     private void initData() {
         antennaPowerPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_AntennaPower.ordinal()));
+        lcnPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_ShowNoType.ordinal()));
+        originalLcnPosition = lcnPosition;
     }
 
     private int getSelectPosition(int[] datas, int value) {
@@ -125,6 +139,7 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
                             case ITEM_LCN:
                                 mTvLcn.setText(checkContent);
                                 lcnPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
+                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_ShowNoType.ordinal(), lcnPosition);
                                 break;
                             default:
                                 break;
@@ -174,6 +189,7 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
                 case ITEM_LCN:
                     if (--lcnPosition < 0) lcnPosition = mGeneralSwitchArray.length - 1;
                     mTvLcn.setText(mGeneralSwitchArray[lcnPosition]);
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_ShowNoType.ordinal(), lcnPosition);
                     break;
 
             }
@@ -199,6 +215,7 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
                     if (++lcnPosition > mGeneralSwitchArray.length - 1)
                     	lcnPosition = 0;
                     mTvLcn.setText(mGeneralSwitchArray[lcnPosition]);
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_ShowNoType.ordinal(), lcnPosition);
                     break;
 
             }

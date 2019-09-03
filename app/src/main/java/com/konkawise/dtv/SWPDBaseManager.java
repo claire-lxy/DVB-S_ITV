@@ -298,6 +298,14 @@ public class SWPDBaseManager {
         SWPDBase.CreateInstance().setCurrGroup(group, groupid);
     }
 
+    public int getCurrGroup() {
+        return SWPDBase.CreateInstance().getCurrGroup();
+    }
+
+    public int getCurrGroupParam() {
+        return SWPDBase.CreateInstance().getCurrGroupParam();
+    }
+
     /**
      * 获取当前频道播放号
      */

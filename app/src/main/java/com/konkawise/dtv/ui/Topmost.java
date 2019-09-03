@@ -97,8 +97,6 @@ import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 
 public class Topmost extends BaseActivity {
-    public static final boolean LCNON = true;
-
     private static final String TAG = "Topmost";
     private static final long RECORDING_DELAY = 1000;
     private static final long RECORDING_PERIOD = 1000;
@@ -114,7 +112,7 @@ public class Topmost extends BaseActivity {
     @BindView(R.id.iv_radio_bg)
     ImageView mIvRadioBackground;
 
-    @BindView(R.id.tv_prog_num)
+    @BindView(R.id.tv_show_num)
     TextView mTvProgNum;
 
     @BindView(R.id.ll_recording_layout)
@@ -246,7 +244,7 @@ public class Topmost extends BaseActivity {
 
     @OnClick(R.id.item_channel_manage)
     void channelManage() {
-        if (mProgListAdapter.getCount() <= 0 && isShowChannelManageItem()) {
+        if (SWPDBaseManager.getInstance().getProgNumOfGroup(SWPDBase.SW_TOTAL_GROUP, 0) <= 0 && isShowChannelManageItem()) {
             if (mMenuShow) {
                 showRemindSearchDialog();
             }
@@ -337,6 +335,9 @@ public class Topmost extends BaseActivity {
             showDataResetDialog();
         }
     }
+
+    private int mCurrProgGroup;
+    private int mCurrProgGroupParams;
 
     private int mNewProgNum;
     private boolean mLongPressed;
@@ -483,6 +484,8 @@ public class Topmost extends BaseActivity {
     @Override
     protected void setup() {
         SWDVB.GetInstance(); // 必须先初始化库，否则使用库会出现空指针异常
+        mCurrProgGroup = SWPDBaseManager.getInstance().getCurrGroup();
+        mCurrProgGroupParams = SWPDBaseManager.getInstance().getCurrGroupParam();
 
         bootService();
         registerListener();
@@ -791,6 +794,7 @@ public class Topmost extends BaseActivity {
      */
     private void showProgNum(int progNum, boolean sendMsgHide) {
         removeHideProgNumMsg();
+        Log.i(TAG, "showNo:" + progNum);
         mTvProgNum.setText(String.valueOf(progNum));
         mTvProgNum.setVisibility(View.VISIBLE);
         if (sendMsgHide)
@@ -849,6 +853,13 @@ public class Topmost extends BaseActivity {
         }
     }
 
+    private void updateProgListSelectionByPosotion(int scrollToPosition) {
+        if (mProgListAdapter.getCount() > 0) {
+            mProgListView.setSelection(scrollToPosition);
+            mProgListAdapter.setSelectPosition(scrollToPosition);
+        }
+    }
+
     private static class LoadProgRunnable extends WeakRunnable<Topmost> {
 
         LoadProgRunnable(Topmost view) {
@@ -868,6 +879,7 @@ public class Topmost extends BaseActivity {
                 }
             }
 
+            final int preProgIndex = SWPDBaseManager.getInstance().getCurrProgInfo().ProgIndex;
             List<PDPMInfo_t> progList = context.getProgList();
             context.runOnUiThread(new Runnable() {
                 @Override
@@ -878,25 +890,25 @@ public class Topmost extends BaseActivity {
                         PDPMInfo_t oldProgInfo = context.mProgListAdapter.getItem(context.mCurrSelectProgPosition);
 
                         context.mProgListAdapter.updateData(progList);
-                        PDPMInfo_t progInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
-                        if (progInfo != null) {
-                            context.mCurrSelectProgPosition = context.getPositionByProgNum(progInfo.ProgNo);
-                            progInfo = context.mProgListAdapter.getItem(context.mCurrSelectProgPosition);
-                            context.updateProgListSelection(progInfo.ProgNo);
 
-                            // 更新完成频道列表，如果播放的不是当前频道或者切换了频道类型则切换播放
-                            if (progInfo.ProgNo != SWPDBaseManager.getInstance().getCurrProgNo() ||
-                                    (oldProgInfo != null && oldProgInfo.ProgType != progInfo.ProgType)) {
-                                context.playProg(progInfo.ProgNo);
-                            }
+                        context.mCurrSelectProgPosition = context.getPositionByIndex(preProgIndex);
+                        PDPMInfo_t progInfo = context.mProgListAdapter.getItem(context.mCurrSelectProgPosition);
+                        context.updateProgListSelectionByPosotion(context.mCurrSelectProgPosition);
+                        SWPDBaseManager.getInstance().setCurrProgNo(progInfo.ProgNo);
+
+                        // 更新完成频道列表，如果播放的不是当前频道或者切换了频道类型则切换播放
+                        if (progInfo.ProgIndex != preProgIndex ||
+                                (oldProgInfo != null && oldProgInfo.ProgType != progInfo.ProgType)) {
+                            context.playProg(progInfo.ProgNo);
                         }
+
                     } else {
                         context.mProgListAdapter.updateData(new ArrayList<>());
                     }
                 }
             });
 
-            context.preloadProgList();
+//            context.preloadProgList();
         }
     }
 
@@ -904,6 +916,17 @@ public class Topmost extends BaseActivity {
         if (mProgListAdapter.getCount() > 0) {
             for (int i = 0; i < mProgListAdapter.getData().size(); i++) {
                 if (mProgListAdapter.getData().get(i).ProgNo == progNum) {
+                    return i;
+                }
+            }
+        }
+        return 0;
+    }
+
+    private int getPositionByIndex(int progIndex) {
+        if (mProgListAdapter.getCount() > 0) {
+            for (int i = 0; i < mProgListAdapter.getData().size(); i++) {
+                if (mProgListAdapter.getData().get(i).ProgIndex == progIndex) {
                     return i;
                 }
             }
@@ -944,6 +967,22 @@ public class Topmost extends BaseActivity {
             List<SatInfo_t> allSatList = SWPDBaseManager.getInstance().getAllSatListContainFav(context);
             if (allSatList != null && !allSatList.isEmpty()) {
                 context.mSatList = new ArrayList<>(allSatList);
+                context.mCurrSatPosition = 0;
+                if (context.mCurrProgGroup == SWPDBase.SW_WHOLE_GROUP) {
+                    context.mCurrSatPosition = 0;
+                } else {
+                    int i = 0;
+                    for (; i < allSatList.size(); i++) {
+                        if (context.mCurrProgGroup == SWPDBase.SW_SAT_GROUP && context.mCurrProgGroupParams == allSatList.get(i).SatIndex) {
+                            context.mCurrSatPosition = i;
+                            break;
+                        } else if (context.mCurrProgGroup == SWPDBase.SW_FAV_GROUP && context.mCurrProgGroupParams == (allSatList.get(i).SatIndex - SWPDBaseManager.RANGE_SAT_INDEX)) {
+                            context.mCurrSatPosition = i;
+                            break;
+                        }
+                    }
+                }
+                Log.i(TAG, "mCurrSatPosition:" + context.mCurrSatPosition);
 
                 context.runOnUiThread(new Runnable() {
                     @Override
@@ -967,8 +1006,9 @@ public class Topmost extends BaseActivity {
                         getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
                 if (!handleBook()) {
                     if (SWPDBaseManager.getInstance().isProgCanPlay() && !SWFtaManager.getInstance().isPasswordEmpty()) {
-                        SWPDBaseManager.getInstance().setCurrGroup(SWPDBase.SW_WHOLE_GROUP, 1);
-                        playProg(SWPDBaseManager.getInstance().getCurrProgNo(), true);
+                        SWPDBaseManager.getInstance().setCurrGroup(mCurrProgGroup, mCurrProgGroupParams);
+                        if (SWPDBaseManager.getInstance().getCurrProgNo() >= 0)
+                            playProg(SWPDBaseManager.getInstance().getCurrProgNo(), true);
                     }
                 } else {
                     setIntent(new Intent()); // 处理完后要重置为空，防止其他界面返回或跳转到Topmost使用上一个book跳转的intent
@@ -1007,15 +1047,30 @@ public class Topmost extends BaseActivity {
         if (satList != null && !satList.isEmpty()) {
             int satIndex = satList.get(mCurrSatPosition).SatIndex;
             List<PDPMInfo_t> progInfoList = mProgListMap.get(satIndex);
-            if (progInfoList != null && !progInfoList.isEmpty()) {
-                return progInfoList;
-            }
 
             if (satIndex == -1) {
+                mCurrProgGroup = SWPDBase.SW_WHOLE_GROUP;
+                mCurrProgGroupParams = 1;
+                SWPDBaseManager.getInstance().setCurrGroup(mCurrProgGroup, mCurrProgGroupParams);
+                if (progInfoList != null && !progInfoList.isEmpty()) {
+                    return progInfoList;
+                }
                 progInfoList = SWPDBaseManager.getInstance().getWholeGroupProgList();
             } else if (satIndex >= SWPDBaseManager.RANGE_SAT_INDEX) {
-                progInfoList = SWPDBaseManager.getInstance().getFavListByIndex(satIndex - SWPDBaseManager.RANGE_SAT_INDEX);
+                mCurrProgGroup = SWPDBase.SW_FAV_GROUP;
+                mCurrProgGroupParams = satIndex - SWPDBaseManager.RANGE_SAT_INDEX;
+                SWPDBaseManager.getInstance().setCurrGroup(mCurrProgGroup, mCurrProgGroupParams);
+                if (progInfoList != null && !progInfoList.isEmpty()) {
+                    return progInfoList;
+                }
+                progInfoList = SWPDBaseManager.getInstance().getFavListByIndex(mCurrProgGroupParams);
             } else {
+                mCurrProgGroup = SWPDBase.SW_SAT_GROUP;
+                mCurrProgGroupParams = satIndex;
+                SWPDBaseManager.getInstance().setCurrGroup(mCurrProgGroup, mCurrProgGroupParams);
+                if (progInfoList != null && !progInfoList.isEmpty()) {
+                    return progInfoList;
+                }
                 progInfoList = SWPDBaseManager.getInstance().getCurrGroupProgListByCond(1, satIndex);
             }
             mProgListMap.put(satIndex, progInfoList);
@@ -1066,13 +1121,8 @@ public class Topmost extends BaseActivity {
         if (satList != null && !satList.isEmpty()) {
             List<PDPMInfo_t> progInfoList = mProgListMap.get(satList.get(mCurrSatPosition).SatIndex);
             if (progInfoList != null && !progInfoList.isEmpty()) {
-                if (LCNON) {
-                    for (PDPMInfo_t progInfo : progInfoList) {
-                        if (progInfo.PShowNo == showNum) return progInfo;
-                    }
-                } else {
-                    if (showNum > 0 && showNum <= progInfoList.size())
-                        return progInfoList.get(showNum - 1);
+                for (PDPMInfo_t progInfo : progInfoList) {
+                    if (progInfo.PShowNo == showNum) return progInfo;
                 }
             }
         }
@@ -1211,7 +1261,7 @@ public class Topmost extends BaseActivity {
         SWPDBaseManager.getInstance().setCurrProgNo(progNum);
         removePlayProgMsg();
         showPfInfo();
-        showProgNum(LCNON ? getCurrentProgShowNo() : mCurrSelectProgPosition + 1);
+        showProgNum(SWPDBaseManager.getInstance().getCurrProgInfo().PShowNo);
         showRadioBackground();
         sendPlayProgMsg(new HandlerMsgModel(PlayHandler.MSG_PLAY_PROG, progNum, immediately ? 0 : PLAY_PROG_DELAY));
     }
@@ -1338,7 +1388,7 @@ public class Topmost extends BaseActivity {
 
     private void updatePfBarInfo() {
         if (mPfBarScanDialog != null) {
-            mPfBarScanDialog.updatePfInformation(mCurrSelectProgPosition);
+            mPfBarScanDialog.updatePfInformation();
         }
     }
 
@@ -2154,7 +2204,7 @@ public class Topmost extends BaseActivity {
                     // 频道列表有数据时才弹出
                     if (!mProgListShow && mProgListAdapter.getCount() > 0) {
                         mProgListView.requestFocus();
-                        updateProgListSelection(getCurrentProgNo());
+                        updateProgListSelectionByPosotion(mCurrSelectProgPosition);
                         toggleProgList();
                     } else {
                         return super.dispatchKeyEvent(event);
