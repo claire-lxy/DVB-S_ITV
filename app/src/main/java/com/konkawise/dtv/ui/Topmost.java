@@ -463,6 +463,7 @@ public class Topmost extends BaseActivity {
             if (msg.what == MSG_JUMP_PROG) {
                 int progNum = msg.arg1;
                 if (context.isJumpProgNumValid() && progNum != SWPDBaseManager.getInstance().getCurrProgNo()) {
+                    context.mCurrSelectProgPosition = context.getPositionByProgNum(progNum);
                     context.playProg(progNum);
                 } else {
                     if (!context.isJumpProgNumValid())
@@ -1257,7 +1258,6 @@ public class Topmost extends BaseActivity {
 
     private void playProg(int progNum, boolean immediately) {
         UIApiManager.getInstance().stopPlay(SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_PD_SwitchMode.ordinal())); // 切台之前暂停当前频道播放
-        mCurrSelectProgPosition = getPositionByProgNum(progNum); // 记录下当前播放频道的position
         SWPDBaseManager.getInstance().setCurrProgNo(progNum);
         removePlayProgMsg();
         showPfInfo();
