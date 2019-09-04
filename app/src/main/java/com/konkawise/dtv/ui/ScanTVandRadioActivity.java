@@ -24,7 +24,8 @@ import com.konkawise.dtv.event.ProgramUpdateEvent;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
 import com.sw.dvblib.SWPDBase;
-import com.sw.dvblib.msg.cb.SearchMsgCB;
+import com.sw.dvblib.msg.MsgEvent;
+import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -83,8 +84,6 @@ public class ScanTVandRadioActivity extends BaseActivity {
 
     private CheckSignalHelper mCheckSignalHelper;
 
-    private SearchMsgCB mSearchMsgCB = new TvAndRadioSearchMsgCB();
-
     @Override
     public int getLayoutId() {
         return R.layout.activity_scan_tv_and_radio;
@@ -104,16 +103,157 @@ public class ScanTVandRadioActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         mCheckSignalHelper.startCheckSignal();
-        SWDVBManager.getInstance().regMsgHandler(Constants.SCAN_CALLBACK_MSG_ID, Looper.getMainLooper(), mSearchMsgCB);
+        registerMsgEvent();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         mCheckSignalHelper.stopCheckSignal();
-        SWDVBManager.getInstance().unRegMsgHandler(Constants.SCAN_CALLBACK_MSG_ID, mSearchMsgCB);
+        unregisterMsgEvent();
         SWPSearchManager.getInstance().seatchStop(false);
         SatelliteActivity.satList.clear();
+    }
+
+    private void registerMsgEvent() {
+        MsgEvent msgEvent = SWDVBManager.getInstance().registerMsgEvent(Constants.SCAN_CALLBACK_MSG_ID);
+        msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
+            private void onUpdateSearchProgress(int step, int max_step) {
+                int bf = step * 100 / max_step;
+                if (bf < 0) {
+                    bf = 0;
+                }
+                if (bf > 100) {
+                    bf = 100;
+                }
+                String percent = bf + "%";
+                mTvTvAndRadioProgress.setText(percent);
+                mPbTvAndRadio.setMax(max_step);
+                mPbTvAndRadio.setProgress(step);
+            }
+
+            @Override
+            public int PSearch_PROG_NITDATAOK(int AllNum, int Curr) {
+                onUpdateSearchProgress(AllNum, Curr);
+                return 0;
+            }
+
+            @Override
+            public int PSearch_PROG_NITRECVTIMEOUT(int AllNum, int Curr) {
+                onUpdateSearchProgress(AllNum, Curr);
+                return 0;
+            }
+
+            /**
+             * 搜索 TS Fail  搜索节目失败
+             */
+            @Override
+            public int PSearch_PROG_ONETSFAIL(int AllNum, int CurrIndex, int Sat,
+                                              int freq, int symbol, int qam) {
+                updateScan(freq, symbol, qam, AllNum, CurrIndex);
+                return 0;
+            }
+
+
+            /**
+             * 搜索 TS ok   搜索节目成功回调
+             *
+             * @param AllNum    搜索TP个数
+             * @param CurrIndex 当前tp
+             * @param Sat       卫星
+             */
+            @Override
+            public int PSearch_PROG_ONETSOK(int AllNum, int CurrIndex, int Sat,
+                                            int freq, int symbol, int qam) {
+                onUpdateSearchProgress(AllNum, CurrIndex);
+
+                ArrayList<PDPInfo_t> pdpInfo_ts = SWPSearchManager.getInstance().getTsSearchResInfo(Sat, freq, symbol, qam);
+                if (pdpInfo_ts == null) return 0;
+
+                updateTvList(pdpInfo_ts);
+                updateRadioList(pdpInfo_ts);
+
+                mTvTvNum.setText(String.valueOf(mTvAdapter.getItemCount()));
+                mTvRadioNum.setText(String.valueOf(mRadioAdapter.getItemCount()));
+                return 0;
+            }
+
+            private void updateTvList(ArrayList<PDPInfo_t> pdpInfoList) {
+                List<PDPInfo_t> tvList = getTvList(pdpInfoList);
+                mTvAdapter.addData(tvList);
+                mRvTv.scrollToPosition(mTvAdapter.getItemCount() - 1);
+            }
+
+            private void updateRadioList(ArrayList<PDPInfo_t> pdpInfoList) {
+                List<PDPInfo_t> radioList = getRadioList(pdpInfoList);
+                mRadioAdapter.addData(radioList);
+                mRvRadio.scrollToPosition(mRadioAdapter.getItemCount() - 1);
+            }
+
+            private List<PDPInfo_t> getTvList(ArrayList<PDPInfo_t> pdpInfoList) {
+                List<PDPInfo_t> tvList = new ArrayList<>();
+                for (PDPInfo_t pdpInfo_t : pdpInfoList) {
+                    if (pdpInfo_t.ServType == 1) {
+                        tvList.add(pdpInfo_t);
+                    }
+                }
+                return tvList;
+            }
+
+            private List<PDPInfo_t> getRadioList(ArrayList<PDPInfo_t> pdpInfoList) {
+                List<PDPInfo_t> radioList = new ArrayList<>();
+                for (PDPInfo_t pdpInfo_t : pdpInfoList) {
+                    if (pdpInfo_t.ServType == 2) {
+                        radioList.add(pdpInfo_t);
+                    }
+                }
+                return radioList;
+            }
+
+            /**
+             * 开始搜索
+             */
+            @Override
+            public int PSearch_PROG_STARTSEARCH(int AllNum, int CurrIndex, int Sat,
+                                                int freq, int symbol, int qam) {
+                updateScan(freq, symbol, qam, AllNum, CurrIndex);
+                return 0;
+            }
+
+            /**
+             * 搜索完成
+             */
+            @Override
+            public int PSearch_PROG_SEARCHFINISH(int AllNum, int Curr) {
+                if (mutiSateIndex != -1 && mutiSateIndex < mSatList.size() - 1) {
+                    mutiSateIndex++;
+                    SWPSearchManager.getInstance().seatchStop(true);
+                    searchMultiSatellite();
+                    return 1;
+                }
+                SatelliteActivity.satList.clear();
+                SWPDBaseManager.getInstance().setCurrProgType(SWFtaManager.getInstance().getCurrScanMode() == 2 ? SWPDBase.SW_GBPROG : SWPDBase.SW_TVPROG, 0);
+                SWPSearchManager.getInstance().seatchStop(true);
+                showSearchResultDialog();
+                return 0;
+            }
+
+            private void updateScan(int freq, int symbol, int qam, int num, int index) {
+                String tpName;
+                if (isFromT2AutoSearch() || isFromT2ManualSearchActivity()) {
+                    tpName = freq/10+"."+freq%10+"MHz" + " / " +symbol+"M";
+                } else {
+                    tpName = freq + Utils.getVorH(ScanTVandRadioActivity.this, qam) + symbol;
+                }
+                String tp = tpName + "(" + index + "/" + num + ")";
+                mTvScanTp.setText(tp);
+                onUpdateSearchProgress(num, index);
+            }
+        });
+    }
+
+    private void unregisterMsgEvent() {
+        SWDVBManager.getInstance().unregisterMsgEvent(Constants.SCAN_CALLBACK_MSG_ID);
     }
 
     private void initIntent() {
@@ -261,141 +401,6 @@ public class ScanTVandRadioActivity extends BaseActivity {
             return true;
         }
         return super.onKeyDown(keyCode, event);
-    }
-
-    private class TvAndRadioSearchMsgCB extends SearchMsgCB {
-
-        private void onUpdateSearchProgress(int step, int max_step) {
-            int bf = step * 100 / max_step;
-            if (bf < 0) {
-                bf = 0;
-            }
-            if (bf > 100) {
-                bf = 100;
-            }
-            String percent = bf + "%";
-            mTvTvAndRadioProgress.setText(percent);
-            mPbTvAndRadio.setMax(max_step);
-            mPbTvAndRadio.setProgress(step);
-        }
-
-        @Override
-        public int PSearch_PROG_NITDATAOK(int AllNum, int Curr) {
-            onUpdateSearchProgress(AllNum, Curr);
-            return 0;
-        }
-
-        @Override
-        public int PSearch_PROG_NITRECVTIMEOUT(int AllNum, int Curr) {
-            onUpdateSearchProgress(AllNum, Curr);
-            return 0;
-        }
-
-        /**
-         * 搜索 TS Fail  搜索节目失败
-         */
-        @Override
-        public int PSearch_PROG_ONETSFAIL(int AllNum, int CurrIndex, int Sat,
-                                          int freq, int symbol, int qam) {
-            updateScan(freq, symbol, qam, AllNum, CurrIndex);
-            return 0;
-        }
-
-
-        /**
-         * 搜索 TS ok   搜索节目成功回调
-         *
-         * @param AllNum    搜索TP个数
-         * @param CurrIndex 当前tp
-         * @param Sat       卫星
-         */
-        @Override
-        public int PSearch_PROG_ONETSOK(int AllNum, int CurrIndex, int Sat,
-                                        int freq, int symbol, int qam) {
-            onUpdateSearchProgress(AllNum, CurrIndex);
-
-            ArrayList<PDPInfo_t> pdpInfo_ts = SWPSearchManager.getInstance().getTsSearchResInfo(Sat, freq, symbol, qam);
-            if (pdpInfo_ts == null) return 0;
-
-            updateTvList(pdpInfo_ts);
-            updateRadioList(pdpInfo_ts);
-
-            mTvTvNum.setText(String.valueOf(mTvAdapter.getItemCount()));
-            mTvRadioNum.setText(String.valueOf(mRadioAdapter.getItemCount()));
-            return 0;
-        }
-
-        private void updateTvList(ArrayList<PDPInfo_t> pdpInfoList) {
-            List<PDPInfo_t> tvList = getTvList(pdpInfoList);
-            mTvAdapter.addData(tvList);
-            mRvTv.scrollToPosition(mTvAdapter.getItemCount() - 1);
-        }
-
-        private void updateRadioList(ArrayList<PDPInfo_t> pdpInfoList) {
-            List<PDPInfo_t> radioList = getRadioList(pdpInfoList);
-            mRadioAdapter.addData(radioList);
-            mRvRadio.scrollToPosition(mRadioAdapter.getItemCount() - 1);
-        }
-
-        private List<PDPInfo_t> getTvList(ArrayList<PDPInfo_t> pdpInfoList) {
-            List<PDPInfo_t> tvList = new ArrayList<>();
-            for (PDPInfo_t pdpInfo_t : pdpInfoList) {
-                if (pdpInfo_t.ServType == 1) {
-                    tvList.add(pdpInfo_t);
-                }
-            }
-            return tvList;
-        }
-
-        private List<PDPInfo_t> getRadioList(ArrayList<PDPInfo_t> pdpInfoList) {
-            List<PDPInfo_t> radioList = new ArrayList<>();
-            for (PDPInfo_t pdpInfo_t : pdpInfoList) {
-                if (pdpInfo_t.ServType == 2) {
-                    radioList.add(pdpInfo_t);
-                }
-            }
-            return radioList;
-        }
-
-        /**
-         * 开始搜索
-         */
-        @Override
-        public int PSearch_PROG_STARTSEARCH(int AllNum, int CurrIndex, int Sat,
-                                            int freq, int symbol, int qam) {
-            updateScan(freq, symbol, qam, AllNum, CurrIndex);
-            return 0;
-        }
-
-        /**
-         * 搜索完成
-         */
-        @Override
-        public int PSearch_PROG_SEARCHFINISH(int AllNum, int Curr) {
-            if (mutiSateIndex != -1 && mutiSateIndex < mSatList.size() - 1) {
-                mutiSateIndex++;
-                SWPSearchManager.getInstance().seatchStop(true);
-                searchMultiSatellite();
-                return 1;
-            }
-            SatelliteActivity.satList.clear();
-            SWPDBaseManager.getInstance().setCurrProgType(SWFtaManager.getInstance().getCurrScanMode() == 2 ? SWPDBase.SW_GBPROG : SWPDBase.SW_TVPROG, 0);
-            SWPSearchManager.getInstance().seatchStop(true);
-            showSearchResultDialog();
-            return 0;
-        }
-
-        private void updateScan(int freq, int symbol, int qam, int num, int index) {
-            String tpName;
-            if (isFromT2AutoSearch() || isFromT2ManualSearchActivity()) {
-                tpName = freq/10+"."+freq%10+"MHz" + " / " +symbol+"M";
-            } else {
-                tpName = freq + Utils.getVorH(ScanTVandRadioActivity.this, qam) + symbol;
-            }
-            String tp = tpName + "(" + index + "/" + num + ")";
-            mTvScanTp.setText(tp);
-            onUpdateSearchProgress(num, index);
-        }
     }
 
     private void showSearchResultDialog() {

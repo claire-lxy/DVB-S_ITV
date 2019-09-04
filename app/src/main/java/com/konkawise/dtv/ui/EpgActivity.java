@@ -48,8 +48,8 @@ import com.konkawise.dtv.weaktool.WeakTimerTask;
 import com.sw.dvblib.SWBooking;
 import com.sw.dvblib.SWFta;
 import com.sw.dvblib.SWPDBase;
-import com.sw.dvblib.msg.cb.AVMsgCB;
-import com.sw.dvblib.msg.cb.EpgMsgCB;
+import com.sw.dvblib.msg.MsgEvent;
+import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -179,9 +179,6 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
 
     private LoadEpgChannelRunnable mLoadEpgChannelRunnable;
 
-    private AVMsgCB mPlayMsgCB = new PlayMsgCB();
-    private EpgMsgCB mEpgMsgCB = new EpgUpdateMsgCB();
-
     @Override
     public void onReceiveTimeCallback(String time) {
         if (!TextUtils.isEmpty(time)) {
@@ -262,16 +259,14 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
         super.onResume();
         showSurface();
         RealTimeManager.getInstance().register(this);
-        SWDVBManager.getInstance().regMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, Looper.getMainLooper(), mPlayMsgCB);
-        SWDVBManager.getInstance().regMsgHandler(Constants.EPG_CALLBACK_MSG_ID, Looper.getMainLooper(), mEpgMsgCB);
+        registerMsgEvent();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         RealTimeManager.getInstance().unregister(this);
-        SWDVBManager.getInstance().unRegMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, mPlayMsgCB);
-        SWDVBManager.getInstance().unRegMsgHandler(Constants.EPG_CALLBACK_MSG_ID, mEpgMsgCB);
+        unregisterMsgEvent();
         UIApiManager.getInstance().stopPlay(SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_PD_SwitchMode.ordinal())); // 跳转或销毁界面要停止播放
     }
 
@@ -287,6 +282,35 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
         cancelUpdateEpgChannelTimer();
         EventBus.getDefault().unregister(this);
         super.onDestroy();
+    }
+
+    private void registerMsgEvent() {
+        MsgEvent msgLockEvent = SWDVBManager.getInstance().registerMsgEvent(Constants.LOCK_CALLBACK_MSG_ID);
+        MsgEvent msgEpgEvent = SWDVBManager.getInstance().registerMsgEvent(Constants.EPG_CALLBACK_MSG_ID);
+        msgLockEvent.registerCallbackListener(new CallbackListenerAdapter() {
+            @Override
+            public int ProgPlay_SWAV_ISLOCKED(int type, int progno, int progindex, int home) {
+                showEnterPasswordDialog();
+                return super.ProgPlay_SWAV_ISLOCKED(type, progno, progindex, home);
+            }
+        });
+        msgEpgEvent.registerCallbackListener(new CallbackListenerAdapter() {
+            @Override
+            public int Epg_SchInfoReady(int sat, int tsid, int servid) {
+                if (mProgAdapter.isPositionValid(mLvProgList)) {
+                    PDPMInfo_t progInfo = mProgAdapter.getItem(mCurrProgSelectPosition);
+                    if (progInfo != null && progInfo.Sat == sat && progInfo.TsID == tsid && progInfo.ServID == servid) {
+                        updateEpgChannel();
+                    }
+                }
+                return super.Epg_SchInfoReady(sat, tsid, servid);
+            }
+        });
+    }
+
+    private void unregisterMsgEvent() {
+        SWDVBManager.getInstance().unregisterMsgEvent(Constants.LOCK_CALLBACK_MSG_ID);
+        SWDVBManager.getInstance().unregisterMsgEvent(Constants.EPG_CALLBACK_MSG_ID);
     }
 
     private void initUpdateEpgChannelTimer() {
@@ -823,27 +847,6 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
             if (mProgAdapter.isPositionValid(mLvProgList)) {
                 notifyEpgChange(mProgAdapter.getItem(mCurrProgSelectPosition));
             }
-        }
-    }
-
-    private class PlayMsgCB extends AVMsgCB {
-        @Override
-        public int ProgPlay_SWAV_ISLOCKED(int type, int progno, int progindex, int home) {
-            showEnterPasswordDialog();
-            return super.ProgPlay_SWAV_ISLOCKED(type, progno, progindex, home);
-        }
-    }
-
-    private class EpgUpdateMsgCB extends EpgMsgCB {
-        @Override
-        public int Epg_SchInfoReady(int sat, int tsid, int servid) {
-            if (mProgAdapter.isPositionValid(mLvProgList)) {
-                PDPMInfo_t progInfo = mProgAdapter.getItem(mCurrProgSelectPosition);
-                if (progInfo != null && progInfo.Sat == sat && progInfo.TsID == tsid && progInfo.ServID == servid) {
-                    updateEpgChannel();
-                }
-            }
-            return super.Epg_SchInfoReady(sat, tsid, servid);
         }
     }
 

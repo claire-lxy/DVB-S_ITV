@@ -35,7 +35,8 @@ import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakToolInterface;
 import com.sw.dvblib.SWBooking;
 import com.sw.dvblib.SWDVB;
-import com.sw.dvblib.msg.cb.TimeMsgCB;
+import com.sw.dvblib.msg.MsgEvent;
+import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -56,7 +57,7 @@ public class BookService extends BaseService implements WeakToolInterface {
     private BookReadyDialog mBookReadyDialog;
     private QuitRecordingDialog mQuitRecordingDialog;
     private BookCountDownHandler mBookCountDownHandler;
-    private TimeMsgCB mTimeMsgCB;
+    private MsgEvent mMsgEvent;
     private SWDVB.DTVListener mDTVListener;
 
     @Override
@@ -82,53 +83,51 @@ public class BookService extends BaseService implements WeakToolInterface {
             SWDVBManager.getInstance().unregisterDTVListener(mDTVListener);
             mDTVListener = null;
         }
-        if (mTimeMsgCB != null) {
-            SWDVBManager.getInstance().unRegMsgHandler(Constants.BOOK_CALLBACK_MSG_ID, mTimeMsgCB);
-            mTimeMsgCB = null;
+        if (mMsgEvent != null) {
+            SWDVBManager.getInstance().unregisterMsgEvent(Constants.BOOK_CALLBACK_MSG_ID);
+            mMsgEvent = null;
         }
         super.onDestroy();
     }
 
     private void registerBookMsg() {
-        if (mTimeMsgCB == null) {
+        if (mMsgEvent == null) {
             Log.i(TAG, "register book msg");
-            mTimeMsgCB = new BookMsgCB();
             mDTVListener = new SWDVB.DTVListener(SWDVB.GetInstance());
-            SWDVBManager.getInstance().regMsgHandler(Constants.BOOK_CALLBACK_MSG_ID, getMainLooper(), mTimeMsgCB);
-        }
-    }
+            mMsgEvent = SWDVBManager.getInstance().registerMsgEvent(Constants.BOOK_CALLBACK_MSG_ID);
+            mMsgEvent.registerCallbackListener(new CallbackListenerAdapter() {
+                // 预订节目播放倒计时
+                @Override
+                public int Timer_ITIS_SUBFORTIME(int id) {
+                    Log.i(TAG, "book play countdown");
+                    showBookReadyDialog();
+                    return super.Timer_ITIS_SUBFORTIME(id);
+                }
 
-    private class BookMsgCB extends TimeMsgCB {
-        // 预订节目播放倒计时
-        @Override
-        public int Timer_ITIS_SUBFORTIME(int id) {
-            Log.i(TAG, "book play countdown");
-            showBookReadyDialog();
-            return super.Timer_ITIS_SUBFORTIME(id);
-        }
+                // 预录节目倒计时
+                @Override
+                public int Timer_ITIS_SUBFORRECTIME(int id) {
+                    Log.i(TAG, "book record countdown");
+                    showBookReadyDialog();
+                    return super.Timer_ITIS_SUBFORRECTIME(id);
+                }
 
-        // 预录节目倒计时
-        @Override
-        public int Timer_ITIS_SUBFORRECTIME(int id) {
-            Log.i(TAG, "book record countdown");
-            showBookReadyDialog();
-            return super.Timer_ITIS_SUBFORRECTIME(id);
-        }
+                // 开始预订节目播放
+                @Override
+                public int Timer_ITIS_TIMETOPLAY(int type, int id, int sat, int tsid, int servid, int evtid) {
+                    Log.i(TAG, "book play start");
+                    bookReady();
+                    return super.Timer_ITIS_TIMETOPLAY(type, id, sat, tsid, servid, evtid);
+                }
 
-        // 开始预订节目播放
-        @Override
-        public int Timer_ITIS_TIMETOPLAY(int type, int id, int sat, int tsid, int servid, int evtid) {
-            Log.i(TAG, "book play start");
-            bookReady();
-            return super.Timer_ITIS_TIMETOPLAY(type, id, sat, tsid, servid, evtid);
-        }
-
-        // 开始预录节目
-        @Override
-        public int Timer_ITIS_TIMETOREC(int type, int id, int sat, int tsid, int servid, int evtid) {
-            Log.i(TAG, "book record start");
-            bookReady();
-            return super.Timer_ITIS_TIMETOREC(type, id, sat, tsid, servid, evtid);
+                // 开始预录节目
+                @Override
+                public int Timer_ITIS_TIMETOREC(int type, int id, int sat, int tsid, int servid, int evtid) {
+                    Log.i(TAG, "book record start");
+                    bookReady();
+                    return super.Timer_ITIS_TIMETOREC(type, id, sat, tsid, servid, evtid);
+                }
+            });
         }
     }
 

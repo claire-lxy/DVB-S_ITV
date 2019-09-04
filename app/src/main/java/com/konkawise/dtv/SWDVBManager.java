@@ -1,9 +1,8 @@
 package com.konkawise.dtv;
 
-import android.os.Looper;
-
 import com.sw.dvblib.SWDVB;
-import com.sw.dvblib.msg.cb.MsgCB;
+import com.sw.dvblib.msg.MsgEvent;
+import com.sw.dvblib.msg.emitter.MsgEventEmitter;
 
 public class SWDVBManager {
 
@@ -19,14 +18,6 @@ public class SWDVBManager {
         return SWDVBManagerHolder.INSTANCE;
     }
 
-    public void regMsgHandler(int callbackId, Looper looper, MsgCB msgCB) {
-        SWDVB.GetInstance().regMsgHandler(callbackId, looper, msgCB);
-    }
-
-    public void unRegMsgHandler(int callbackId, MsgCB msgCB) {
-        SWDVB.GetInstance().unregisterMsgHandler(callbackId, msgCB);
-    }
-
     public void registerDTVListener(SWDVB.DTVListener listener) {
         SWDVB.GetInstance().registerMsgCallbackListener(listener);
     }
@@ -35,11 +26,31 @@ public class SWDVBManager {
         SWDVB.GetInstance().unregisterMsgCallbackListener(listener);
     }
 
+    public MsgEvent registerMsgEvent(int callbackId) {
+        return SWDVB.GetInstance().registerMsgEvent(callbackId);
+    }
+
+    public void unregisterMsgEvent(int callbackId) {
+        SWDVB.GetInstance().unregisterMsgEvent(callbackId);
+    }
+
+    public void removeMsgEvent(int callbackId, MsgEvent msgEvent) {
+        SWDVB.GetInstance().removeMsgEvent(callbackId, msgEvent);
+    }
+
+    public int addEmitter(int emitterKey, MsgEventEmitter emitter) {
+        return SWDVB.GetInstance().addEmitter(emitterKey, emitter);
+    }
+
+    public MsgEventEmitter removeEmitter(int emitterKey) {
+        return SWDVB.GetInstance().removeEmitter(emitterKey);
+    }
+
     public void releaseResource() {
-        unRegMsgHandler(Constants.SCAN_CALLBACK_MSG_ID, null);
-        unRegMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, null);
-        unRegMsgHandler(Constants.PVR_CALLBACK_MSG_ID, null);
-        unRegMsgHandler(Constants.EPG_CALLBACK_MSG_ID, null);
+        unregisterMsgEvent(Constants.SCAN_CALLBACK_MSG_ID);
+        unregisterMsgEvent(Constants.LOCK_CALLBACK_MSG_ID);
+        unregisterMsgEvent(Constants.PVR_CALLBACK_MSG_ID);
+        unregisterMsgEvent(Constants.EPG_CALLBACK_MSG_ID);
         RealTimeManager.getInstance().stop();
         SWDVB.Destory();
     }

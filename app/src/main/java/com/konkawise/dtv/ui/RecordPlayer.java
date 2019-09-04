@@ -37,7 +37,8 @@ import com.konkawise.dtv.dialog.SeekTimeDialog;
 import com.konkawise.dtv.dialog.SubtitleDialog;
 import com.konkawise.dtv.dialog.TeletextDialog;
 import com.konkawise.dtv.weaktool.WeakHandler;
-import com.sw.dvblib.msg.cb.AVMsgCB;
+import com.sw.dvblib.msg.MsgEvent;
+import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -114,7 +115,6 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     private int currRecordPosition;
     private List<RecordInfo> recordList = new ArrayList<>();
 
-    private AVMsgCB mPvrMsgCB = new PVRMsgCB();
     private HandlerThread pvrThread;
     private PVRHandler pvrHandler;
 
@@ -232,7 +232,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     protected void onResume() {
         super.onResume();
         initUIContextFlg = false;
-        SWDVBManager.getInstance().regMsgHandler(Constants.PVR_CALLBACK_MSG_ID, Looper.getMainLooper(), mPvrMsgCB);
+        registerMsgEvent();
 //        play();
     }
 
@@ -240,11 +240,53 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     protected void onPause() {
         super.onPause();
         stop();
-        SWDVBManager.getInstance().unRegMsgHandler(Constants.PVR_CALLBACK_MSG_ID, mPvrMsgCB);
+        unregisterMsgEvent();
         if (playHandler != null) {
             removeUpgradeProgressMsg();
             removeDissControlUIMsg();
         }
+    }
+
+    private void registerMsgEvent() {
+        MsgEvent msgEvent = SWDVBManager.getInstance().registerMsgEvent(Constants.PVR_CALLBACK_MSG_ID);
+        msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
+            @Override
+            public int PVRPlay_MODULE(int p0, int p1, int p2, int p3, int p4) {
+                Log.i(TAG, "PVRPlay_MODULE---p0:" + p0 + " p1:" + p1 + " p2:" + p2 + " p3:" + p3 + " p4:" + p4);
+                if (from == FROM_TOPMOST) {
+                    if (p3 == 2) {
+                        resumeFromSeek();
+                    }
+                } else {
+                    if (p3 == 1) {
+                        if (LOOPER) {
+                            playNextRecord();
+                        } else {
+                            finish();
+                        }
+                    } else if (p3 == 2) {
+                        resumeFromSeek();
+                    }
+
+                }
+                return super.PVRPlay_MODULE(p0, p1, p2, p3, p4);
+            }
+
+            @Override
+            public int PVRPlay_PlaybackFailed(int p0, int p1, int p2, int p3, int p4) {
+                Log.i(TAG, "PVRPlay_PlaybackFailed---p0:" + p0 + " p1:" + p1 + " p2:" + p2 + " p3:" + p3 + " p4:" + p4);
+                if (from == FROM_RECORD_LIST && LOOPER) {
+                    playNextRecord();
+                } else {
+                    finish();
+                }
+                return super.PVRPlay_PlaybackFailed(p0, p1, p2, p3, p4);
+            }
+        });
+    }
+
+    private void unregisterMsgEvent() {
+        SWDVBManager.getInstance().unregisterMsgEvent(Constants.PVR_CALLBACK_MSG_ID);
     }
 
     private void init() {
@@ -704,41 +746,6 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
 
     private void removeDissControlUIMsg() {
         HandlerMsgManager.getInstance().removeMessage(playHandler, PlayHandler.MSG_DISMISS_CONTROL_UI);
-    }
-
-    private class PVRMsgCB extends AVMsgCB {
-        @Override
-        public int PVRPlay_MODULE(int p0, int p1, int p2, int p3, int p4) {
-            Log.i(TAG, "PVRPlay_MODULE---p0:" + p0 + " p1:" + p1 + " p2:" + p2 + " p3:" + p3 + " p4:" + p4);
-            if (from == FROM_TOPMOST) {
-                if (p3 == 2) {
-                    resumeFromSeek();
-                }
-            } else {
-                if (p3 == 1) {
-                    if (LOOPER) {
-                        playNextRecord();
-                    } else {
-                        finish();
-                    }
-                } else if (p3 == 2) {
-                    resumeFromSeek();
-                }
-
-            }
-            return super.PVRPlay_MODULE(p0, p1, p2, p3, p4);
-        }
-
-        @Override
-        public int PVRPlay_PlaybackFailed(int p0, int p1, int p2, int p3, int p4) {
-            Log.i(TAG, "PVRPlay_PlaybackFailed---p0:" + p0 + " p1:" + p1 + " p2:" + p2 + " p3:" + p3 + " p4:" + p4);
-            if (from == FROM_RECORD_LIST && LOOPER) {
-                playNextRecord();
-            } else {
-                finish();
-            }
-            return super.PVRPlay_PlaybackFailed(p0, p1, p2, p3, p4);
-        }
     }
 
     @Override

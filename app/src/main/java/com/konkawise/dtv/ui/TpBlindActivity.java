@@ -26,7 +26,8 @@ import com.konkawise.dtv.dialog.SearchResultDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
 import com.sw.dvblib.SWPDBase;
-import com.sw.dvblib.msg.cb.SearchMsgCB;
+import com.sw.dvblib.msg.MsgEvent;
+import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -87,8 +88,6 @@ public class TpBlindActivity extends BaseActivity {
     private Timer mBlindScanProgressTimer;
     private BlindScanProgressTimerTask mBlindScanProgressTimerTask;
 
-    private SearchMsgCB mSearchMsgCB = new BlindSearchMsgCB();
-
     @Override
     public int getLayoutId() {
         return R.layout.activity_tp_blind;
@@ -105,19 +104,179 @@ public class TpBlindActivity extends BaseActivity {
 
         SWPSearchManager.getInstance().config(SWFtaManager.getInstance().getCurrScanMode(),
                 SWFtaManager.getInstance().getCurrCAS(), SWFtaManager.getInstance().getCurrNetwork());
-        SWDVBManager.getInstance().regMsgHandler(Constants.SCAN_CALLBACK_MSG_ID, Looper.getMainLooper(), mSearchMsgCB);
         SWFtaManager.getInstance().blindScanStart(getSatelliteIndex());
 
         startBlindScanProgressTimer();
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        registerMsgEvent();
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
-        SWDVBManager.getInstance().unRegMsgHandler(Constants.SCAN_CALLBACK_MSG_ID, mSearchMsgCB);
+        unregisterMsgEvent();
         SWPSearchManager.getInstance().seatchStop(false);
         stopBlindScanProgressTimer();
         stopBlindScan();
+    }
+
+    private void registerMsgEvent() {
+        MsgEvent msgEvent = SWDVBManager.getInstance().registerMsgEvent(Constants.SCAN_CALLBACK_MSG_ID);
+        msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
+            @Override
+            public int PSearch_PROG_ONETSFAIL(int AllNum, int CurrIndex, int Sat,
+                                              int freq, int symbol, int qam) {
+                int curr = 0;
+                if (mBlindTpAdapter.getItemCount() > 0) {
+                    curr = CurrIndex * 100 / mBlindTpAdapter.getItemCount();
+                }
+
+                String percent = curr + "%";
+                mTvBlindProgress.setText(percent);
+                mPbBlind.setMax(100);
+                mPbBlind.setProgress(curr);
+                return 0;
+            }
+
+            /**
+             * 搜所频道
+             */
+            @Override
+            public int PSearch_PROG_ONETSOK(int AllNum, int CurrIndex, int Sat,
+                                            int freq, int symbol, int qam) {
+                PSRNum_t psr = SWPSearchManager.getInstance().getProgNumOfThisSarch(Sat, freq);
+                if (null == psr) return 1;
+
+                ArrayList<PDPInfo_t> list = SWPSearchManager.getInstance().getTsSearchResInfo(Sat, freq, symbol, qam);
+                if (list == null) return 0;
+
+                updateTvList(list);
+                updateRadioList(list);
+
+                mTvTpNum.setText(String.valueOf(mBlindTvAdapter.getItemCount()));
+                mTvRadioNum.setText(String.valueOf(mBlindRadioAdapter.getItemCount()));
+                return 0;
+            }
+
+            private void updateTvList(ArrayList<PDPInfo_t> pdpInfoList) {
+                List<BlindTpModel> tvList = getTvList(pdpInfoList);
+                mBlindTvAdapter.addData(tvList);
+                mRvTv.scrollToPosition(mBlindTvAdapter.getItemCount() - 1);
+            }
+
+            private void updateRadioList(ArrayList<PDPInfo_t> pdpInfoList) {
+                List<BlindTpModel> radioList = getRadioList(pdpInfoList);
+                mBlindRadioAdapter.addData(radioList);
+                mRvRadio.scrollToPosition(mBlindRadioAdapter.getItemCount() - 1);
+            }
+
+            private List<BlindTpModel> getTvList(ArrayList<PDPInfo_t> pdpInfoList) {
+                List<BlindTpModel> tvList = new ArrayList<>();
+                for (PDPInfo_t pdpInfo_t : pdpInfoList) {
+                    if (pdpInfo_t.ServType == 1) {
+                        BlindTpModel blindTpModel = new BlindTpModel();
+                        blindTpModel.pdpInfo_t = pdpInfo_t;
+                        blindTpModel.type = BlindTpModel.VIEW_TYPE_PRO;
+                        tvList.add(blindTpModel);
+                    }
+                }
+                return tvList;
+            }
+
+            private List<BlindTpModel> getRadioList(ArrayList<PDPInfo_t> pdpInfoList) {
+                List<BlindTpModel> radioList = new ArrayList<>();
+                for (PDPInfo_t pdpInfo_t : pdpInfoList) {
+                    if (pdpInfo_t.ServType == 2) {
+                        BlindTpModel blindTpModel = new BlindTpModel();
+                        blindTpModel.pdpInfo_t = pdpInfo_t;
+                        blindTpModel.type = BlindTpModel.VIEW_TYPE_PRO;
+                        radioList.add(blindTpModel);
+                    }
+                }
+                return radioList;
+            }
+
+            @Override
+            public int PSearch_PROG_SEARCHFINISH(int AllNum, int Curr) {
+                SWPDBaseManager.getInstance().setCurrProgType(SWFtaManager.getInstance().getCurrScanMode() == 2 ? SWPDBase.SW_GBPROG : SWPDBase.SW_TVPROG, 0);
+                SWPSearchManager.getInstance().seatchStop(true);
+                showSearchResultDialog();
+                return 0;
+            }
+
+            @Override
+            public int PSearch_PROG_STARTSEARCH(int AllNum, int CurrIndex, int Sat,
+                                                int freq, int symbol, int qam) {
+                int curr = 0;
+                if (mBlindTpAdapter.getItemCount() > 0) {
+                    curr = CurrIndex * 100 / mBlindTpAdapter.getItemCount();
+                }
+
+                String percent = curr + "%";
+                mTvBlindProgress.setText(percent);
+                mPbBlind.setMax(100);
+                mPbBlind.setProgress(curr);
+                return 0;
+            }
+
+            /**
+             * 盲扫出tp
+             */
+            @Override
+            public void PSearch_BlindScanNewTP(int freq, int polarization, int symbol) {
+                updateTpList(freq, symbol, polarization);
+                mTvTpNum.setText(String.valueOf(mBlindTpAdapter.getItemCount()));
+            }
+
+            private void updateTpList(int freq, int symbol, int qam) {
+                BlindTpModel model = new BlindTpModel();
+                model.pssParam_t = new PSSParam_t();
+                model.pssParam_t.Sat = getSatelliteIndex();
+                model.pssParam_t.Freq = freq;
+                model.pssParam_t.Rate = symbol;
+                model.pssParam_t.Qam = qam;
+                mBlindTpAdapter.addData(mBlindTpAdapter.getItemCount(), model);
+                mRvBlind.scrollToPosition(mBlindTpAdapter.getItemCount() - 1);
+            }
+
+            /**
+             * 盲扫进度
+             */
+            @Override
+            public void PSearch_BlindScanProgress(int progress) {
+                String percent = progress + "%";
+                mTvBlindProgress.setText(percent);
+                mPbBlind.setMax(100);
+                mPbBlind.setProgress(progress);
+            }
+
+            /**
+             * 盲扫完成
+             */
+            @Override
+            public void PSearch_BlindScanFinish() {
+                mTvBlindTitle.setVisibility(View.GONE);
+
+                mScanTvAndRadioLayout.setVisibility(View.VISIBLE);
+                mTvAndRadioListLayout.setVisibility(View.VISIBLE);
+                mRvBlind.setVisibility(View.GONE);
+                mTvTpNumTitle.setText(getResources().getText(R.string.scan_tp_tv));
+                mTvTpNum.setText("0");
+                mTvRadioNum.setText("0");
+
+                mTvRadioTitle.setVisibility(View.VISIBLE);
+                mTvRadioNum.setVisibility(View.VISIBLE);
+                SWPSearchManager.getInstance().searchByNet(getSatelliteIndex(), getPsList());
+            }
+        });
+    }
+
+    private void unregisterMsgEvent() {
+        SWDVBManager.getInstance().unregisterMsgEvent(Constants.SCAN_CALLBACK_MSG_ID);
     }
 
     private void initRecyclerView() {
@@ -210,155 +369,6 @@ public class TpBlindActivity extends BaseActivity {
                 SWFtaManager.getInstance().blindScanStop();
             }
         });
-    }
-
-    private class BlindSearchMsgCB extends SearchMsgCB {
-
-        @Override
-        public int PSearch_PROG_ONETSFAIL(int AllNum, int CurrIndex, int Sat,
-                                          int freq, int symbol, int qam) {
-            int curr = 0;
-            if (mBlindTpAdapter.getItemCount() > 0) {
-                curr = CurrIndex * 100 / mBlindTpAdapter.getItemCount();
-            }
-
-            String percent = curr + "%";
-            mTvBlindProgress.setText(percent);
-            mPbBlind.setMax(100);
-            mPbBlind.setProgress(curr);
-            return 0;
-        }
-
-        /**
-         * 搜所频道
-         */
-        @Override
-        public int PSearch_PROG_ONETSOK(int AllNum, int CurrIndex, int Sat,
-                                        int freq, int symbol, int qam) {
-            PSRNum_t psr = SWPSearchManager.getInstance().getProgNumOfThisSarch(Sat, freq);
-            if (null == psr) return 1;
-
-            ArrayList<PDPInfo_t> list = SWPSearchManager.getInstance().getTsSearchResInfo(Sat, freq, symbol, qam);
-            if (list == null) return 0;
-
-            updateTvList(list);
-            updateRadioList(list);
-
-            mTvTpNum.setText(String.valueOf(mBlindTvAdapter.getItemCount()));
-            mTvRadioNum.setText(String.valueOf(mBlindRadioAdapter.getItemCount()));
-            return 0;
-        }
-
-        private void updateTvList(ArrayList<PDPInfo_t> pdpInfoList) {
-            List<BlindTpModel> tvList = getTvList(pdpInfoList);
-            mBlindTvAdapter.addData(tvList);
-            mRvTv.scrollToPosition(mBlindTvAdapter.getItemCount() - 1);
-        }
-
-        private void updateRadioList(ArrayList<PDPInfo_t> pdpInfoList) {
-            List<BlindTpModel> radioList = getRadioList(pdpInfoList);
-            mBlindRadioAdapter.addData(radioList);
-            mRvRadio.scrollToPosition(mBlindRadioAdapter.getItemCount() - 1);
-        }
-
-        private List<BlindTpModel> getTvList(ArrayList<PDPInfo_t> pdpInfoList) {
-            List<BlindTpModel> tvList = new ArrayList<>();
-            for (PDPInfo_t pdpInfo_t : pdpInfoList) {
-                if (pdpInfo_t.ServType == 1) {
-                    BlindTpModel blindTpModel = new BlindTpModel();
-                    blindTpModel.pdpInfo_t = pdpInfo_t;
-                    blindTpModel.type = BlindTpModel.VIEW_TYPE_PRO;
-                    tvList.add(blindTpModel);
-                }
-            }
-            return tvList;
-        }
-
-        private List<BlindTpModel> getRadioList(ArrayList<PDPInfo_t> pdpInfoList) {
-            List<BlindTpModel> radioList = new ArrayList<>();
-            for (PDPInfo_t pdpInfo_t : pdpInfoList) {
-                if (pdpInfo_t.ServType == 2) {
-                    BlindTpModel blindTpModel = new BlindTpModel();
-                    blindTpModel.pdpInfo_t = pdpInfo_t;
-                    blindTpModel.type = BlindTpModel.VIEW_TYPE_PRO;
-                    radioList.add(blindTpModel);
-                }
-            }
-            return radioList;
-        }
-
-        @Override
-        public int PSearch_PROG_SEARCHFINISH(int AllNum, int Curr) {
-            SWPDBaseManager.getInstance().setCurrProgType(SWFtaManager.getInstance().getCurrScanMode() == 2 ? SWPDBase.SW_GBPROG : SWPDBase.SW_TVPROG, 0);
-            SWPSearchManager.getInstance().seatchStop(true);
-            showSearchResultDialog();
-            return 0;
-        }
-
-        @Override
-        public int PSearch_PROG_STARTSEARCH(int AllNum, int CurrIndex, int Sat,
-                                            int freq, int symbol, int qam) {
-            int curr = 0;
-            if (mBlindTpAdapter.getItemCount() > 0) {
-                curr = CurrIndex * 100 / mBlindTpAdapter.getItemCount();
-            }
-
-            String percent = curr + "%";
-            mTvBlindProgress.setText(percent);
-            mPbBlind.setMax(100);
-            mPbBlind.setProgress(curr);
-            return 0;
-        }
-
-        /**
-         * 盲扫出tp
-         */
-        @Override
-        public void PSearch_BlindScanNewTP(int freq, int polarization, int symbol) {
-            updateTpList(freq, symbol, polarization);
-            mTvTpNum.setText(String.valueOf(mBlindTpAdapter.getItemCount()));
-        }
-
-        private void updateTpList(int freq, int symbol, int qam) {
-            BlindTpModel model = new BlindTpModel();
-            model.pssParam_t = new PSSParam_t();
-            model.pssParam_t.Sat = getSatelliteIndex();
-            model.pssParam_t.Freq = freq;
-            model.pssParam_t.Rate = symbol;
-            model.pssParam_t.Qam = qam;
-            mBlindTpAdapter.addData(mBlindTpAdapter.getItemCount(), model);
-            mRvBlind.scrollToPosition(mBlindTpAdapter.getItemCount() - 1);
-        }
-
-        /**
-         * 盲扫进度
-         */
-        @Override
-        public void PSearch_BlindScanProgress(int progress) {
-            String percent = progress + "%";
-            mTvBlindProgress.setText(percent);
-            mPbBlind.setMax(100);
-            mPbBlind.setProgress(progress);
-        }
-
-        /**
-         * 盲扫完成
-         */
-        @Override
-        public void PSearch_BlindScanFinish() {
-            mTvBlindTitle.setVisibility(View.GONE);
-
-            mScanTvAndRadioLayout.setVisibility(View.VISIBLE);
-            mTvAndRadioListLayout.setVisibility(View.VISIBLE);
-            mRvBlind.setVisibility(View.GONE);
-            mTvTpNumTitle.setText(getResources().getText(R.string.scan_tp_tv));
-            mTvTpNum.setText("0");
-            mTvRadioNum.setText("0");
-
-            mTvRadioTitle.setVisibility(View.VISIBLE);
-            mTvRadioNum.setVisibility(View.VISIBLE);
-            SWPSearchManager.getInstance().searchByNet(getSatelliteIndex(), getPsList());
-        }
     }
 
     private ArrayList<PSSParam_t> getPsList() {

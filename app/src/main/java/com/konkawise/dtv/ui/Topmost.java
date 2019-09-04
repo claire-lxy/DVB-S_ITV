@@ -71,7 +71,8 @@ import com.konkawise.dtv.weaktool.WeakTimerTask;
 import com.sw.dvblib.SWDVB;
 import com.sw.dvblib.SWFta;
 import com.sw.dvblib.SWPDBase;
-import com.sw.dvblib.msg.cb.AVMsgCB;
+import com.sw.dvblib.msg.MsgEvent;
+import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -372,33 +373,7 @@ public class Topmost extends BaseActivity {
 
     private WaitingStartRecordRunnable mWaitingStartRecordRunnable;
 
-    private AVMsgCB mAvMsgCB = new PlayMsgCB();
     private boolean mUsbAttach;
-
-    private class PlayMsgCB extends AVMsgCB {
-        @Override
-        public int ProgPlay_SWAV_ISLOCKED(int type, int progno, int progindex, int home) {
-            showPasswordDialog();
-            return super.ProgPlay_SWAV_ISLOCKED(type, progno, progindex, home);
-        }
-
-        @Override
-        public int ProgPlay_SWAV_USBAttach() {
-            Log.i(TAG, "usb attach");
-            mUsbAttach = true;
-            ToastUtils.showToast(R.string.toast_storage_inserted);
-            return super.ProgPlay_SWAV_USBAttach();
-        }
-
-        @Override
-        public int ProgPlay_SWAV_USBDetach() {
-            Log.i(TAG, "usb detach");
-            mUsbAttach = false;
-            ToastUtils.showToast(R.string.toast_storage_out);
-            stopRecord();
-            return super.ProgPlay_SWAV_USBDetach();
-        }
-    }
 
     private static class PlayHandler extends WeakHandler<Topmost> {
         static final int MSG_PLAY_PROG = 0;
@@ -502,7 +477,7 @@ public class Topmost extends BaseActivity {
     protected void onResume() {
         super.onResume();
         RealTimeManager.getInstance().start();
-        SWDVBManager.getInstance().regMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, Looper.getMainLooper(), mAvMsgCB);
+        registerMsgEvent();
         showSurface();
         updatePfBarInfo();
         restoreMenuItem(); // 恢复menu初始item显示
@@ -517,7 +492,7 @@ public class Topmost extends BaseActivity {
         super.onPause();
         hideSurface();
         UIApiManager.getInstance().stopPlay(SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_PD_SwitchMode.ordinal()));
-        SWDVBManager.getInstance().unRegMsgHandler(Constants.LOCK_CALLBACK_MSG_ID, mAvMsgCB);
+        unregisterMsgEvent();
         stopRecord();
         if (isFinishing()) {
             RealTimeManager.getInstance().stop();
@@ -541,6 +516,38 @@ public class Topmost extends BaseActivity {
         super.onDestroy();
         dismissAllDialog();
         unregisterListener();
+    }
+
+    private void registerMsgEvent() {
+        MsgEvent msgEvent = SWDVBManager.getInstance().registerMsgEvent(Constants.LOCK_CALLBACK_MSG_ID);
+        msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
+            @Override
+            public int ProgPlay_SWAV_ISLOCKED(int type, int progno, int progindex, int home) {
+                showPasswordDialog();
+                return super.ProgPlay_SWAV_ISLOCKED(type, progno, progindex, home);
+            }
+
+            @Override
+            public int ProgPlay_SWAV_USBAttach() {
+                Log.i(TAG, "usb attach");
+                mUsbAttach = true;
+                ToastUtils.showToast(R.string.toast_storage_inserted);
+                return super.ProgPlay_SWAV_USBAttach();
+            }
+
+            @Override
+            public int ProgPlay_SWAV_USBDetach() {
+                Log.i(TAG, "usb detach");
+                mUsbAttach = false;
+                ToastUtils.showToast(R.string.toast_storage_out);
+                stopRecord();
+                return super.ProgPlay_SWAV_USBDetach();
+            }
+        });
+    }
+
+    private void unregisterMsgEvent() {
+        SWDVBManager.getInstance().unregisterMsgEvent(Constants.LOCK_CALLBACK_MSG_ID);
     }
 
     @Override
@@ -879,6 +886,9 @@ public class Topmost extends BaseActivity {
                     e.printStackTrace();
                 }
             }
+
+            PDPMInfo_t currProgInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
+            if (currProgInfo == null) return;
 
             final int preProgIndex = SWPDBaseManager.getInstance().getCurrProgInfo().ProgIndex;
             List<PDPMInfo_t> progList = context.getProgList();

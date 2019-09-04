@@ -124,8 +124,8 @@ public class ScanDialog extends BaseItemFocusChangeDialogFragment {
 
     private int mCurrSelectItem = ITEM_SCAN_MODE;
 
-    private int mCurrScanMode;//即Channel Type
-    private int mCurrChannelType;//对应Service Type
+    private int mCurrScanMode;
+    private int mCurrChannelType;
     private int mCurrScanType;
     private int mCurrNetwork;
     private int mCurrCAS;
@@ -222,11 +222,9 @@ public class ScanDialog extends BaseItemFocusChangeDialogFragment {
                 } else if (mInstallationType == INSTALLATION_TYPE_MANUAL_SEARCH) {
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_CAS.ordinal(), mCurrChannelType);
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_ScanMode.ordinal(), mCurrScanMode);
-                    //T2手动
                 } else if(mInstallationType == INSTALLATION_TYPE_AUTO_SEARCH) {
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_CAS.ordinal(), mCurrChannelType);
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_ScanMode.ordinal(), mCurrScanMode);
-                    //T2自动
                 }
                 mOnScanSearchListener.onClick(null);
             }

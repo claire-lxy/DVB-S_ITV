@@ -168,13 +168,6 @@ public class SWFtaManager {
     }
 
     /**
-     * 设置SCART
-     */
-    public void setRGBorCVBS(int param) {
-        SWFta.CreateInstance().setRGBorCVBS(param);
-    }
-
-    /**
      * 获取Booking即将播放的频道
      */
     public HPDPPlayInfo_t getCurrPlayInfo(int param) {
