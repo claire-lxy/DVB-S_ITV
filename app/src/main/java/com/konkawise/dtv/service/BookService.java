@@ -363,7 +363,7 @@ public class BookService extends BaseService implements WeakToolInterface {
 
         // 进入待机
         if (schtype == SWBooking.BookSchType.NONE.ordinal()) {
-
+            ScreenManager.getInstance().standby(this);
         } else {
             Intent intent = new Intent();
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

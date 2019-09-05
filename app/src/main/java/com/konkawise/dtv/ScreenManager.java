@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.text.TextUtils;
 
 import static android.content.Context.POWER_SERVICE;
@@ -33,6 +34,15 @@ public class ScreenManager {
                 wakeLock.acquire(1000);
                 wakeLock.release();
             }
+        }
+    }
+
+    public void standby(Context context) {
+        PowerManager powerManager = (PowerManager) context.getSystemService(POWER_SERVICE);
+        try {
+            powerManager.getClass().getMethod("goToSleep", long.class).invoke(powerManager, SystemClock.uptimeMillis());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
