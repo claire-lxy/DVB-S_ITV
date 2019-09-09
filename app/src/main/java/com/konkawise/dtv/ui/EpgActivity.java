@@ -1,7 +1,6 @@
 package com.konkawise.dtv.ui;
 
 import android.content.Intent;
-import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;

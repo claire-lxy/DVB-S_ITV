@@ -684,6 +684,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             Intent intent = new Intent();
             intent.putExtra(Constants.IntentKey.INTENT_LONGITUDE, mSatLongitudeModel.getValueForStorage());
+            intent.putExtra(Constants.IntentKey.INTENT_CURRENT_TP, mCurrentTp);
             setResult(Constants.RequestCode.REQUEST_CODE_MOTOR, intent);
             finish();
             return true;

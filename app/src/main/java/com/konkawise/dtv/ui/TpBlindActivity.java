@@ -1,7 +1,6 @@
 package com.konkawise.dtv.ui;
 
 import android.content.Intent;
-import android.os.Looper;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.KeyEvent;

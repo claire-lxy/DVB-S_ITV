@@ -122,6 +122,12 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        if (isFinishing()) saveSatInfo();
+    }
+
+    @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN) {
             switch (mCurrentSelectItem) {
@@ -261,7 +267,13 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
 //        satInfo.diseqc12 = Utils.getDiSEqC12(mCurrentDiseqc);
         satInfo.skewonoff = Utils.getSkewOnOff(mCurrentDiseqc);
 
-        satInfo.switch_22k = is22kHzOn() ? 1 : 0;
+        if (TextUtils.equals(mTv22khz.getText().toString(), getString(R.string.off))) {
+            satInfo.switch_22k = 0;
+        } else if (TextUtils.equals(mTv22khz.getText().toString(), getString(R.string.on))) {
+            satInfo.switch_22k = 1;
+        } else {
+            satInfo.switch_22k = 2;
+        }
         satInfo.LnbPower = isLnbPowerOn() ? 1 : 0;
 
         SWPDBaseManager.getInstance().setSatInfo(satInfo.SatIndex, satInfo);
@@ -329,8 +341,9 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
 
     private void recordLastFocusable22KHz() {
         String current22KHz = mTv22khz.getText().toString();
-        if (TextUtils.equals(current22KHz, getResources().getString(R.string.auto))) return;
-        mLastFocusable22KHz = current22KHz;
+        if (!TextUtils.equals(current22KHz, getResources().getString(R.string.auto))) {
+            mLastFocusable22KHz = current22KHz;
+        }
     }
 
     /**
@@ -354,6 +367,8 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
 
         mLnbArray[0] = getLnbO();
         mCurrentLnb = getCurrLnb();
+        mLastFocusable22KHz = getString(getSatList().get(mCurrentSatellite).switch_22k == 1 ? R.string.on : R.string.off);
+        mTv22khz.setText(mLastFocusable22KHz);
         lnbChange();
 
         mCurrentDiseqc = getCurrDiseqc();
