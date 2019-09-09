@@ -221,7 +221,7 @@ public class FavoriteActivity extends BaseActivity {
                         .setOnRenameEditListener(new RenameDialog.onRenameEditListener() {
                             @Override
                             public void onRenameEdit(String newName) {
-                                PreferenceManager.getInstance().putString("fav" + (mFavoriteGroupIndex - 1), newName);
+                                SWPDBaseManager.getInstance().setFavGroupName(mFavoriteGroupIndex - 1, newName);
                                 mFavoriteGroupAdapter.updateData(mFavoriteGroupIndex - 1, newName);
 
                                 mFavEdit = true;

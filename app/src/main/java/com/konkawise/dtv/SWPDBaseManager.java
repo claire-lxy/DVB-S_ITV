@@ -468,8 +468,12 @@ public class SWPDBaseManager {
      * @param favIndex SWPDBase.SW_FAV0~7
      */
     private String getFavoriteGroupNameByIndex(int favIndex) {
-        String favoriteGroupName = PreferenceManager.getInstance().getString("fav" + favIndex);
+        String favoriteGroupName = SWPDBase.CreateInstance().getFavName(favIndex);
         return TextUtils.isEmpty(favoriteGroupName) ? "FAV" + favIndex : favoriteGroupName;
+    }
+
+    public void setFavGroupName(int favGroupIndex, String favGroupName) {
+        SWPDBase.CreateInstance().setFavName(favGroupIndex, favGroupName);
     }
 
     public boolean isProgCanPlay() {
