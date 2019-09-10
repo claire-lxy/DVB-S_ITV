@@ -22,6 +22,9 @@ public abstract class BaseActivity extends FragmentActivity
 
     private Unbinder mUnBinder;
 
+    // 标志位主要处理界面跳转到当前界面，当前界面会响应到onKeyUp同样按键事件
+    protected boolean mDispatchKeyUpReady;
+
     @Override
     protected void attachBaseContext(Context newBase) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -43,6 +46,12 @@ public abstract class BaseActivity extends FragmentActivity
     protected void onResume() {
         super.onResume();
         registerHomeReceiver();
+        getWindow().getDecorView().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mDispatchKeyUpReady = true;
+            }
+        }, 300);
     }
 
     @Override

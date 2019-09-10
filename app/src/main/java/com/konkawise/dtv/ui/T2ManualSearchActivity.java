@@ -139,6 +139,15 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
     }
 
     @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_PROG_RED) {
+            showScanDialog();
+        }
+
+        return super.onKeyUp(keyCode, event);
+    }
+
+    @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
             switch (mCurrSelectItem) {
@@ -198,10 +207,6 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
 
                     break;
             }
-        }
-
-        if (keyCode == KeyEvent.KEYCODE_PROG_RED) {
-            showScanDialog();
         }
 
         return super.onKeyDown(keyCode, event);

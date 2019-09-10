@@ -180,6 +180,22 @@ public class FavoriteActivity extends BaseActivity {
         return mFavoriteChannelAdapter.getSelectMap().indexOfValue(true) != -1;
     }
 
+    private void showRenameDialog() {
+        new RenameDialog()
+                .setNameType(getString(R.string.edit_favorite_group_name))
+                .setNum(String.valueOf(mFavoriteGroupIndex))
+                .setName(mFavoriteGroupAdapter.getItem(mFavoriteGroupIndex - 1))
+                .setOnRenameEditListener(new RenameDialog.onRenameEditListener() {
+                    @Override
+                    public void onRenameEdit(String newName) {
+                        SWPDBaseManager.getInstance().setFavGroupName(mFavoriteGroupIndex - 1, newName);
+                        mFavoriteGroupAdapter.updateData(mFavoriteGroupIndex - 1, newName);
+
+                        mFavEdit = true;
+                    }
+                }).show(getSupportFragmentManager(), RenameDialog.TAG);
+    }
+
     private void showDeleteDataDialog() {
         new CommTipsDialog().title(getString(R.string.channel_edit_FAVList_delete_title))
                 .content(getString(R.string.channel_edit_FAVList_delete_content))
@@ -207,35 +223,28 @@ public class FavoriteActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            SWPDBaseManager.getInstance().setFavChannelMap(mFavoriteChannelsMap);
-        }
-
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_PROG_GREEN) {
             if (mBottomFavRename.getVisibility() == View.VISIBLE) {
-                new RenameDialog()
-                        .setNameType(getString(R.string.edit_favorite_group_name))
-                        .setNum(String.valueOf(mFavoriteGroupIndex))
-                        .setName(mFavoriteGroupAdapter.getItem(mFavoriteGroupIndex - 1))
-                        .setOnRenameEditListener(new RenameDialog.onRenameEditListener() {
-                            @Override
-                            public void onRenameEdit(String newName) {
-                                SWPDBaseManager.getInstance().setFavGroupName(mFavoriteGroupIndex - 1, newName);
-                                mFavoriteGroupAdapter.updateData(mFavoriteGroupIndex - 1, newName);
-
-                                mFavEdit = true;
-                            }
-                        }).show(getSupportFragmentManager(), RenameDialog.TAG);
-
+                showRenameDialog();
+                return true;
             }
         }
 
         if (keyCode == KeyEvent.KEYCODE_PROG_YELLOW) {
             if (mBottomFavEditChannel.getVisibility() == View.VISIBLE) {
                 showDeleteDataDialog();
+                return true;
             }
-            return true;
+        }
+
+        return super.onKeyUp(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            SWPDBaseManager.getInstance().setFavChannelMap(mFavoriteChannelsMap);
         }
 
         if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {

@@ -1910,11 +1910,19 @@ public class Topmost extends BaseActivity {
 
         // TEXT
         if (keyCode == KeyEvent.KEYCODE_TV_TELETEXT) {
+            showTeletextDialog();
             return true;
         }
 
         // SUB
-        if (keyCode == KEYCODE_TV_SUBTITLE) {
+        // keycode=293 can't be caught, so use F3.
+        if (keyCode == KeyEvent.KEYCODE_F3) {
+            showSubtitleDialog();
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_MEDIA_AUDIO_TRACK) {
+            showAudioDialog();
             return true;
         }
 
@@ -2079,22 +2087,6 @@ public class Topmost extends BaseActivity {
             return true;
         }
 
-        if (keyCode == KeyEvent.KEYCODE_TV_TELETEXT) {
-            showTeletextDialog();
-            return true;
-        }
-
-        // keycode=293 can't be caught, so use F3.
-        if (keyCode == KeyEvent.KEYCODE_F3) {
-            showSubtitleDialog();
-            return true;
-        }
-
-        if (keyCode == KeyEvent.KEYCODE_MEDIA_AUDIO_TRACK) {
-            showAudioDialog();
-            return true;
-        }
-
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (mMenuShow) {
                 toggleMenu();
@@ -2110,7 +2102,7 @@ public class Topmost extends BaseActivity {
                 return true;
             } else {
                 showExitDialog();
-                return true;
+                return super.onKeyDown(keyCode, event);
             }
         }
         return super.onKeyDown(keyCode, event);
@@ -2136,7 +2128,7 @@ public class Topmost extends BaseActivity {
                 sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
                 showQuitRecordDialog(event);
             }
-            return true;
+            return super.dispatchKeyEvent(event);
         }
 
         // 频道列表上下左右切换

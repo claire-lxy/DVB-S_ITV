@@ -387,7 +387,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             new CommRemindDialog()
                     .content(getString(R.string.back_infomation))
@@ -399,7 +399,8 @@ public class ScanTVandRadioActivity extends BaseActivity {
                     }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
             return true;
         }
-        return super.onKeyDown(keyCode, event);
+
+        return super.onKeyUp(keyCode, event);
     }
 
     private void showSearchResultDialog() {

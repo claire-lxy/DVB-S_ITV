@@ -287,7 +287,7 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
     }
 
     private void showDeleteBookDialog() {
-        if (mAdapter.getCount() < 0) return;
+        if (mAdapter.getCount() <= 0) return;
 
         new CommTipsDialog().title(getString(R.string.delete_book_title))
                 .content(getString(R.string.delete_book_content))
@@ -308,7 +308,7 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_PROG_RED) {
             if (isPowerSavingOff()) {
                 showBookDialog(getString(R.string.add), Constants.BOOK_TYPE_ADD);
@@ -332,6 +332,11 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
             return true;
         }
 
+        return super.onKeyUp(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
             if (mAdapter.getCount() > 0 && mCurrSelectPosition >= mAdapter.getCount() - 1) {
                 mLvBookList.setSelection(0);

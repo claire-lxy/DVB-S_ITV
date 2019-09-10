@@ -326,6 +326,22 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
             return true;
         }
 
+        if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_YELLOW) {
+            Intent intent = new Intent(EditManualActivity.this, MotorActivity.class);
+            intent.putExtra(Constants.IntentKey.INTENT_TP_NAME, mTvTp.getText());
+            intent.putExtra(Constants.IntentKey.INTENT_CURRENT_TP, mCurrentTp);
+            intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, getSatList().get(mCurrentSatellite).SatIndex);
+            startActivityForResult(intent, Constants.RequestCode.REQUEST_CODE_MOTOR);
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (!mDispatchKeyUpReady) return super.onKeyUp(keyCode, event);
+
         if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_RED) {
             saveSatInfo();
 
@@ -338,42 +354,17 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
             return true;
         }
 
-        if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_YELLOW) {
-            Intent intent = new Intent(EditManualActivity.this, MotorActivity.class);
-            intent.putExtra(Constants.IntentKey.INTENT_TP_NAME, mTvTp.getText());
-            intent.putExtra(Constants.IntentKey.INTENT_CURRENT_TP, mCurrentTp);
-            intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, getSatList().get(mCurrentSatellite).SatIndex);
-            startActivityForResult(intent, Constants.RequestCode.REQUEST_CODE_MOTOR);
-            return true;
-        }
-
         if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_BLUE) {
             List<SatInfo_t> satList = getSatList();
             List<ChannelNew_t> tpList = getTpList();
             if (satList == null || satList.isEmpty()) return false;
             if (tpList == null || tpList.isEmpty()) return false;
 
-            new AutoDiSEqCDialog()
-                    .satIndex(satList.get(mCurrentSatellite).SatIndex)
-                    .tpData(tpList.get(mCurrentTp))
-                    .setOnAutoDiSEqCResultListener(new AutoDiSEqCDialog.OnAutoDiSEqCResultListener() {
-                        @Override
-                        public void onAutoDiSEqCResult(int portIndex) {
-                            if (portIndex >= 0) {
-                                SatInfo_t satInfo = getSatList().get(mCurrentSatellite);
-                                satInfo.diseqc10_pos = portIndex + 1;
-                                SWPDBaseManager.getInstance().setSatInfo(satInfo.SatIndex, satInfo);
-
-                                mCurrentDiseqc = portIndex + 3; // 和mDiseqcArray位置约定
-                                diseqcChange();
-                            }
-                        }
-                    })
-                    .show(getSupportFragmentManager(), AutoDiSEqCDialog.TAG);
+            showAutoDiSEqCDialog(satList, tpList);
             return true;
         }
 
-        return super.onKeyDown(keyCode, event);
+        return super.onKeyUp(keyCode, event);
     }
 
     @Override
@@ -421,6 +412,26 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
                         }
                     }
                 }).show(getSupportFragmentManager(), RenameDialog.TAG);
+    }
+
+    private void showAutoDiSEqCDialog(List<SatInfo_t> satList, List<ChannelNew_t> tpList) {
+        new AutoDiSEqCDialog()
+                .satIndex(satList.get(mCurrentSatellite).SatIndex)
+                .tpData(tpList.get(mCurrentTp))
+                .setOnAutoDiSEqCResultListener(new AutoDiSEqCDialog.OnAutoDiSEqCResultListener() {
+                    @Override
+                    public void onAutoDiSEqCResult(int portIndex) {
+                        if (portIndex >= 0) {
+                            SatInfo_t satInfo = getSatList().get(mCurrentSatellite);
+                            satInfo.diseqc10_pos = portIndex + 1;
+                            SWPDBaseManager.getInstance().setSatInfo(satInfo.SatIndex, satInfo);
+
+                            mCurrentDiseqc = portIndex + 3; // 和mDiseqcArray位置约定
+                            diseqcChange();
+                        }
+                    }
+                })
+                .show(getSupportFragmentManager(), AutoDiSEqCDialog.TAG);
     }
 
     /**

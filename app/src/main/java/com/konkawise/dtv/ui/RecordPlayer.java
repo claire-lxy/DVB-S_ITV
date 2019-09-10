@@ -400,7 +400,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_CENTER:
             case KeyEvent.KEYCODE_SHIFT_RIGHT:
@@ -418,7 +418,50 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
                                 }
                             })
                             .show(getSupportFragmentManager(), SeekTimeDialog.TAG);
-                } else if (currType == TYPE_PAUSE) {
+                    return true;
+                }
+                break;
+
+            case KeyEvent.KEYCODE_MEDIA_STOP:
+            case KeyEvent.KEYCODE_BACK:
+                if (lyBottom.getVisibility() != View.VISIBLE) {
+                    new CommTipsDialog()
+                            .title(getString(R.string.dialog_exit_pvr_tips))
+                            .content(getString(from == FROM_TOPMOST ? R.string.dialog_exit_timeshift_content : R.string.dialog_exit_playback_content))
+                            .negativeFocus(true)
+                            .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
+                                @Override
+                                public void onPositiveListener() {
+
+                                    finish();
+                                }
+                            }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
+                    return true;
+                }
+                break;
+
+            case KeyEvent.KEYCODE_MEDIA_AUDIO_TRACK:
+                showAudioDialog();
+                return true;
+
+            case KeyEvent.KEYCODE_F3:
+                showSubtitleDialog();
+                return true;
+
+            case KeyEvent.KEYCODE_TV_TELETEXT:
+                showTeletextDialog();
+                return true;
+        }
+
+        return super.onKeyUp(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_DPAD_CENTER:
+            case KeyEvent.KEYCODE_SHIFT_RIGHT:
+                if (currType == TYPE_PAUSE) {
                     resume();
                 } else if (currType == TYPE_SEEK_BACK || currType == TYPE_SEEK_FORWARD) {
                     resumeFromSeek();
@@ -439,18 +482,6 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
             case KeyEvent.KEYCODE_BACK:
                 if (lyBottom.getVisibility() == View.VISIBLE) {
                     dismissControlUI();
-                } else {
-                    new CommTipsDialog()
-                            .title(getString(R.string.dialog_exit_pvr_tips))
-                            .content(getString(from == FROM_TOPMOST ? R.string.dialog_exit_timeshift_content : R.string.dialog_exit_playback_content))
-                            .negativeFocus(true)
-                            .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
-                                @Override
-                                public void onPositiveListener() {
-
-                                    finish();
-                                }
-                            }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
                 }
                 return true;
 
@@ -468,18 +499,6 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
 
             case KeyEvent.KEYCODE_INFO:
                 showControlUI(true);
-                return true;
-
-            case KeyEvent.KEYCODE_MEDIA_AUDIO_TRACK:
-                showAudioDialog();
-                return true;
-
-            case KeyEvent.KEYCODE_F3:
-                showSubtitleDialog();
-                return true;
-
-            case KeyEvent.KEYCODE_TV_TELETEXT:
-                showTeletextDialog();
                 return true;
         }
         return super.onKeyDown(keyCode, event);

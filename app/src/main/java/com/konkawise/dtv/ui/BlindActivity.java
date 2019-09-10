@@ -223,13 +223,19 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
             }
         }
 
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_RED) {
             saveSatInfo();
 
             showScanDialog();
+            return true;
         }
 
-        return super.onKeyDown(keyCode, event);
+        return super.onKeyUp(keyCode, event);
     }
 
     private void showScanDialog() {

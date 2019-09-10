@@ -122,7 +122,7 @@ public class SatelliteActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_RED) {
             new SearchProgramDialog()
                     .setMessage(getString(satList.size() > 1 ?
@@ -140,6 +140,11 @@ public class SatelliteActivity extends BaseActivity {
             return true;
         }
 
+        return super.onKeyUp(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_GREEN) {
             Intent intent = new Intent(this, EditManualActivity.class);
             intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mAdapter.getItem(mCurrPosition).SatIndex);

@@ -361,7 +361,9 @@ public class TpListingActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (!mDispatchKeyUpReady) return super.onKeyUp(keyCode, event);
+
         if (keyCode == KeyEvent.KEYCODE_PROG_RED) {
             showScanDialog();
             return true;
@@ -382,6 +384,11 @@ public class TpListingActivity extends BaseActivity {
             return true;
         }
 
+        return super.onKeyUp(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
             if (mSelectPosition == mAdapter.getCount() - 1) {
                 mListView.setSelection(0);

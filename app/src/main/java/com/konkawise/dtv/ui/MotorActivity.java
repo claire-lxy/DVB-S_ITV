@@ -604,31 +604,6 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
             }
         }
 
-        if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
-            if ((mMotorType == MOROT_TYPE_DISEQC && position == ITEM_DISEQC_COMMAND) ||
-                    mMotorType == MOROT_TYPE_USALS && position == ITEM_COMMAND) {
-                MotorCtrlModel motorCtrlModel = getMotorCtrlModelByCommand();
-                showCommandDialog(motorCtrlModel.title, new OnCommCallback() {
-                    @Override
-                    public void callback(Object object) {
-                        if (TextUtils.equals(mTvCommand.getText().toString(), getString(R.string.motor_command_savepos))) {
-                            if (mMotorType == MOROT_TYPE_DISEQC && position == ITEM_DISEQC_COMMAND) {
-                                saveMotorType();
-                            }
-                            savePosition();
-                        } else {
-                            ThreadPoolManager.getInstance().remove(mMotorRunnable);
-                            mMotorRunnable.ctrlCode = motorCtrlModel.ctrlCode;
-                            mMotorRunnable.repeat = motorCtrlModel.repeat;
-                            mMotorRunnable.data = motorCtrlModel.data;
-                            ThreadPoolManager.getInstance().execute(mMotorRunnable);
-                        }
-                    }
-                });
-                return true;
-            }
-        }
-
         if (mLocalLongitudeLayout.getVisibility() == View.VISIBLE) {
             if (keyCode == KeyEvent.KEYCODE_0) {
                 latLngEditChange(0, position);
@@ -691,6 +666,36 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         }
 
         return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+            if ((mMotorType == MOROT_TYPE_DISEQC && position == ITEM_DISEQC_COMMAND) ||
+                    mMotorType == MOROT_TYPE_USALS && position == ITEM_COMMAND) {
+                MotorCtrlModel motorCtrlModel = getMotorCtrlModelByCommand();
+                showCommandDialog(motorCtrlModel.title, new OnCommCallback() {
+                    @Override
+                    public void callback(Object object) {
+                        if (TextUtils.equals(mTvCommand.getText().toString(), getString(R.string.motor_command_savepos))) {
+                            if (mMotorType == MOROT_TYPE_DISEQC && position == ITEM_DISEQC_COMMAND) {
+                                saveMotorType();
+                            }
+                            savePosition();
+                        } else {
+                            ThreadPoolManager.getInstance().remove(mMotorRunnable);
+                            mMotorRunnable.ctrlCode = motorCtrlModel.ctrlCode;
+                            mMotorRunnable.repeat = motorCtrlModel.repeat;
+                            mMotorRunnable.data = motorCtrlModel.data;
+                            ThreadPoolManager.getInstance().execute(mMotorRunnable);
+                        }
+                    }
+                });
+                return true;
+            }
+        }
+
+        return super.onKeyUp(keyCode, event);
     }
 
     private void motorTypeChange() {

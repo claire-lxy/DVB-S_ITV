@@ -688,7 +688,7 @@ public class ChannelEditActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
             if (--mCurrSatPosition < 0) mCurrSatPosition = getSateList().size() - 1;
             if (mSaveData) {
@@ -709,20 +709,6 @@ public class ChannelEditActivity extends BaseActivity {
                 resetEdit();
             }
             return true;
-        }
-
-        if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-            if (mCurrSelectPosition >= mAdapter.getCount() - 1) {
-                mLvChannelList.setSelection(0);
-                return true;
-            }
-        }
-
-        if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-            if (mCurrSelectPosition <= 0) {
-                mLvChannelList.setSelection(mAdapter.getCount() - 1);
-                return true;
-            }
         }
 
         if (keyCode == KeyEvent.KEYCODE_PROG_RED) {
@@ -752,15 +738,6 @@ public class ChannelEditActivity extends BaseActivity {
             return true;
         }
 
-        if (keyCode == KeyEvent.KEYCODE_PROG_YELLOW) {
-            if (mShowMore) {
-                deleteChannels();
-            } else {
-                editChannel(EDIT_TYPE_HIDE);
-            }
-            return true;
-        }
-
         if (keyCode == KeyEvent.KEYCODE_MENU) {
             if (mShowMore) {
                 showPidDialog();
@@ -779,6 +756,34 @@ public class ChannelEditActivity extends BaseActivity {
                     return true;
                 }
             }
+        }
+
+        return super.onKeyUp(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+            if (mCurrSelectPosition >= mAdapter.getCount() - 1) {
+                mLvChannelList.setSelection(0);
+                return true;
+            }
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+            if (mCurrSelectPosition <= 0) {
+                mLvChannelList.setSelection(mAdapter.getCount() - 1);
+                return true;
+            }
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_PROG_YELLOW) {
+            if (mShowMore) {
+                deleteChannels();
+            } else {
+                editChannel(EDIT_TYPE_HIDE);
+            }
+            return true;
         }
 
         return super.onKeyDown(keyCode, event);

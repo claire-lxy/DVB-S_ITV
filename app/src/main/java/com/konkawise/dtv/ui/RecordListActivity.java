@@ -385,14 +385,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_PROG_RED) {
-            if (lyBottom.getVisibility() == View.VISIBLE) {
-                mAdapter.setSelect(mCurrRecordPosition);
-                return true;
-            }
-        }
-
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_PROG_GREEN) {
             if (lyBottom.getVisibility() == View.VISIBLE) {
                 showRenameDialog();
@@ -414,6 +407,18 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
                 } else {
                     lockChannels(1);
                 }
+                return true;
+            }
+        }
+
+        return super.onKeyUp(keyCode, event);
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_PROG_RED) {
+            if (lyBottom.getVisibility() == View.VISIBLE) {
+                mAdapter.setSelect(mCurrRecordPosition);
                 return true;
             }
         }
