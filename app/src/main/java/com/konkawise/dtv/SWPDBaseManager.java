@@ -21,8 +21,6 @@ import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 public class SWPDBaseManager {
     public static final int RANGE_SAT_INDEX = 10000;
 
-    private SparseArray<List<PDPMInfo_t>> mFavChannelsMap = new SparseArray<>();  //缓存喜爱列表，避免多次从底层获取数据
-
     private static class SWPDBaseManagerHolder {
         private static SWPDBaseManager INSTANCE = new SWPDBaseManager();
     }
@@ -122,6 +120,29 @@ public class SWPDBaseManager {
         return getTotalGroupProgList(new int[1]);
     }
 
+    /**
+     * 获取Total分组下对应的卫星频道列表
+     *
+     * @param ltTotalProgs
+     * @param satIndex
+     * @return
+     */
+    public List<PDPMInfo_t> getTotalGroupSatProgList(List<PDPMInfo_t> ltTotalProgs, int satIndex) {
+        List<PDPMInfo_t> ltSatProgs = new ArrayList<>();
+        if (ltTotalProgs == null || ltTotalProgs.size() == 0) {
+            return ltSatProgs;
+        }
+        if(satIndex == -1){
+            return ltTotalProgs;
+        }
+        for (PDPMInfo_t progInfo : ltTotalProgs) {
+            if (progInfo.Sat == satIndex) {
+                ltSatProgs.add(progInfo);
+            }
+        }
+        return ltSatProgs;
+    }
+
     public List<PDPMInfo_t> getTotalGroupProgList(int[] index) {
         return getGroupProgList(SWPDBase.SW_TOTAL_GROUP, index);
     }
@@ -139,7 +160,11 @@ public class SWPDBaseManager {
 
     private List<PDPMInfo_t> getGroupProgList(int group, int[] index) {
         setCurrGroup(group, 1);
-        return SWPDBase.CreateInstance().getCurrGroupProgList(index);
+        return getCurrGroupProgList(index);
+    }
+
+    public ArrayList<PDPMInfo_t> getCurrGroupProgList(int[] currProgNumArray) {
+        return SWPDBase.CreateInstance().getCurrGroupProgList(currProgNumArray);
     }
 
     public List<PDPInfo_t> getCurrGroupProgInfoList() {
@@ -386,11 +411,9 @@ public class SWPDBaseManager {
      * @return
      */
     public SparseArray<List<PDPMInfo_t>> getFavChannelMap(List<PDPMInfo_t> ltChannels) {
-        if (mFavChannelsMap.size() > 0) {
-            return mFavChannelsMap;
-        }
+        SparseArray<List<PDPMInfo_t>> mFavChannelsMap = new SparseArray<>();
 
-        if(ltChannels==null || ltChannels.size()==0){
+        if (ltChannels == null || ltChannels.size() == 0) {
             ltChannels = getTotalGroupProgList();
         }
 
@@ -398,7 +421,6 @@ public class SWPDBaseManager {
         for (int i = 0; i < favIndexArray.length; i++) {
             List<PDPMInfo_t> ltGroupInfos = new ArrayList<>();
             for (int j = 0; j < ltChannels.size(); j++) {
-                Log.i("ljm", "channel name:"+ltChannels.get(j).Name);
                 if ((ltChannels.get(j).FavFlag & (0x0001 << i)) >> i == 1) {
                     ltGroupInfos.add(ltChannels.get(j));
                 }
@@ -406,14 +428,6 @@ public class SWPDBaseManager {
             mFavChannelsMap.put(i, ltGroupInfos);
         }
         return mFavChannelsMap;
-    }
-
-    public void setFavChannelMap(SparseArray<List<PDPMInfo_t>> mFavChannelsMap) {
-        this.mFavChannelsMap = mFavChannelsMap;
-    }
-
-    public void clearFavChannelMap() {
-        this.mFavChannelsMap.clear();
     }
 
     /**

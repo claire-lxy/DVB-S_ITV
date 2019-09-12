@@ -1061,28 +1061,20 @@ public class Topmost extends BaseActivity {
             if (satIndex == -1) {
                 mCurrProgGroup = SWPDBase.SW_WHOLE_GROUP;
                 mCurrProgGroupParams = 1;
-                SWPDBaseManager.getInstance().setCurrGroup(mCurrProgGroup, mCurrProgGroupParams);
-                if (progInfoList != null && !progInfoList.isEmpty()) {
-                    return progInfoList;
-                }
-                progInfoList = SWPDBaseManager.getInstance().getWholeGroupProgList();
+
             } else if (satIndex >= SWPDBaseManager.RANGE_SAT_INDEX) {
                 mCurrProgGroup = SWPDBase.SW_FAV_GROUP;
                 mCurrProgGroupParams = satIndex - SWPDBaseManager.RANGE_SAT_INDEX;
-                SWPDBaseManager.getInstance().setCurrGroup(mCurrProgGroup, mCurrProgGroupParams);
-                if (progInfoList != null && !progInfoList.isEmpty()) {
-                    return progInfoList;
-                }
-                progInfoList = SWPDBaseManager.getInstance().getFavListByIndex(mCurrProgGroupParams);
             } else {
                 mCurrProgGroup = SWPDBase.SW_SAT_GROUP;
                 mCurrProgGroupParams = satIndex;
-                SWPDBaseManager.getInstance().setCurrGroup(mCurrProgGroup, mCurrProgGroupParams);
-                if (progInfoList != null && !progInfoList.isEmpty()) {
-                    return progInfoList;
-                }
-                progInfoList = SWPDBaseManager.getInstance().getCurrGroupProgListByCond(1, satIndex);
             }
+            SWPDBaseManager.getInstance().setCurrGroup(mCurrProgGroup, mCurrProgGroupParams);
+            if (progInfoList != null && !progInfoList.isEmpty()) {
+                return progInfoList;
+            }
+            int[] index = new int[1];
+            progInfoList = SWPDBaseManager.getInstance().getCurrGroupProgList(index);
             mProgListMap.put(satIndex, progInfoList);
             return progInfoList;
         }
@@ -1505,7 +1497,6 @@ public class Topmost extends BaseActivity {
                     @Override
                     public void onPositiveListener() {
                         SWFtaManager.getInstance().clearChannel();
-                        SWPDBaseManager.getInstance().clearFavChannelMap();
                         mCurrSatPosition = 0;
                         mProgListAdapter.clearData(); // 同步清空频道列表
                         mIvRadioBackground.setVisibility(View.GONE); // 隐藏音频背景
@@ -1519,7 +1510,6 @@ public class Topmost extends BaseActivity {
                     @Override
                     public void onPositiveListener() {
                         PreferenceManager.getInstance().clear();
-                        SWPDBaseManager.getInstance().clearFavChannelMap();
                         SWFtaManager.getInstance().factoryReset();
                         mProgListAdapter.clearData(); // 同步清空频道列表
                         toggleMenu(true);

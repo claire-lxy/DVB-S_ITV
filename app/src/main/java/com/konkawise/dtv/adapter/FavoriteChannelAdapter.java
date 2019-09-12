@@ -35,7 +35,7 @@ public class FavoriteChannelAdapter extends BaseListViewAdapter<PDPMInfo_t> {
         }
 
         Log.i(TAG, "ProgIndex:"+item.ProgIndex+"tv_fav_channel_name:"+item.Name);
-        holder.setText(R.id.tv_fav_channel_num, String.valueOf(item.ProgIndex + 1))
+        holder.setText(R.id.tv_fav_channel_num, String.valueOf(position + 1))
                 .setText(R.id.tv_fav_channel_name, item.Name);
         holder.setVisibility(R.id.iv_channel_dui_flag, mSelectMap.get(position) ? View.VISIBLE : View.INVISIBLE);
     }

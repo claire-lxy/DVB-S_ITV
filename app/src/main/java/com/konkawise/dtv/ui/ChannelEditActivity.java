@@ -2,6 +2,7 @@ package com.konkawise.dtv.ui;
 
 import android.support.annotation.IntDef;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.view.KeyEvent;
@@ -26,6 +27,7 @@ import com.konkawise.dtv.dialog.PIDDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
 import com.konkawise.dtv.weaktool.WeakRunnable;
+import com.sw.dvblib.SWPDBase;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -116,6 +118,10 @@ public class ChannelEditActivity extends BaseActivity {
     private List<SatInfo_t> mSatList;
     private int mCurrSatPosition;
 
+    private List<PDPMInfo_t> ltTotalProgList = new ArrayList<>();
+    private boolean loadFlag = true;
+    private boolean analyFavFlag = true;
+
     private ChannelEditAdapter mAdapter;
     private int mCurrSelectPosition;
     private LoadChannelRunnable mLoadChannelRunnable;
@@ -137,6 +143,7 @@ public class ChannelEditActivity extends BaseActivity {
     @Override
     protected void setup() {
 //        initFavoriteChannels();
+        SWPDBaseManager.getInstance().setCurrGroup(SWPDBase.SW_TOTAL_GROUP, 1);
         initChannelList();
         mTvSatelliteName.setText(R.string.all);
     }
@@ -198,8 +205,8 @@ public class ChannelEditActivity extends BaseActivity {
                     }
                 }
             });
-            if(context.mCurrSatPosition == 0){
-                context.mFavChannelsMap = SWPDBaseManager.getInstance().getFavChannelMap(channelList);
+            if (context.analyFavFlag) {
+                context.mFavChannelsMap = SWPDBaseManager.getInstance().getFavChannelMap(context.ltTotalProgList);
                 context.mEditFavChannelsMap = mWeakReference.get().mFavChannelsMap.clone();
             }
         }
@@ -225,6 +232,8 @@ public class ChannelEditActivity extends BaseActivity {
             }
         } else {
             if (mAdapter.getCount() > 0) {
+                if (mCurrSelectPosition > mAdapter.getData().size() - 1)
+                    mCurrSelectPosition = 0;
                 mLoadChannelRunnable.scrollToProgIndex = mAdapter.getItem(mCurrSelectPosition).ProgIndex;
             }
         }
@@ -255,11 +264,12 @@ public class ChannelEditActivity extends BaseActivity {
                         if (mSavePid) savePid();
                         if (mSaveSortType) saveSortType();
 
+                        loadFlag = false;
+
                         // 对数据编辑过一次，退出界面时通知topmost刷新频道列表
                         if (!mDataSaved && (mSaveFavorite || mSaveEditChannel || mSavePid || mSaveSortType)) {
                             mDataSaved = true;
                         }
-
                         if (mFinish) {
                             finish();
                         } else {
@@ -270,6 +280,8 @@ public class ChannelEditActivity extends BaseActivity {
                 .setOnNegativeListener("", new OnCommNegativeListener() {
                     @Override
                     public void onNegativeListener() {
+                        loadFlag = true;
+
                         resetSortType();
                         resetEdit();
 
@@ -314,7 +326,6 @@ public class ChannelEditActivity extends BaseActivity {
             SWPDBaseManager.getInstance().editFavProgList(i,
                     getFavoriteProgIndexs(mFavChannelsMap.get(i)), mFavChannelsMap.get(i).size(), 1);
         }
-        SWPDBaseManager.getInstance().setFavChannelMap(mFavChannelsMap);
     }
 
     /**
@@ -562,11 +573,18 @@ public class ChannelEditActivity extends BaseActivity {
         if (channelList == null || channelList.isEmpty()) return null;
 
         ArrayList<PDPEdit_t> editList = new ArrayList<>();
+        List<PDPMInfo_t> ltRmProgList = new ArrayList<>();
         for (int i = 0; i < channelList.size(); i++) {
             PDPEdit_t editInfo = new PDPEdit_t();
             editInfo.used = 1;
             editInfo.progindex = channelList.get(i).ProgIndex;
             editInfo.delFlag = mAdapter.getDeleteMap().get(i) ? 1 : 0;
+            if (mAdapter.getDeleteMap().get(i)) {
+                editInfo.delFlag = 1;
+                ltRmProgList.add(channelList.get(i));
+            } else {
+                editInfo.delFlag = 0;
+            }
             editInfo.hideFlag = channelList.get(i).HideFlag;
             editInfo.lockFlag = channelList.get(i).LockFlag;
 
@@ -576,16 +594,18 @@ public class ChannelEditActivity extends BaseActivity {
             editInfo.newprogname = isRename ? channelName : "";
             editList.add(editInfo);
         }
+        ltTotalProgList.removeAll(ltRmProgList);
+        channelList.removeAll(ltRmProgList);
         return editList;
     }
 
     private List<PDPMInfo_t> getChannelList() {
-        if (mCurrSatPosition == 0) {
-            return SWPDBaseManager.getInstance().getTotalGroupProgList();
-        } else {
-            return SWPDBaseManager.getInstance().getCurrGroupProgListByCond(1, getSateList().get(mCurrSatPosition).SatIndex);
+        if (loadFlag) {
+            ltTotalProgList = SWPDBaseManager.getInstance().getCurrGroupProgList(new int[1]);
         }
+        return SWPDBaseManager.getInstance().getTotalGroupSatProgList(ltTotalProgList, getSateList().get(mCurrSatPosition).SatIndex);
     }
+
 
     private boolean isMulti() {
         return mAdapter.getSelectMap().indexOfValue(true) != -1;
@@ -637,6 +657,8 @@ public class ChannelEditActivity extends BaseActivity {
                     public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
                         if (currSortType != (position + 1)) {
                             SWPDBaseManager.getInstance().setSortType(position + 1);
+                            loadFlag = true;
+                            analyFavFlag = true;
                             updateChannelList();
                             recordSaveData(EDIT_SAVE_SORT);
                         }
@@ -692,8 +714,11 @@ public class ChannelEditActivity extends BaseActivity {
         if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
             if (--mCurrSatPosition < 0) mCurrSatPosition = getSateList().size() - 1;
             if (mSaveData) {
+                analyFavFlag = true;
                 showSaveDataDialog();
             } else {
+                analyFavFlag = false;
+                loadFlag = false;
                 resetSortType();
                 resetEdit();
             }
@@ -703,8 +728,11 @@ public class ChannelEditActivity extends BaseActivity {
         if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
             if (++mCurrSatPosition >= getSateList().size()) mCurrSatPosition = 0;
             if (mSaveData) {
+                analyFavFlag = true;
                 showSaveDataDialog();
             } else {
+                analyFavFlag = false;
+                loadFlag = false;
                 resetSortType();
                 resetEdit();
             }

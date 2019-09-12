@@ -21,6 +21,7 @@ import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.event.ReloadSatEvent;
 import com.konkawise.dtv.view.TVListView;
 import com.konkawise.dtv.weaktool.WeakRunnable;
+import com.sw.dvblib.SWPDBase;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -112,6 +113,7 @@ public class FavoriteActivity extends BaseActivity {
 
     @Override
     protected void setup() {
+        SWPDBaseManager.getInstance().setCurrGroup(SWPDBase.SW_TOTAL_GROUP, 1);
         initFavoriteGroup();
         initFavoriteChannel();
     }
@@ -159,17 +161,21 @@ public class FavoriteActivity extends BaseActivity {
         protected void loadBackground() {
             FavoriteActivity context = mWeakReference.get();
 
-            context.mFavoriteChannelsMap = SWPDBaseManager.getInstance().getFavChannelMap(null);
-            List<PDPMInfo_t> favoriteChannels = context.mFavoriteChannelsMap.get(favIndex);
-            if (favoriteChannels == null) {
-                favoriteChannels = SWPDBaseManager.getInstance().getFavListByIndex(favIndex);
-                context.mFavoriteChannelsMap.put(favIndex, favoriteChannels);
+            if(context.mFavoriteChannelsMap==null || context.mFavoriteChannelsMap.size()==0){
+                context.mFavoriteChannelsMap = SWPDBaseManager.getInstance().getFavChannelMap(SWPDBaseManager.getInstance().getCurrGroupProgList(new int[1]));
             }
+
             context.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     context.mPbLoadingFaovrite.setVisibility(View.GONE);
-                    context.mFavoriteChannelAdapter.updateData(context.mFavoriteChannelsMap.get(favIndex));
+                    List<PDPMInfo_t> showProgList = new ArrayList<>();
+                    for(PDPMInfo_t pdpMInfo_t: context.mFavoriteChannelsMap.get(favIndex)){
+                        if(pdpMInfo_t.HideFlag == 0){
+                            showProgList.add(pdpMInfo_t);
+                        }
+                    }
+                    context.mFavoriteChannelAdapter.updateData(showProgList);
                     context.mFavoriteGroupAdapter.setSelectPosition(0);
                 }
             });
@@ -209,7 +215,13 @@ public class FavoriteActivity extends BaseActivity {
                             ltRemoves.add(mFavoriteChannelAdapter.getData().get(mFavoriteChannelIndex));
                         removeFAVChannels(ltRemoves, mFavoriteGroupIndex - 1);
                         mFavoriteChannelAdapter.clearSelect();
-                        mFavoriteChannelAdapter.updateData(mFavoriteChannelsMap.get(mFavoriteGroupIndex - 1));
+                        List<PDPMInfo_t> showProgList = new ArrayList<>();
+                        for(PDPMInfo_t pdpMInfo_t: mFavoriteChannelsMap.get(mFavoriteGroupIndex - 1)){
+                            if(pdpMInfo_t.HideFlag == 0){
+                                showProgList.add(pdpMInfo_t);
+                            }
+                        }
+                        mFavoriteChannelAdapter.updateData(showProgList);
 
                         mFavEdit = true;
                     }
@@ -243,9 +255,6 @@ public class FavoriteActivity extends BaseActivity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            SWPDBaseManager.getInstance().setFavChannelMap(mFavoriteChannelsMap);
-        }
 
         if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
             if (mFavoriteChannelFocus) {
