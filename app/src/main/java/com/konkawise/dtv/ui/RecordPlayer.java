@@ -194,7 +194,10 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
 
                 case MSG_START_PLAY:
                     Bundle bundle = msg.getData();
-                    SWDJAPVRManager.getInstance().startPlay(bundle.getString(KEY_PATH), bundle.getString(KEY_FNAME), bundle.getInt(KEY_LOOP));
+                    String path = bundle.getString(KEY_PATH);
+                    String fName = bundle.getString(KEY_FNAME);
+                    SWDJAPVRManager.getInstance().startPlay(path, fName, bundle.getInt(KEY_LOOP));
+                    SWDJAPVRManager.getInstance().injectSubTTXAudio(path, fName);
                     break;
 
                 case MSG_STOP_PLAY:
@@ -515,7 +518,6 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         if (from == FROM_TOPMOST) {
             serviceid = SWPDBaseManager.getInstance().getCurrProgInfo().ServID;
         } else {
-            SWDJAPVRManager.getInstance().injectSubTTXAudio(recordInfo.getFile().getParent() + "/", recordInfo.getFile().getName());
             serviceid = recordInfo.getHpvrRecFileT().ServId;
         }
         Log.i("testljm", "serviceid2:" + serviceid);
