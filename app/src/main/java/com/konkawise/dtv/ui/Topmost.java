@@ -469,7 +469,6 @@ public class Topmost extends BaseActivity {
         initProgList();
         initSurfaceView();
         showRadioBackground();
-        checkLaunchSettingPassword();
     }
 
     @Override
@@ -481,6 +480,7 @@ public class Topmost extends BaseActivity {
         updatePfBarInfo();
         restoreMenuItem(); // 恢复menu初始item显示
 
+        checkLaunchSettingPassword();
         if (!SWFtaManager.getInstance().isPasswordEmpty() && !SWPDBaseManager.getInstance().isProgCanPlay()) {
             showSearchChannelDialog();
         }
