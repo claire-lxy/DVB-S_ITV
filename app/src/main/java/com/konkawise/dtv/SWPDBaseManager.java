@@ -434,7 +434,7 @@ public class SWPDBaseManager {
      * 获取喜爱分组索引列表
      */
     public int[] getFavIndexArray() {
-        int[] favIndexArray = new int[8];
+        int[] favIndexArray = new int[10];
         favIndexArray[0] = SWPDBase.SW_FAV0;
         favIndexArray[1] = SWPDBase.SW_FAV1;
         favIndexArray[2] = SWPDBase.SW_FAV2;
@@ -443,6 +443,8 @@ public class SWPDBaseManager {
         favIndexArray[5] = SWPDBase.SW_FAV5;
         favIndexArray[6] = SWPDBase.SW_FAV6;
         favIndexArray[7] = SWPDBase.SW_FAV7;
+        favIndexArray[8] = SWPDBase.SW_FAV8;
+        favIndexArray[9] = SWPDBase.SW_FAV9;
         return favIndexArray;
     }
 
