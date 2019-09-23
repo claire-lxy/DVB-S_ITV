@@ -46,6 +46,9 @@ public class PVRSettingActivity extends BaseItemFocusChangeActivity implements U
     @BindView(R.id.item_record_length)
     ViewGroup mItemRecordLength;
 
+    @BindView(R.id.item_device_name)
+    ViewGroup mItemDeviceName;
+
     @BindView(R.id.iv_time_shift_length_left)
     ImageView mIvTimeShiftLengthLeft;
 
@@ -348,6 +351,11 @@ public class PVRSettingActivity extends BaseItemFocusChangeActivity implements U
                 case ITEM_DEVICE_NAME:
                     if (mItemDeviceFormat.getVisibility() == View.VISIBLE) {
                         mCurrSelectItem++;
+                    }else{
+                        mCurrSelectItem = ITEM_RECORD_LENGTH;
+                        mItemRecordLength.requestFocus();
+                        itemFocusChange();
+                        return true;
                     }
                     break;
             }
@@ -362,6 +370,12 @@ public class PVRSettingActivity extends BaseItemFocusChangeActivity implements U
                 case ITEM_DEVICE_FORMAT:
                     mCurrSelectItem--;
                     break;
+
+                case ITEM_RECORD_LENGTH:
+                    mCurrSelectItem = ITEM_DEVICE_NAME;
+                    mItemDeviceName.requestFocus();
+                    itemFocusChange();
+                    return true;
             }
             itemFocusChange();
         }

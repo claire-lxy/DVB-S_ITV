@@ -2,6 +2,7 @@ package com.konkawise.dtv.ui;
 
 import android.view.KeyEvent;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.konkawise.dtv.R;
@@ -25,6 +26,12 @@ public class ParentalControlActivity extends BaseItemFocusChangeActivity {
     private static final int ITEM_CHANNEL_LOCK = 2;
     private static final int ITEM_CONTROL_AGE = 3;
     private static final int ITEM_SET_PASSWORD = 4;
+
+    @BindView(R.id.item_menu_lock)
+    RelativeLayout rlItemMenuLock;
+
+    @BindView(R.id.rl_set_password)
+    RelativeLayout rlSetPassword;
 
     @BindView(R.id.iv_menu_lock_left)
     ImageView mIvMenuLockLeft;
@@ -169,6 +176,12 @@ public class ParentalControlActivity extends BaseItemFocusChangeActivity {
                 case ITEM_SET_PASSWORD:
                     position--;
                     break;
+
+                case ITEM_MENU_LOCK:
+                    position = ITEM_SET_PASSWORD;
+                    rlSetPassword.requestFocus();
+                    itemFocusChange();
+                    return true;
             }
             itemFocusChange();
         }
@@ -180,6 +193,12 @@ public class ParentalControlActivity extends BaseItemFocusChangeActivity {
                 case ITEM_CONTROL_AGE:
                     position++;
                     break;
+
+                case ITEM_SET_PASSWORD:
+                    position = ITEM_MENU_LOCK;
+                    rlItemMenuLock.requestFocus();
+                    itemFocusChange();
+                    return true;
             }
             itemFocusChange();
         }

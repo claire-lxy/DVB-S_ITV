@@ -231,6 +231,12 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
                 case ITEM_22K:
                     mCurrentSelectItem = ITEM_LNB_POWER;
                     break;
+
+                case ITEM_LNB_POWER:
+                    mCurrentSelectItem = ITEM_SATELLITE;
+                    mItemLnbPower.requestFocus();
+                    itemFocusChange();
+                    return true;
             }
             itemFocusChange();
         }
@@ -252,6 +258,12 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
                         mCurrentSelectItem--;
                     }
                     break;
+
+                case ITEM_SATELLITE:
+                    mCurrentSelectItem = ITEM_LNB_POWER;
+                    mItemLnbPower.requestFocus();
+                    itemFocusChange();
+                    return true;
             }
             itemFocusChange();
         }

@@ -2,6 +2,7 @@ package com.konkawise.dtv.ui;
 
 import android.view.KeyEvent;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.konkawise.dtv.R;
@@ -23,9 +24,15 @@ import butterknife.OnClick;
 public class T2SettingsActivity extends BaseItemFocusChangeActivity {
 
     private static final String TAG = "KKDVB_" + T2SettingsActivity.class.getSimpleName();
-	private static final int ITEM_ANTENNA_POWER = 1;
-	private static final int ITEM_AREA_SETTING = 2;
-	private static final int ITEM_LCN = 3;
+    private static final int ITEM_ANTENNA_POWER = 1;
+    private static final int ITEM_AREA_SETTING = 2;
+    private static final int ITEM_LCN = 3;
+
+    @BindView(R.id.item_antenna_power)
+    RelativeLayout rlItemAntennaPower;
+
+    @BindView(R.id.item_lcn)
+    RelativeLayout rlItemLcn;
 
     @BindView(R.id.iv_antenna_power_left)
     ImageView mIvAntennaPowerLeft;
@@ -54,11 +61,11 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
     @BindView(R.id.iv_lcn_right)
     ImageView mIvLcnRight;
 
-	@BindArray(R.array.area_setting)
+    @BindArray(R.array.area_setting)
     String[] mAreaSettingArray;
 
-	@BindArray(R.array.general_switch)
-	String[] mGeneralSwitchArray;
+    @BindArray(R.array.general_switch)
+    String[] mGeneralSwitchArray;
 
     @OnClick(R.id.item_antenna_power)
     void antennaPower() {
@@ -90,15 +97,15 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
     protected void setup() {
         initData();
 
-		mTvAntennaPower.setText(mGeneralSwitchArray[antennaPowerPosition]);
-		mTvAreaSetting.setText(mAreaSettingArray[areaSettingPosition]);
-		mTvLcn.setText(mGeneralSwitchArray[lcnPosition]);
+        mTvAntennaPower.setText(mGeneralSwitchArray[antennaPowerPosition]);
+        mTvAreaSetting.setText(mAreaSettingArray[areaSettingPosition]);
+        mTvLcn.setText(mGeneralSwitchArray[lcnPosition]);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if(originalLcnPosition != lcnPosition){
+        if (originalLcnPosition != lcnPosition) {
             EventBus.getDefault().post(new ProgramUpdateEvent(true));
         }
     }
@@ -151,22 +158,34 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP) {
-			switch (mCurrentSelectItem) {
-				case ITEM_AREA_SETTING:
-				case ITEM_LCN:
-					mCurrentSelectItem--;
-					break;
-			}
+            switch (mCurrentSelectItem) {
+                case ITEM_AREA_SETTING:
+                case ITEM_LCN:
+                    mCurrentSelectItem--;
+                    break;
+
+                case ITEM_ANTENNA_POWER:
+                    mCurrentSelectItem = ITEM_LCN;
+                    rlItemLcn.requestFocus();
+                    itemFocusChange();
+                    return true;
+            }
             itemFocusChange();
         }
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN) {
-			switch (mCurrentSelectItem) {
-				case ITEM_ANTENNA_POWER:
-				case ITEM_AREA_SETTING:
-					mCurrentSelectItem++;
-					break;
-			}
+            switch (mCurrentSelectItem) {
+                case ITEM_ANTENNA_POWER:
+                case ITEM_AREA_SETTING:
+                    mCurrentSelectItem++;
+                    break;
+
+                case ITEM_LCN:
+                    mCurrentSelectItem = ITEM_ANTENNA_POWER;
+                    rlItemAntennaPower.requestFocus();
+                    itemFocusChange();
+                    return true;
+            }
             itemFocusChange();
         }
 
@@ -177,7 +196,7 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
                     if (--antennaPowerPosition < 0)
                         antennaPowerPosition = mGeneralSwitchArray.length - 1;
                     mTvAntennaPower.setText(mGeneralSwitchArray[antennaPowerPosition]);
-					SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AntennaPower.ordinal(), antennaPowerPosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AntennaPower.ordinal(), antennaPowerPosition);
                     break;
 
                 case ITEM_AREA_SETTING:
@@ -202,7 +221,7 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
                     if (++antennaPowerPosition > mGeneralSwitchArray.length - 1)
                         antennaPowerPosition = 0;
                     mTvAntennaPower.setText(mGeneralSwitchArray[antennaPowerPosition]);
-					SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AntennaPower.ordinal(), antennaPowerPosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AntennaPower.ordinal(), antennaPowerPosition);
                     break;
 
                 case ITEM_AREA_SETTING:
@@ -213,7 +232,7 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
 
                 case ITEM_LCN:
                     if (++lcnPosition > mGeneralSwitchArray.length - 1)
-                    	lcnPosition = 0;
+                        lcnPosition = 0;
                     mTvLcn.setText(mGeneralSwitchArray[lcnPosition]);
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_ShowNoType.ordinal(), lcnPosition);
                     break;
@@ -225,8 +244,8 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
     }
 
     private void itemFocusChange() {
-		itemChange(mCurrentSelectItem, ITEM_ANTENNA_POWER, mIvAntennaPowerLeft, mIvAntennaPowerRight, mTvAntennaPower);
-		itemChange(mCurrentSelectItem, ITEM_AREA_SETTING, mIvAreaSettingLeft, mIvAreaSettingRight, mTvAreaSetting);
-		itemChange(mCurrentSelectItem, ITEM_LCN, mIvLcnLeft,  mIvLcnRight, mTvLcn);
+        itemChange(mCurrentSelectItem, ITEM_ANTENNA_POWER, mIvAntennaPowerLeft, mIvAntennaPowerRight, mTvAntennaPower);
+        itemChange(mCurrentSelectItem, ITEM_AREA_SETTING, mIvAreaSettingLeft, mIvAreaSettingRight, mTvAreaSetting);
+        itemChange(mCurrentSelectItem, ITEM_LCN, mIvLcnLeft, mIvLcnRight, mTvLcn);
     }
 }

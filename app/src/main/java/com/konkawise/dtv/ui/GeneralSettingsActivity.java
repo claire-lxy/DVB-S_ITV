@@ -2,6 +2,7 @@ package com.konkawise.dtv.ui;
 
 import android.view.KeyEvent;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.konkawise.dtv.R;
@@ -30,6 +31,12 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
     private static final int ITEM_SECOND_AUDIO_LANGUAGE = 8;
     private static final int ITEM_SUBTITLE_LANGUAGE = 9;
     private static final int ITEM_AUTO_START = 10;
+
+    @BindView(R.id.item_scart)
+    RelativeLayout rlItemScart;
+
+    @BindView(R.id.item_subtitle_language)
+    RelativeLayout rlItemSubtitleLanguage;
 
     @BindView(R.id.iv_scart_left)
     ImageView mIvScartLeft;
@@ -66,7 +73,7 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
 
     @BindView(R.id.iv_ratio_right)
     ImageView mIvRatioRight;
-    
+
     @BindView(R.id.iv_aspect_left)
     ImageView mIvAspectLeft;
 
@@ -146,7 +153,7 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
     void scart() {
         showGeneralSettingDialog(getString(R.string.scart), Arrays.asList(mScartArray), scartPosition);
     }
-    
+
     @OnClick(R.id.item_subtitle_display)
     void subtitleDisplay() {
         showGeneralSettingDialog(getString(R.string.subtitles_setting), Arrays.asList(mGeneralSwitchArray), subtitleDisplayPosition);
@@ -189,9 +196,9 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
 
     @OnClick(R.id.item_auto_start)
     void autoStart() {
-         showGeneralSettingDialog(getString(R.string.auto_start), Arrays.asList(mGeneralSwitchArray), autoStartPosition);
+        showGeneralSettingDialog(getString(R.string.auto_start), Arrays.asList(mGeneralSwitchArray), autoStartPosition);
     }
-    
+
     private int mCurrentSelectItem = ITEM_SCART;
     private int scartPosition;
     private int subtitleDisplayPosition;
@@ -230,7 +237,7 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
     private void initData() {
         scartPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_TV_SCART.ordinal()));
         subtitleDisplayPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleDisplay.ordinal()));
-        pfTimeoutPosition = getSelectPosition(new int[]{5, 8, 10},SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_PD_dispalytime.ordinal()));
+        pfTimeoutPosition = getSelectPosition(new int[]{5, 8, 10}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_PD_dispalytime.ordinal()));
         ratioModePosition = getSelectPosition(new int[]{0, 1, 2}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_ScreenRatio.ordinal()));
         aspectModePosition = getSelectPosition(new int[]{0, 1, 2, 3}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_AspectRatio.ordinal()));
         switchChannelPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_PD_SwitchMode.ordinal()));
@@ -330,6 +337,12 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
                 case ITEM_AUTO_START:
                     mCurrentSelectItem--;
                     break;
+
+                case ITEM_SCART:
+                    mCurrentSelectItem = ITEM_SUBTITLE_LANGUAGE;
+                    rlItemSubtitleLanguage.requestFocus();
+                    itemFocusChange();
+                    return true;
             }
 
             itemFocusChange();
@@ -345,9 +358,14 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
                 case ITEM_SWITCH_CHANNEL:
                 case ITEM_FIRST_AUDIO_LANGUAGE:
                 case ITEM_SECOND_AUDIO_LANGUAGE:
-//                case ITEM_SUBTITLE_LANGUAGE:
                     mCurrentSelectItem++;
                     break;
+
+                case ITEM_SUBTITLE_LANGUAGE:
+                    mCurrentSelectItem = ITEM_SCART;
+                    rlItemScart.requestFocus();
+                    itemFocusChange();
+                    return true;
             }
 
             itemFocusChange();
@@ -417,23 +435,23 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleLanguage.ordinal(), subtitleLanguagePosition);
                     break;
 
-				case ITEM_AUTO_START:
-					if (--autoStartPosition < 0)
-						autoStartPosition = mGeneralSwitchArray.length - 1;
-					mTvAutoStart.setText(mGeneralSwitchArray[autoStartPosition]);
-					SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleDisplay.ordinal(), autoStartPosition);
-					break;
+                case ITEM_AUTO_START:
+                    if (--autoStartPosition < 0)
+                        autoStartPosition = mGeneralSwitchArray.length - 1;
+                    mTvAutoStart.setText(mGeneralSwitchArray[autoStartPosition]);
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleDisplay.ordinal(), autoStartPosition);
+                    break;
             }
         }
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
             switch (mCurrentSelectItem) {
-				case ITEM_SCART:
-					if (++scartPosition > mScartArray.length - 1)
-						scartPosition = 0;
-					mTvScart.setText(mScartArray[scartPosition]);
-					SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_TV_SCART.ordinal(), scartPosition);
-					break;
+                case ITEM_SCART:
+                    if (++scartPosition > mScartArray.length - 1)
+                        scartPosition = 0;
+                    mTvScart.setText(mScartArray[scartPosition]);
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_TV_SCART.ordinal(), scartPosition);
+                    break;
 
                 case ITEM_SUBTITLE_DISPLAY:
                     if (++subtitleDisplayPosition > mGeneralSwitchArray.length - 1)
@@ -490,12 +508,12 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleLanguage.ordinal(), subtitleLanguagePosition);
                     break;
 
-				case ITEM_AUTO_START:
-					if (++autoStartPosition > mGeneralSwitchArray.length - 1)
-						autoStartPosition = 0;
-					mTvAutoStart.setText(mGeneralSwitchArray[autoStartPosition]);
-					SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleDisplay.ordinal(), autoStartPosition);
-					break;
+                case ITEM_AUTO_START:
+                    if (++autoStartPosition > mGeneralSwitchArray.length - 1)
+                        autoStartPosition = 0;
+                    mTvAutoStart.setText(mGeneralSwitchArray[autoStartPosition]);
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleDisplay.ordinal(), autoStartPosition);
+                    break;
             }
         }
 
@@ -503,7 +521,7 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
     }
 
     private void itemFocusChange() {
-		itemChange(mCurrentSelectItem, ITEM_SCART, mIvScartLeft, mIvScartRight, mTvScart);
+        itemChange(mCurrentSelectItem, ITEM_SCART, mIvScartLeft, mIvScartRight, mTvScart);
         itemChange(mCurrentSelectItem, ITEM_SUBTITLE_DISPLAY, mIvSubtitleDisplayLeft, mIvSubtitleDisplayRight, mTvSubtitleDisplay);
         itemChange(mCurrentSelectItem, ITEM_PFBAR_TIMEOUT, mIvPfTimeoutLeft, mIvPfTimeoutRight, mTvPfTimeout);
         itemChange(mCurrentSelectItem, ITEM_RATIO_MODE, mIvRatioLeft, mIvRatioRight, mTvRatio);
@@ -512,6 +530,6 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
         itemChange(mCurrentSelectItem, ITEM_FIRST_AUDIO_LANGUAGE, mIvFirstAudioLanguageLeft, mIvFirstAudioLanguageRight, mTvFirstAudioLanguage);
         itemChange(mCurrentSelectItem, ITEM_SECOND_AUDIO_LANGUAGE, mIvSecondAudioLanguageLeft, mIvSecondAudioLanguageRight, mTvSecondAudioLanguage);
         itemChange(mCurrentSelectItem, ITEM_SUBTITLE_LANGUAGE, mIvSubtitleLanguageLeft, mIvSubtitleLanguageRight, mTvSubtitleLanguage);
-		itemChange(mCurrentSelectItem, ITEM_AUTO_START, mIvAutoStartLeft, mIvAutoStartRight, mTvAutoStart);
+        itemChange(mCurrentSelectItem, ITEM_AUTO_START, mIvAutoStartLeft, mIvAutoStartRight, mTvAutoStart);
     }
 }

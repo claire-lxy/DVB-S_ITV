@@ -222,7 +222,7 @@ public class ScanDialog extends BaseItemFocusChangeDialogFragment {
                 } else if (mInstallationType == INSTALLATION_TYPE_MANUAL_SEARCH) {
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_CAS.ordinal(), mCurrChannelType);
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_ScanMode.ordinal(), mCurrScanMode);
-                } else if(mInstallationType == INSTALLATION_TYPE_AUTO_SEARCH) {
+                } else if (mInstallationType == INSTALLATION_TYPE_AUTO_SEARCH) {
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_CAS.ordinal(), mCurrChannelType);
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_ScanMode.ordinal(), mCurrScanMode);
                 }
@@ -237,11 +237,27 @@ public class ScanDialog extends BaseItemFocusChangeDialogFragment {
                     case ITEM_NETWORK:
                         mCurrSelectItem--;
                         break;
+
+                    case ITEM_SCAN_MODE:
+                        mCurrSelectItem = ITEM_CAS_SYSTEM;
+                        mItemCasSystem.requestFocus();
+                        itemFocusChange();
+                        return true;
                 }
             }
 
-            if (mInstallationType == INSTALLATION_TYPE_AUTO_SEARCH && mCurrSelectItem == ITEM_CHANNEL_TYPE) {
-                mCurrSelectItem--;
+            if (mInstallationType == INSTALLATION_TYPE_AUTO_SEARCH) {
+                switch (mCurrSelectItem) {
+                    case ITEM_CHANNEL_TYPE:
+                        mCurrSelectItem--;
+                        break;
+
+                    case ITEM_SCAN_MODE:
+                        mCurrSelectItem = ITEM_CHANNEL_TYPE;
+                        mItemChannelType.requestFocus();
+                        itemFocusChange();
+                        return true;
+                }
             }
 
             if (mInstallationType == INSTALLATION_TYPE_MANUAL_SEARCH) {
@@ -250,6 +266,12 @@ public class ScanDialog extends BaseItemFocusChangeDialogFragment {
                     case ITEM_CHANNEL_TYPE:
                         mCurrSelectItem--;
                         break;
+
+                    case ITEM_SCAN_MODE:
+                        mCurrSelectItem = ITEM_SCAN_TYPE;
+                        mItemScanType.requestFocus();
+                        itemFocusChange();
+                        return true;
                 }
             }
             itemFocusChange();
@@ -262,11 +284,27 @@ public class ScanDialog extends BaseItemFocusChangeDialogFragment {
                     case ITEM_NETWORK:
                         mCurrSelectItem++;
                         break;
+
+                    case ITEM_CAS_SYSTEM:
+                        mCurrSelectItem = ITEM_SCAN_MODE;
+                        mItemScanMode.requestFocus();
+                        itemFocusChange();
+                        return true;
                 }
             }
 
-            if (mInstallationType == INSTALLATION_TYPE_AUTO_SEARCH && mCurrSelectItem == ITEM_SCAN_MODE) {
-                mCurrSelectItem++;
+            if (mInstallationType == INSTALLATION_TYPE_AUTO_SEARCH) {
+                switch (mCurrSelectItem) {
+                    case ITEM_SCAN_MODE:
+                        mCurrSelectItem++;
+                        break;
+
+                    case ITEM_CHANNEL_TYPE:
+                        mCurrSelectItem = ITEM_SCAN_MODE;
+                        mItemScanMode.requestFocus();
+                        itemFocusChange();
+                        return true;
+                }
             }
 
             if (mInstallationType == INSTALLATION_TYPE_MANUAL_SEARCH) {
@@ -275,6 +313,12 @@ public class ScanDialog extends BaseItemFocusChangeDialogFragment {
                     case ITEM_CHANNEL_TYPE:
                         mCurrSelectItem++;
                         break;
+
+                    case ITEM_SCAN_TYPE:
+                        mCurrSelectItem = ITEM_SCAN_MODE;
+                        mItemScanMode.requestFocus();
+                        itemFocusChange();
+                        return true;
                 }
             }
 

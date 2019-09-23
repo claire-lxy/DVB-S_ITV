@@ -145,6 +145,12 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
                 case ITEM_22K:
                     mCurrentSelectItem = ITEM_LNB_POWER;
                     break;
+
+                case ITEM_LNB_POWER:
+                    mCurrentSelectItem = ITEM_SATELLITE;
+                    mItemSatellite.requestFocus();
+                    itemFocusChange();
+                    return true;
             }
             itemFocusChange();
         }
@@ -165,6 +171,12 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
                         mCurrentSelectItem--;
                     }
                     break;
+
+                case ITEM_SATELLITE:
+                    mCurrentSelectItem = ITEM_LNB_POWER;
+                    mItemLnbPower.requestFocus();
+                    itemFocusChange();
+                    return true;
             }
             itemFocusChange();
         }

@@ -392,6 +392,11 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                     case ITEM_TP:
                         position--;
                         break;
+                    case ITEM_MOTOR_TYPE:
+                        position = ITEM_TP;
+                        mItemTp.requestFocus();
+                        itemFocusChange();
+                        return true;
                 }
             } else if (mMotorType == MOROT_TYPE_USALS) {
                 switch (position) {
@@ -403,6 +408,11 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                     case ITEM_COMMAND:
                         position--;
                         break;
+                    case ITEM_MOTOR_TYPE:
+                        position = ITEM_COMMAND;
+                        mItemCommand.requestFocus();
+                        itemFocusChange();
+                        return true;
                 }
             } else if (mMotorType == MOROT_TYPE_DISEQC) {
                 switch (position) {
@@ -413,6 +423,11 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                     case ITEM_DISEQC_COMMAND:
                         position--;
                         break;
+                    case ITEM_MOTOR_TYPE:
+                        position = ITEM_DISEQC_COMMAND;
+                        mItemCommand.requestFocus();
+                        itemFocusChange();
+                        return true;
                 }
             }
 
@@ -425,6 +440,11 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                     case ITEM_MOTOR_TYPE:
                         position++;
                         break;
+                    case ITEM_TP:
+                        position = ITEM_MOTOR_TYPE;
+                        mItemMotorType.requestFocus();
+                        itemFocusChange();
+                        return true;
                 }
             } else if (mMotorType == MOROT_TYPE_USALS) {
                 switch (position) {
@@ -436,6 +456,11 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                     case ITEM_POSITION:
                         position++;
                         break;
+                    case ITEM_COMMAND:
+                        position = ITEM_MOTOR_TYPE;
+                        mItemMotorType.requestFocus();
+                        itemFocusChange();
+                        return true;
                 }
             } else if (mMotorType == MOROT_TYPE_DISEQC) {
                 switch (position) {
@@ -446,6 +471,11 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                     case ITEM_POSITION_DIS:
                         position++;
                         break;
+                    case ITEM_DISEQC_COMMAND:
+                        position = ITEM_MOTOR_TYPE;
+                        mItemMotorType.requestFocus();
+                        itemFocusChange();
+                        return true;
                 }
             }
 
@@ -922,6 +952,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         positionItemFocusChange();
         commandItemFocusChange();
     }
+
     private void positionItemFocusChange() {
         int selectItem = ITEM_POSITION;
         if (mMotorType == MOROT_TYPE_DISEQC) {

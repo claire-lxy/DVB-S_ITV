@@ -1,5 +1,6 @@
 package com.konkawise.dtv.dialog;
 
+import android.content.DialogInterface;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -16,6 +17,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnItemClick;
+import butterknife.OnItemSelected;
 
 public class CommCheckItemDialog extends BaseDialogFragment {
     public static final String TAG = "CommCheckItemDialog";
@@ -32,6 +34,11 @@ public class CommCheckItemDialog extends BaseDialogFragment {
         if (mOnDismissListener != null) {
             mOnDismissListener.onDismiss(this, position, mAdapter.getItem(position));
         }
+    }
+
+    @OnItemSelected(R.id.lv_content)
+    void onItemSelect(int position) {
+        mSelectPosition = position;
     }
 
     private String mTitle;
@@ -105,6 +112,23 @@ public class CommCheckItemDialog extends BaseDialogFragment {
             params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 196, dm);
         }
         listView.setLayoutParams(params);
+    }
+
+    @Override
+    protected boolean onKeyListener(DialogInterface dialog, int keyCode, KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP && event.getAction() == KeyEvent.ACTION_DOWN) {
+            if (mAdapter.getCount() > 0 && mSelectPosition <= 0) {
+                mLvContent.setSelection(mAdapter.getCount() - 1);
+                return true;
+            }
+        }
+        if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN && event.getAction() == KeyEvent.ACTION_DOWN) {
+            if (mAdapter.getCount() > 0 && mSelectPosition >= mAdapter.getCount() - 1) {
+                mLvContent.setSelection(0);
+                return true;
+            }
+        }
+        return super.onKeyListener(dialog, keyCode, event);
     }
 
     public CommCheckItemDialog setOnDismissListener(OnDismissListener listener) {

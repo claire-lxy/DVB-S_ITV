@@ -2160,14 +2160,41 @@ public class Topmost extends BaseActivity {
             return super.dispatchKeyEvent(event);
         }
 
-        // menu显示，焦点在menu上不处理
+        // menu显示
         if (mMenuShow && event.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN) {
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                if (mItemDataReset.isFocused()) {
+                    mItemInstallation.requestFocus();
+                    return true;
+                }
+                if (mItemBlindScan.isFocused()) {
+                    mItemInstallation.requestFocus();
+                    return true;
+                }
+                if (mItemBackupUserData.isFocused()) {
+                    mItemChannelManage.requestFocus();
+                    return true;
+                }
+            }
             return super.dispatchKeyEvent(event);
         }
 
-        // menu显示，焦点在menu上
+        // menu显示
         if (mMenuShow && event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP) {
-            if (isMenuTopFocused()) return true; // 避免menu已经到顶持续按上键导致焦点丢失问题
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                if (mItemInstallation.isFocused() && mIvInstallationBack.getVisibility() == View.GONE) {
+                    mItemDataReset.requestFocus();
+                    return true;
+                }
+                if (mItemInstallation.isFocused() && mIvInstallationBack.getVisibility() == View.VISIBLE) {
+                    mItemBlindScan.requestFocus();
+                    return true;
+                }
+                if (mItemChannelManage.isFocused() && mIvChannelManageBack.getVisibility() == View.VISIBLE) {
+                    mItemBackupUserData.requestFocus();
+                    return true;
+                }
+            }
             return super.dispatchKeyEvent(event);
         }
 

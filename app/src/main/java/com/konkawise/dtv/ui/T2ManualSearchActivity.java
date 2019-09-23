@@ -6,6 +6,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
@@ -30,6 +31,15 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
     private static final int ITEM_BANDWIDTH = 3;
 
     private int mCurrntChannel = 0;
+
+    @BindView(R.id.item_transponder)
+    RelativeLayout rlItemTransponder;
+
+    @BindView(R.id.item_frequency)
+    RelativeLayout rlItemFrequency;
+
+    @BindView(R.id.item_bandwidth)
+    RelativeLayout rlItemBandwidth;
 
     @BindView(R.id.iv_transponder_left)
     ImageView mIvTransponderLeft;
@@ -155,6 +165,11 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
                 case ITEM_FREQUENCY:
                     mCurrSelectItem++;
                     break;
+                case ITEM_BANDWIDTH:
+                    mCurrSelectItem = ITEM_TRANSPONDER;
+                    rlItemTransponder.requestFocus();
+                    itemFocusChange();
+                    return true;
             }
             itemFocusChange();
         }
@@ -165,6 +180,11 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
                 case ITEM_BANDWIDTH:
                     mCurrSelectItem--;
                     break;
+                case ITEM_TRANSPONDER:
+                    mCurrSelectItem = ITEM_BANDWIDTH;
+                    rlItemBandwidth.requestFocus();
+                    itemFocusChange();
+                    return true;
             }
             itemFocusChange();
         }
