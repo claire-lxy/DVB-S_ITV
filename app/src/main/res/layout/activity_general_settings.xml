@@ -40,15 +40,15 @@
             <ImageView
                 android:id="@+id/iv_scart_left"
                 style="@style/ItemArrowLeftStyle"
-                android:layout_toStartOf="@+id/tv_scart"
                 android:layout_toLeftOf="@+id/tv_scart"
+                android:layout_toStartOf="@+id/tv_scart"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_scart"
                 style="@style/ItemContentStyle"
-                android:layout_toStartOf="@+id/iv_scart_right"
                 android:layout_toLeftOf="@+id/iv_scart_right"
+                android:layout_toStartOf="@+id/iv_scart_right"
                 android:background="@drawable/btn_red_bg_shape"
                 android:text="@string/scart_mode_cvbs" />
 
@@ -58,45 +58,11 @@
                 tools:ignore="ContentDescription" />
         </RelativeLayout>
 
-        <!-- Subtitle Display -->
-        <RelativeLayout
-            android:id="@+id/item_subtitle_display"
-            style="@style/ItemGroupStyle"
-            android:layout_below="@id/item_scart"
-            android:background="@drawable/dvb_btn_fragment_selector">
-
-            <TextView
-                style="@style/ItemTitleStyle"
-                android:text="@string/subtitles_setting"
-                tools:ignore="RelativeOverlap" />
-
-            <ImageView
-                android:id="@+id/iv_subtitle_display_left"
-                style="@style/ItemArrowLeftStyle"
-                android:layout_toStartOf="@+id/tv_subtitle_display"
-                android:layout_toLeftOf="@+id/tv_subtitle_display"
-                android:visibility="invisible"
-                tools:ignore="ContentDescription" />
-
-            <TextView
-                android:id="@+id/tv_subtitle_display"
-                style="@style/ItemContentStyle"
-                android:layout_toStartOf="@+id/iv_subtitle_display_right"
-                android:layout_toLeftOf="@+id/iv_subtitle_display_right"
-                android:text="@string/on" />
-
-            <ImageView
-                android:id="@+id/iv_subtitle_display_right"
-                style="@style/ItemArrowRightStyle"
-                android:visibility="invisible"
-                tools:ignore="ContentDescription" />
-        </RelativeLayout>
-
         <!-- P/F Bar Timeout -->
         <RelativeLayout
             android:id="@+id/item_pf_timeout"
             style="@style/ItemGroupStyle"
-            android:layout_below="@id/item_subtitle_display"
+            android:layout_below="@id/item_scart"
             android:background="@drawable/dvb_btn_fragment_selector">
 
             <TextView
@@ -107,16 +73,16 @@
             <ImageView
                 android:id="@+id/iv_pf_timeout_left"
                 style="@style/ItemArrowLeftStyle"
-                android:layout_toStartOf="@+id/tv_pf_timeout"
                 android:layout_toLeftOf="@+id/tv_pf_timeout"
+                android:layout_toStartOf="@+id/tv_pf_timeout"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_pf_timeout"
                 style="@style/ItemContentStyle"
-                android:layout_toStartOf="@+id/iv_pf_tiemout_right"
-                android:layout_toLeftOf="@+id/iv_pf_tiemout_right" />
+                android:layout_toLeftOf="@+id/iv_pf_tiemout_right"
+                android:layout_toStartOf="@+id/iv_pf_tiemout_right" />
 
             <ImageView
                 android:id="@+id/iv_pf_tiemout_right"
@@ -140,16 +106,16 @@
             <ImageView
                 android:id="@+id/iv_ratio_left"
                 style="@style/ItemArrowLeftStyle"
-                android:layout_toStartOf="@+id/tv_ratio"
                 android:layout_toLeftOf="@+id/tv_ratio"
+                android:layout_toStartOf="@+id/tv_ratio"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_ratio"
                 style="@style/ItemContentStyle"
-                android:layout_toStartOf="@+id/iv_ratio_right"
-                android:layout_toLeftOf="@+id/iv_ratio_right" />
+                android:layout_toLeftOf="@+id/iv_ratio_right"
+                android:layout_toStartOf="@+id/iv_ratio_right" />
 
             <ImageView
                 android:id="@+id/iv_ratio_right"
@@ -173,16 +139,16 @@
             <ImageView
                 android:id="@+id/iv_aspect_left"
                 style="@style/ItemArrowLeftStyle"
-                android:layout_toStartOf="@+id/tv_aspect"
                 android:layout_toLeftOf="@+id/tv_aspect"
+                android:layout_toStartOf="@+id/tv_aspect"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_aspect"
                 style="@style/ItemContentStyle"
-                android:layout_toStartOf="@+id/iv_aspect_right"
-                android:layout_toLeftOf="@+id/iv_aspect_right" />
+                android:layout_toLeftOf="@+id/iv_aspect_right"
+                android:layout_toStartOf="@+id/iv_aspect_right" />
 
             <ImageView
                 android:id="@+id/iv_aspect_right"
@@ -206,16 +172,16 @@
             <ImageView
                 android:id="@+id/iv_switch_channel_left"
                 style="@style/ItemArrowLeftStyle"
-                android:layout_toStartOf="@+id/tv_switch_channel"
                 android:layout_toLeftOf="@+id/tv_switch_channel"
+                android:layout_toStartOf="@+id/tv_switch_channel"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_switch_channel"
                 style="@style/ItemContentStyle"
-                android:layout_toStartOf="@+id/iv_switch_channel_right"
                 android:layout_toLeftOf="@+id/iv_switch_channel_right"
+                android:layout_toStartOf="@+id/iv_switch_channel_right"
                 android:text="@string/switch_channel_block" />
 
             <ImageView
@@ -240,16 +206,16 @@
             <ImageView
                 android:id="@+id/iv_first_audio_language_left"
                 style="@style/ItemArrowLeftStyle"
-                android:layout_toStartOf="@+id/tv_first_audio_language"
                 android:layout_toLeftOf="@+id/tv_first_audio_language"
+                android:layout_toStartOf="@+id/tv_first_audio_language"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_first_audio_language"
                 style="@style/ItemContentStyle"
-                android:layout_toStartOf="@+id/iv_first_audio_language_right"
                 android:layout_toLeftOf="@+id/iv_first_audio_language_right"
+                android:layout_toStartOf="@+id/iv_first_audio_language_right"
                 android:text="@string/language" />
 
             <ImageView
@@ -274,16 +240,16 @@
             <ImageView
                 android:id="@+id/iv_second_audio_language_left"
                 style="@style/ItemArrowLeftStyle"
-                android:layout_toStartOf="@+id/tv_second_audio_language"
                 android:layout_toLeftOf="@+id/tv_second_audio_language"
+                android:layout_toStartOf="@+id/tv_second_audio_language"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_second_audio_language"
                 style="@style/ItemContentStyle"
-                android:layout_toStartOf="@+id/iv_second_audio_language_right"
                 android:layout_toLeftOf="@+id/iv_second_audio_language_right"
+                android:layout_toStartOf="@+id/iv_second_audio_language_right"
                 android:text="@string/language" />
 
             <ImageView
@@ -293,11 +259,45 @@
                 tools:ignore="ContentDescription" />
         </RelativeLayout>
 
+        <!-- Subtitle Display -->
+        <RelativeLayout
+            android:id="@+id/item_subtitle_display"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/item_second_audio_language"
+            android:background="@drawable/dvb_btn_fragment_selector">
+
+            <TextView
+                style="@style/ItemTitleStyle"
+                android:text="@string/subtitles_setting"
+                tools:ignore="RelativeOverlap" />
+
+            <ImageView
+                android:id="@+id/iv_subtitle_display_left"
+                style="@style/ItemArrowLeftStyle"
+                android:layout_toLeftOf="@+id/tv_subtitle_display"
+                android:layout_toStartOf="@+id/tv_subtitle_display"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_subtitle_display"
+                style="@style/ItemContentStyle"
+                android:layout_toLeftOf="@+id/iv_subtitle_display_right"
+                android:layout_toStartOf="@+id/iv_subtitle_display_right"
+                android:text="@string/on" />
+
+            <ImageView
+                android:id="@+id/iv_subtitle_display_right"
+                style="@style/ItemArrowRightStyle"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
         <!-- Subtitle Language -->
         <RelativeLayout
             android:id="@+id/item_subtitle_language"
             style="@style/ItemGroupStyle"
-            android:layout_below="@id/item_second_audio_language"
+            android:layout_below="@id/item_subtitle_display"
             android:background="@drawable/dvb_btn_fragment_selector">
 
             <TextView
@@ -308,16 +308,16 @@
             <ImageView
                 android:id="@+id/iv_subtitle_language_left"
                 style="@style/ItemArrowLeftStyle"
-                android:layout_toStartOf="@+id/tv_subtitle_language"
                 android:layout_toLeftOf="@+id/tv_subtitle_language"
+                android:layout_toStartOf="@+id/tv_subtitle_language"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_subtitle_language"
                 style="@style/ItemContentStyle"
-                android:layout_toStartOf="@+id/iv_subtitle_language_right"
                 android:layout_toLeftOf="@+id/iv_subtitle_language_right"
+                android:layout_toStartOf="@+id/iv_subtitle_language_right"
                 android:text="@string/language" />
 
             <ImageView
@@ -331,9 +331,9 @@
         <RelativeLayout
             android:id="@+id/item_auto_start"
             style="@style/ItemGroupStyle"
-            android:visibility="gone"
             android:layout_below="@id/item_subtitle_language"
-            android:background="@drawable/dvb_btn_fragment_selector">
+            android:background="@drawable/dvb_btn_fragment_selector"
+            android:visibility="gone">
 
             <TextView
                 style="@style/ItemTitleStyle"
@@ -343,16 +343,16 @@
             <ImageView
                 android:id="@+id/iv_auto_start_left"
                 style="@style/ItemArrowLeftStyle"
-                android:layout_toStartOf="@+id/tv_auto_start"
                 android:layout_toLeftOf="@+id/tv_auto_start"
+                android:layout_toStartOf="@+id/tv_auto_start"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_auto_start"
                 style="@style/ItemContentStyle"
-                android:layout_toStartOf="@+id/iv_auto_start_right"
                 android:layout_toLeftOf="@+id/iv_auto_start_right"
+                android:layout_toStartOf="@+id/iv_auto_start_right"
                 android:text="@string/on" />
 
             <ImageView
@@ -360,6 +360,75 @@
                 style="@style/ItemArrowRightStyle"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <!-- channel scan -->
+        <RelativeLayout
+            android:id="@+id/item_channel_scan"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/item_auto_start"
+            android:background="@drawable/dvb_btn_fragment_selector">
+
+            <TextView
+                style="@style/ItemTitleStyle"
+                android:text="@string/channel_scan"
+                tools:ignore="RelativeOverlap" />
+
+            <ImageView
+                android:id="@+id/iv_channel_scan_left"
+                style="@style/ItemArrowLeftStyle"
+                android:layout_toLeftOf="@+id/tv_channel_scan"
+                android:layout_toStartOf="@+id/tv_channel_scan"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_channel_scan"
+                style="@style/ItemContentStyle"
+                android:layout_toLeftOf="@+id/iv_channel_scan_right"
+                android:layout_toStartOf="@+id/iv_channel_scan_right"
+                android:text="@string/on" />
+
+            <ImageView
+                android:id="@+id/iv_channel_scan_right"
+                style="@style/ItemArrowRightStyle"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <!-- Channel Scan Time -->
+        <RelativeLayout
+            android:id="@+id/item_channel_scan_time"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/item_channel_scan"
+            android:background="@drawable/dvb_btn_fragment_selector">
+
+            <TextView
+                style="@style/ItemTitleStyle"
+                android:text="@string/channel_scan_time"
+                tools:ignore="RelativeOverlap" />
+
+            <ImageView
+                android:id="@+id/iv_channel_scan_time_left"
+                style="@style/ItemArrowLeftStyle"
+                android:layout_toLeftOf="@+id/tv_channel_scan_time"
+                android:layout_toStartOf="@+id/tv_channel_scan_time"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_channel_scan_time"
+                style="@style/ItemContentStyle"
+                android:layout_toLeftOf="@+id/iv_channel_scan_time_right"
+                android:layout_toStartOf="@+id/iv_channel_scan_time_right"
+                android:text="@string/on" />
+
+            <ImageView
+                android:id="@+id/iv_channel_scan_time_right"
+                style="@style/ItemArrowRightStyle"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
         </RelativeLayout>
 
         <!-- Bottom Menu -->

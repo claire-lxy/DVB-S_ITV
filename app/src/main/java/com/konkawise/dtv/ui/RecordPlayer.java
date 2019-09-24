@@ -32,8 +32,8 @@ import com.konkawise.dtv.bean.UsbInfo;
 import com.konkawise.dtv.dialog.AudioDialog;
 import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
+import com.konkawise.dtv.dialog.EditTimeDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
-import com.konkawise.dtv.dialog.SeekTimeDialog;
 import com.konkawise.dtv.dialog.SubtitleDialog;
 import com.konkawise.dtv.dialog.TeletextDialog;
 import com.konkawise.dtv.weaktool.WeakHandler;
@@ -409,10 +409,10 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
             case KeyEvent.KEYCODE_SHIFT_RIGHT:
                 if (currType == TYPE_PLAY) {
                     pause();
-                    new SeekTimeDialog()
+                    new EditTimeDialog()
                             .setCurrTime(SWDJAPVRManager.getInstance().getPlayProgress().currentMs > 0 ? SWDJAPVRManager.getInstance().getPlayProgress().currentMs : 0)
                             .setTimeLimit(SWDJAPVRManager.getInstance().getPlayProgress().endMs > 0 ? SWDJAPVRManager.getInstance().getPlayProgress().endMs : 0)
-                            .setTimeListener(new SeekTimeDialog.OnTimeListener() {
+                            .setTimeListener(new EditTimeDialog.OnTimeListener() {
                                 @Override
                                 public void time(int hour, int minute, int second) {
                                     Log.i(TAG, "---jump---time:" + hour + ":" + minute + ":" + second);
@@ -420,7 +420,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
                                     jump(currTime);
                                 }
                             })
-                            .show(getSupportFragmentManager(), SeekTimeDialog.TAG);
+                            .show(getSupportFragmentManager(), EditTimeDialog.TAG);
                     return true;
                 }
                 break;

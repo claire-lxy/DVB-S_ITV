@@ -17,8 +17,10 @@ import com.konkawise.dtv.base.BaseDialogFragment;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class SeekTimeDialog extends BaseDialogFragment {
+public class EditTimeDialog extends BaseDialogFragment {
     public static final String TAG = "SeekTimeDialog";
+
+    public static final int FROM_CHANNEL_SCAN_TIEM = 0;
 
     @BindView(R.id.tv_tip)
     TextView tvTip;
@@ -31,6 +33,9 @@ public class SeekTimeDialog extends BaseDialogFragment {
 
     @BindView(R.id.eidt_second)
     EditText etSecond;
+
+    @BindView(R.id.colon2)
+    TextView tvColon2;
 
     @OnClick(R.id.eidt_hour)
     void hourClick() {
@@ -57,6 +62,7 @@ public class SeekTimeDialog extends BaseDialogFragment {
             dismiss();
         }
     }
+    private int from = -1;
 
     private int totalDuration;
     private int currHour, currMinute, currSecond;
@@ -133,6 +139,11 @@ public class SeekTimeDialog extends BaseDialogFragment {
     }
 
     private void initUIContent() {
+        if(from == FROM_CHANNEL_SCAN_TIEM){
+            tvTip.setText(R.string.channel_scan_time_tip);
+            etSecond.setVisibility(View.GONE);
+            tvColon2.setVisibility(View.GONE);
+        }
         etHour.setText(currHour + "");
         etMinute.setText(currMinute + "");
         etSecond.setText(currSecond + "");
@@ -149,19 +160,27 @@ public class SeekTimeDialog extends BaseDialogFragment {
         h = Integer.valueOf((sbHour.length() == 2 && sbHour.charAt(0) == '0') ? sbHour.deleteCharAt(0).toString() : sbHour.toString());
         m = Integer.valueOf((sbMinute.length() == 2 && sbMinute.charAt(0) == '0') ? sbMinute.deleteCharAt(0).toString() : sbMinute.toString());
         s = Integer.valueOf((sbSecond.length() == 2 && sbSecond.charAt(0) == '0') ? sbSecond.deleteCharAt(0).toString() : sbSecond.toString());
+        if(from == FROM_CHANNEL_SCAN_TIEM){
+            return (h * 60 * 60 + m * 60 + s)*1000 <= totalDuration;
+        }
         return (h * 60 * 60 + m * 60 + s)*1000 <= SWDJAPVRManager.getInstance().getPlayProgress().endMs;
     }
 
-    public SeekTimeDialog setTimeLimit(int totalDuration) {
+    public EditTimeDialog setTimeLimit(int totalDuration) {
         this.totalDuration = totalDuration;
         return this;
     }
 
-    public SeekTimeDialog setCurrTime(int currMS) {
+    public EditTimeDialog setCurrTime(int currMS) {
         int seconds = currMS / 1000;
         currHour = seconds / (60 * 60);
         currMinute = (seconds - currHour * 60 * 60) / 60;
         currSecond = (seconds - currHour * 60 * 60) % 60;
+        return this;
+    }
+
+    public EditTimeDialog from(int from){
+        this.from = from;
         return this;
     }
 
@@ -232,7 +251,7 @@ public class SeekTimeDialog extends BaseDialogFragment {
         }
     }
 
-    public SeekTimeDialog setTimeListener(OnTimeListener listener) {
+    public EditTimeDialog setTimeListener(OnTimeListener listener) {
         this.listener = listener;
         return this;
     }

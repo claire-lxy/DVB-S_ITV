@@ -113,6 +113,8 @@
     <string name="scart_mode_rgb">RGB</string>
     <string name="scart_mode_cvbs">CVBS</string>
     <string name="auto_start">Auto Start</string>
+    <string name="channel_scan">Channel Scan</string>
+    <string name="channel_scan_time">Channel Scan Time</string>
 
     <!--sub/txt-->
     <string name="subtitle">Subtitle</string>
@@ -215,6 +217,7 @@
     <!--dialog seek time-->
     <string name="seek_time_tip">Input the seek time:</string>
     <string name="input_invalid">Input is invalid!</string>
+    <string name="channel_scan_time_tip">Input the channel scan time:</string>
 
     <!--dialog_save_or_cancel.xml-->
 

@@ -1,6 +1,8 @@
 package com.konkawise.dtv.ui;
 
+import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -9,6 +11,7 @@ import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.dialog.CommCheckItemDialog;
+import com.konkawise.dtv.dialog.EditTimeDialog;
 import com.sw.dvblib.SWFta;
 
 import java.util.Arrays;
@@ -22,21 +25,29 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
 
     private static final String TAG = "GeneralSettingsActivity";
     private static final int ITEM_SCART = 1;
-    private static final int ITEM_SUBTITLE_DISPLAY = 2;
-    private static final int ITEM_PFBAR_TIMEOUT = 3;
-    private static final int ITEM_RATIO_MODE = 4;
-    private static final int ITEM_ASPECT_MODE = 5;
-    private static final int ITEM_SWITCH_CHANNEL = 6;
-    private static final int ITEM_FIRST_AUDIO_LANGUAGE = 7;
-    private static final int ITEM_SECOND_AUDIO_LANGUAGE = 8;
+    private static final int ITEM_PFBAR_TIMEOUT = 2;
+    private static final int ITEM_RATIO_MODE = 3;
+    private static final int ITEM_ASPECT_MODE = 4;
+    private static final int ITEM_SWITCH_CHANNEL = 5;
+    private static final int ITEM_FIRST_AUDIO_LANGUAGE = 6;
+    private static final int ITEM_SECOND_AUDIO_LANGUAGE = 7;
+    private static final int ITEM_SUBTITLE_DISPLAY = 8;
     private static final int ITEM_SUBTITLE_LANGUAGE = 9;
     private static final int ITEM_AUTO_START = 10;
+    private static final int ITEM_CHANNEL_SCAN = 11;
+    private static final int ITEM_CHANNEL_SCAN_TIME = 12;
 
     @BindView(R.id.item_scart)
     RelativeLayout rlItemScart;
 
     @BindView(R.id.item_subtitle_language)
     RelativeLayout rlItemSubtitleLanguage;
+
+    @BindView(R.id.item_channel_scan)
+    RelativeLayout rlItemChannelScan;
+
+    @BindView(R.id.item_channel_scan_time)
+    RelativeLayout rlItemChannelScanTime;
 
     @BindView(R.id.iv_scart_left)
     ImageView mIvScartLeft;
@@ -128,6 +139,18 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
     @BindView(R.id.iv_auto_start_right)
     ImageView mIvAutoStartRight;
 
+    @BindView(R.id.iv_channel_scan_left)
+    ImageView mIvChannelScanLeft;
+
+    @BindView(R.id.tv_channel_scan)
+    TextView mTvChannelScan;
+
+    @BindView(R.id.iv_channel_scan_right)
+    ImageView mIvChannelScanRight;
+
+    @BindView(R.id.tv_channel_scan_time)
+    TextView mTvChannelScanTime;
+
     @BindArray(R.array.scart)
     String[] mScartArray;
 
@@ -199,6 +222,24 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
         showGeneralSettingDialog(getString(R.string.auto_start), Arrays.asList(mGeneralSwitchArray), autoStartPosition);
     }
 
+    @OnClick(R.id.item_channel_scan)
+    void channelScan() {
+        showGeneralSettingDialog(getString(R.string.channel_scan), Arrays.asList(mGeneralSwitchArray), channelScanPosition);
+    }
+
+    @OnClick(R.id.item_channel_scan_time)
+    void channelScanTime() {
+        new EditTimeDialog().setCurrTime(0)
+                .setTimeLimit(23 * 60 * 60 * 1000 + 59 * 60 * 1000)
+                .from(EditTimeDialog.FROM_CHANNEL_SCAN_TIEM)
+                .setTimeListener(new EditTimeDialog.OnTimeListener() {
+                    @Override
+                    public void time(int hour, int minute, int second) {
+                        Log.i(TAG, "hour:" + hour + " minute:" + minute + " second:" + second);
+                    }
+                }).show(getSupportFragmentManager(), EditTimeDialog.TAG);
+    }
+
     private int mCurrentSelectItem = ITEM_SCART;
     private int scartPosition;
     private int subtitleDisplayPosition;
@@ -210,6 +251,7 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
     private int secondAudioLanguagePosition;
     private int subtitleLanguagePosition;
     private int autoStartPosition;
+    private int channelScanPosition;
 
     private int[] arrayPfBarTime = new int[]{5, 8, 10};
 
@@ -222,6 +264,7 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
     protected void setup() {
         initData();
 
+        showOrDismissChannelScanTime();
         mTvScart.setText(mScartArray[scartPosition]);
         mTvSubtitleDisplay.setText(mGeneralSwitchArray[subtitleDisplayPosition]);
         mTvPfTimeout.setText(mPfTimeoutArray[pfTimeoutPosition]);
@@ -232,6 +275,7 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
         mTvSecondAudioLanguage.setText(mLanguageArray[secondAudioLanguagePosition]);
         mTvSubtitleLanguage.setText(mLanguageArray[subtitleLanguagePosition]);
         mTvAutoStart.setText(mGeneralSwitchArray[autoStartPosition]);
+        mTvChannelScan.setText(mGeneralSwitchArray[channelScanPosition]);
     }
 
     private void initData() {
@@ -315,6 +359,11 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
                                 autoStartPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
                                 SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_ShowSubtitle.ordinal(), autoStartPosition);
                                 break;
+                            case ITEM_CHANNEL_SCAN:
+                                mTvChannelScan.setText(checkContent);
+                                channelScanPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
+                                showOrDismissChannelScanTime();
+                                break;
                             default:
                                 break;
                         }
@@ -322,26 +371,45 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
                 }).show(getSupportFragmentManager(), CommCheckItemDialog.TAG);
     }
 
+    private void showOrDismissChannelScanTime() {
+        if (channelScanPosition == 0) {
+            rlItemChannelScanTime.setVisibility(View.GONE);
+        } else {
+            rlItemChannelScanTime.setVisibility(View.VISIBLE);
+        }
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP) {
             switch (mCurrentSelectItem) {
-                case ITEM_SUBTITLE_DISPLAY:
                 case ITEM_PFBAR_TIMEOUT:
                 case ITEM_RATIO_MODE:
                 case ITEM_ASPECT_MODE:
                 case ITEM_SWITCH_CHANNEL:
                 case ITEM_FIRST_AUDIO_LANGUAGE:
                 case ITEM_SECOND_AUDIO_LANGUAGE:
+                case ITEM_SUBTITLE_DISPLAY:
                 case ITEM_SUBTITLE_LANGUAGE:
                 case ITEM_AUTO_START:
+                case ITEM_CHANNEL_SCAN_TIME:
                     mCurrentSelectItem--;
                     break;
 
+                case ITEM_CHANNEL_SCAN:
+                    mCurrentSelectItem -= 2;
+                    break;
+
                 case ITEM_SCART:
-                    mCurrentSelectItem = ITEM_SUBTITLE_LANGUAGE;
-                    rlItemSubtitleLanguage.requestFocus();
-                    itemFocusChange();
+                    if (rlItemChannelScanTime.getVisibility() == View.VISIBLE) {
+                        mCurrentSelectItem = ITEM_CHANNEL_SCAN_TIME;
+                        rlItemChannelScanTime.requestFocus();
+                        itemFocusChange();
+                    } else {
+                        mCurrentSelectItem = ITEM_CHANNEL_SCAN;
+                        rlItemChannelScan.requestFocus();
+                        itemFocusChange();
+                    }
                     return true;
             }
 
@@ -351,17 +419,31 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN) {
             switch (mCurrentSelectItem) {
                 case ITEM_SCART:
-                case ITEM_SUBTITLE_DISPLAY:
                 case ITEM_PFBAR_TIMEOUT:
                 case ITEM_RATIO_MODE:
                 case ITEM_ASPECT_MODE:
                 case ITEM_SWITCH_CHANNEL:
                 case ITEM_FIRST_AUDIO_LANGUAGE:
                 case ITEM_SECOND_AUDIO_LANGUAGE:
+                case ITEM_SUBTITLE_DISPLAY:
                     mCurrentSelectItem++;
                     break;
 
                 case ITEM_SUBTITLE_LANGUAGE:
+                    mCurrentSelectItem += 2;
+                    break;
+
+                case ITEM_CHANNEL_SCAN:
+                    if (rlItemChannelScanTime.getVisibility() != View.VISIBLE) {
+                        mCurrentSelectItem = ITEM_SCART;
+                        rlItemScart.requestFocus();
+                        itemFocusChange();
+                        return true;
+                    }
+                    mCurrentSelectItem++;
+                    break;
+
+                case ITEM_CHANNEL_SCAN_TIME:
                     mCurrentSelectItem = ITEM_SCART;
                     rlItemScart.requestFocus();
                     itemFocusChange();
@@ -441,6 +523,13 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
                     mTvAutoStart.setText(mGeneralSwitchArray[autoStartPosition]);
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleDisplay.ordinal(), autoStartPosition);
                     break;
+
+                case ITEM_CHANNEL_SCAN:
+                    if (--channelScanPosition < 0)
+                        channelScanPosition = mGeneralSwitchArray.length - 1;
+                    mTvChannelScan.setText(mGeneralSwitchArray[channelScanPosition]);
+                    showOrDismissChannelScanTime();
+                    break;
             }
         }
 
@@ -514,6 +603,13 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
                     mTvAutoStart.setText(mGeneralSwitchArray[autoStartPosition]);
                     SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleDisplay.ordinal(), autoStartPosition);
                     break;
+
+                case ITEM_CHANNEL_SCAN:
+                    if (++channelScanPosition > mGeneralSwitchArray.length - 1)
+                        channelScanPosition = 0;
+                    mTvChannelScan.setText(mGeneralSwitchArray[channelScanPosition]);
+                    showOrDismissChannelScanTime();
+                    break;
             }
         }
 
@@ -531,5 +627,7 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
         itemChange(mCurrentSelectItem, ITEM_SECOND_AUDIO_LANGUAGE, mIvSecondAudioLanguageLeft, mIvSecondAudioLanguageRight, mTvSecondAudioLanguage);
         itemChange(mCurrentSelectItem, ITEM_SUBTITLE_LANGUAGE, mIvSubtitleLanguageLeft, mIvSubtitleLanguageRight, mTvSubtitleLanguage);
         itemChange(mCurrentSelectItem, ITEM_AUTO_START, mIvAutoStartLeft, mIvAutoStartRight, mTvAutoStart);
+        itemChange(mCurrentSelectItem, ITEM_CHANNEL_SCAN, mIvChannelScanLeft, mIvChannelScanRight, mTvChannelScan);
+        itemChange(mCurrentSelectItem, ITEM_CHANNEL_SCAN_TIME, null, null, mTvChannelScanTime);
     }
 }
