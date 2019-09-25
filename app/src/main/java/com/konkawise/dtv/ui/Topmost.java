@@ -576,12 +576,12 @@ public class Topmost extends BaseActivity {
             }
 
             if (serviceid != -1 && tsid != -1 && sat != -1 && recordSeconds != -1) {
+                SWFtaManager.getInstance().forcePlayProgByServiceId(serviceid, tsid, sat);
                 startRecord(new OnCommCallback() {
                     @Override
                     public void callback(Object object) {
                         int recordFlag = (int) object;
                         if (recordFlag == 0) {
-                            SWFtaManager.getInstance().forcePlayProgByServiceId(serviceid, tsid, sat);
                             startRecordingTimer(recordSeconds);
                             SWBookingManager.getInstance().setRecording(true);
                             sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
@@ -1015,12 +1015,14 @@ public class Topmost extends BaseActivity {
                 UIApiManager.getInstance().setWindowSize(0, 0,
                         getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
                 if (!handleBook()) {
+                    Log.i(TAG, "non handle book");
                     if (SWPDBaseManager.getInstance().isProgCanPlay() && !SWFtaManager.getInstance().isPasswordEmpty()) {
                         SWPDBaseManager.getInstance().setCurrGroup(mCurrProgGroup, mCurrProgGroupParams);
                         if (SWPDBaseManager.getInstance().getCurrProgNo() >= 0)
                             playProg(SWPDBaseManager.getInstance().getCurrProgNo(), true);
                     }
                 } else {
+                    Log.i(TAG, "intent reset empty");
                     setIntent(new Intent()); // 处理完后要重置为空，防止其他界面返回或跳转到Topmost使用上一个book跳转的intent
                 }
             }
@@ -2118,7 +2120,7 @@ public class Topmost extends BaseActivity {
                 sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
                 showQuitRecordDialog(event);
             }
-            return super.dispatchKeyEvent(event);
+            return true;
         }
 
         // 频道列表上下左右切换
