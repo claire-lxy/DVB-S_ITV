@@ -105,7 +105,7 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
         if (satChannelInfoList != null) {
             channel = satChannelInfoList.get(mCurrntChannel);
             mCurrntChannel = PreferenceManager.getInstance().getInt(Constants.PrefsKey.SAVE_CHANNEL);
-            SWFtaManager.getInstance().tunerLockFreq(T2_SatIndex, channel.Freq, channel.Symbol, channel.Symbol, 1, 0);
+            SWFtaManager.getInstance().tunerLockFreq(T2_SatIndex, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
         }
     }
 
@@ -114,7 +114,7 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
         channel = satChannelInfoList.get(mCurrntChannel);
         mTvFrequency.setText(MessageFormat.format(getString(R.string.frequency_text), (channel.Freq / 10) + "." + (channel.Freq % 10)));
         mTvBandWidth.setText(MessageFormat.format(getString(R.string.bandwidth_text), channel.Symbol));
-        SWFtaManager.getInstance().tunerLockFreq(T2_SatIndex, channel.Freq, channel.Symbol, channel.Symbol, 1, 0);
+        SWFtaManager.getInstance().tunerLockFreq(T2_SatIndex, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
         Log.e("T2ManualSearchActivity", "satChannelInfoList.size:  " + satChannelInfoList.size() + "channel.Freq  " + channel.Freq + "channel.Symbol  " +
                 channel.Symbol + "channel.Qam  " + channel.Symbol + "TsID  " + channel.TsID + "channel.NetID  " + channel.NetID + "channel.ChannelIndex  " + channel.ChannelIndex);
     }

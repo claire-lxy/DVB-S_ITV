@@ -118,17 +118,19 @@ public class ScanTVandRadioActivity extends BaseActivity {
         MsgEvent msgEvent = SWDVBManager.getInstance().registerMsgEvent(Constants.SCAN_CALLBACK_MSG_ID);
         msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
             private void onUpdateSearchProgress(int step, int max_step) {
-                int bf = step * 100 / max_step;
-                if (bf < 0) {
-                    bf = 0;
+                if (step > 0 && max_step > 0) {
+                    int bf = step * 100 / max_step;
+                    if (bf < 0) {
+                        bf = 0;
+                    }
+                    if (bf > 100) {
+                        bf = 100;
+                    }
+                    String percent = bf + "%";
+                    mTvTvAndRadioProgress.setText(percent);
+                    mPbTvAndRadio.setMax(max_step);
+                    mPbTvAndRadio.setProgress(step);
                 }
-                if (bf > 100) {
-                    bf = 100;
-                }
-                String percent = bf + "%";
-                mTvTvAndRadioProgress.setText(percent);
-                mPbTvAndRadio.setMax(max_step);
-                mPbTvAndRadio.setProgress(step);
             }
 
             @Override
@@ -163,10 +165,10 @@ public class ScanTVandRadioActivity extends BaseActivity {
              */
             @Override
             public int PSearch_PROG_ONETSOK(int AllNum, int CurrIndex, int Sat,
-                                            int freq, int symbol, int qam) {
+                                            int freq, int symbol, int qam, int plpid) {
                 onUpdateSearchProgress(AllNum, CurrIndex);
 
-                ArrayList<PDPInfo_t> pdpInfo_ts = SWPSearchManager.getInstance().getTsSearchResInfo(Sat, freq, symbol, qam);
+                ArrayList<PDPInfo_t> pdpInfo_ts = SWPSearchManager.getInstance().getTsSearchResInfo(Sat, freq, symbol, qam, plpid);
                 if (pdpInfo_ts == null) return 0;
 
                 updateTvList(pdpInfo_ts);

@@ -16,9 +16,11 @@ import com.konkawise.dtv.PreferenceManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
+import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.ScanDialog;
 import com.konkawise.dtv.utils.Utils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindArray;
@@ -243,14 +245,14 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
         if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_RED) {
             saveSatInfo();
 
-            showScanDialog();
+            showScanS2OrT2Dialog();
             return true;
         }
 
         return super.onKeyUp(keyCode, event);
     }
 
-    private void showScanDialog() {
+    private void showS2ScanDialog() {
         new ScanDialog().setOnScanSearchListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -260,6 +262,41 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
                 finish();
             }
         }).show(getSupportFragmentManager(), ScanDialog.TAG);
+    }
+
+    private void showT2ScanDialog() {
+        new ScanDialog()
+                .installationType(ScanDialog.INSTALLATION_TYPE_AUTO_SEARCH)
+                .setOnScanSearchListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(BlindActivity.this, ScanTVandRadioActivity.class);
+                        intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, 0);
+                        intent.putExtra(Constants.IntentKey.INTENT_T2_AUTO_SEARCH, 5);
+                        startActivity(intent);
+                        finish();
+                    }
+                }).show(getSupportFragmentManager(), ScanDialog.TAG);
+    }
+
+    private void showScanS2OrT2Dialog() {
+        List<String> content = new ArrayList<>();
+        content.add(getString(R.string.installation_s2));
+        content.add(getString(R.string.installation_t2));
+        new CommCheckItemDialog()
+                .title(getString(R.string.dialog_title_tips))
+                .content(content)
+                .position(0)
+                .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
+                    @Override
+                    public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
+                        if (position == 0) {
+                            showS2ScanDialog();
+                        } else {
+                            showT2ScanDialog();
+                        }
+                    }
+                }).show(getSupportFragmentManager(), CommCheckItemDialog.TAG);
     }
 
     /**

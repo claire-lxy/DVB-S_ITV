@@ -44,8 +44,8 @@ public class SWPSearchManager {
     /**
      * 根据搜索获取的参数获取频道列表
      */
-    public ArrayList<PDPInfo_t> getTsSearchResInfo(int sat, int freq, int symbol, int qam) {
-        return SWPSearch.CreateInstance().getTsSearchResInfo(sat, freq, symbol, qam);
+    public ArrayList<PDPInfo_t> getTsSearchResInfo(int sat, int freq, int symbol, int qam, int plpid) {
+        return SWPSearch.CreateInstance().getTsSearchResInfo(sat, freq, symbol, qam, plpid);
     }
 
     /**

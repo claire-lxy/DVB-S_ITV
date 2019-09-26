@@ -146,11 +146,11 @@ public class TpBlindActivity extends BaseActivity {
              */
             @Override
             public int PSearch_PROG_ONETSOK(int AllNum, int CurrIndex, int Sat,
-                                            int freq, int symbol, int qam) {
+                                            int freq, int symbol, int qam, int plpid) {
                 PSRNum_t psr = SWPSearchManager.getInstance().getProgNumOfThisSarch(Sat, freq);
                 if (null == psr) return 1;
 
-                ArrayList<PDPInfo_t> list = SWPSearchManager.getInstance().getTsSearchResInfo(Sat, freq, symbol, qam);
+                ArrayList<PDPInfo_t> list = SWPSearchManager.getInstance().getTsSearchResInfo(Sat, freq, symbol, qam, plpid);
                 if (list == null) return 0;
 
                 updateTvList(list);
