@@ -134,6 +134,10 @@ public class TpListingActivity extends BaseActivity {
         mCheckSignalHelper.setOnCheckSignalListener(new CheckSignalHelper.OnCheckSignalListener() {
             @Override
             public void signal(int strength, int quality) {
+                if (mAdapter.getCount() <= 0) {
+                    strength = 0;
+                    quality = 0;
+                }
                 String strengthPercent = strength + "%";
                 mTvStrengthProgress.setText(strengthPercent);
                 mPbStrength.setProgress(strength);

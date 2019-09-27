@@ -214,7 +214,7 @@ public class Topmost extends BaseActivity {
     @OnClick(R.id.item_installation)
     void installation() {
         if (isShowInstallation()) {
-            showS2OrT2Dialog(Constants.DVB_SELECT_TYPE_INSTALLATION);
+            showS2OrT2Dialog(Constants.DVB_SELECT_TYPE_INSTALLATION, true);
         } else {
             toggleInstallationItem();
         }
@@ -1410,7 +1410,7 @@ public class Topmost extends BaseActivity {
 
                         @Override
                         public void onStartSearch() {
-                            showS2OrT2Dialog(Constants.DVB_SELECT_TYPE_SEARCH);
+                            showS2OrT2Dialog(Constants.DVB_SELECT_TYPE_SEARCH, false);
                         }
 
                         @Override
@@ -1430,7 +1430,7 @@ public class Topmost extends BaseActivity {
                     @Override
                     public void onPositiveListener() {
                         mItemInstallation.requestFocus();
-                        showS2OrT2Dialog(Constants.DVB_SELECT_TYPE_INSTALLATION);
+                        showS2OrT2Dialog(Constants.DVB_SELECT_TYPE_INSTALLATION, true);
                     }
                 }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
     }
@@ -1476,7 +1476,7 @@ public class Topmost extends BaseActivity {
         }
     }
 
-    private void showS2OrT2Dialog(@DVBSelectType int selectType) {
+    private void showS2OrT2Dialog(@DVBSelectType int selectType, boolean agreeBack) {
         List<String> content = new ArrayList<>();
         content.add(getString(R.string.installation_s2));
         content.add(getString(R.string.installation_t2));
@@ -1487,7 +1487,7 @@ public class Topmost extends BaseActivity {
                 new CommCheckItemDialog()
                         .title(getString(R.string.dialog_title_tips))
                         .content(content)
-                        .agreeBack(false)
+                        .agreeBack(agreeBack)
                         .position(0)
                         .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
                             @Override
@@ -1498,12 +1498,11 @@ public class Topmost extends BaseActivity {
                                     } else {
                                         startActivity(new Intent(Topmost.this, InstallationT2Activity.class));
                                     }
-                                }
-                                else if (selectType == Constants.DVB_SELECT_TYPE_SEARCH){
+                                } else if (selectType == Constants.DVB_SELECT_TYPE_SEARCH) {
                                     if (position == 0) {
-                                        startActivity(new Intent(Topmost.this, BlindActivity.class));
+                                        startActivity(new Intent(Topmost.this, SatelliteActivity.class));
                                     } else {
-                                       startActivity(new Intent(Topmost.this, InstallationT2Activity.class));
+                                        startActivity(new Intent(Topmost.this, InstallationT2Activity.class));
                                     }
                                 }
                             }

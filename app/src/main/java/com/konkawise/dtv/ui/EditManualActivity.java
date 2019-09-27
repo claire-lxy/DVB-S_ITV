@@ -201,6 +201,10 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
         mCheckSignalHelper.setOnCheckSignalListener(new CheckSignalHelper.OnCheckSignalListener() {
             @Override
             public void signal(int strength, int quality) {
+                if (isTpEmpty()) {
+                    strength = 0;
+                    quality = 0;
+                }
                 String strengthPercent = strength + "%";
                 mTvStrengthProgress.setText(strengthPercent);
                 mPbStrength.setProgress(strength);
@@ -489,7 +493,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
      */
     private void tpChange() {
         getTpList();
-        if (mTpList == null || mTpList.size() == 0) {
+        if (isTpEmpty()) {
             mTvTp.setText(getString(R.string.empty_tp));
             return;
         }
@@ -498,6 +502,10 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
         mTvTp.setText(tpName);
 
         SWFtaManager.getInstance().tunerLockFreq(channel.SatIndex, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
+    }
+
+    private boolean isTpEmpty() {
+        return mTpList == null || mTpList.size() == 0;
     }
 
     /**
