@@ -3,6 +3,7 @@ package com.konkawise.dtv.ui;
 import android.content.Intent;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -93,6 +94,8 @@ public class ScanTVandRadioActivity extends BaseActivity {
         SWPSearchManager.getInstance().config(SWFtaManager.getInstance().getCurrScanMode(),
                 SWFtaManager.getInstance().getCurrCAS(), SWFtaManager.getInstance().getCurrNetwork());
 
+        registerMsgEvent();
+
         initIntent();
         initCheckSignal();
         initRecyclerView();
@@ -102,16 +105,20 @@ public class ScanTVandRadioActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         mCheckSignalHelper.startCheckSignal();
-        registerMsgEvent();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         mCheckSignalHelper.stopCheckSignal();
-        unregisterMsgEvent();
         SWPSearchManager.getInstance().seatchStop(false);
         SatelliteActivity.satList.clear();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterMsgEvent();
     }
 
     private void registerMsgEvent() {
@@ -242,7 +249,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
             private void updateScan(int freq, int symbol, int qam, int num, int index) {
                 String tpName;
                 if (isFromT2AutoSearch() || isFromT2ManualSearchActivity()) {
-                    tpName = freq/10+"."+freq%10+"MHz" + " / " +symbol+"M";
+                    tpName = freq / 10 + "." + freq % 10 + "MHz" + " / " + symbol + "M";
                 } else {
                     tpName = freq + Utils.getVorH(ScanTVandRadioActivity.this, qam) + symbol;
                 }
@@ -281,7 +288,12 @@ public class ScanTVandRadioActivity extends BaseActivity {
             int Qam = getQam();
 
             mTvSatelliteName.setText(SWPDBaseManager.getInstance().getSatInfo(satIndex).sat_name);
-            SWPSearchManager.getInstance().searchByOneTS(satIndex, freq, Symbol, Qam);
+            if (SWFtaManager.getInstance().getCurrNetwork() == 0) {
+                SWPSearchManager.getInstance().searchByOneTS(satIndex, freq, Symbol, Qam);
+            } else {
+                SWPSearchManager.getInstance().searchByNIT(satIndex, freq, Symbol, Qam);
+            }
+
         }
 
         if (isFromT2AutoSearch()) {
@@ -294,7 +306,11 @@ public class ScanTVandRadioActivity extends BaseActivity {
             int freq = getFreq();
             int satIndex = getSatelliteIndex();
             int Symbol = getSymbol();
-            SWPSearchManager.getInstance().searchByOneTS(satIndex, freq, Symbol, 0);
+            if (SWFtaManager.getInstance().getCurrNetwork() == 0) {
+                SWPSearchManager.getInstance().searchByOneTS(satIndex, freq, Symbol, 0);
+            } else {
+                SWPSearchManager.getInstance().searchByNIT(satIndex, freq, Symbol, 0);
+            }
         }
 
     }

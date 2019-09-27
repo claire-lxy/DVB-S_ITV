@@ -234,7 +234,7 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
 
     private void showScanDialog() {
         new ScanDialog()
-                .installationType(ScanDialog.INSTALLATION_TYPE_MANUAL_SEARCH)
+                .installationType(ScanDialog.INSTALLATION_TYPE_S2_SEARCH)
                 .setOnScanSearchListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
