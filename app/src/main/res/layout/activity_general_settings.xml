@@ -421,7 +421,7 @@
                 style="@style/ItemContentStyle"
                 android:layout_toLeftOf="@+id/iv_channel_scan_time_right"
                 android:layout_toStartOf="@+id/iv_channel_scan_time_right"
-                android:text="@string/on" />
+                android:text="11:54" />
 
             <ImageView
                 android:id="@+id/iv_channel_scan_time_right"

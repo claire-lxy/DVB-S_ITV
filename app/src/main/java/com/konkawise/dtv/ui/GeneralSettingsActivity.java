@@ -229,13 +229,15 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
 
     @OnClick(R.id.item_channel_scan_time)
     void channelScanTime() {
-        new EditTimeDialog().setCurrTime(0)
+        new EditTimeDialog().setCurrTime(SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_AutoScanTime.ordinal()) * 1000)
                 .setTimeLimit(23 * 60 * 60 * 1000 + 59 * 60 * 1000)
                 .from(EditTimeDialog.FROM_CHANNEL_SCAN_TIEM)
                 .setTimeListener(new EditTimeDialog.OnTimeListener() {
                     @Override
                     public void time(int hour, int minute, int second) {
                         Log.i(TAG, "hour:" + hour + " minute:" + minute + " second:" + second);
+                        SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AutoScanTime.ordinal(), hour * 60 * 60 + minute * 60);
+                        mTvChannelScanTime.setText(hour + ":" + minute);
                     }
                 }).show(getSupportFragmentManager(), EditTimeDialog.TAG);
     }
@@ -276,6 +278,7 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
         mTvSubtitleLanguage.setText(mLanguageArray[subtitleLanguagePosition]);
         mTvAutoStart.setText(mGeneralSwitchArray[autoStartPosition]);
         mTvChannelScan.setText(mGeneralSwitchArray[channelScanPosition]);
+        mTvChannelScanTime.setText(transTimeToStr(SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_AutoScanTime.ordinal())));
     }
 
     private void initData() {
@@ -289,6 +292,15 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
         secondAudioLanguagePosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_AudioLanguage1.ordinal()));
         subtitleLanguagePosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleLanguage.ordinal()));
 //        autoStartPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleDisplay.ordinal()));
+        channelScanPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_AutoScanEnabled.ordinal()));
+    }
+
+    private String transTimeToStr(int second) {
+        int hour = second / (60 * 60);
+        int minute = (second - hour * 60 * 60) / 60;
+        String hStr = hour < 10 ? "0" + hour : "" + hour;
+        String mStr = minute < 10 ? "0" + minute : "" + minute;
+        return hStr + ":" + mStr;
     }
 
     private int getSelectPosition(int[] datas, int value) {
@@ -362,6 +374,7 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
                             case ITEM_CHANNEL_SCAN:
                                 mTvChannelScan.setText(checkContent);
                                 channelScanPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
+                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AutoScanEnabled.ordinal(), channelScanPosition);
                                 showOrDismissChannelScanTime();
                                 break;
                             default:
@@ -528,6 +541,7 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
                     if (--channelScanPosition < 0)
                         channelScanPosition = mGeneralSwitchArray.length - 1;
                     mTvChannelScan.setText(mGeneralSwitchArray[channelScanPosition]);
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AutoScanEnabled.ordinal(), channelScanPosition);
                     showOrDismissChannelScanTime();
                     break;
             }
@@ -608,6 +622,7 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
                     if (++channelScanPosition > mGeneralSwitchArray.length - 1)
                         channelScanPosition = 0;
                     mTvChannelScan.setText(mGeneralSwitchArray[channelScanPosition]);
+                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AutoScanEnabled.ordinal(), channelScanPosition);
                     showOrDismissChannelScanTime();
                     break;
             }
