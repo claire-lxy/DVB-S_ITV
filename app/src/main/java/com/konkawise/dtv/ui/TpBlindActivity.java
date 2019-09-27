@@ -140,7 +140,7 @@ public class TpBlindActivity extends BaseActivity {
         msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
             @Override
             public int PSearch_PROG_ONETSFAIL(int AllNum, int CurrIndex, int Sat,
-                                              int freq, int symbol, int qam) {
+                                              int freq, int symbol, int qam, int plpid) {
                 int curr = 0;
                 if (mBlindTpAdapter.getItemCount() > 0) {
                     curr = CurrIndex * 100 / mBlindTpAdapter.getItemCount();
@@ -212,7 +212,7 @@ public class TpBlindActivity extends BaseActivity {
             }
 
             @Override
-            public int PSearch_PROG_SEARCHFINISH(int AllNum, int Curr) {
+            public int PSearch_PROG_SEARCHFINISH(int AllNum, int Curr, int plpid) {
                 SWPDBaseManager.getInstance().setCurrProgType(SWFtaManager.getInstance().getCurrScanMode() == 2 ? SWPDBase.SW_GBPROG : SWPDBase.SW_TVPROG, 0);
                 stopSearch(true, nit);
                 showSearchResultDialog();
@@ -221,7 +221,7 @@ public class TpBlindActivity extends BaseActivity {
 
             @Override
             public int PSearch_PROG_STARTSEARCH(int AllNum, int CurrIndex, int Sat,
-                                                int freq, int symbol, int qam) {
+                                                int freq, int symbol, int qam, int plpid) {
                 int curr = 0;
                 if (mBlindTpAdapter.getItemCount() > 0) {
                     curr = CurrIndex * 100 / mBlindTpAdapter.getItemCount();
@@ -270,6 +270,11 @@ public class TpBlindActivity extends BaseActivity {
              */
             @Override
             public void PSearch_BlindScanFinish() {
+                if (mBlindTpAdapter.getItemCount() <= 0) {
+                    showNoTpFoundDialog();
+                    return;
+                }
+
                 mTvBlindTitle.setVisibility(View.GONE);
 
                 mScanTvAndRadioLayout.setVisibility(View.VISIBLE);
@@ -402,6 +407,16 @@ public class TpBlindActivity extends BaseActivity {
         new SearchResultDialog()
                 .tvSize(tvSize)
                 .radioSize(radioSize)
+                .setOnConfirmResultListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startPlayTV();
+                    }
+                }).show(getSupportFragmentManager(), SearchResultDialog.TAG);
+    }
+
+    private void showNoTpFoundDialog() {
+        new SearchResultDialog().searchNoProgramContent(getString(R.string.dialog_search_no_tp))
                 .setOnConfirmResultListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

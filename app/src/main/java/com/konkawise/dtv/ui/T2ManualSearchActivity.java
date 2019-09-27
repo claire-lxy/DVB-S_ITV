@@ -25,7 +25,6 @@ import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
 
 public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
-    private static final int T2_SatIndex = 0;
     private static final int ITEM_TRANSPONDER = 1;
     private static final int ITEM_FREQUENCY = 2;
     private static final int ITEM_BANDWIDTH = 3;
@@ -101,11 +100,11 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
     }
 
     private void initT2Data() {
-        satChannelInfoList = SWPDBaseManager.getInstance().getSatChannelInfoList(T2_SatIndex);
+        satChannelInfoList = SWPDBaseManager.getInstance().getSatChannelInfoList(Constants.T2_SATELLITE_INDEX);
         if (satChannelInfoList != null) {
             channel = satChannelInfoList.get(mCurrntChannel);
             mCurrntChannel = PreferenceManager.getInstance().getInt(Constants.PrefsKey.SAVE_CHANNEL);
-            SWFtaManager.getInstance().tunerLockFreq(T2_SatIndex, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
+            SWFtaManager.getInstance().tunerLockFreq(Constants.T2_SATELLITE_INDEX, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
         }
     }
 
@@ -114,7 +113,7 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
         channel = satChannelInfoList.get(mCurrntChannel);
         mTvFrequency.setText(MessageFormat.format(getString(R.string.frequency_text), (channel.Freq / 10) + "." + (channel.Freq % 10)));
         mTvBandWidth.setText(MessageFormat.format(getString(R.string.bandwidth_text), channel.Symbol));
-        SWFtaManager.getInstance().tunerLockFreq(T2_SatIndex, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
+        SWFtaManager.getInstance().tunerLockFreq(Constants.T2_SATELLITE_INDEX, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
         Log.e("T2ManualSearchActivity", "satChannelInfoList.size:  " + satChannelInfoList.size() + "channel.Freq  " + channel.Freq + "channel.Symbol  " +
                 channel.Symbol + "channel.Qam  " + channel.Symbol + "TsID  " + channel.TsID + "channel.NetID  " + channel.NetID + "channel.ChannelIndex  " + channel.ChannelIndex);
     }
@@ -239,7 +238,7 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
                     @Override
                     public void onClick(View v) {
                         Intent intent = new Intent(T2ManualSearchActivity.this, ScanTVandRadioActivity.class);
-                        intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, T2_SatIndex);//mCurrentSatellite == 0
+                        intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, Constants.T2_SATELLITE_INDEX);//mCurrentSatellite == 0
                         intent.putExtra(Constants.IntentKey.INTENT_FREQ, channel.Freq);
                         intent.putExtra(Constants.IntentKey.INTENT_SYMBOL, channel.Symbol);
                         intent.putExtra(Constants.IntentKey.INTENT_T2_MANUAL_SEARCH_ACTIVITY, 4);

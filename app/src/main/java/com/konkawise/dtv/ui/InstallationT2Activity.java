@@ -14,8 +14,6 @@ import butterknife.BindView;
 import butterknife.OnClick;
 
 public class InstallationT2Activity extends BaseActivity {
-    private static final int T2_SatIndex = 0;
-
     @BindView(R.id.rl_installation_auto_search)
     RelativeLayout rlInstallationAutoSearch;
 
@@ -49,7 +47,7 @@ public class InstallationT2Activity extends BaseActivity {
                     @Override
                     public void onClick(View v) {
                         Intent intent = new Intent(InstallationT2Activity.this, ScanTVandRadioActivity.class);
-                        intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, T2_SatIndex);//mCurrentSatellite == 0
+                        intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, Constants.T2_SATELLITE_INDEX);//mCurrentSatellite == 0
                         intent.putExtra(Constants.IntentKey.INTENT_T2_AUTO_SEARCH, 5);
                         startActivity(intent);
                         finish();

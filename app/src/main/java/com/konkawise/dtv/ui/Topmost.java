@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Message;
 import android.support.annotation.RequiresApi;
+import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseArray;
@@ -37,8 +38,10 @@ import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.UIApiManager;
 import com.konkawise.dtv.UsbManager;
 import com.konkawise.dtv.adapter.TvListAdapter;
+import com.konkawise.dtv.annotation.DVBSelectType;
 import com.konkawise.dtv.annotation.PVRType;
 import com.konkawise.dtv.base.BaseActivity;
+import com.konkawise.dtv.base.BaseDialogFragment;
 import com.konkawise.dtv.bean.HandlerMsgModel;
 import com.konkawise.dtv.bean.UsbInfo;
 import com.konkawise.dtv.dialog.AudioDialog;
@@ -211,7 +214,7 @@ public class Topmost extends BaseActivity {
     @OnClick(R.id.item_installation)
     void installation() {
         if (isShowInstallation()) {
-            showInstallationSelectDialog();
+            showS2OrT2Dialog(Constants.DVB_SELECT_TYPE_INSTALLATION);
         } else {
             toggleInstallationItem();
         }
@@ -1407,7 +1410,7 @@ public class Topmost extends BaseActivity {
 
                         @Override
                         public void onStartSearch() {
-                            startActivity(new Intent(Topmost.this, BlindActivity.class));
+                            showS2OrT2Dialog(Constants.DVB_SELECT_TYPE_SEARCH);
                         }
 
                         @Override
@@ -1427,7 +1430,7 @@ public class Topmost extends BaseActivity {
                     @Override
                     public void onPositiveListener() {
                         mItemInstallation.requestFocus();
-                        showInstallationSelectDialog();
+                        showS2OrT2Dialog(Constants.DVB_SELECT_TYPE_INSTALLATION);
                     }
                 }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
     }
@@ -1473,24 +1476,40 @@ public class Topmost extends BaseActivity {
         }
     }
 
-    private void showInstallationSelectDialog() {
+    private void showS2OrT2Dialog(@DVBSelectType int selectType) {
         List<String> content = new ArrayList<>();
         content.add(getString(R.string.installation_s2));
         content.add(getString(R.string.installation_t2));
-        new CommCheckItemDialog()
-                .title(getString(R.string.dialog_title_tips))
-                .content(content)
-                .position(0)
-                .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
-                    @Override
-                    public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
-                        if (position == 0) {
-                            toggleInstallationItem();
-                        } else {
-                            startActivity(new Intent(Topmost.this, InstallationT2Activity.class));
-                        }
-                    }
-                }).show(getSupportFragmentManager(), CommCheckItemDialog.TAG);
+
+        mProgHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                new CommCheckItemDialog()
+                        .title(getString(R.string.dialog_title_tips))
+                        .content(content)
+                        .agreeBack(false)
+                        .position(0)
+                        .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
+                            @Override
+                            public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
+                                if (selectType == Constants.DVB_SELECT_TYPE_INSTALLATION) {
+                                    if (position == 0) {
+                                        toggleInstallationItem();
+                                    } else {
+                                        startActivity(new Intent(Topmost.this, InstallationT2Activity.class));
+                                    }
+                                }
+                                else if (selectType == Constants.DVB_SELECT_TYPE_SEARCH){
+                                    if (position == 0) {
+                                        startActivity(new Intent(Topmost.this, BlindActivity.class));
+                                    } else {
+                                       startActivity(new Intent(Topmost.this, InstallationT2Activity.class));
+                                    }
+                                }
+                            }
+                        }).show(getSupportFragmentManager(), CommCheckItemDialog.TAG);
+            }
+        }, 100);
     }
 
     private void showClearChannelDialog() {
@@ -1728,10 +1747,15 @@ public class Topmost extends BaseActivity {
 
     private void dismissAllDialog() {
         dismissPfBarScanDialog();
-        dismissPfDetailDialog();
-        dismissPasswordDialog();
-        dismissSettingPasswordDialog();
-        dismissSearchDialog();
+
+        List<Fragment> fragments = getSupportFragmentManager().getFragments();
+        if (!fragments.isEmpty()) {
+            for (Fragment fragment : fragments) {
+                if (fragment instanceof BaseDialogFragment) {
+                    ((BaseDialogFragment) fragment).dismiss();
+                }
+            }
+        }
     }
 
     private void dismissPfBarScanDialog() {
@@ -1759,13 +1783,6 @@ public class Topmost extends BaseActivity {
         if (mSettingPasswordDialog != null && mSettingPasswordDialog.getDialog() != null && mSettingPasswordDialog.isVisible()) {
             mSettingPasswordDialog.dismiss();
             mSettingPasswordDialog = null;
-        }
-    }
-
-    private void dismissSearchDialog() {
-        if (mSearchChannelDialog != null && mSearchChannelDialog.getDialog() != null && mSearchChannelDialog.isVisible()) {
-            mSearchChannelDialog.dismiss();
-            mSearchChannelDialog = null;
         }
     }
 
@@ -1886,10 +1903,6 @@ public class Topmost extends BaseActivity {
         mItemBackupUserData.setVisibility(View.GONE);
         mItemDtvSetting.setVisibility(View.VISIBLE);
         mItemDataReset.setVisibility(View.VISIBLE);
-    }
-
-    private boolean isMenuTopFocused() {
-        return mItemInstallation.isFocused() || (mItemChannelManage.isFocused() && mIvChannelManageBack.getVisibility() == View.VISIBLE);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.konkawise.dtv.dialog;
 
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -37,6 +38,7 @@ public class SearchResultDialog extends BaseDialogFragment {
 
     private int mTvSize;
     private int mRadioSize;
+    private String mSearchNoProgramContent;
     private View.OnClickListener mOnConfirmResultListener;
 
     @Override
@@ -52,6 +54,9 @@ public class SearchResultDialog extends BaseDialogFragment {
             mTvSearchTvSize.setText(MessageFormat.format(getStrings(R.string.dialog_search_result_tv), String.valueOf(mTvSize)));
             mTvSearchRadioSize.setText(MessageFormat.format(getStrings(R.string.dialog_search_result_radio), String.valueOf(mRadioSize)));
         } else {
+            if (!TextUtils.isEmpty(mSearchNoProgramContent)) {
+                mTvSearchNoProgram.setText(mSearchNoProgramContent);
+            }
             mTvSearchNoProgram.setVisibility(View.VISIBLE);
             mSearchResultLayout.setVisibility(View.GONE);
         }
@@ -64,6 +69,11 @@ public class SearchResultDialog extends BaseDialogFragment {
 
     public SearchResultDialog radioSize(int size) {
         this.mRadioSize = size;
+        return this;
+    }
+
+    public SearchResultDialog searchNoProgramContent(String content) {
+        if (!TextUtils.isEmpty(content)) this.mSearchNoProgramContent = content;
         return this;
     }
 

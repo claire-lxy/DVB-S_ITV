@@ -3,7 +3,6 @@ package com.konkawise.dtv.ui;
 import android.content.Intent;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -169,7 +168,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
              */
             @Override
             public int PSearch_PROG_ONETSFAIL(int AllNum, int CurrIndex, int Sat,
-                                              int freq, int symbol, int qam) {
+                                              int freq, int symbol, int qam, int plpid) {
                 updateScan(freq, symbol, qam, AllNum, CurrIndex);
                 return 0;
             }
@@ -235,7 +234,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
              */
             @Override
             public int PSearch_PROG_STARTSEARCH(int AllNum, int CurrIndex, int Sat,
-                                                int freq, int symbol, int qam) {
+                                                int freq, int symbol, int qam, int plpid) {
                 updateScan(freq, symbol, qam, AllNum, CurrIndex);
                 return 0;
             }
@@ -244,7 +243,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
              * 搜索完成
              */
             @Override
-            public int PSearch_PROG_SEARCHFINISH(int AllNum, int Curr) {
+            public int PSearch_PROG_SEARCHFINISH(int AllNum, int Curr, int plpid) {
                 if (mutiSateIndex != -1 && mutiSateIndex < mSatList.size() - 1) {
                     mutiSateIndex++;
                     stopSearch(true, nit);

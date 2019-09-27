@@ -43,6 +43,7 @@ public class CommCheckItemDialog extends BaseDialogFragment {
 
     private String mTitle;
     private List<String> mContent;
+    private boolean mAgreeBack = true;
     private CommCheckItemAdapter mAdapter;
     private int mSelectPosition;
     private OnDismissListener mOnDismissListener;
@@ -70,6 +71,11 @@ public class CommCheckItemDialog extends BaseDialogFragment {
 
     public CommCheckItemDialog content(List<String> content) {
         this.mContent = content == null ? new ArrayList<>() : content;
+        return this;
+    }
+
+    public CommCheckItemDialog agreeBack(boolean agreeBack) {
+        this.mAgreeBack = agreeBack;
         return this;
     }
 
@@ -127,6 +133,9 @@ public class CommCheckItemDialog extends BaseDialogFragment {
                 mLvContent.setSelection(0);
                 return true;
             }
+        }
+        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
+            if (!mAgreeBack) return true;
         }
         return super.onKeyListener(dialog, keyCode, event);
     }

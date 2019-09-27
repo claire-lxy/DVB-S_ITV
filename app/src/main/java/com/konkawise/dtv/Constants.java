@@ -34,10 +34,15 @@ public class Constants {
     public static final int TIME_CALLBACK_MSG_ID = 0x6004; // 系统时间消息回调通道id
     public static final int PVR_CALLBACK_MSG_ID = 0x6005; // PVR播放消息回调通道id
     public static final int EPG_CALLBACK_MSG_ID = 0x6006; // EPG消息回调通道id
+    public static final int REFRESH_CHANNEL_CALLBACK_MSG_ID = 0x6007; // 提示更新搜台消息回调id
 
     // pvr type
     public static final int PVR_TYPE_TIMESHIFT = 0x7001;
     public static final int PVR_TYPE_RECORD = 0x7002;
+
+    // dvb type
+    public static final int DVB_SELECT_TYPE_INSTALLATION = 0x8001;
+    public static final int DVB_SELECT_TYPE_SEARCH = 0x8002;
 
     // DiSEqC index
     public static final int DISEQC_A = 0;
@@ -59,6 +64,8 @@ public class Constants {
 
     public static final String RECORD_FILE_TYPE = "ts";
     public static final String RECORD_CONFIG_FILE_TYPE = ".idx";
+
+    public static final int T2_SATELLITE_INDEX = 0;
 
     public interface IntentKey {
         String INTENT_SATELLITE_INDEX = "satelliteIndex";

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="30dp"
     android:focusable="true"
@@ -13,16 +14,18 @@
         android:layout_marginEnd="50dp"
         android:layout_marginRight="50dp"
         android:gravity="center"
-        android:textSize="15sp" />
+        android:textSize="15sp"
+        tools:text="2" />
 
     <TextView
         android:id="@+id/tv_tp_left_text"
-        android:layout_width="70dp"
+        android:layout_width="100dp"
         android:layout_height="match_parent"
         android:layout_marginEnd="50dp"
         android:layout_marginRight="50dp"
         android:gravity="center"
-        android:textSize="15sp" />
+        android:textSize="15sp"
+        tools:text="4140MHz" />
 
     <TextView
         android:id="@+id/tv_tp_v_h"
@@ -31,12 +34,14 @@
         android:layout_marginEnd="50dp"
         android:layout_marginRight="50dp"
         android:gravity="center"
-        android:textSize="15sp" />
+        android:textSize="15sp"
+        tools:text="V" />
 
     <TextView
         android:id="@+id/tv_tp_right_text"
         android:layout_width="70dp"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:textSize="15sp" />
+        android:textSize="15sp"
+        tools:text="27500ks" />
 </LinearLayout>
