@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
+import vendor.konka.hardware.dtvmanager.V1_0.HSearchStoreType_E;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 
@@ -84,6 +85,8 @@ public class ScanTVandRadioActivity extends BaseActivity {
 
     private CheckSignalHelper mCheckSignalHelper;
 
+    private int nit;
+
     @Override
     public int getLayoutId() {
         return R.layout.activity_scan_tv_and_radio;
@@ -91,8 +94,9 @@ public class ScanTVandRadioActivity extends BaseActivity {
 
     @Override
     protected void setup() {
+        nit = SWFtaManager.getInstance().getCurrNetwork();
         SWPSearchManager.getInstance().config(SWFtaManager.getInstance().getCurrScanMode(),
-                SWFtaManager.getInstance().getCurrCAS(), SWFtaManager.getInstance().getCurrNetwork());
+                SWFtaManager.getInstance().getCurrCAS(), nit);
 
         registerMsgEvent();
 
@@ -111,7 +115,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
     protected void onPause() {
         super.onPause();
         mCheckSignalHelper.stopCheckSignal();
-        SWPSearchManager.getInstance().seatchStop(false);
+        stopSearch(false, nit);
         SatelliteActivity.satList.clear();
     }
 
@@ -119,6 +123,14 @@ public class ScanTVandRadioActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         unregisterMsgEvent();
+    }
+
+    private void stopSearch(boolean storeProgram, int nit) {
+        if (nit == 0) {
+            SWPSearchManager.getInstance().seatchStop(storeProgram, HSearchStoreType_E.BY_SERVID);
+        } else {
+            SWPSearchManager.getInstance().seatchStop(storeProgram, HSearchStoreType_E.BY_LOGIC_NUM);
+        }
     }
 
     private void registerMsgEvent() {
@@ -235,13 +247,13 @@ public class ScanTVandRadioActivity extends BaseActivity {
             public int PSearch_PROG_SEARCHFINISH(int AllNum, int Curr) {
                 if (mutiSateIndex != -1 && mutiSateIndex < mSatList.size() - 1) {
                     mutiSateIndex++;
-                    SWPSearchManager.getInstance().seatchStop(true);
+                    stopSearch(true, nit);
                     searchMultiSatellite();
                     return 1;
                 }
                 SatelliteActivity.satList.clear();
                 SWPDBaseManager.getInstance().setCurrProgType(SWFtaManager.getInstance().getCurrScanMode() == 2 ? SWPDBase.SW_GBPROG : SWPDBase.SW_TVPROG, 0);
-                SWPSearchManager.getInstance().seatchStop(true);
+                stopSearch(true, nit);
                 showSearchResultDialog();
                 return 0;
             }

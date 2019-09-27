@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Timer;
 
 import butterknife.BindView;
+import vendor.konka.hardware.dtvmanager.V1_0.HSearchStoreType_E;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PSRNum_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PSSParam_t;
@@ -87,6 +88,8 @@ public class TpBlindActivity extends BaseActivity {
     private Timer mBlindScanProgressTimer;
     private BlindScanProgressTimerTask mBlindScanProgressTimerTask;
 
+    private int nit;
+
     @Override
     public int getLayoutId() {
         return R.layout.activity_tp_blind;
@@ -101,8 +104,9 @@ public class TpBlindActivity extends BaseActivity {
         initRecyclerView();
         setupBlindSatInfo();
 
+        nit = SWFtaManager.getInstance().getCurrNetwork();
         SWPSearchManager.getInstance().config(SWFtaManager.getInstance().getCurrScanMode(),
-                SWFtaManager.getInstance().getCurrCAS(), SWFtaManager.getInstance().getCurrNetwork());
+                SWFtaManager.getInstance().getCurrCAS(), nit);
         SWFtaManager.getInstance().blindScanStart(getSatelliteIndex());
 
         startBlindScanProgressTimer();
@@ -118,9 +122,17 @@ public class TpBlindActivity extends BaseActivity {
     protected void onPause() {
         super.onPause();
         unregisterMsgEvent();
-        SWPSearchManager.getInstance().seatchStop(false);
+        stopSearch(false, nit);
         stopBlindScanProgressTimer();
         stopBlindScan();
+    }
+
+    private void stopSearch(boolean storeProgram, int nit) {
+        if (nit == 0) {
+            SWPSearchManager.getInstance().seatchStop(storeProgram, HSearchStoreType_E.BY_SERVID);
+        } else {
+            SWPSearchManager.getInstance().seatchStop(storeProgram, HSearchStoreType_E.BY_LOGIC_NUM);
+        }
     }
 
     private void registerMsgEvent() {
@@ -202,7 +214,7 @@ public class TpBlindActivity extends BaseActivity {
             @Override
             public int PSearch_PROG_SEARCHFINISH(int AllNum, int Curr) {
                 SWPDBaseManager.getInstance().setCurrProgType(SWFtaManager.getInstance().getCurrScanMode() == 2 ? SWPDBase.SW_GBPROG : SWPDBase.SW_TVPROG, 0);
-                SWPSearchManager.getInstance().seatchStop(true);
+                stopSearch(true, nit);
                 showSearchResultDialog();
                 return 0;
             }

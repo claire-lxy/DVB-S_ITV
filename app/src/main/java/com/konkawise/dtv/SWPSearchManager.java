@@ -72,8 +72,12 @@ public class SWPSearchManager {
      *
      * @param storeProgram storeProgram=0表示不保存，storeProgram=1表示保存
      */
-    public void seatchStop(boolean storeProgram) {
-        SWPSearch.CreateInstance().seatchStop(storeProgram);
+    public int seatchStop(boolean storeProgram) {
+        return SWPSearch.CreateInstance().seatchStop(storeProgram);
+    }
+
+    public int seatchStop(Boolean storeProgram, int storeType) {
+        return SWPSearch.CreateInstance().seatchStop(storeProgram, storeType);
     }
 
     public PSRNum_t getProgNumOfThisSarch(int sat, int freq) {
