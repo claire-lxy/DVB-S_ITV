@@ -2117,7 +2117,7 @@ public class Topmost extends BaseActivity {
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         // 没有节目，不处理节目切换
-        if (mProgListAdapter.getCount() <= 0) {
+        if (mProgListAdapter.getCount() <= 0 && !mMenuShow) {
             if (unInterceptEventWhenProgEmpty(event)) {
                 return super.dispatchKeyEvent(event);
             }
@@ -2370,12 +2370,7 @@ public class Topmost extends BaseActivity {
                 keyCode == KeyEvent.KEYCODE_MENU ||
                 keyCode == KeyEvent.KEYCODE_UNKNOWN ||
                 keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
-                keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
-                (mMenuShow && (keyCode == KeyEvent.KEYCODE_DPAD_UP ||
-                        keyCode == KeyEvent.KEYCODE_DPAD_DOWN ||
-                        keyCode == KeyEvent.KEYCODE_DPAD_LEFT ||
-                        keyCode == KeyEvent.KEYCODE_DPAD_RIGHT ||
-                        keyCode == KeyEvent.KEYCODE_DPAD_CENTER));
+                keyCode == KeyEvent.KEYCODE_VOLUME_DOWN;
     }
 
     @Override
