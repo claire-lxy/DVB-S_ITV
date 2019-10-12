@@ -3,6 +3,7 @@ package com.konkawise.dtv;
 import com.sw.dvblib.SWFta;
 
 import vendor.konka.hardware.dtvmanager.V1_0.HPDPPlayInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProperty_E;
 import vendor.konka.hardware.dtvmanager.V1_0.HSubtitle_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HTeletext_t;
 import vendor.konka.hardware.dtvmanager.V1_0.ScanProgress_t;
@@ -29,14 +30,14 @@ public class SWFtaManager {
      * 是否打开Parental Lock
      */
     public boolean isOpenParentLock() {
-        return getCommE2PInfo(SWFta.E_E2PP.E2P_cParentLock.ordinal()) == 1;
+        return getCommE2PInfo(HProperty_E.cParentLock) == 1;
     }
 
     /**
      * 是否打开Menu Lock
      */
     public boolean isOpenMenuLock() {
-        return getCommE2PInfo(SWFta.E_E2PP.E2P_cMenuLock.ordinal()) == 1;
+        return getCommE2PInfo(HProperty_E.cMenuLock) == 1;
     }
 
     /**
@@ -84,15 +85,15 @@ public class SWFtaManager {
     }
 
     public int getCurrScanMode() {
-        return getCommE2PInfo(SWFta.E_E2PP.E2P_ScanMode.ordinal());
+        return getCommE2PInfo(HProperty_E.ScanMode);
     }
 
     public int getCurrNetwork() {
-        return getCommE2PInfo(SWFta.E_E2PP.E2P_Network.ordinal());
+        return getCommE2PInfo(HProperty_E.Network);
     }
 
     public int getCurrCAS() {
-        return getCommE2PInfo(SWFta.E_E2PP.E2P_CAS.ordinal());
+        return getCommE2PInfo(HProperty_E.CAS);
     }
 
     /**
@@ -182,7 +183,7 @@ public class SWFtaManager {
     }
 
     public long dismissTimeout() {
-        return getCommE2PInfo(SWFta.E_E2PP.E2P_PD_dispalytime.ordinal()) * 1000;
+        return getCommE2PInfo(HProperty_E.PD_dispalytime) * 1000;
     }
 
     /**
@@ -235,6 +236,6 @@ public class SWFtaManager {
      * SWFta.E_E2PP.E2P_FirstOpen.ordinal()==1表示第一次启动，SWFta.E_E2PP.E2P_FirstOpen.ordinal()==0表示不是第一次启动
      */
     public boolean isPasswordEmpty() {
-        return getCommE2PInfo(SWFta.E_E2PP.E2P_FirstOpen.ordinal()) == 1;
+        return getCommE2PInfo(HProperty_E.FirstOpen) == 1;
     }
 }

@@ -67,14 +67,15 @@ public class Constants {
 
     public static final int T2_SATELLITE_INDEX = 0;
 
+    public static final int SEARCH_TYPE_SATELLITE = 1;
+    public static final int SEARCH_TYPE_TPLISTING = 2;
+    public static final int SEARCH_TYPE_EDITMANUAL = 3;
+    public static final int SEARCH_TYPE_T2MANUAL = 4;
+    public static final int SEARCH_TYPE_T2AUTO = 5;
+
     public interface IntentKey {
         String INTENT_SATELLITE_INDEX = "satelliteIndex";
         String INTENT_SATELLITE_POSITION = "satellitePosition";
-        String INTENT_SATELLITE_ACTIVITY = "satelliteActivity";
-        String INTENT_EDIT_MANUAL_ACTIVITY = "editManualActivity";
-        String INTENT_TPLIST_ACTIVITY = "tpListActivity";
-        String INTENT_T2_MANUAL_SEARCH_ACTIVITY = "t2ManualSearchActivity";
-        String INTENT_T2_AUTO_SEARCH = "installationT2Activity";
         String INTENT_TP_NAME = "tpName";
         String INTENT_LNB = "lnb";
         String ITENT_DISEQC = "DiSEqC";
@@ -83,6 +84,7 @@ public class Constants {
         String INTENT_SYMBOL = "symbol";
         String INTENT_QAM = "qam";
         String INTENT_LONGITUDE = "longitude";
+        String INTENT_SEARCH_TYPE = "searchType";
 
         String INTENT_BOOK_TYPE = "bookType";
         String INTENT_BOOK_SECONDS = "bookSeconds";

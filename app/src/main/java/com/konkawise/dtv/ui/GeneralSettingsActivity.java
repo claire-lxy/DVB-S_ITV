@@ -1,6 +1,5 @@
 package com.konkawise.dtv.ui;
 
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -12,7 +11,6 @@ import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.EditTimeDialog;
-import com.sw.dvblib.SWFta;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +18,7 @@ import java.util.List;
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.OnClick;
+import vendor.konka.hardware.dtvmanager.V1_0.HProperty_E;
 
 public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
 
@@ -33,9 +32,8 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
     private static final int ITEM_SECOND_AUDIO_LANGUAGE = 7;
     private static final int ITEM_SUBTITLE_DISPLAY = 8;
     private static final int ITEM_SUBTITLE_LANGUAGE = 9;
-    private static final int ITEM_AUTO_START = 10;
-    private static final int ITEM_CHANNEL_SCAN = 11;
-    private static final int ITEM_CHANNEL_SCAN_TIME = 12;
+    private static final int ITEM_CHANNEL_SCAN = 10;
+    private static final int ITEM_CHANNEL_SCAN_TIME = 11;
 
     @BindView(R.id.item_scart)
     RelativeLayout rlItemScart;
@@ -130,15 +128,6 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
     @BindView(R.id.iv_subtitle_language_right)
     ImageView mIvSubtitleLanguageRight;
 
-    @BindView(R.id.iv_auto_start_left)
-    ImageView mIvAutoStartLeft;
-
-    @BindView(R.id.tv_auto_start)
-    TextView mTvAutoStart;
-
-    @BindView(R.id.iv_auto_start_right)
-    ImageView mIvAutoStartRight;
-
     @BindView(R.id.iv_channel_scan_left)
     ImageView mIvChannelScanLeft;
 
@@ -217,11 +206,6 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
         showGeneralSettingDialog(getString(R.string.subtitle_language), Arrays.asList(mLanguageArray), subtitleLanguagePosition);
     }
 
-    @OnClick(R.id.item_auto_start)
-    void autoStart() {
-        showGeneralSettingDialog(getString(R.string.auto_start), Arrays.asList(mGeneralSwitchArray), autoStartPosition);
-    }
-
     @OnClick(R.id.item_channel_scan)
     void channelScan() {
         showGeneralSettingDialog(getString(R.string.channel_scan), Arrays.asList(mGeneralSwitchArray), channelScanPosition);
@@ -229,14 +213,13 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
 
     @OnClick(R.id.item_channel_scan_time)
     void channelScanTime() {
-        new EditTimeDialog().setCurrTime(SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_AutoScanTime.ordinal()) * 1000)
+        new EditTimeDialog().setCurrTime(SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.AutoScanTime) * 1000)
                 .setTimeLimit(23 * 60 * 60 * 1000 + 59 * 60 * 1000)
                 .from(EditTimeDialog.FROM_CHANNEL_SCAN_TIEM)
                 .setTimeListener(new EditTimeDialog.OnTimeListener() {
                     @Override
                     public void time(int hour, int minute, int second) {
-                        Log.i(TAG, "hour:" + hour + " minute:" + minute + " second:" + second);
-                        SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AutoScanTime.ordinal(), hour * 60 * 60 + minute * 60);
+                        SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.AutoScanTime, hour * 60 * 60 + minute * 60);
                         mTvChannelScanTime.setText(hour + ":" + minute);
                     }
                 }).show(getSupportFragmentManager(), EditTimeDialog.TAG);
@@ -252,7 +235,6 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
     private int firstAudioLanguagePosition;
     private int secondAudioLanguagePosition;
     private int subtitleLanguagePosition;
-    private int autoStartPosition;
     private int channelScanPosition;
 
     private int[] arrayPfBarTime = new int[]{5, 8, 10};
@@ -276,23 +258,21 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
         mTvFirstAudioLanguage.setText(mLanguageArray[firstAudioLanguagePosition]);
         mTvSecondAudioLanguage.setText(mLanguageArray[secondAudioLanguagePosition]);
         mTvSubtitleLanguage.setText(mLanguageArray[subtitleLanguagePosition]);
-        mTvAutoStart.setText(mGeneralSwitchArray[autoStartPosition]);
         mTvChannelScan.setText(mGeneralSwitchArray[channelScanPosition]);
-        mTvChannelScanTime.setText(transTimeToStr(SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_AutoScanTime.ordinal())));
+        mTvChannelScanTime.setText(transTimeToStr(SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.AutoScanTime)));
     }
 
     private void initData() {
-        scartPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_TV_SCART.ordinal()));
-        subtitleDisplayPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleDisplay.ordinal()));
-        pfTimeoutPosition = getSelectPosition(new int[]{5, 8, 10}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_PD_dispalytime.ordinal()));
-        ratioModePosition = getSelectPosition(new int[]{0, 1, 2}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_ScreenRatio.ordinal()));
-        aspectModePosition = getSelectPosition(new int[]{0, 1, 2, 3}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_AspectRatio.ordinal()));
-        switchChannelPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_PD_SwitchMode.ordinal()));
-        firstAudioLanguagePosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_AudioLanguage0.ordinal()));
-        secondAudioLanguagePosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_AudioLanguage1.ordinal()));
-        subtitleLanguagePosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleLanguage.ordinal()));
-//        autoStartPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleDisplay.ordinal()));
-        channelScanPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_AutoScanEnabled.ordinal()));
+        scartPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.TV_SCART));
+        subtitleDisplayPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.SubtitleDisplay));
+        pfTimeoutPosition = getSelectPosition(new int[]{5, 8, 10}, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.PD_dispalytime));
+        ratioModePosition = getSelectPosition(new int[]{0, 1, 2}, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.ScreenRatio));
+        aspectModePosition = getSelectPosition(new int[]{0, 1, 2, 3}, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.AspectRatio));
+        switchChannelPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.PD_SwitchMode));
+        firstAudioLanguagePosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.AudioLanguage0));
+        secondAudioLanguagePosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.AudioLanguage1));
+        subtitleLanguagePosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.SubtitleLanguage));
+        channelScanPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.AutoScanEnabled));
     }
 
     private String transTimeToStr(int second) {
@@ -324,57 +304,52 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
                             case ITEM_SCART:
                                 mTvScart.setText(checkContent);
                                 scartPosition = Arrays.asList(mScartArray).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_TV_SCART.ordinal(), scartPosition);
+                                SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.TV_SCART, scartPosition);
                                 break;
                             case ITEM_SUBTITLE_DISPLAY:
                                 mTvSubtitleDisplay.setText(checkContent);
                                 subtitleDisplayPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleDisplay.ordinal(), subtitleDisplayPosition);
+                                SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.SubtitleDisplay, subtitleDisplayPosition);
                                 break;
                             case ITEM_PFBAR_TIMEOUT:
                                 mTvPfTimeout.setText(checkContent);
                                 pfTimeoutPosition = Arrays.asList(mPfTimeoutArray).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_PD_dispalytime.ordinal(), arrayPfBarTime[pfTimeoutPosition]);
+                                SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.PD_dispalytime, arrayPfBarTime[pfTimeoutPosition]);
                                 break;
                             case ITEM_RATIO_MODE:
                                 mTvRatio.setText(checkContent);
                                 ratioModePosition = Arrays.asList(mRatioModeArray).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_ScreenRatio.ordinal(), ratioModePosition);
+                                SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.ScreenRatio, ratioModePosition);
                                 break;
                             case ITEM_ASPECT_MODE:
                                 mTvAspect.setText(checkContent);
                                 aspectModePosition = Arrays.asList(mAspectModeArray).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AspectRatio.ordinal(), aspectModePosition);
+                                SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.AspectRatio, aspectModePosition);
                                 break;
                             case ITEM_SWITCH_CHANNEL:
                                 mTvSwitchChannel.setText(checkContent);
                                 switchChannelPosition = Arrays.asList(mSwitchChannelModeArray).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_PD_SwitchMode.ordinal(), switchChannelPosition);
+                                SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.PD_SwitchMode, switchChannelPosition);
                                 break;
                             case ITEM_FIRST_AUDIO_LANGUAGE:
                                 mTvFirstAudioLanguage.setText(checkContent);
                                 firstAudioLanguagePosition = Arrays.asList(mLanguageArray).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AudioLanguage0.ordinal(), firstAudioLanguagePosition);
+                                SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.AudioLanguage0, firstAudioLanguagePosition);
                                 break;
                             case ITEM_SECOND_AUDIO_LANGUAGE:
                                 mTvSecondAudioLanguage.setText(checkContent);
                                 secondAudioLanguagePosition = Arrays.asList(mLanguageArray).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AudioLanguage1.ordinal(), secondAudioLanguagePosition);
+                                SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.AudioLanguage1, secondAudioLanguagePosition);
                                 break;
                             case ITEM_SUBTITLE_LANGUAGE:
                                 mTvSubtitleLanguage.setText(checkContent);
                                 subtitleLanguagePosition = Arrays.asList(mLanguageArray).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleLanguage.ordinal(), subtitleLanguagePosition);
-                                break;
-                            case ITEM_AUTO_START:
-                                mTvAutoStart.setText(checkContent);
-                                autoStartPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_ShowSubtitle.ordinal(), autoStartPosition);
+                                SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.SubtitleLanguage, subtitleLanguagePosition);
                                 break;
                             case ITEM_CHANNEL_SCAN:
                                 mTvChannelScan.setText(checkContent);
                                 channelScanPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AutoScanEnabled.ordinal(), channelScanPosition);
+                                SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.AutoScanEnabled, channelScanPosition);
                                 showOrDismissChannelScanTime();
                                 break;
                             default:
@@ -404,13 +379,9 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
                 case ITEM_SECOND_AUDIO_LANGUAGE:
                 case ITEM_SUBTITLE_DISPLAY:
                 case ITEM_SUBTITLE_LANGUAGE:
-                case ITEM_AUTO_START:
+                case ITEM_CHANNEL_SCAN:
                 case ITEM_CHANNEL_SCAN_TIME:
                     mCurrentSelectItem--;
-                    break;
-
-                case ITEM_CHANNEL_SCAN:
-                    mCurrentSelectItem -= 2;
                     break;
 
                 case ITEM_SCART:
@@ -439,11 +410,8 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
                 case ITEM_FIRST_AUDIO_LANGUAGE:
                 case ITEM_SECOND_AUDIO_LANGUAGE:
                 case ITEM_SUBTITLE_DISPLAY:
-                    mCurrentSelectItem++;
-                    break;
-
                 case ITEM_SUBTITLE_LANGUAGE:
-                    mCurrentSelectItem += 2;
+                    mCurrentSelectItem++;
                     break;
 
                 case ITEM_CHANNEL_SCAN:
@@ -472,76 +440,69 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
                     if (--scartPosition < 0)
                         scartPosition = mScartArray.length - 1;
                     mTvScart.setText(mScartArray[scartPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_TV_SCART.ordinal(), scartPosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.TV_SCART, scartPosition);
                     break;
 
                 case ITEM_SUBTITLE_DISPLAY:
                     if (--subtitleDisplayPosition < 0)
                         subtitleDisplayPosition = mGeneralSwitchArray.length - 1;
                     mTvSubtitleDisplay.setText(mGeneralSwitchArray[subtitleDisplayPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleDisplay.ordinal(), subtitleDisplayPosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.SubtitleDisplay, subtitleDisplayPosition);
                     break;
 
                 case ITEM_PFBAR_TIMEOUT:
                     if (--pfTimeoutPosition < 0) pfTimeoutPosition = mPfTimeoutArray.length - 1;
                     mTvPfTimeout.setText(mPfTimeoutArray[pfTimeoutPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_PD_dispalytime.ordinal(), arrayPfBarTime[pfTimeoutPosition]);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.PD_dispalytime, arrayPfBarTime[pfTimeoutPosition]);
                     break;
 
                 case ITEM_RATIO_MODE:
                     if (--ratioModePosition < 0)
                         ratioModePosition = mRatioModeArray.length - 1;
                     mTvRatio.setText(mRatioModeArray[ratioModePosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_ScreenRatio.ordinal(), ratioModePosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.ScreenRatio, ratioModePosition);
                     break;
 
                 case ITEM_ASPECT_MODE:
                     if (--aspectModePosition < 0)
                         aspectModePosition = mAspectModeArray.length - 1;
                     mTvAspect.setText(mAspectModeArray[aspectModePosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AspectRatio.ordinal(), aspectModePosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.AspectRatio, aspectModePosition);
                     break;
 
                 case ITEM_SWITCH_CHANNEL:
                     if (--switchChannelPosition < 0)
                         switchChannelPosition = mSwitchChannelModeArray.length - 1;
                     mTvSwitchChannel.setText(mSwitchChannelModeArray[switchChannelPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_PD_SwitchMode.ordinal(), switchChannelPosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.PD_SwitchMode, switchChannelPosition);
                     break;
 
                 case ITEM_FIRST_AUDIO_LANGUAGE:
                     if (--firstAudioLanguagePosition < 0)
                         firstAudioLanguagePosition = mLanguageArray.length - 1;
                     mTvFirstAudioLanguage.setText(mLanguageArray[firstAudioLanguagePosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AudioLanguage0.ordinal(), firstAudioLanguagePosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.AudioLanguage0, firstAudioLanguagePosition);
                     break;
 
                 case ITEM_SECOND_AUDIO_LANGUAGE:
                     if (--secondAudioLanguagePosition < 0)
                         secondAudioLanguagePosition = mLanguageArray.length - 1;
                     mTvSecondAudioLanguage.setText(mLanguageArray[secondAudioLanguagePosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AudioLanguage1.ordinal(), secondAudioLanguagePosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.AudioLanguage1, secondAudioLanguagePosition);
                     break;
 
                 case ITEM_SUBTITLE_LANGUAGE:
                     if (--subtitleLanguagePosition < 0)
                         subtitleLanguagePosition = mLanguageArray.length - 1;
                     mTvSubtitleLanguage.setText(mLanguageArray[subtitleLanguagePosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleLanguage.ordinal(), subtitleLanguagePosition);
-                    break;
-
-                case ITEM_AUTO_START:
-                    if (--autoStartPosition < 0)
-                        autoStartPosition = mGeneralSwitchArray.length - 1;
-                    mTvAutoStart.setText(mGeneralSwitchArray[autoStartPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleDisplay.ordinal(), autoStartPosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.SubtitleLanguage, subtitleLanguagePosition);
                     break;
 
                 case ITEM_CHANNEL_SCAN:
                     if (--channelScanPosition < 0)
                         channelScanPosition = mGeneralSwitchArray.length - 1;
                     mTvChannelScan.setText(mGeneralSwitchArray[channelScanPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AutoScanEnabled.ordinal(), channelScanPosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.AutoScanEnabled, channelScanPosition);
                     showOrDismissChannelScanTime();
                     break;
             }
@@ -553,76 +514,69 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
                     if (++scartPosition > mScartArray.length - 1)
                         scartPosition = 0;
                     mTvScart.setText(mScartArray[scartPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_TV_SCART.ordinal(), scartPosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.TV_SCART, scartPosition);
                     break;
 
                 case ITEM_SUBTITLE_DISPLAY:
                     if (++subtitleDisplayPosition > mGeneralSwitchArray.length - 1)
                         subtitleDisplayPosition = 0;
                     mTvSubtitleDisplay.setText(mGeneralSwitchArray[subtitleDisplayPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleDisplay.ordinal(), subtitleDisplayPosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.SubtitleDisplay, subtitleDisplayPosition);
                     break;
 
                 case ITEM_PFBAR_TIMEOUT:
                     if (++pfTimeoutPosition > mPfTimeoutArray.length - 1) pfTimeoutPosition = 0;
                     mTvPfTimeout.setText(mPfTimeoutArray[pfTimeoutPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_PD_dispalytime.ordinal(), arrayPfBarTime[pfTimeoutPosition]);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.PD_dispalytime, arrayPfBarTime[pfTimeoutPosition]);
                     break;
 
                 case ITEM_RATIO_MODE:
                     if (++ratioModePosition > mRatioModeArray.length - 1)
                         ratioModePosition = 0;
                     mTvRatio.setText(mRatioModeArray[ratioModePosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_ScreenRatio.ordinal(), ratioModePosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.ScreenRatio, ratioModePosition);
                     break;
 
                 case ITEM_ASPECT_MODE:
                     if (++aspectModePosition > mAspectModeArray.length - 1)
                         aspectModePosition = 0;
                     mTvAspect.setText(mAspectModeArray[aspectModePosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AspectRatio.ordinal(), aspectModePosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.AspectRatio, aspectModePosition);
                     break;
 
                 case ITEM_SWITCH_CHANNEL:
                     if (++switchChannelPosition > mSwitchChannelModeArray.length - 1)
                         switchChannelPosition = 0;
                     mTvSwitchChannel.setText(mSwitchChannelModeArray[switchChannelPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_PD_SwitchMode.ordinal(), switchChannelPosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.PD_SwitchMode, switchChannelPosition);
                     break;
 
                 case ITEM_FIRST_AUDIO_LANGUAGE:
                     if (++firstAudioLanguagePosition > mLanguageArray.length - 1)
                         firstAudioLanguagePosition = 0;
                     mTvFirstAudioLanguage.setText(mLanguageArray[firstAudioLanguagePosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AudioLanguage0.ordinal(), firstAudioLanguagePosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.AudioLanguage0, firstAudioLanguagePosition);
                     break;
 
                 case ITEM_SECOND_AUDIO_LANGUAGE:
                     if (++secondAudioLanguagePosition > mLanguageArray.length - 1)
                         secondAudioLanguagePosition = 0;
                     mTvSecondAudioLanguage.setText(mLanguageArray[secondAudioLanguagePosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AudioLanguage1.ordinal(), secondAudioLanguagePosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.AudioLanguage1, secondAudioLanguagePosition);
                     break;
 
                 case ITEM_SUBTITLE_LANGUAGE:
                     if (++subtitleLanguagePosition > mLanguageArray.length - 1)
                         subtitleLanguagePosition = 0;
                     mTvSubtitleLanguage.setText(mLanguageArray[subtitleLanguagePosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleLanguage.ordinal(), subtitleLanguagePosition);
-                    break;
-
-                case ITEM_AUTO_START:
-                    if (++autoStartPosition > mGeneralSwitchArray.length - 1)
-                        autoStartPosition = 0;
-                    mTvAutoStart.setText(mGeneralSwitchArray[autoStartPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SubtitleDisplay.ordinal(), autoStartPosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.SubtitleLanguage, subtitleLanguagePosition);
                     break;
 
                 case ITEM_CHANNEL_SCAN:
                     if (++channelScanPosition > mGeneralSwitchArray.length - 1)
                         channelScanPosition = 0;
                     mTvChannelScan.setText(mGeneralSwitchArray[channelScanPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_AutoScanEnabled.ordinal(), channelScanPosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.AutoScanEnabled, channelScanPosition);
                     showOrDismissChannelScanTime();
                     break;
             }
@@ -641,7 +595,6 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
         itemChange(mCurrentSelectItem, ITEM_FIRST_AUDIO_LANGUAGE, mIvFirstAudioLanguageLeft, mIvFirstAudioLanguageRight, mTvFirstAudioLanguage);
         itemChange(mCurrentSelectItem, ITEM_SECOND_AUDIO_LANGUAGE, mIvSecondAudioLanguageLeft, mIvSecondAudioLanguageRight, mTvSecondAudioLanguage);
         itemChange(mCurrentSelectItem, ITEM_SUBTITLE_LANGUAGE, mIvSubtitleLanguageLeft, mIvSubtitleLanguageRight, mTvSubtitleLanguage);
-        itemChange(mCurrentSelectItem, ITEM_AUTO_START, mIvAutoStartLeft, mIvAutoStartRight, mTvAutoStart);
         itemChange(mCurrentSelectItem, ITEM_CHANNEL_SCAN, mIvChannelScanLeft, mIvChannelScanRight, mTvChannelScan);
         itemChange(mCurrentSelectItem, ITEM_CHANNEL_SCAN_TIME, null, null, mTvChannelScanTime);
     }

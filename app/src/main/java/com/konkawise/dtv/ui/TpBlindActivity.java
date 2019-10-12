@@ -24,7 +24,6 @@ import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.SearchResultDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
-import com.sw.dvblib.SWPDBase;
 import com.sw.dvblib.msg.MsgEvent;
 import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
 
@@ -35,6 +34,7 @@ import java.util.List;
 import java.util.Timer;
 
 import butterknife.BindView;
+import vendor.konka.hardware.dtvmanager.V1_0.HProgType_E;
 import vendor.konka.hardware.dtvmanager.V1_0.HSearchStoreType_E;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PSRNum_t;
@@ -213,7 +213,7 @@ public class TpBlindActivity extends BaseActivity {
 
             @Override
             public int PSearch_PROG_SEARCHFINISH(int AllNum, int Curr, int plpid) {
-                SWPDBaseManager.getInstance().setCurrProgType(SWFtaManager.getInstance().getCurrScanMode() == 2 ? SWPDBase.SW_GBPROG : SWPDBase.SW_TVPROG, 0);
+                SWPDBaseManager.getInstance().setCurrProgType(SWFtaManager.getInstance().getCurrScanMode() == 2 ? HProgType_E.GBPROG : HProgType_E.TVPROG, 0);
                 stopSearch(true, nit);
                 showSearchResultDialog();
                 return 0;

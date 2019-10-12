@@ -20,7 +20,6 @@ import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.event.ReloadSatEvent;
 import com.konkawise.dtv.view.TVListView;
 import com.konkawise.dtv.weaktool.WeakRunnable;
-import com.sw.dvblib.SWPDBase;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -31,6 +30,7 @@ import butterknife.BindView;
 import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
+import vendor.konka.hardware.dtvmanager.V1_0.HGroup_E;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 
 public class FavoriteActivity extends BaseActivity {
@@ -112,7 +112,7 @@ public class FavoriteActivity extends BaseActivity {
 
     @Override
     protected void setup() {
-        SWPDBaseManager.getInstance().setCurrGroup(SWPDBase.SW_TOTAL_GROUP, 1);
+        SWPDBaseManager.getInstance().setCurrGroup(HGroup_E.TOTAL_GROUP, 1);
         initFavoriteGroup();
         initFavoriteChannel();
     }

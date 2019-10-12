@@ -23,7 +23,6 @@ import com.konkawise.dtv.utils.EditUtils;
 import com.konkawise.dtv.utils.TimeUtils;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.sw.dvblib.SWBooking;
-import com.sw.dvblib.SWPDBase;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -33,6 +32,7 @@ import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.OnFocusChange;
+import vendor.konka.hardware.dtvmanager.V1_0.HProgType_E;
 import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
@@ -599,7 +599,7 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
                 return getResources().getStringArray(R.array.book_channel_type);
             } else {
                 int currProgType = SWPDBaseManager.getInstance().getCurrProgType();
-                if (currProgType == SWPDBase.SW_TVPROG) {
+                if (currProgType == HProgType_E.TVPROG) {
                     return getResources().getStringArray(R.array.book_channel_type_tv);
                 } else {
                     return getResources().getStringArray(R.array.book_channel_type_radio);

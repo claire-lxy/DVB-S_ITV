@@ -10,10 +10,10 @@ import com.konkawise.dtv.base.BaseDialogFragment;
 import com.konkawise.dtv.utils.EditUtils;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.view.LastInputEditText;
-import com.sw.dvblib.SWFta;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import vendor.konka.hardware.dtvmanager.V1_0.HProperty_E;
 
 public class SetPasswordDialog extends BaseDialogFragment {
     public static final String TAG = "SetPasswordDialog";
@@ -51,7 +51,7 @@ public class SetPasswordDialog extends BaseDialogFragment {
         String currentPassword = mEtCurrentPassword.getText().toString();
         String newPassword = mEtNewPassword.getText().toString();
         String confirmPassword = mEtConfirmPassword.getText().toString();
-        String password = SWFtaManager.getInstance().getCommPWDInfo(SWFta.E_E2PP.E2P_Password.ordinal());
+        String password = SWFtaManager.getInstance().getCommPWDInfo(HProperty_E.Password);
         if (!currentPassword.equals(password)) {
             ToastUtils.showToast(R.string.toast_current_password_error);
             return false;

@@ -45,8 +45,6 @@ import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
 import com.sw.dvblib.SWBooking;
-import com.sw.dvblib.SWFta;
-import com.sw.dvblib.SWPDBase;
 import com.sw.dvblib.msg.MsgEvent;
 import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
 
@@ -66,6 +64,8 @@ import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
 import vendor.konka.hardware.dtvmanager.V1_0.EpgEvent_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProgType_E;
+import vendor.konka.hardware.dtvmanager.V1_0.HProperty_E;
 import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
@@ -241,7 +241,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
 
     @Override
     protected void setup() {
-        SWPDBaseManager.getInstance().setCurrProgType(SWPDBase.SW_TVPROG, 0);
+        SWPDBaseManager.getInstance().setCurrProgType(HProgType_E.TVPROG, 0);
         mEpgMsgHandler = new EpgMsgHandler(this);
         EventBus.getDefault().register(this);
 
@@ -266,7 +266,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
         super.onPause();
         RealTimeManager.getInstance().unregister(this);
         unregisterMsgEvent();
-        UIApiManager.getInstance().stopPlay(SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_PD_SwitchMode.ordinal())); // 跳转或销毁界面要停止播放
+        UIApiManager.getInstance().stopPlay(SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.PD_SwitchMode)); // 跳转或销毁界面要停止播放
     }
 
     @Override

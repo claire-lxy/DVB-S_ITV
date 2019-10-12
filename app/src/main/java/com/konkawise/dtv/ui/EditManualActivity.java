@@ -407,7 +407,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
                     public void onClick(View v) {
                         Intent intent = new Intent(EditManualActivity.this, ScanTVandRadioActivity.class);
                         intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, getSatList().get(mCurrentSatellite).SatIndex);
-                        intent.putExtra(Constants.IntentKey.INTENT_EDIT_MANUAL_ACTIVITY, 3);
+                        intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.SEARCH_TYPE_EDITMANUAL);
                         startActivity(intent);
                         finish();
                     }

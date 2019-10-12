@@ -252,7 +252,7 @@ public class TpListingActivity extends BaseActivity {
                         intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, getIndex());
                         intent.putExtra(Constants.IntentKey.INTENT_SYMBOL, getSymbol());
                         intent.putExtra(Constants.IntentKey.INTENT_QAM, getQam());
-                        intent.putExtra(Constants.IntentKey.INTENT_TPLIST_ACTIVITY, 2);
+                        intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.SEARCH_TYPE_TPLISTING);
                         startActivity(intent);
                     }
                 }).show(getSupportFragmentManager(), ScanDialog.TAG);

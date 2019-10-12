@@ -35,6 +35,7 @@ import butterknife.BindArray;
 import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HMotorCtrlCode;
+import vendor.konka.hardware.dtvmanager.V1_0.HProperty_E;
 import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 
 public class MotorActivity extends BaseItemFocusChangeActivity {
@@ -270,8 +271,8 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         super.onStop();
         stopMotorCtrl();
         if (mSatInfo != null) saveLongitude();
-        SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SAT_Longitude.ordinal(), mLocalLongitudeModel.getValueForStorage());
-        SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_SAT_Latitude.ordinal(), mLocalLatitudeModel.getValueForStorage());
+        SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.SAT_Longitude, mLocalLongitudeModel.getValueForStorage());
+        SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.SAT_Latitude, mLocalLatitudeModel.getValueForStorage());
     }
 
     private void stopMotorCtrl() {
@@ -313,8 +314,8 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
             mSatInfo = satList.get(position);
             if (mSatInfo != null) {
                 mSatLongitudeModel = new LatLngModel(LatLngModel.MODE_LONGITUDE, LatLngModel.LONGITUDE_THRESHOLD, mSatInfo.diseqc12_longitude);
-                mLocalLongitudeModel = new LatLngModel(LatLngModel.MODE_LONGITUDE, LatLngModel.LONGITUDE_THRESHOLD, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SAT_Longitude.ordinal()));
-                mLocalLatitudeModel = new LatLngModel(LatLngModel.MODE_LATITUDE, LatLngModel.LATITUDE_THRESHOLD, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_SAT_Latitude.ordinal()));
+                mLocalLongitudeModel = new LatLngModel(LatLngModel.MODE_LONGITUDE, LatLngModel.LONGITUDE_THRESHOLD, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.SAT_Longitude));
+                mLocalLatitudeModel = new LatLngModel(LatLngModel.MODE_LATITUDE, LatLngModel.LATITUDE_THRESHOLD, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.SAT_Latitude));
             }
         }
     }
@@ -332,7 +333,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         mTvMoveStep.setText(mMoveStepArray[0]);
         mTvStepSize.setText(mStepSizeArray[0]);
 
-        mPositionStep = mSatInfo != null ? mSatInfo.diseqc12 : 0;
+        mPositionStep = mSatInfo != null ? mSatInfo.diseqc12_pos : 0;
         mTvPosition.setText(MessageFormat.format(getString(R.string.motor_position_text), String.valueOf(mPositionStep)));
     }
 

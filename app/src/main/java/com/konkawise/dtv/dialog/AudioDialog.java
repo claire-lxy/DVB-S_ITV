@@ -13,7 +13,6 @@ import com.konkawise.dtv.SWDJAPVRManager;
 import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.base.BaseItemFocusChangeDialogFragment;
-import com.sw.dvblib.SWFta;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +20,7 @@ import java.util.List;
 import butterknife.BindArray;
 import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.HKKAV_StreamType_t;
+import vendor.konka.hardware.dtvmanager.V1_0.OSDFTA_ProgParam_e;
 
 public class AudioDialog extends BaseItemFocusChangeDialogFragment {
 
@@ -73,11 +73,12 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
     protected void setup(View view) {
         mTvTitle.setText(mTitle);
 
-        audioTrackPosition = SWFtaManager.getInstance().getCurrProgParam(SWFta.OSDFTA_TRACK);
+
+        audioTrackPosition = SWFtaManager.getInstance().getCurrProgParam(OSDFTA_ProgParam_e.OSDFTA_TRACK);
         mTvAudioTrack.setText(mAudioTrackArray[audioTrackPosition]);
 
         if (where == WHERE_TOPMOST) {
-            audioLanguagePosition = SWFtaManager.getInstance().getCurrProgParam(SWFta.OSDFTA_AUDIO);
+            audioLanguagePosition = SWFtaManager.getInstance().getCurrProgParam(OSDFTA_ProgParam_e.OSDFTA_AUDIO);
             ArrayList<String> audioNameList = SWPDBaseManager.getInstance().getCurrProgInfo().audioDB.audioName;
             audioTypeList = SWPDBaseManager.getInstance().getCurrProgInfo().audioDB.ucAudStrType;
             mAudioLanguageArray = new String[audioNameList.size()];
@@ -210,7 +211,7 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
                         if (--audioTrackPosition < 0)
                             audioTrackPosition = mAudioTrackArray.length - 1;
                         mTvAudioTrack.setText(mAudioTrackArray[audioTrackPosition]);
-                        SWFtaManager.getInstance().setCurrProgParam(SWFta.OSDFTA_TRACK, audioTrackPosition);
+                        SWFtaManager.getInstance().setCurrProgParam( OSDFTA_ProgParam_e.OSDFTA_TRACK, audioTrackPosition);
                         break;
 
                     case ITEM_AUDIO_LANGUAGE:
@@ -220,7 +221,7 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
                             audioLanguagePosition = mAudioLanguageArray.length - 1;
                         mTvAudioLanguage.setText(mAudioLanguageArray[audioLanguagePosition]);
                         if (where == WHERE_TOPMOST) {
-                            SWFtaManager.getInstance().setCurrProgParam(SWFta.OSDFTA_AUDIO, audioLanguagePosition);
+                            SWFtaManager.getInstance().setCurrProgParam(OSDFTA_ProgParam_e.OSDFTA_AUDIO, audioLanguagePosition);
                         } else {
                             SWDJAPVRManager.getInstance().setAudioPid(audioPidList.get(audioLanguagePosition), audioTypeList.get(audioLanguagePosition));
                         }
@@ -235,7 +236,7 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
                         if (++audioTrackPosition > mAudioTrackArray.length - 1)
                             audioTrackPosition = 0;
                         mTvAudioTrack.setText(mAudioTrackArray[audioTrackPosition]);
-                        SWFtaManager.getInstance().setCurrProgParam(SWFta.OSDFTA_TRACK, audioTrackPosition);
+                        SWFtaManager.getInstance().setCurrProgParam(OSDFTA_ProgParam_e.OSDFTA_TRACK, audioTrackPosition);
                         break;
 
                     case ITEM_AUDIO_LANGUAGE:
@@ -244,7 +245,7 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
                         if (++audioLanguagePosition > mAudioLanguageArray.length - 1)
                             audioLanguagePosition = 0;
                         mTvAudioLanguage.setText(mAudioLanguageArray[audioLanguagePosition]);
-                        SWFtaManager.getInstance().setCurrProgParam(SWFta.OSDFTA_AUDIO, audioLanguagePosition);
+                        SWFtaManager.getInstance().setCurrProgParam(OSDFTA_ProgParam_e.OSDFTA_AUDIO, audioLanguagePosition);
                         break;
                 }
             }

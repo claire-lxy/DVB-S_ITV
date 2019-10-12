@@ -22,7 +22,6 @@ import com.konkawise.dtv.dialog.SearchResultDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
-import com.sw.dvblib.SWPDBase;
 import com.sw.dvblib.msg.MsgEvent;
 import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
 
@@ -32,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
+import vendor.konka.hardware.dtvmanager.V1_0.HProgType_E;
 import vendor.konka.hardware.dtvmanager.V1_0.HSearchStoreType_E;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
@@ -251,7 +251,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
                     return 1;
                 }
                 SatelliteActivity.satList.clear();
-                SWPDBaseManager.getInstance().setCurrProgType(SWFtaManager.getInstance().getCurrScanMode() == 2 ? SWPDBase.SW_GBPROG : SWPDBase.SW_TVPROG, 0);
+                SWPDBaseManager.getInstance().setCurrProgType(SWFtaManager.getInstance().getCurrScanMode() == 2 ? HProgType_E.GBPROG : HProgType_E.TVPROG, 0);
                 stopSearch(true, nit);
                 showSearchResultDialog();
                 return 0;
@@ -327,23 +327,23 @@ public class ScanTVandRadioActivity extends BaseActivity {
     }
 
     private boolean isFromSatelliteActivity() {
-        return getIntent().getIntExtra(Constants.IntentKey.INTENT_SATELLITE_ACTIVITY, -1) == 1;
+        return getIntent().getIntExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, -1) == Constants.SEARCH_TYPE_SATELLITE;
     }
 
     private boolean isFromTpListingActivity() {
-        return getIntent().getIntExtra(Constants.IntentKey.INTENT_TPLIST_ACTIVITY, -1) == 2;
+        return getIntent().getIntExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, -1) == Constants.SEARCH_TYPE_TPLISTING;
     }
 
     private boolean isFromEditManualActivity() {
-        return getIntent().getIntExtra(Constants.IntentKey.INTENT_EDIT_MANUAL_ACTIVITY, -1) == 3;
+        return getIntent().getIntExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, -1) == Constants.SEARCH_TYPE_EDITMANUAL;
     }
 
     private boolean isFromT2ManualSearchActivity() {
-        return getIntent().getIntExtra(Constants.IntentKey.INTENT_T2_MANUAL_SEARCH_ACTIVITY, -1) == 4;
+        return getIntent().getIntExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, -1) == Constants.SEARCH_TYPE_T2MANUAL;
     }
 
     private boolean isFromT2AutoSearch() {
-        return getIntent().getIntExtra(Constants.IntentKey.INTENT_T2_AUTO_SEARCH, -1) == 5;
+        return getIntent().getIntExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, -1) == Constants.SEARCH_TYPE_T2AUTO;
     }
 
     private int getFreq() {

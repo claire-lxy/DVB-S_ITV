@@ -26,7 +26,6 @@ import com.konkawise.dtv.dialog.PIDDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
 import com.konkawise.dtv.weaktool.WeakRunnable;
-import com.sw.dvblib.SWPDBase;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -38,6 +37,7 @@ import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
+import vendor.konka.hardware.dtvmanager.V1_0.HGroup_E;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPEdit_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
@@ -141,8 +141,7 @@ public class ChannelEditActivity extends BaseActivity {
 
     @Override
     protected void setup() {
-//        initFavoriteChannels();
-        SWPDBaseManager.getInstance().setCurrGroup(SWPDBase.SW_TOTAL_GROUP, 1);
+        SWPDBaseManager.getInstance().setCurrGroup(HGroup_E.TOTAL_GROUP, 1);
         initChannelList();
         mTvSatelliteName.setText(R.string.all);
     }
@@ -152,25 +151,6 @@ public class ChannelEditActivity extends BaseActivity {
         super.onStop();
         if (isFinishing() && mDataSaved) {
             EventBus.getDefault().post(new ProgramUpdateEvent(true));
-        }
-    }
-
-    private void initFavoriteChannels() {
-        ThreadPoolManager.getInstance().execute(new LoadFavoriteChannelsRunnable(this));
-    }
-
-    private static class LoadFavoriteChannelsRunnable extends WeakRunnable<ChannelEditActivity> {
-
-        LoadFavoriteChannelsRunnable(ChannelEditActivity view) {
-            super(view);
-        }
-
-        @Override
-        protected void loadBackground() {
-            ChannelEditActivity context = mWeakReference.get();
-            context.mFavChannelsMap = SWPDBaseManager.getInstance().getFavChannelMap(SWPDBaseManager.getInstance().getTotalGroupProgList());
-
-            context.mEditFavChannelsMap = mWeakReference.get().mFavChannelsMap.clone();
         }
     }
 

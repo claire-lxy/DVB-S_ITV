@@ -10,7 +10,6 @@ import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.SetPasswordDialog;
-import com.sw.dvblib.SWFta;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,6 +18,7 @@ import java.util.List;
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.OnClick;
+import vendor.konka.hardware.dtvmanager.V1_0.HProperty_E;
 
 public class ParentalControlActivity extends BaseItemFocusChangeActivity {
     private static final String TAG = "KKDVB_" + ParentalControlActivity.class.getSimpleName();
@@ -107,9 +107,9 @@ public class ParentalControlActivity extends BaseItemFocusChangeActivity {
     }
 
     private void initData() {
-        menuLockPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_cMenuLock.ordinal()));
-        channelLockPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_cParentLock.ordinal()));
-        controlAgePosition = SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_PC_AGE.ordinal());
+        menuLockPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.cMenuLock));
+        channelLockPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.cParentLock));
+        controlAgePosition = SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.PC_AGE);
     }
 
     private int getSelectPosition(int[] datas, int value) {
@@ -133,17 +133,17 @@ public class ParentalControlActivity extends BaseItemFocusChangeActivity {
                             case ITEM_MENU_LOCK:
                                 mTvMenuLock.setText(checkContent);
                                 menuLockPosition = Arrays.asList(mGeneralSwitch).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_cMenuLock.ordinal(), menuLockPosition);
+                                SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.cMenuLock, menuLockPosition);
                                 break;
                             case ITEM_CHANNEL_LOCK:
                                 mTvChannelLock.setText(checkContent);
                                 channelLockPosition = Arrays.asList(mGeneralSwitch).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_cParentLock.ordinal(), channelLockPosition);
+                                SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.cParentLock, channelLockPosition);
                                 break;
                             case ITEM_CONTROL_AGE:
                                 mTvControlAge.setText(checkContent);
                                 controlAgePosition = Arrays.asList(mControlAge).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_PC_AGE.ordinal(), controlAgePosition);
+                                SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.PC_AGE, controlAgePosition);
                                 break;
                             default:
                                 break;
@@ -157,7 +157,7 @@ public class ParentalControlActivity extends BaseItemFocusChangeActivity {
                 .setOnSavePasswordListener(new SetPasswordDialog.OnSavePasswordListener() {
                     @Override
                     public void onSavePassword(String currentPassword, String newPassword) {
-                        SWFtaManager.getInstance().setCommPWDInfo(SWFta.E_E2PP.E2P_Password.ordinal(), newPassword);
+                        SWFtaManager.getInstance().setCommPWDInfo(HProperty_E.Password, newPassword);
                     }
 
                     @Override
@@ -208,13 +208,13 @@ public class ParentalControlActivity extends BaseItemFocusChangeActivity {
                 case ITEM_MENU_LOCK:
                     if (--menuLockPosition < 0) menuLockPosition = mGeneralSwitch.length - 1;
                     mTvMenuLock.setText(mGeneralSwitch[menuLockPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_cMenuLock.ordinal(), menuLockPosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.cMenuLock, menuLockPosition);
                     break;
 
                 case ITEM_CHANNEL_LOCK:
                     if (--channelLockPosition < 0) channelLockPosition = mGeneralSwitch.length - 1;
                     mTvChannelLock.setText(mGeneralSwitch[channelLockPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_cParentLock.ordinal(), channelLockPosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.cParentLock, channelLockPosition);
                     break;
 
                 case ITEM_CONTROL_AGE:
@@ -225,7 +225,7 @@ public class ParentalControlActivity extends BaseItemFocusChangeActivity {
                         controlAgePosition = 0;
 
                     mTvControlAge.setText(mControlAge[controlAgePosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_PC_AGE.ordinal(), controlAgePosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.PC_AGE, controlAgePosition);
                     break;
             }
 
@@ -236,13 +236,13 @@ public class ParentalControlActivity extends BaseItemFocusChangeActivity {
                 case ITEM_MENU_LOCK:
                     if (++menuLockPosition > mGeneralSwitch.length - 1) menuLockPosition = 0;
                     mTvMenuLock.setText(mGeneralSwitch[menuLockPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_cMenuLock.ordinal(), menuLockPosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.cMenuLock, menuLockPosition);
                     break;
 
                 case ITEM_CHANNEL_LOCK:
                     if (++channelLockPosition > mGeneralSwitch.length - 1) channelLockPosition = 0;
                     mTvChannelLock.setText(mGeneralSwitch[channelLockPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_cParentLock.ordinal(), channelLockPosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.cParentLock, channelLockPosition);
                     break;
 
                 case ITEM_CONTROL_AGE:
@@ -252,7 +252,7 @@ public class ParentalControlActivity extends BaseItemFocusChangeActivity {
                     else if (controlAgePosition > 0 && controlAgePosition <= 3)
                         controlAgePosition = 4;
                     mTvControlAge.setText(mControlAge[controlAgePosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_PC_AGE.ordinal(), controlAgePosition);
+                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.PC_AGE, controlAgePosition);
                     break;
             }
         }

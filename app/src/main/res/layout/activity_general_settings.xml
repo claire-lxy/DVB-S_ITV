@@ -327,46 +327,11 @@
                 tools:ignore="ContentDescription" />
         </RelativeLayout>
 
-        <!-- Auto Start -->
-        <RelativeLayout
-            android:id="@+id/item_auto_start"
-            style="@style/ItemGroupStyle"
-            android:layout_below="@id/item_subtitle_language"
-            android:background="@drawable/dvb_btn_fragment_selector"
-            android:visibility="gone">
-
-            <TextView
-                style="@style/ItemTitleStyle"
-                android:text="@string/auto_start"
-                tools:ignore="RelativeOverlap" />
-
-            <ImageView
-                android:id="@+id/iv_auto_start_left"
-                style="@style/ItemArrowLeftStyle"
-                android:layout_toLeftOf="@+id/tv_auto_start"
-                android:layout_toStartOf="@+id/tv_auto_start"
-                android:visibility="invisible"
-                tools:ignore="ContentDescription" />
-
-            <TextView
-                android:id="@+id/tv_auto_start"
-                style="@style/ItemContentStyle"
-                android:layout_toLeftOf="@+id/iv_auto_start_right"
-                android:layout_toStartOf="@+id/iv_auto_start_right"
-                android:text="@string/on" />
-
-            <ImageView
-                android:id="@+id/iv_auto_start_right"
-                style="@style/ItemArrowRightStyle"
-                android:visibility="invisible"
-                tools:ignore="ContentDescription" />
-        </RelativeLayout>
-
         <!-- channel scan -->
         <RelativeLayout
             android:id="@+id/item_channel_scan"
             style="@style/ItemGroupStyle"
-            android:layout_below="@id/item_auto_start"
+            android:layout_below="@id/item_subtitle_language"
             android:background="@drawable/dvb_btn_fragment_selector">
 
             <TextView
