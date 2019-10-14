@@ -58,6 +58,10 @@ public class UsbManager {
             for (UsbInfo usbInfo : tUsbInfos) {
                 if (intent.getData().getPath().equals(usbInfo.path)) {
                     usbInfo.uri = intent.getData();
+                    if (usbInfo.fsLabel == null || usbInfo.fsLabel.isEmpty()) {
+                        String[] uriSplit = usbInfo.uri.getPath().split("/");
+                        usbInfo.fsLabel = uriSplit[uriSplit.length - 1];
+                    }
                     attachUsbInfo = usbInfo;
                     mUsbInfos.add(attachUsbInfo);
                     break;
