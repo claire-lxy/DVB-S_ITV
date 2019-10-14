@@ -34,8 +34,8 @@ import java.util.List;
 import java.util.Timer;
 
 import butterknife.BindView;
-import vendor.konka.hardware.dtvmanager.V1_0.HProgType_E;
-import vendor.konka.hardware.dtvmanager.V1_0.HSearchStoreType_E;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Type;
+import vendor.konka.hardware.dtvmanager.V1_0.HSearch_Enum_StoreType;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PSRNum_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PSSParam_t;
@@ -129,9 +129,9 @@ public class TpBlindActivity extends BaseActivity {
 
     private void stopSearch(boolean storeProgram, int nit) {
         if (nit == 0) {
-            SWPSearchManager.getInstance().seatchStop(storeProgram, HSearchStoreType_E.BY_SERVID);
+            SWPSearchManager.getInstance().seatchStop(storeProgram, HSearch_Enum_StoreType.BY_SERVID);
         } else {
-            SWPSearchManager.getInstance().seatchStop(storeProgram, HSearchStoreType_E.BY_LOGIC_NUM);
+            SWPSearchManager.getInstance().seatchStop(storeProgram, HSearch_Enum_StoreType.BY_LOGIC_NUM);
         }
     }
 
@@ -213,7 +213,7 @@ public class TpBlindActivity extends BaseActivity {
 
             @Override
             public int PSearch_PROG_SEARCHFINISH(int AllNum, int Curr, int plpid) {
-                SWPDBaseManager.getInstance().setCurrProgType(SWFtaManager.getInstance().getCurrScanMode() == 2 ? HProgType_E.GBPROG : HProgType_E.TVPROG, 0);
+                SWPDBaseManager.getInstance().setCurrProgType(SWFtaManager.getInstance().getCurrScanMode() == 2 ? HProg_Enum_Type.GBPROG : HProg_Enum_Type.TVPROG, 0);
                 stopSearch(true, nit);
                 showSearchResultDialog();
                 return 0;

@@ -34,8 +34,8 @@ import java.util.List;
 import butterknife.BindArray;
 import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
-import vendor.konka.hardware.dtvmanager.V1_0.HMotorCtrlCode;
-import vendor.konka.hardware.dtvmanager.V1_0.HProperty_E;
+import vendor.konka.hardware.dtvmanager.V1_0.HTuner_Enum_MotorCtrlCode;
+import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
 
 public class MotorActivity extends BaseItemFocusChangeActivity {
@@ -271,13 +271,13 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         super.onStop();
         stopMotorCtrl();
         if (mSatInfo != null) saveLongitude();
-        SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.SAT_Longitude, mLocalLongitudeModel.getValueForStorage());
-        SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.SAT_Latitude, mLocalLatitudeModel.getValueForStorage());
+        SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.SAT_Longitude, mLocalLongitudeModel.getValueForStorage());
+        SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.SAT_Latitude, mLocalLatitudeModel.getValueForStorage());
     }
 
     private void stopMotorCtrl() {
         ThreadPoolManager.getInstance().remove(mMotorRunnable);
-        mMotorRunnable.ctrlCode = HMotorCtrlCode.DIRECT_STOP;
+        mMotorRunnable.ctrlCode = HTuner_Enum_MotorCtrlCode.STOP;
         mMotorRunnable.data = new int[]{0};
         ThreadPoolManager.getInstance().execute(mMotorRunnable);
 
@@ -314,8 +314,8 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
             mSatInfo = satList.get(position);
             if (mSatInfo != null) {
                 mSatLongitudeModel = new LatLngModel(LatLngModel.MODE_LONGITUDE, LatLngModel.LONGITUDE_THRESHOLD, mSatInfo.diseqc12_longitude);
-                mLocalLongitudeModel = new LatLngModel(LatLngModel.MODE_LONGITUDE, LatLngModel.LONGITUDE_THRESHOLD, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.SAT_Longitude));
-                mLocalLatitudeModel = new LatLngModel(LatLngModel.MODE_LATITUDE, LatLngModel.LATITUDE_THRESHOLD, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.SAT_Latitude));
+                mLocalLongitudeModel = new LatLngModel(LatLngModel.MODE_LONGITUDE, LatLngModel.LONGITUDE_THRESHOLD, SWFtaManager.getInstance().getCommE2PInfo(HSetting_Enum_Property.SAT_Longitude));
+                mLocalLatitudeModel = new LatLngModel(LatLngModel.MODE_LATITUDE, LatLngModel.LATITUDE_THRESHOLD, SWFtaManager.getInstance().getCommE2PInfo(HSetting_Enum_Property.SAT_Latitude));
             }
         }
     }
@@ -814,32 +814,32 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
             }
         } else if (TextUtils.equals(command, getString(R.string.motor_diseqc_command_recalculate))) {
             title = getString(R.string.dialog_calculate);
-            ctrlCode = HMotorCtrlCode.DIRECT_RECALCULATE;
+            ctrlCode = HTuner_Enum_MotorCtrlCode.RECALCULATE;
         } else if (TextUtils.equals(command, getString(R.string.motor_diseqc_command_disablelimit))) {
             title = getString(R.string.dialog_disable_limit);
-            ctrlCode = HMotorCtrlCode.DIRECT_DISABLE_LIMIT;
+            ctrlCode = HTuner_Enum_MotorCtrlCode.DISABLE_LIMIT;
         } else if (TextUtils.equals(command, getString(R.string.motor_diseqc_command_eastlimit))) {
             title = getString(R.string.dialog_east_limit);
-            ctrlCode = HMotorCtrlCode.DIRECT_EAST_LIMIT;
+            ctrlCode = HTuner_Enum_MotorCtrlCode.EAST_LIMIT;
         } else if (TextUtils.equals(command, getString(R.string.motor_diseqc_command_westlimit))) {
             title = getString(R.string.dialog_west_limit);
-            ctrlCode = HMotorCtrlCode.DIRECT_WEST_LIMIT;
+            ctrlCode = HTuner_Enum_MotorCtrlCode.WEST_LIMIT;
         } else if (TextUtils.equals(command, getString(R.string.motor_command_gotoref))) {
             if (mMotorType == MOROT_TYPE_DISEQC && position == ITEM_DISEQC_COMMAND) {
                 title = getString(R.string.dialog_goto_ref);
             } else if (mMotorType == MOROT_TYPE_USALS && position == ITEM_COMMAND) {
                 title = getString(R.string.dialog_command_goto_ref);
             }
-            ctrlCode = HMotorCtrlCode.DIRECT_GO_REFERENCE;
+            ctrlCode = HTuner_Enum_MotorCtrlCode.GO_REFERENCE;
         } else if (TextUtils.equals(command, getString(R.string.motor_usals_command_gotoxx))) {
             title = getString(R.string.dialog_goto_xx);
-            ctrlCode = HMotorCtrlCode.DIRECT_USAL_GOTOXX;
+            ctrlCode = HTuner_Enum_MotorCtrlCode.USAL_GOTOXX;
         } else if (TextUtils.equals(command, getString(R.string.motor_usals_command_calculate))) {
             title = getString(R.string.dialog_commannd_calculate);
-            ctrlCode = HMotorCtrlCode.DIRECT_RECALCULATE;
+            ctrlCode = HTuner_Enum_MotorCtrlCode.RECALCULATE;
         } else if (TextUtils.equals(command, getString(R.string.motor_usals_command_shift))) {
             title = getString(R.string.dialog_shift);
-            ctrlCode = HMotorCtrlCode.DIRECT_USAL_SHIFT;
+            ctrlCode = HTuner_Enum_MotorCtrlCode.USAL_SHIFT;
         }
         return new MotorCtrlModel(title, ctrlCode, repeat, data);
     }
@@ -852,18 +852,18 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         String moveStep = mMoveStepArray[mMoveStep];
 
         if (TextUtils.equals(moveStep, getResources().getString(R.string.motor_move_step_stop))) {
-            ctrlCode = HMotorCtrlCode.DIRECT_STOP;
+            ctrlCode = HTuner_Enum_MotorCtrlCode.STOP;
         } else if (TextUtils.equals(moveStep, getResources().getString(R.string.motor_move_step_west))) {
             if (data[0] == 0) { // data[0] == 0 Continue持续转动
-                ctrlCode = HMotorCtrlCode.DIRECT_RIGHT_CONTINUE;
+                ctrlCode = HTuner_Enum_MotorCtrlCode.RIGHT_CONTINUE;
             } else {
-                ctrlCode = HMotorCtrlCode.DIRECT_RIGHT_STEP;
+                ctrlCode = HTuner_Enum_MotorCtrlCode.RIGHT_STEP;
             }
         } else if (TextUtils.equals(moveStep, getResources().getString(R.string.motor_move_step_east))) {
             if (data[0] == 0) {
-                ctrlCode = HMotorCtrlCode.DIRECT_LEFT_CONTINUE;
+                ctrlCode = HTuner_Enum_MotorCtrlCode.LEFT_CONTINUE;
             } else {
-                ctrlCode = HMotorCtrlCode.DIRECT_LEFT_STEP;
+                ctrlCode = HTuner_Enum_MotorCtrlCode.LEFT_STEP;
             }
         }
         return new MotorCtrlModel(ctrlCode, repeat, data);

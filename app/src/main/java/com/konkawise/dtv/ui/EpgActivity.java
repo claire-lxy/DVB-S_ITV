@@ -64,8 +64,8 @@ import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
 import vendor.konka.hardware.dtvmanager.V1_0.EpgEvent_t;
-import vendor.konka.hardware.dtvmanager.V1_0.HProgType_E;
-import vendor.konka.hardware.dtvmanager.V1_0.HProperty_E;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Type;
+import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
@@ -241,7 +241,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
 
     @Override
     protected void setup() {
-        SWPDBaseManager.getInstance().setCurrProgType(HProgType_E.TVPROG, 0);
+        SWPDBaseManager.getInstance().setCurrProgType(HProg_Enum_Type.TVPROG, 0);
         mEpgMsgHandler = new EpgMsgHandler(this);
         EventBus.getDefault().register(this);
 
@@ -266,7 +266,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
         super.onPause();
         RealTimeManager.getInstance().unregister(this);
         unregisterMsgEvent();
-        UIApiManager.getInstance().stopPlay(SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.PD_SwitchMode)); // 跳转或销毁界面要停止播放
+        UIApiManager.getInstance().stopPlay(SWFtaManager.getInstance().getCommE2PInfo(HSetting_Enum_Property.PD_SwitchMode)); // 跳转或销毁界面要停止播放
     }
 
     @Override

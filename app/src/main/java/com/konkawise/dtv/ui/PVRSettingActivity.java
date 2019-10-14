@@ -29,7 +29,7 @@ import java.util.Set;
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.OnClick;
-import vendor.konka.hardware.dtvmanager.V1_0.HProperty_E;
+import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 
 public class PVRSettingActivity extends BaseItemFocusChangeActivity implements UsbManager.OnUsbReceiveListener {
     private static final String TAG = "PVRSettingActivity";
@@ -200,9 +200,9 @@ public class PVRSettingActivity extends BaseItemFocusChangeActivity implements U
     }
 
     private void initData() {
-        mTimeShiftLengthPosition = getSelectPosition(arrayTimeShift, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.TimeshiftMaxMin));
-        mRecordLengthPosition = getSelectPosition(arrayRecordLength, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.RecordMaxMin));
-        mRecordTypePosition = getSelectPosition(arrayRecordType, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.RecordType));
+        mTimeShiftLengthPosition = getSelectPosition(arrayTimeShift, SWFtaManager.getInstance().getCommE2PInfo(HSetting_Enum_Property.TimeshiftMaxMin));
+        mRecordLengthPosition = getSelectPosition(arrayRecordLength, SWFtaManager.getInstance().getCommE2PInfo(HSetting_Enum_Property.RecordMaxMin));
+        mRecordTypePosition = getSelectPosition(arrayRecordType, SWFtaManager.getInstance().getCommE2PInfo(HSetting_Enum_Property.RecordType));
         mDeviceNamePosition = getdiskPosition(SWFtaManager.getInstance().getDiskUUID(), mUsbInfos);
 
 
@@ -312,7 +312,7 @@ public class PVRSettingActivity extends BaseItemFocusChangeActivity implements U
                             case ITEM_RECORD_LENGTH:
                                 mTvRecordLength.setText(checkContent);
                                 mRecordLengthPosition = Arrays.asList(mRecordLengthArray).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.RecordMaxMin, arrayRecordLength[mRecordLengthPosition]);
+                                SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.RecordMaxMin, arrayRecordLength[mRecordLengthPosition]);
                                 break;
 
                             /*case ITEM_RECORD_TYPE:
@@ -393,7 +393,7 @@ public class PVRSettingActivity extends BaseItemFocusChangeActivity implements U
                     if (--mRecordLengthPosition < 0)
                         mRecordLengthPosition = mRecordLengthArray.length - 1;
                     mTvRecordLength.setText(mRecordLengthArray[mRecordLengthPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.RecordMaxMin, arrayRecordLength[mRecordLengthPosition]);
+                    SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.RecordMaxMin, arrayRecordLength[mRecordLengthPosition]);
                     break;
 
             /*    case ITEM_RECORD_TYPE:
@@ -431,7 +431,7 @@ public class PVRSettingActivity extends BaseItemFocusChangeActivity implements U
                     if (++mRecordLengthPosition > mRecordLengthArray.length - 1)
                         mRecordLengthPosition = 0;
                     mTvRecordLength.setText(mRecordLengthArray[mRecordLengthPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.RecordMaxMin, arrayRecordLength[mRecordLengthPosition]);
+                    SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.RecordMaxMin, arrayRecordLength[mRecordLengthPosition]);
                     break;
 
             /*    case ITEM_RECORD_TYPE:

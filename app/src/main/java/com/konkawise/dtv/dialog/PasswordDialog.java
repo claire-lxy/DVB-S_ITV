@@ -15,7 +15,7 @@ import com.konkawise.dtv.utils.EditUtils;
 import com.konkawise.dtv.view.LastInputEditText;
 
 import butterknife.BindView;
-import vendor.konka.hardware.dtvmanager.V1_0.HProperty_E;
+import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 
 /**
  * 密码对话框
@@ -101,7 +101,7 @@ public class PasswordDialog extends BaseDialogFragment implements TextWatcher {
         if (s.length() < PARENTAL_PASSWORD_MAX_LENGTH) return;
 
         if (mCurrentPassword == null) {
-            mCurrentPassword = SWFtaManager.getInstance().getCommPWDInfo(HProperty_E.Password);
+            mCurrentPassword = SWFtaManager.getInstance().getCommPWDInfo(HSetting_Enum_Property.Password);
         }
 
         boolean isPasswordValid;

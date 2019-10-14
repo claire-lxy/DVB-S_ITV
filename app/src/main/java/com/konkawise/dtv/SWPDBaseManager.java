@@ -12,8 +12,8 @@ import java.util.List;
 
 import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
 import vendor.konka.hardware.dtvmanager.V1_0.Channel_t;
-import vendor.konka.hardware.dtvmanager.V1_0.HGroup_E;
-import vendor.konka.hardware.dtvmanager.V1_0.HProgType_E;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Group;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Type;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPEdit_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
@@ -145,7 +145,7 @@ public class SWPDBaseManager {
     }
 
     public List<PDPMInfo_t> getTotalGroupProgList(int[] index) {
-        return getGroupProgList(HGroup_E.TOTAL_GROUP, index);
+        return getGroupProgList(HProg_Enum_Group.TOTAL_GROUP, index);
     }
 
     /**
@@ -156,7 +156,7 @@ public class SWPDBaseManager {
     }
 
     public List<PDPMInfo_t> getWholeGroupProgList(int[] index) {
-        return getGroupProgList(HGroup_E.WHOLE_GROUP, index);
+        return getGroupProgList(HProg_Enum_Group.WHOLE_GROUP, index);
     }
 
     private List<PDPMInfo_t> getGroupProgList(int group, int[] index) {
@@ -188,7 +188,7 @@ public class SWPDBaseManager {
 
     public List<PDPInfo_t> getAnotherTypeProgInfoList() {
         int currProgType = SWPDBaseManager.getInstance().getCurrProgType();
-        setCurrProgType(currProgType == HProgType_E.GBPROG ? HProgType_E.TVPROG : HProgType_E.GBPROG, 0);
+        setCurrProgType(currProgType == HProg_Enum_Type.GBPROG ? HProg_Enum_Type.TVPROG : HProg_Enum_Type.GBPROG, 0);
         List<PDPInfo_t> progInfoList = getCurrGroupProgInfoList();
         setCurrProgType(currProgType, 0);
 
@@ -373,7 +373,7 @@ public class SWPDBaseManager {
         if (allSatList != null && !allSatList.isEmpty()) {
             int[] favIndexArray = getFavIndexArray();
             for (int favIndex : favIndexArray) {
-                int favProgNum = getProgNumOfGroup(HGroup_E.FAV_GROUP, favIndex);
+                int favProgNum = getProgNumOfGroup(HProg_Enum_Group.FAV_GROUP, favIndex);
                 if (favProgNum > 0) {
                     SatInfo_t favSatInfo = new SatInfo_t();
                     favSatInfo.SatIndex = favIndex + RANGE_SAT_INDEX; // 存入favIndex，方便切换时获取对应的喜爱分组频道列表展示，加上一个大数值与其他SatIndex区分

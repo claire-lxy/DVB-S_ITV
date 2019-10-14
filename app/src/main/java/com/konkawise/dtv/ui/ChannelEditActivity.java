@@ -37,7 +37,7 @@ import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
-import vendor.konka.hardware.dtvmanager.V1_0.HGroup_E;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Group;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPEdit_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
@@ -141,7 +141,7 @@ public class ChannelEditActivity extends BaseActivity {
 
     @Override
     protected void setup() {
-        SWPDBaseManager.getInstance().setCurrGroup(HGroup_E.TOTAL_GROUP, 1);
+        SWPDBaseManager.getInstance().setCurrGroup(HProg_Enum_Group.TOTAL_GROUP, 1);
         initChannelList();
         mTvSatelliteName.setText(R.string.all);
     }

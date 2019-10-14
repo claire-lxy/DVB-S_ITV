@@ -30,7 +30,7 @@ import butterknife.BindView;
 import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
-import vendor.konka.hardware.dtvmanager.V1_0.HGroup_E;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Group;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
 
 public class FavoriteActivity extends BaseActivity {
@@ -112,7 +112,7 @@ public class FavoriteActivity extends BaseActivity {
 
     @Override
     protected void setup() {
-        SWPDBaseManager.getInstance().setCurrGroup(HGroup_E.TOTAL_GROUP, 1);
+        SWPDBaseManager.getInstance().setCurrGroup(HProg_Enum_Group.TOTAL_GROUP, 1);
         initFavoriteGroup();
         initFavoriteChannel();
     }

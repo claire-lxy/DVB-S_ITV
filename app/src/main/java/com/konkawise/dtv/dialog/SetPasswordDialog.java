@@ -13,7 +13,7 @@ import com.konkawise.dtv.view.LastInputEditText;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import vendor.konka.hardware.dtvmanager.V1_0.HProperty_E;
+import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 
 public class SetPasswordDialog extends BaseDialogFragment {
     public static final String TAG = "SetPasswordDialog";
@@ -51,7 +51,7 @@ public class SetPasswordDialog extends BaseDialogFragment {
         String currentPassword = mEtCurrentPassword.getText().toString();
         String newPassword = mEtNewPassword.getText().toString();
         String confirmPassword = mEtConfirmPassword.getText().toString();
-        String password = SWFtaManager.getInstance().getCommPWDInfo(HProperty_E.Password);
+        String password = SWFtaManager.getInstance().getCommPWDInfo(HSetting_Enum_Property.Password);
         if (!currentPassword.equals(password)) {
             ToastUtils.showToast(R.string.toast_current_password_error);
             return false;

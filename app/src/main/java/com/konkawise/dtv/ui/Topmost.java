@@ -92,9 +92,9 @@ import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
 import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
-import vendor.konka.hardware.dtvmanager.V1_0.HGroup_E;
-import vendor.konka.hardware.dtvmanager.V1_0.HProgType_E;
-import vendor.konka.hardware.dtvmanager.V1_0.HProperty_E;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Group;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Type;
+import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 import vendor.konka.hardware.dtvmanager.V1_0.HSubtitle_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HTeletext_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
@@ -248,7 +248,7 @@ public class Topmost extends BaseActivity {
 
     @OnClick(R.id.item_channel_manage)
     void channelManage() {
-        if (SWPDBaseManager.getInstance().getProgNumOfGroup(HGroup_E.TOTAL_GROUP, 0) <= 0 && isShowChannelManageItem()) {
+        if (SWPDBaseManager.getInstance().getProgNumOfGroup(HProg_Enum_Group.TOTAL_GROUP, 0) <= 0 && isShowChannelManageItem()) {
             if (mMenuShow) {
                 showRemindSearchDialog();
             }
@@ -494,7 +494,7 @@ public class Topmost extends BaseActivity {
     protected void onPause() {
         super.onPause();
         hideSurface();
-        UIApiManager.getInstance().stopPlay(SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.PD_SwitchMode));
+        UIApiManager.getInstance().stopPlay(SWFtaManager.getInstance().getCommE2PInfo(HSetting_Enum_Property.PD_SwitchMode));
         unregisterMsgEvent();
         stopRecord();
         if (isFinishing()) {
@@ -981,15 +981,15 @@ public class Topmost extends BaseActivity {
             if (allSatList != null && !allSatList.isEmpty()) {
                 context.mSatList = new ArrayList<>(allSatList);
                 context.mCurrSatPosition = 0;
-                if (context.mCurrProgGroup == HGroup_E.WHOLE_GROUP) {
+                if (context.mCurrProgGroup == HProg_Enum_Group.WHOLE_GROUP) {
                     context.mCurrSatPosition = 0;
                 } else {
                     int i = 0;
                     for (; i < allSatList.size(); i++) {
-                        if (context.mCurrProgGroup == HGroup_E.SAT_GROUP && context.mCurrProgGroupParams == allSatList.get(i).SatIndex) {
+                        if (context.mCurrProgGroup == HProg_Enum_Group.SAT_GROUP && context.mCurrProgGroupParams == allSatList.get(i).SatIndex) {
                             context.mCurrSatPosition = i;
                             break;
-                        } else if (context.mCurrProgGroup == HGroup_E.FAV_GROUP && context.mCurrProgGroupParams == (allSatList.get(i).SatIndex - SWPDBaseManager.RANGE_SAT_INDEX)) {
+                        } else if (context.mCurrProgGroup == HProg_Enum_Group.FAV_GROUP && context.mCurrProgGroupParams == (allSatList.get(i).SatIndex - SWPDBaseManager.RANGE_SAT_INDEX)) {
                             context.mCurrSatPosition = i;
                             break;
                         }
@@ -1064,14 +1064,14 @@ public class Topmost extends BaseActivity {
             List<PDPMInfo_t> progInfoList = mProgListMap.get(satIndex);
 
             if (satIndex == -1) {
-                mCurrProgGroup = HGroup_E.WHOLE_GROUP;
+                mCurrProgGroup = HProg_Enum_Group.WHOLE_GROUP;
                 mCurrProgGroupParams = 1;
 
             } else if (satIndex >= SWPDBaseManager.RANGE_SAT_INDEX) {
-                mCurrProgGroup = HGroup_E.FAV_GROUP;
+                mCurrProgGroup = HProg_Enum_Group.FAV_GROUP;
                 mCurrProgGroupParams = satIndex - SWPDBaseManager.RANGE_SAT_INDEX;
             } else {
-                mCurrProgGroup = HGroup_E.SAT_GROUP;
+                mCurrProgGroup = HProg_Enum_Group.SAT_GROUP;
                 mCurrProgGroupParams = satIndex;
             }
             SWPDBaseManager.getInstance().setCurrGroup(mCurrProgGroup, mCurrProgGroupParams);
@@ -1263,7 +1263,7 @@ public class Topmost extends BaseActivity {
     }
 
     private void playProg(int progNum, boolean immediately) {
-        UIApiManager.getInstance().stopPlay(SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.PD_SwitchMode)); // 切台之前暂停当前频道播放
+        UIApiManager.getInstance().stopPlay(SWFtaManager.getInstance().getCommE2PInfo(HSetting_Enum_Property.PD_SwitchMode)); // 切台之前暂停当前频道播放
         SWPDBaseManager.getInstance().setCurrProgNo(progNum);
         removePlayProgMsg();
         showPfInfo();
@@ -1348,7 +1348,7 @@ public class Topmost extends BaseActivity {
     }
 
     private void showRadioBackground() {
-        mIvRadioBackground.setVisibility(SWPDBaseManager.getInstance().getCurrProgType() == HProgType_E.GBPROG ? View.VISIBLE : View.INVISIBLE);
+        mIvRadioBackground.setVisibility(SWPDBaseManager.getInstance().getCurrProgType() == HProg_Enum_Type.GBPROG ? View.VISIBLE : View.INVISIBLE);
     }
 
     private void checkLaunchSettingPassword() {
@@ -1651,8 +1651,8 @@ public class Topmost extends BaseActivity {
         mSettingPasswordDialog = new InitPasswordDialog().setOnSavePasswordListener(new InitPasswordDialog.OnSavePasswordListener() {
             @Override
             public void onSavePassword(String password) {
-                SWFtaManager.getInstance().setCommPWDInfo(HProperty_E.Password, password);
-                SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.FirstOpen, 0);
+                SWFtaManager.getInstance().setCommPWDInfo(HSetting_Enum_Property.Password, password);
+                SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.FirstOpen, 0);
 
                 dismissSettingPasswordDialog();
 
@@ -1999,7 +1999,7 @@ public class Topmost extends BaseActivity {
                 showQuitRecordDialog(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_UNKNOWN));
             } else {
                 if (mProgListAdapter.getCount() > 0) {
-                    int recordMinutes = SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.RecordMaxMin);
+                    int recordMinutes = SWFtaManager.getInstance().getCommE2PInfo(HSetting_Enum_Property.RecordMaxMin);
                     if (recordMinutes == 0) {
                         showInputPvrMinuteDialog(Constants.PVR_TYPE_RECORD);
                     } else {
@@ -2014,14 +2014,14 @@ public class Topmost extends BaseActivity {
         if (keyCode == KeyEvent.KEYCODE_TV_RADIO_SERVICE) {
             stopRecord();
             int currProgType = SWPDBaseManager.getInstance().getCurrProgType();
-            int group = currProgType == HProgType_E.GBPROG ? HProgType_E.TVPROG : HProgType_E.GBPROG;
+            int group = currProgType == HProg_Enum_Type.GBPROG ? HProg_Enum_Type.TVPROG : HProg_Enum_Type.GBPROG;
             int num = SWPDBaseManager.getInstance().getProgNumOfType(group, 0);
             if (num > 0) {
-                SWPDBaseManager.getInstance().setCurrProgType(currProgType == HProgType_E.GBPROG ?
-                        HProgType_E.TVPROG: HProgType_E.GBPROG, 0);
+                SWPDBaseManager.getInstance().setCurrProgType(currProgType == HProg_Enum_Type.GBPROG ?
+                        HProg_Enum_Type.TVPROG: HProg_Enum_Type.GBPROG, 0);
                 onProgramUpdate(new ProgramUpdateEvent(true));
             } else {
-                ToastUtils.showToast(group == HProgType_E.GBPROG ? R.string.toast_no_radio : R.string.toast_no_tv);
+                ToastUtils.showToast(group == HProg_Enum_Type.GBPROG ? R.string.toast_no_radio : R.string.toast_no_tv);
             }
             return true;
         }

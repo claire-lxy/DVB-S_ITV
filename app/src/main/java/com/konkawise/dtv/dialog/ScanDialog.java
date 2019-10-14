@@ -16,7 +16,7 @@ import com.konkawise.dtv.base.BaseItemFocusChangeDialogFragment;
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.OnClick;
-import vendor.konka.hardware.dtvmanager.V1_0.HProperty_E;
+import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 
 public class ScanDialog extends BaseItemFocusChangeDialogFragment {
     public static final String TAG = "ScanDialog";
@@ -113,10 +113,10 @@ public class ScanDialog extends BaseItemFocusChangeDialogFragment {
     void scan(View view) {
         dismiss();
         if (mOnScanSearchListener != null) {
-            SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.ScanMode, mCurrScanMode);
+            SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.ScanMode, mCurrScanMode);
             if (mInstallationType == INSTALLATION_TYPE_S2_SEARCH) {
-                SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.Network, mCurrNetwork);
-                SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.CAS, mCurrCAS);
+                SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.Network, mCurrNetwork);
+                SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.CAS, mCurrCAS);
             }
             mOnScanSearchListener.onClick(view);
         }
@@ -216,16 +216,16 @@ public class ScanDialog extends BaseItemFocusChangeDialogFragment {
             dismiss();
             if (mOnScanSearchListener != null) {
 
-                SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.ScanMode, mCurrScanMode);
+                SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.ScanMode, mCurrScanMode);
                 if (mInstallationType == INSTALLATION_TYPE_S2_SEARCH) {
-                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.Network, mCurrNetwork);
-                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.CAS, mCurrCAS);
+                    SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.Network, mCurrNetwork);
+                    SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.CAS, mCurrCAS);
                 } else if (mInstallationType == INSTALLATION_TYPE_MANUAL_SEARCH) {
-                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.CAS, mCurrChannelType);
-                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.ScanMode, mCurrScanMode);
+                    SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.CAS, mCurrChannelType);
+                    SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.ScanMode, mCurrScanMode);
                 } else if (mInstallationType == INSTALLATION_TYPE_AUTO_SEARCH) {
-                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.CAS, mCurrChannelType);
-                    SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.ScanMode, mCurrScanMode);
+                    SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.CAS, mCurrChannelType);
+                    SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.ScanMode, mCurrScanMode);
                 }
                 mOnScanSearchListener.onClick(null);
             }

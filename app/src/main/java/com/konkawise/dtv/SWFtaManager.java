@@ -3,7 +3,7 @@ package com.konkawise.dtv;
 import com.sw.dvblib.SWFta;
 
 import vendor.konka.hardware.dtvmanager.V1_0.HPDPPlayInfo_t;
-import vendor.konka.hardware.dtvmanager.V1_0.HProperty_E;
+import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 import vendor.konka.hardware.dtvmanager.V1_0.HSubtitle_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HTeletext_t;
 import vendor.konka.hardware.dtvmanager.V1_0.ScanProgress_t;
@@ -30,14 +30,14 @@ public class SWFtaManager {
      * 是否打开Parental Lock
      */
     public boolean isOpenParentLock() {
-        return getCommE2PInfo(HProperty_E.cParentLock) == 1;
+        return getCommE2PInfo(HSetting_Enum_Property.cParentLock) == 1;
     }
 
     /**
      * 是否打开Menu Lock
      */
     public boolean isOpenMenuLock() {
-        return getCommE2PInfo(HProperty_E.cMenuLock) == 1;
+        return getCommE2PInfo(HSetting_Enum_Property.cMenuLock) == 1;
     }
 
     /**
@@ -85,15 +85,15 @@ public class SWFtaManager {
     }
 
     public int getCurrScanMode() {
-        return getCommE2PInfo(HProperty_E.ScanMode);
+        return getCommE2PInfo(HSetting_Enum_Property.ScanMode);
     }
 
     public int getCurrNetwork() {
-        return getCommE2PInfo(HProperty_E.Network);
+        return getCommE2PInfo(HSetting_Enum_Property.Network);
     }
 
     public int getCurrCAS() {
-        return getCommE2PInfo(HProperty_E.CAS);
+        return getCommE2PInfo(HSetting_Enum_Property.CAS);
     }
 
     /**
@@ -183,7 +183,7 @@ public class SWFtaManager {
     }
 
     public long dismissTimeout() {
-        return getCommE2PInfo(HProperty_E.PD_dispalytime) * 1000;
+        return getCommE2PInfo(HSetting_Enum_Property.PD_dispalytime) * 1000;
     }
 
     /**
@@ -236,6 +236,6 @@ public class SWFtaManager {
      * SWFta.E_E2PP.E2P_FirstOpen.ordinal()==1表示第一次启动，SWFta.E_E2PP.E2P_FirstOpen.ordinal()==0表示不是第一次启动
      */
     public boolean isPasswordEmpty() {
-        return getCommE2PInfo(HProperty_E.FirstOpen) == 1;
+        return getCommE2PInfo(HSetting_Enum_Property.FirstOpen) == 1;
     }
 }
