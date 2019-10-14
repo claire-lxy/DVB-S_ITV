@@ -22,7 +22,7 @@ import java.text.MessageFormat;
 import java.util.List;
 
 import butterknife.BindView;
-import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_TP;
 
 public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
     private static final int ITEM_TRANSPONDER = 1;
@@ -81,9 +81,9 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
 
     private int mCurrSelectItem = ITEM_TRANSPONDER;
 
-    private List<ChannelNew_t> satChannelInfoList;
+    private List<HProg_Struct_TP> satChannelInfoList;
 
-    private ChannelNew_t channel;
+    private HProg_Struct_TP channel;
 
     private CheckSignalHelper mCheckSignalHelper;
 
@@ -115,7 +115,7 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
         mTvBandWidth.setText(MessageFormat.format(getString(R.string.bandwidth_text), channel.Symbol));
         SWFtaManager.getInstance().tunerLockFreq(Constants.T2_SATELLITE_INDEX, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
         Log.e("T2ManualSearchActivity", "satChannelInfoList.size:  " + satChannelInfoList.size() + "channel.Freq  " + channel.Freq + "channel.Symbol  " +
-                channel.Symbol + "channel.Qam  " + channel.Symbol + "TsID  " + channel.TsID + "channel.NetID  " + channel.NetID + "channel.ChannelIndex  " + channel.ChannelIndex);
+                channel.Symbol + "channel.Qam  " + channel.Symbol + "TsID  " + channel.TsID + "channel.NetID  " + channel.NetID + "channel.ChannelIndex  " + channel.TPIndex);
     }
 
     private void initCheckSignal() {

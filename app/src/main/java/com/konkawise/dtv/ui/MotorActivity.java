@@ -33,10 +33,10 @@ import java.util.List;
 
 import butterknife.BindArray;
 import butterknife.BindView;
-import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_TP;
 import vendor.konka.hardware.dtvmanager.V1_0.HTuner_Enum_MotorCtrlCode;
 import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
-import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 
 public class MotorActivity extends BaseItemFocusChangeActivity {
     private static final String TAG = "MotorActivity";
@@ -223,7 +223,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
 
     private int mCurrentTp;
     private int mSatelliteIndex;
-    private List<ChannelNew_t> mTpList;
+    private List<HProg_Struct_TP> mTpList;
     private int mMotorType;
 
     private int mMoveStep;
@@ -234,7 +234,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
     private CheckSignalHelper mCheckSignalHelper;
     private MotorHandler mMotorHandler;
     private MotorCtrlRunnable mMotorRunnable;
-    private SatInfo_t mSatInfo;
+    private HProg_Struct_SatInfo mSatInfo;
 
     private LatLngModel mSatLongitudeModel = new LatLngModel();
     private LatLngModel mLocalLongitudeModel = new LatLngModel();
@@ -308,7 +308,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         mCurrentTp = getIntent().getIntExtra(Constants.IntentKey.INTENT_CURRENT_TP, -1);
         mSatelliteIndex = getIntent().getIntExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, -1);
         mTpList = SWPDBaseManager.getInstance().getSatChannelInfoList(mSatelliteIndex);
-        List<SatInfo_t> satList = SWPDBaseManager.getInstance().getSatList();
+        List<HProg_Struct_SatInfo> satList = SWPDBaseManager.getInstance().getSatList();
         int position = SWPDBaseManager.getInstance().findPositionBySatIndex(mSatelliteIndex);
         if (satList != null && !satList.isEmpty() && position < satList.size()) {
             mSatInfo = satList.get(position);
@@ -937,7 +937,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
             mTvTp.setText(getString(R.string.empty_tp));
             return;
         }
-        ChannelNew_t channelNew_t = mTpList.get(mCurrentTp);
+        HProg_Struct_TP channelNew_t = mTpList.get(mCurrentTp);
         String tp = channelNew_t.Freq + Utils.getVorH(this, channelNew_t.Qam) + channelNew_t.Symbol;
         mTvTp.setText(tp);
         SWFtaManager.getInstance().tunerLockFreq(mSatelliteIndex, channelNew_t.Freq, channelNew_t.Symbol, channelNew_t.Qam, 1, 0);

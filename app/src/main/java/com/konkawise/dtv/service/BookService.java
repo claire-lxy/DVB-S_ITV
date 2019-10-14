@@ -46,7 +46,7 @@ import java.text.MessageFormat;
 
 import vendor.konka.hardware.dtvmanager.V1_0.HForplayprog_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
-import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgBasicInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
 
 public class BookService extends BaseService implements WeakToolInterface {
@@ -134,7 +134,7 @@ public class BookService extends BaseService implements WeakToolInterface {
     private void showBookReadyDialog() {
         HSubforProg_t bookInfo = SWBookingManager.getInstance().getReadyProgInfo();
         if (bookInfo == null) return;
-        PDPInfo_t progInfo = SWPDBaseManager.getInstance().getProgInfoByServiceId(bookInfo.servid, bookInfo.tsid, bookInfo.sat);
+        HProg_Struct_ProgBasicInfo progInfo = SWPDBaseManager.getInstance().getProgInfoByServiceId(bookInfo.servid, bookInfo.tsid, bookInfo.sat);
         if (progInfo == null) return;
 
         // 待机情况下唤醒设备显示弹框

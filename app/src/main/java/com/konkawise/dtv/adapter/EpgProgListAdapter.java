@@ -9,18 +9,18 @@ import com.konkawise.dtv.adapter.base.BaseListViewHolder;
 
 import java.util.List;
 
-import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
 
-public class EpgProgListAdapter extends BaseListViewAdapter<PDPMInfo_t> {
+public class EpgProgListAdapter extends BaseListViewAdapter<HProg_Struct_ProgInfo> {
     private int mSelectPosition;
     private boolean mFocus;
 
-    public EpgProgListAdapter(Context context, List<PDPMInfo_t> datas) {
+    public EpgProgListAdapter(Context context, List<HProg_Struct_ProgInfo> datas) {
         super(context, datas, R.layout.epg_prog_list_item);
     }
 
     @Override
-    protected void convert(BaseListViewHolder holder, int position, PDPMInfo_t item) {
+    protected void convert(BaseListViewHolder holder, int position, HProg_Struct_ProgInfo item) {
         holder.setText(R.id.epg_list_item, item.Name);
         if (mSelectPosition == position) {
             holder.setVisibility(R.id.epg_imageview, View.VISIBLE)

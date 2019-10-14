@@ -15,7 +15,7 @@ import java.util.List;
 
 import vendor.konka.hardware.dtvmanager.V1_0.HForplayprog_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
-import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgBasicInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
 
 public class SWBookingManager {
@@ -197,7 +197,7 @@ public class SWBookingManager {
         List<BookingModel> bookingModels = new ArrayList<>();
         if (bookingList != null && !bookingList.isEmpty()) {
             for (HSubforProg_t bookInfo : bookingList) {
-                PDPInfo_t progInfo = SWPDBaseManager.getInstance().getProgInfoByServiceId(bookInfo.servid, bookInfo.tsid, bookInfo.sat);
+                HProg_Struct_ProgBasicInfo progInfo = SWPDBaseManager.getInstance().getProgInfoByServiceId(bookInfo.servid, bookInfo.tsid, bookInfo.sat);
                 if (progInfo != null) {
                     BookingModel bookingModel = new BookingModel(bookInfo, progInfo);
                     bookingModels.add(bookingModel);

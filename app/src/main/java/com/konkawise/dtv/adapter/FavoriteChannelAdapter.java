@@ -12,9 +12,9 @@ import com.konkawise.dtv.adapter.base.BaseListViewHolder;
 import java.util.ArrayList;
 import java.util.List;
 
-import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
 
-public class FavoriteChannelAdapter extends BaseListViewAdapter<PDPMInfo_t> {
+public class FavoriteChannelAdapter extends BaseListViewAdapter<HProg_Struct_ProgInfo> {
     private static final String TAG = "FavoriteChannelAdapter";
 
     private int mSelectPosition;
@@ -22,12 +22,12 @@ public class FavoriteChannelAdapter extends BaseListViewAdapter<PDPMInfo_t> {
 
     private SparseBooleanArray mSelectMap = new SparseBooleanArray();
 
-    public FavoriteChannelAdapter(Context context, List<PDPMInfo_t> datas) {
+    public FavoriteChannelAdapter(Context context, List<HProg_Struct_ProgInfo> datas) {
         super(context, datas, R.layout.favorite_channel_list_item);
     }
 
     @Override
-    protected void convert(BaseListViewHolder holder, int position, PDPMInfo_t item) {
+    protected void convert(BaseListViewHolder holder, int position, HProg_Struct_ProgInfo item) {
         if (mSelectPosition == position && !mFocus) {
             holder.getView(R.id.ll_fav_adapter_root).setBackgroundColor(mContext.getResources().getColor(R.color.channel_edit_gray));
         } else {
@@ -61,8 +61,8 @@ public class FavoriteChannelAdapter extends BaseListViewAdapter<PDPMInfo_t> {
         return mSelectMap;
     }
 
-    public List<PDPMInfo_t> getSelectData(){
-        List<PDPMInfo_t> filterData = new ArrayList<>();
+    public List<HProg_Struct_ProgInfo> getSelectData(){
+        List<HProg_Struct_ProgInfo> filterData = new ArrayList<>();
         for(int i=0; i<getData().size(); i++){
             if(mSelectMap.get(i)){
                 filterData.add(getData().get(i));

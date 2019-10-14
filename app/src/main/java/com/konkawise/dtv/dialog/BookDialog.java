@@ -34,7 +34,7 @@ import butterknife.OnClick;
 import butterknife.OnFocusChange;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Type;
 import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
-import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0. HProg_Struct_ProgBasicInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
 
 public class BookDialog extends BaseItemFocusChangeDialogFragment {
@@ -489,11 +489,11 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
     private int mBookType;
 
     // 主要操作的频道列表
-    private List<PDPInfo_t> mProgList = new ArrayList<>();
+    private List< HProg_Struct_ProgBasicInfo> mProgList = new ArrayList<>();
     // 当前播放类型的频道列表，TV or Radio
-    private List<PDPInfo_t> mCurrTypeProgList;
+    private List< HProg_Struct_ProgBasicInfo> mCurrTypeProgList;
     // 其他播放类型的频道列表，TV or Radio
-    private List<PDPInfo_t> mAnotherTypeProgList;
+    private List< HProg_Struct_ProgBasicInfo> mAnotherTypeProgList;
     // 记录原始的频道类型，主要用于TV和Radio列表都存在时，切换Channel Type时通知更新mProgList列表
     private int mOriginChannelTypePosition;
 
@@ -760,13 +760,13 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
         return this;
     }
 
-    public BookDialog currTypeProgList(List<PDPInfo_t> currTypeProgList) {
+    public BookDialog currTypeProgList(List< HProg_Struct_ProgBasicInfo> currTypeProgList) {
         this.mCurrTypeProgList = currTypeProgList;
         mProgList.addAll(mCurrTypeProgList);
         return this;
     }
 
-    public BookDialog anotherTypeProgList(List<PDPInfo_t> anotherTypeProgList) {
+    public BookDialog anotherTypeProgList(List< HProg_Struct_ProgBasicInfo> anotherTypeProgList) {
         this.mAnotherTypeProgList = anotherTypeProgList;
         return this;
     }

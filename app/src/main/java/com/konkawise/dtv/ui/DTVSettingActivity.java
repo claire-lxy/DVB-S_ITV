@@ -16,11 +16,11 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgBasicInfo;
 
 public class DTVSettingActivity extends BaseActivity {
 
-    private List<PDPInfo_t> mProgList = new ArrayList<>();
+    private List<HProg_Struct_ProgBasicInfo> mProgList = new ArrayList<>();
 
     @BindView(R.id.rl_general_settings)
     RelativeLayout rlGeneralSetting;
@@ -73,7 +73,7 @@ public class DTVSettingActivity extends BaseActivity {
         ThreadPoolManager.getInstance().execute(new Runnable() {
             @Override
             public void run() {
-                List<PDPInfo_t> progList = SWPDBaseManager.getInstance().getCurrGroupProgInfoList();
+                List<HProg_Struct_ProgBasicInfo> progList = SWPDBaseManager.getInstance().getCurrGroupProgInfoList();
                 if (progList != null && !progList.isEmpty()) {
                     mProgList.addAll(progList);
                 }

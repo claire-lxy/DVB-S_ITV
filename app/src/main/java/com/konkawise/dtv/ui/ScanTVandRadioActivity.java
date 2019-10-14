@@ -33,8 +33,8 @@ import java.util.List;
 import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Type;
 import vendor.konka.hardware.dtvmanager.V1_0.HSearch_Enum_StoreType;
-import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
-import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgBasicInfo;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 
 public class ScanTVandRadioActivity extends BaseActivity {
     private final static String TAG = ScanTVandRadioActivity.class.getSimpleName();
@@ -78,7 +78,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
     private TvAndRadioRecycleViewAdapter mTvAdapter;
     private TvAndRadioRecycleViewAdapter mRadioAdapter;
 
-    private List<SatInfo_t> mSatList;
+    private List<HProg_Struct_SatInfo> mSatList;
 
     private int mutiSateIndex = -1;
 
@@ -186,7 +186,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
                                             int freq, int symbol, int qam, int plpid) {
                 onUpdateSearchProgress(AllNum, CurrIndex);
 
-                ArrayList<PDPInfo_t> pdpInfo_ts = SWPSearchManager.getInstance().getTsSearchResInfo(Sat, freq, symbol, qam, plpid);
+                ArrayList<HProg_Struct_ProgBasicInfo> pdpInfo_ts = SWPSearchManager.getInstance().getTsSearchResInfo(Sat, freq, symbol, qam, plpid);
                 if (pdpInfo_ts == null) return 0;
 
                 updateTvList(pdpInfo_ts);
@@ -197,21 +197,21 @@ public class ScanTVandRadioActivity extends BaseActivity {
                 return 0;
             }
 
-            private void updateTvList(ArrayList<PDPInfo_t> pdpInfoList) {
-                List<PDPInfo_t> tvList = getTvList(pdpInfoList);
+            private void updateTvList(ArrayList<HProg_Struct_ProgBasicInfo> pdpInfoList) {
+                List<HProg_Struct_ProgBasicInfo> tvList = getTvList(pdpInfoList);
                 mTvAdapter.addData(tvList);
                 mRvTv.scrollToPosition(mTvAdapter.getItemCount() - 1);
             }
 
-            private void updateRadioList(ArrayList<PDPInfo_t> pdpInfoList) {
-                List<PDPInfo_t> radioList = getRadioList(pdpInfoList);
+            private void updateRadioList(ArrayList<HProg_Struct_ProgBasicInfo> pdpInfoList) {
+                List<HProg_Struct_ProgBasicInfo> radioList = getRadioList(pdpInfoList);
                 mRadioAdapter.addData(radioList);
                 mRvRadio.scrollToPosition(mRadioAdapter.getItemCount() - 1);
             }
 
-            private List<PDPInfo_t> getTvList(ArrayList<PDPInfo_t> pdpInfoList) {
-                List<PDPInfo_t> tvList = new ArrayList<>();
-                for (PDPInfo_t pdpInfo_t : pdpInfoList) {
+            private List<HProg_Struct_ProgBasicInfo> getTvList(ArrayList<HProg_Struct_ProgBasicInfo> pdpInfoList) {
+                List<HProg_Struct_ProgBasicInfo> tvList = new ArrayList<>();
+                for (HProg_Struct_ProgBasicInfo pdpInfo_t : pdpInfoList) {
                     if (pdpInfo_t.ServType == 1) {
                         tvList.add(pdpInfo_t);
                     }
@@ -219,9 +219,9 @@ public class ScanTVandRadioActivity extends BaseActivity {
                 return tvList;
             }
 
-            private List<PDPInfo_t> getRadioList(ArrayList<PDPInfo_t> pdpInfoList) {
-                List<PDPInfo_t> radioList = new ArrayList<>();
-                for (PDPInfo_t pdpInfo_t : pdpInfoList) {
+            private List<HProg_Struct_ProgBasicInfo> getRadioList(ArrayList<HProg_Struct_ProgBasicInfo> pdpInfoList) {
+                List<HProg_Struct_ProgBasicInfo> radioList = new ArrayList<>();
+                for (HProg_Struct_ProgBasicInfo pdpInfo_t : pdpInfoList) {
                     if (pdpInfo_t.ServType == 2) {
                         radioList.add(pdpInfo_t);
                     }
@@ -401,9 +401,9 @@ public class ScanTVandRadioActivity extends BaseActivity {
      */
     public void setSatInfo() {
         int sat = SWPDBaseManager.getInstance().findPositionBySatIndex(getSatelliteIndex());
-        SatInfo_t satInfo = SWPDBaseManager.getInstance().getSatList().get(sat);
+        HProg_Struct_SatInfo satInfo = SWPDBaseManager.getInstance().getSatList().get(sat);
 
-        SatInfo_t updateInfo = SWPDBaseManager.getInstance().getSatInfo(sat);
+        HProg_Struct_SatInfo updateInfo = SWPDBaseManager.getInstance().getSatInfo(sat);
         updateInfo.LnbType = satInfo.LnbType;
         updateInfo.LnbPower = satInfo.LnbPower;
         updateInfo.diseqc10_pos = satInfo.diseqc10_pos;

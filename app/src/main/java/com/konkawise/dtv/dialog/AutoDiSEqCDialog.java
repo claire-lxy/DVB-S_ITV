@@ -19,7 +19,7 @@ import java.text.MessageFormat;
 
 import butterknife.BindView;
 import butterknife.OnClick;
-import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_TP;
 
 public class AutoDiSEqCDialog extends BaseDialogFragment implements WeakToolInterface {
     public static final String TAG = "AutoDiSEqCDialog";
@@ -47,7 +47,7 @@ public class AutoDiSEqCDialog extends BaseDialogFragment implements WeakToolInte
     }
 
     private int mSatIndex;
-    private ChannelNew_t mTpData;
+    private HProg_Struct_TP mTpData;
     private int mLockDiSEqc;
     private AutoDiSEqCRunnable mAutoDiSEqCRunnable;
     private OnAutoDiSEqCResultListener mOnAutoDiSEqCResultListener;
@@ -69,7 +69,7 @@ public class AutoDiSEqCDialog extends BaseDialogFragment implements WeakToolInte
         return this;
     }
 
-    public AutoDiSEqCDialog tpData(ChannelNew_t tpData) {
+    public AutoDiSEqCDialog tpData(HProg_Struct_TP tpData) {
         this.mTpData = tpData;
         return this;
     }

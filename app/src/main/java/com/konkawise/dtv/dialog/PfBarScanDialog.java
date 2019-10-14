@@ -33,7 +33,7 @@ import java.util.Timer;
 
 import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.EpgEvent_t;
-import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0. HProg_Struct_ProgInfo;
 
 public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, RealTimeManager.OnReceiveTimeListener {
     public static final String TAG = "PfBarScanDialog";
@@ -173,7 +173,7 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
 
         @Override
         protected void runTimer() {
-            PDPMInfo_t currProgInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
+            HProg_Struct_ProgInfo currProgInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
             EpgEvent_t currPfInfo = null;
             EpgEvent_t nextPfInfo = null;
             if (currProgInfo != null) {
@@ -204,7 +204,7 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
     }
 
     private void updateProgInfo(EpgEvent_t currPfInfo) {
-        PDPMInfo_t currProgInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
+        HProg_Struct_ProgInfo currProgInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
         if (currProgInfo != null) {
             mTvProgNum.setText(String.valueOf(currProgInfo.PShowNo));
             mTvProgName.setText(currProgInfo.Name);

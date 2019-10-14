@@ -9,17 +9,17 @@ import com.konkawise.dtv.adapter.base.BaseListViewHolder;
 
 import java.util.List;
 
-import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
 
-public class TvListAdapter extends BaseListViewAdapter<PDPMInfo_t> {
+public class TvListAdapter extends BaseListViewAdapter<HProg_Struct_ProgInfo> {
     private int mSelectPosition;
 
-    public TvListAdapter(Context context, List<PDPMInfo_t> datas) {
+    public TvListAdapter(Context context, List<HProg_Struct_ProgInfo> datas) {
         super(context, datas, R.layout.prog_list_item);
     }
 
     @Override
-    protected void convert(BaseListViewHolder holder, int position, PDPMInfo_t item) {
+    protected void convert(BaseListViewHolder holder, int position, HProg_Struct_ProgInfo item) {
         holder.setText(R.id.tv_prog_num, String.valueOf(item.PShowNo))
                 .setText(R.id.tv_prog_name, item.Name)
                 .setVisibility(R.id.iv_prog_play, mSelectPosition == position ? View.VISIBLE : View.GONE)

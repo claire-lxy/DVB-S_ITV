@@ -6,7 +6,7 @@ import com.sw.dvblib.SWPSearch;
 
 import java.util.ArrayList;
 
-import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgBasicInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.PSRNum_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PSSParam_t;
 
@@ -44,7 +44,7 @@ public class SWPSearchManager {
     /**
      * 根据搜索获取的参数获取频道列表
      */
-    public ArrayList<PDPInfo_t> getTsSearchResInfo(int sat, int freq, int symbol, int qam, int plpid) {
+    public ArrayList<HProg_Struct_ProgBasicInfo> getTsSearchResInfo(int sat, int freq, int symbol, int qam, int plpid) {
         return SWPSearch.CreateInstance().getTsSearchResInfo(sat, freq, symbol, qam, plpid);
     }
 

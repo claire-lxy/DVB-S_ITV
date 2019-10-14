@@ -67,7 +67,7 @@ import vendor.konka.hardware.dtvmanager.V1_0.EpgEvent_t;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Type;
 import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
-import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
 
 public class EpgActivity extends BaseActivity implements RealTimeManager.OnReceiveTimeListener {
@@ -200,15 +200,15 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
             switch (msg.what) {
                 case MSG_PLAY_SELECT_PROG:
                     int conditon = msg.arg1;
-                    PDPMInfo_t currProgInfo = context.mProgAdapter.getItem(context.mCurrProgSelectPosition);
+                    HProg_Struct_ProgInfo currProgInfo = context.mProgAdapter.getItem(context.mCurrProgSelectPosition);
                     SWPDBaseManager.getInstance().setCurrProgNo(currProgInfo.ProgNo);
                     UIApiManager.getInstance().startPlayProgNo(currProgInfo.ProgNo, conditon);
                     context.notifyEpgChange(currProgInfo);
                     break;
                 case MSG_EPG_CHANGE_LOAD:
-                    if (msg.obj instanceof PDPMInfo_t) {
+                    if (msg.obj instanceof HProg_Struct_ProgInfo) {
                         context.showLoadingEpg();
-                        PDPMInfo_t progInfo = (PDPMInfo_t) msg.obj;
+                        HProg_Struct_ProgInfo progInfo = (HProg_Struct_ProgInfo) msg.obj;
                         SWEpgManager.getInstance().sentDataReq(progInfo.Sat, progInfo.TsID, progInfo.ServID); // 通知底层立即搜索该频道的EPG
                     }
                     break;
@@ -297,7 +297,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
             @Override
             public int Epg_SchInfoReady(int sat, int tsid, int servid) {
                 if (mProgAdapter.isPositionValid(mLvProgList)) {
-                    PDPMInfo_t progInfo = mProgAdapter.getItem(mCurrProgSelectPosition);
+                    HProg_Struct_ProgInfo progInfo = mProgAdapter.getItem(mCurrProgSelectPosition);
                     if (progInfo != null && progInfo.Sat == sat && progInfo.TsID == tsid && progInfo.ServID == servid) {
                         updateEpgChannel();
                     }
@@ -405,7 +405,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
             @Override
             protected void loadBackground() {
                 int[] currentSelectPosition = new int[1];
-                List<PDPMInfo_t> progList = SWPDBaseManager.getInstance().getWholeGroupProgList(currentSelectPosition);
+                List<HProg_Struct_ProgInfo> progList = SWPDBaseManager.getInstance().getWholeGroupProgList(currentSelectPosition);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -491,7 +491,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
         if (!mProgAdapter.isPositionValid(mLvProgList) || !mEpgChannelAdapter.isPositionValid(mLvEpgChannel))
             return;
 
-        PDPMInfo_t progInfo = mProgAdapter.getItem(mCurrProgSelectPosition);
+        HProg_Struct_ProgInfo progInfo = mProgAdapter.getItem(mCurrProgSelectPosition);
         EpgEvent_t eventInfo = mEpgChannelAdapter.getItem(mCurrEpgSelectPosition);
 
         if (SWTimerManager.getInstance().isProgramPlaying(eventInfo)) {
@@ -807,7 +807,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     /**
      * 发送消息通知切换频道更新Epg列表
      */
-    private void notifyEpgChange(PDPMInfo_t progInfo) {
+    private void notifyEpgChange(HProg_Struct_ProgInfo progInfo) {
         HandlerMsgManager.getInstance().removeMessage(mEpgMsgHandler, EpgMsgHandler.MSG_EPG_CHANGE_LOAD);
         HandlerMsgManager.getInstance().sendMessage(mEpgMsgHandler, new HandlerMsgModel(EpgMsgHandler.MSG_EPG_CHANGE_LOAD, progInfo));
     }

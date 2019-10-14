@@ -23,7 +23,7 @@ import java.util.List;
 
 import butterknife.BindArray;
 import butterknife.BindView;
-import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 
 public class BlindActivity extends BaseItemFocusChangeActivity {
     private static final String TAG = "BlindActivity";
@@ -106,7 +106,7 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
     private int mCurrentSatellite;
     private int mCurrentLnb;
     private int mCurrentDiseqc;
-    private List<SatInfo_t> mSatList;
+    private List<HProg_Struct_SatInfo> mSatList;
     // 22KHz为Auto之前，上一个卫星22KHz的开关状态
     private String mLastFocusable22KHz;
 
@@ -268,7 +268,7 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
     private void saveSatInfo() {
         if (isSatelliteEmpty()) return;
 
-        SatInfo_t satInfo = SWPDBaseManager.getInstance().getSatList().get(mCurrentSatellite);
+        HProg_Struct_SatInfo satInfo = SWPDBaseManager.getInstance().getSatList().get(mCurrentSatellite);
 
         String lnb = mEtLnb.getText().toString();
         if (TextUtils.isEmpty(lnb)) lnb = "0";
@@ -397,7 +397,7 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
                 getResources().getString(R.string.on) : getResources().getString(R.string.off));
     }
 
-    private List<SatInfo_t> getSatList() {
+    private List<HProg_Struct_SatInfo> getSatList() {
         if (mSatList == null) {
             mSatList = SWPDBaseManager.getInstance().getSatList();
         }

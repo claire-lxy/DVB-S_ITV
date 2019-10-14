@@ -36,10 +36,10 @@ import java.util.Timer;
 import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Type;
 import vendor.konka.hardware.dtvmanager.V1_0.HSearch_Enum_StoreType;
-import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgBasicInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.PSRNum_t;
 import vendor.konka.hardware.dtvmanager.V1_0.PSSParam_t;
-import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.ScanProgress_t;
 
 public class TpBlindActivity extends BaseActivity {
@@ -162,7 +162,7 @@ public class TpBlindActivity extends BaseActivity {
                 PSRNum_t psr = SWPSearchManager.getInstance().getProgNumOfThisSarch(Sat, freq);
                 if (null == psr) return 1;
 
-                ArrayList<PDPInfo_t> list = SWPSearchManager.getInstance().getTsSearchResInfo(Sat, freq, symbol, qam, plpid);
+                ArrayList<HProg_Struct_ProgBasicInfo> list = SWPSearchManager.getInstance().getTsSearchResInfo(Sat, freq, symbol, qam, plpid);
                 if (list == null) return 0;
 
                 updateTvList(list);
@@ -173,21 +173,21 @@ public class TpBlindActivity extends BaseActivity {
                 return 0;
             }
 
-            private void updateTvList(ArrayList<PDPInfo_t> pdpInfoList) {
+            private void updateTvList(ArrayList<HProg_Struct_ProgBasicInfo> pdpInfoList) {
                 List<BlindTpModel> tvList = getTvList(pdpInfoList);
                 mBlindTvAdapter.addData(tvList);
                 mRvTv.scrollToPosition(mBlindTvAdapter.getItemCount() - 1);
             }
 
-            private void updateRadioList(ArrayList<PDPInfo_t> pdpInfoList) {
+            private void updateRadioList(ArrayList<HProg_Struct_ProgBasicInfo> pdpInfoList) {
                 List<BlindTpModel> radioList = getRadioList(pdpInfoList);
                 mBlindRadioAdapter.addData(radioList);
                 mRvRadio.scrollToPosition(mBlindRadioAdapter.getItemCount() - 1);
             }
 
-            private List<BlindTpModel> getTvList(ArrayList<PDPInfo_t> pdpInfoList) {
+            private List<BlindTpModel> getTvList(ArrayList<HProg_Struct_ProgBasicInfo> pdpInfoList) {
                 List<BlindTpModel> tvList = new ArrayList<>();
-                for (PDPInfo_t pdpInfo_t : pdpInfoList) {
+                for (HProg_Struct_ProgBasicInfo pdpInfo_t : pdpInfoList) {
                     if (pdpInfo_t.ServType == 1) {
                         BlindTpModel blindTpModel = new BlindTpModel();
                         blindTpModel.pdpInfo_t = pdpInfo_t;
@@ -198,9 +198,9 @@ public class TpBlindActivity extends BaseActivity {
                 return tvList;
             }
 
-            private List<BlindTpModel> getRadioList(ArrayList<PDPInfo_t> pdpInfoList) {
+            private List<BlindTpModel> getRadioList(ArrayList<HProg_Struct_ProgBasicInfo> pdpInfoList) {
                 List<BlindTpModel> radioList = new ArrayList<>();
-                for (PDPInfo_t pdpInfo_t : pdpInfoList) {
+                for (HProg_Struct_ProgBasicInfo pdpInfo_t : pdpInfoList) {
                     if (pdpInfo_t.ServType == 2) {
                         BlindTpModel blindTpModel = new BlindTpModel();
                         blindTpModel.pdpInfo_t = pdpInfo_t;
@@ -313,8 +313,8 @@ public class TpBlindActivity extends BaseActivity {
     }
 
     private void setupBlindSatInfo() {
-        SatInfo_t satInfo = SWPDBaseManager.getInstance().getSatList().get(SWPDBaseManager.getInstance().findPositionBySatIndex(getSatelliteIndex()));
-        SatInfo_t setupInfo = SWPDBaseManager.getInstance().getSatInfo(getSatelliteIndex());
+        HProg_Struct_SatInfo satInfo = SWPDBaseManager.getInstance().getSatList().get(SWPDBaseManager.getInstance().findPositionBySatIndex(getSatelliteIndex()));
+        HProg_Struct_SatInfo setupInfo = SWPDBaseManager.getInstance().getSatInfo(getSatelliteIndex());
         setupInfo.LnbType = satInfo.LnbType;
         setupInfo.LnbPower = satInfo.LnbPower;
         setupInfo.diseqc10_pos = satInfo.diseqc10_pos;

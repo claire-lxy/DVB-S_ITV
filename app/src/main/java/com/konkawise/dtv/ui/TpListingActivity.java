@@ -30,9 +30,8 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnItemSelected;
-import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
-import vendor.konka.hardware.dtvmanager.V1_0.Channel_t;
-import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_TP;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 
 public class TpListingActivity extends BaseActivity {
     private static final String TAG = "TpListingActivity";
@@ -82,7 +81,7 @@ public class TpListingActivity extends BaseActivity {
         mSelectPosition = position;
 
         if (SWPDBaseManager.getInstance().getSatList().size() - 1 > 0 && position < SWPDBaseManager.getInstance().getSatList().size()) {
-            SatInfo_t satInfo = SWPDBaseManager.getInstance().getSatList().get(position);
+            HProg_Struct_SatInfo satInfo = SWPDBaseManager.getInstance().getSatList().get(position);
             mTvLnbPower.setText(satInfo.LnbPower == 0 ?  R.string.off : R.string.on);
         }
         mTvFreq.setText(getTpName());
@@ -178,7 +177,7 @@ public class TpListingActivity extends BaseActivity {
         @Override
         protected void loadBackground() {
             TpListingActivity context = mWeakReference.get();
-            List<ChannelNew_t> satChannelInfoList = SWPDBaseManager.getInstance().getSatChannelInfoList(context.getIndex());
+            List<HProg_Struct_TP> satChannelInfoList = SWPDBaseManager.getInstance().getSatChannelInfoList(context.getIndex());
 
             context.runOnUiThread(new Runnable() {
                 @Override
@@ -187,7 +186,7 @@ public class TpListingActivity extends BaseActivity {
                         context.mAdapter.updateData(satChannelInfoList);
                         context.mListView.setSelection(position);
 
-                        ChannelNew_t channel = context.mAdapter.getItem(position);
+                        HProg_Struct_TP channel = context.mAdapter.getItem(position);
                         if (channel != null) {
                             SWFtaManager.getInstance().tunerLockFreq(context.getIndex(), channel.Freq, channel.Symbol, channel.Qam, 1, 0);
                         }
@@ -222,7 +221,7 @@ public class TpListingActivity extends BaseActivity {
     private String getTpName() {
         if (mAdapter.getCount() <= 0) return "";
 
-        ChannelNew_t channel = mAdapter.getItem(mSelectPosition);
+        HProg_Struct_TP channel = mAdapter.getItem(mSelectPosition);
         if (channel == null || channel.Freq <= 0) return "";
         return channel.Freq + Utils.getVorH(this, channel.Qam) + channel.Symbol;
     }
@@ -299,7 +298,7 @@ public class TpListingActivity extends BaseActivity {
             return;
         }
 
-        Channel_t newTp = new Channel_t();
+        HProg_Struct_TP newTp = new HProg_Struct_TP();
         newTp.SatIndex = getIndex();
         newTp.Freq = TextUtils.isEmpty(freq) ? 0 : Integer.parseInt(freq);
         newTp.Symbol = TextUtils.isEmpty(symbol) ? 0 : Integer.parseInt(symbol);
@@ -322,7 +321,7 @@ public class TpListingActivity extends BaseActivity {
             return;
         }
 
-        ChannelNew_t editTp = mAdapter.getItem(mSelectPosition);
+        HProg_Struct_TP editTp = mAdapter.getItem(mSelectPosition);
         editTp.Freq = TextUtils.isEmpty(freq) ? 0 : Integer.parseInt(freq);
         editTp.Symbol = TextUtils.isEmpty(symbol) ? 0 : Integer.parseInt(symbol);
         if (qam.equals(getString(R.string.h))) {
@@ -338,7 +337,7 @@ public class TpListingActivity extends BaseActivity {
 
     private void deleteTp() {
         if (mAdapter.getCount() > 0) {
-            ChannelNew_t channelNew_t = mAdapter.getItem(mSelectPosition);
+            HProg_Struct_TP channelNew_t = mAdapter.getItem(mSelectPosition);
             SWPDBaseManager.getInstance().delChannelInfo(channelNew_t);
             updateTpList(0);
         }
@@ -355,7 +354,7 @@ public class TpListingActivity extends BaseActivity {
     private int findTpPosition(int freq, int symbol, int qam) {
         if (mAdapter.getCount() >= 0) {
             for (int i = 0; i < mAdapter.getCount(); i++) {
-                ChannelNew_t tp = mAdapter.getItem(i);
+                HProg_Struct_TP tp = mAdapter.getItem(i);
                 if (tp.Freq == freq && tp.Symbol == symbol && tp.Qam == qam) {
                     return i;
                 }

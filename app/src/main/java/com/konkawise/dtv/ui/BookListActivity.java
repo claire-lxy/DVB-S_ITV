@@ -39,7 +39,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.OnItemSelected;
 import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
-import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgBasicInfo;
 
 public class BookListActivity extends BaseActivity implements RealTimeManager.OnReceiveTimeListener {
     @BindView(R.id.tv_system_time)
@@ -58,8 +58,8 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
     private BookListAdapter mAdapter;
     private int mCurrSelectPosition;
     private LoadBookingTask mLoadBookingTask;
-    private List<PDPInfo_t> mCurrTypeProgList;
-    private List<PDPInfo_t> mAnotherTypeProgList;
+    private List<HProg_Struct_ProgBasicInfo> mCurrTypeProgList;
+    private List<HProg_Struct_ProgBasicInfo> mAnotherTypeProgList;
 
     @Override
     public int getLayoutId() {
@@ -161,7 +161,7 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
     private void showBookDialog(String title, @BookType final int bookingType) {
         if (bookingType == Constants.BOOK_TYPE_EDIT && mAdapter.getCount() <= 0) return;
 
-        List<PDPInfo_t> progList = getCurrTypeProgList();
+        List<HProg_Struct_ProgBasicInfo> progList = getCurrTypeProgList();
         if (progList == null || progList.isEmpty()) return;
 
         new BookDialog()
@@ -243,7 +243,7 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
     }
 
     private int getChannelNamePosition(int bookingType) {
-        List<PDPInfo_t> progList = getCurrTypeProgList();
+        List<HProg_Struct_ProgBasicInfo> progList = getCurrTypeProgList();
         if (progList != null && !progList.isEmpty()) {
             String progName = "";
             if (bookingType == Constants.BOOK_TYPE_ADD) {
@@ -266,14 +266,14 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
         return 0;
     }
 
-    private List<PDPInfo_t> getCurrTypeProgList() {
+    private List<HProg_Struct_ProgBasicInfo> getCurrTypeProgList() {
         if (mCurrTypeProgList != null && !mCurrTypeProgList.isEmpty()) {
             return mCurrTypeProgList;
         }
         return SWPDBaseManager.getInstance().getCurrGroupProgInfoList();
     }
 
-    private List<PDPInfo_t> getAnotherTypeProgList(int bookingType) {
+    private List<HProg_Struct_ProgBasicInfo> getAnotherTypeProgList(int bookingType) {
         switch (bookingType) {
             case Constants.BOOK_TYPE_ADD:
                 if (mAnotherTypeProgList != null && !mAnotherTypeProgList.isEmpty()) {
