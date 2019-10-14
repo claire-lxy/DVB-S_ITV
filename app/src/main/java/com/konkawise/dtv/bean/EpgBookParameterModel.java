@@ -1,15 +1,16 @@
 package com.konkawise.dtv.bean;
 
-import vendor.konka.hardware.dtvmanager.V1_0.EpgEvent_t;
+import com.sw.dvblib.SWTimer;
+
+import vendor.konka.hardware.dtvmanager.V1_0.HEPG_Struct_Event;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
-import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
 
 public class EpgBookParameterModel {
     public int type;
     public int schtype;
     public int schway;
-    public SysTime_t startTimeInfo;
-    public SysTime_t endTimeInfo;
+    public SWTimer.TimeModel startTimeInfo;
+    public SWTimer.TimeModel endTimeInfo;
     public HProg_Struct_ProgInfo progInfo;
-    public EpgEvent_t eventInfo;
+    public HEPG_Struct_Event eventInfo;
 }

@@ -4,9 +4,9 @@ import com.sw.dvblib.DJAPVR;
 
 import java.util.ArrayList;
 
-import vendor.konka.hardware.dtvmanager.V1_0.HPVR_Progress_t;
-import vendor.konka.hardware.dtvmanager.V1_0.HPVR_RecFile_t;
-import vendor.konka.hardware.dtvmanager.V1_0.HProg_AudDB_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HPVR_Struct_Progress;
+import vendor.konka.hardware.dtvmanager.V1_0.HPVR_Struct_RecFile;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_AudDB_t;
 
 public class SWDJAPVRManager {
     private boolean mRecording;
@@ -55,7 +55,7 @@ public class SWDJAPVRManager {
         return DJAPVR.CreateInstance().getRecordFileNum(null);
     }
 
-    public ArrayList<HPVR_RecFile_t> getRecordFileList(int begin, int limit) {
+    public ArrayList<HPVR_Struct_RecFile> getRecordFileList(int begin, int limit) {
         return DJAPVR.CreateInstance().getRecordFileList(null, begin, limit);
     }
 
@@ -79,7 +79,7 @@ public class SWDJAPVRManager {
         return DJAPVR.CreateInstance().stopTimeshift();
     }
 
-    public HPVR_Progress_t getPlayProgress() {
+    public HPVR_Struct_Progress getPlayProgress() {
         return DJAPVR.CreateInstance().getPlayProgress();
     }
 
@@ -103,7 +103,7 @@ public class SWDJAPVRManager {
         return DJAPVR.CreateInstance().lockRecordFile(path, fname, lock);
     }
 
-    public HProg_AudDB_t getAudioList() {
+    public HProg_Struct_AudDB_t getAudioList() {
         return DJAPVR.CreateInstance().getAudioList();
     }
 

@@ -35,6 +35,7 @@ import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakToolInterface;
 import com.sw.dvblib.SWBooking;
 import com.sw.dvblib.SWDVB;
+import com.sw.dvblib.SWTimer;
 import com.sw.dvblib.msg.MsgEvent;
 import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
 
@@ -44,10 +45,9 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.text.MessageFormat;
 
-import vendor.konka.hardware.dtvmanager.V1_0.HForplayprog_t;
-import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Struct_PlayeTimer;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Struct_Timer;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgBasicInfo;
-import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
 
 public class BookService extends BaseService implements WeakToolInterface {
     private static final String TAG = "BookService";
@@ -132,7 +132,7 @@ public class BookService extends BaseService implements WeakToolInterface {
     }
 
     private void showBookReadyDialog() {
-        HSubforProg_t bookInfo = SWBookingManager.getInstance().getReadyProgInfo();
+        HBooking_Struct_Timer bookInfo = SWBookingManager.getInstance().getReadyProgInfo();
         if (bookInfo == null) return;
         HProg_Struct_ProgBasicInfo progInfo = SWPDBaseManager.getInstance().getProgInfoByServiceId(bookInfo.servid, bookInfo.tsid, bookInfo.sat);
         if (progInfo == null) return;
@@ -157,8 +157,8 @@ public class BookService extends BaseService implements WeakToolInterface {
             positive = getString(R.string.dialog_book_standby);
         }
 
-        SysTime_t currTime = SWTimerManager.getInstance().getLocalTime();
-        SysTime_t bookTime = SWTimerManager.getInstance().getTime(bookInfo.year, bookInfo.month, bookInfo.day, bookInfo.hour, bookInfo.minute, bookInfo.second);
+        SWTimer.TimeModel currTime = SWTimerManager.getInstance().getLocalTime();
+        SWTimer.TimeModel bookTime = SWTimerManager.getInstance().getTime(bookInfo.year, bookInfo.month, bookInfo.day, bookInfo.hour, bookInfo.minute, bookInfo.second);
         int countDownSeconds = TimeUtils.getTotalSeconds(currTime, bookTime);
         mBookReadyDialog = new BookReadyDialog(this)
                 .content(MessageFormat.format(getString(R.string.dialog_book_ready_content), content, String.valueOf(countDownSeconds)))
@@ -194,13 +194,13 @@ public class BookService extends BaseService implements WeakToolInterface {
         startCountDown(bookInfo, countDownSeconds);
     }
 
-    private void startCountDown(HSubforProg_t bookInfo, int countDownSeconds) {
+    private void startCountDown(HBooking_Struct_Timer bookInfo, int countDownSeconds) {
         removeHandlerMsg();
         mBookCountDownHandler = new BookCountDownHandler(this, bookInfo, countDownSeconds);
         HandlerMsgManager.getInstance().sendMessage(mBookCountDownHandler, new HandlerMsgModel(BookCountDownHandler.MSG_COUNT_DOWN_SECONDS));
     }
 
-    private void showQuitRecordingDialog(HSubforProg_t bookInfo) {
+    private void showQuitRecordingDialog(HBooking_Struct_Timer bookInfo) {
         mQuitRecordingDialog = new QuitRecordingDialog(this);
         mQuitRecordingDialog.content(getString(R.string.dialog_quit_record_content))
                 .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
@@ -228,7 +228,7 @@ public class BookService extends BaseService implements WeakToolInterface {
         mQuitRecordingDialog.show();
     }
 
-    private void updateBookReadyContent(HSubforProg_t bookInfo, int countDownSecond) {
+    private void updateBookReadyContent(HBooking_Struct_Timer bookInfo, int countDownSecond) {
         if (mBookReadyDialog != null && mBookReadyDialog.isShowing() && bookInfo != null) {
             String content;
             if (bookInfo.schtype == SWBooking.BookSchType.RECORD.ordinal()) {
@@ -256,17 +256,17 @@ public class BookService extends BaseService implements WeakToolInterface {
         }
     }
 
-    private void notifyBookUpdate(HSubforProg_t bookInfo) {
+    private void notifyBookUpdate(HBooking_Struct_Timer bookInfo) {
         EventBus.getDefault().post(new BookUpdateEvent(bookInfo));
     }
 
     private static class BookCountDownHandler extends WeakHandler<BookService> {
         static final int MSG_COUNT_DOWN_SECONDS = 0;
         static final long COUNT_DOWN_SECOND_DELAY = 1000;
-        HSubforProg_t bookInfo;
+        HBooking_Struct_Timer bookInfo;
         int countDownSeconds;
 
-        BookCountDownHandler(BookService view, HSubforProg_t bookInfo, int countDownSeconds) {
+        BookCountDownHandler(BookService view, HBooking_Struct_Timer bookInfo, int countDownSeconds) {
             super(view);
             this.bookInfo = bookInfo;
             this.countDownSeconds = countDownSeconds;
@@ -322,7 +322,7 @@ public class BookService extends BaseService implements WeakToolInterface {
     /**
      * 立即跳转执行预录或播放
      */
-    private void bookReady(HSubforProg_t bookInfo) {
+    private void bookReady(HBooking_Struct_Timer bookInfo) {
         if (bookInfo != null) {
             startBook(bookInfo.schtype, bookInfo.lasttime, bookInfo.sat, bookInfo.tsid, bookInfo.servid);
             notifyBookUpdate(bookInfo);
@@ -333,7 +333,7 @@ public class BookService extends BaseService implements WeakToolInterface {
      * 接收消息到点执行预录或播放
      */
     private void bookReady() {
-        HForplayprog_t readyBookInfo = SWBookingManager.getInstance().getCurrSubForPlay();
+        HBooking_Struct_PlayeTimer readyBookInfo = SWBookingManager.getInstance().getCurrSubForPlay();
         if (readyBookInfo != null) {
             startBook(readyBookInfo.schtype, readyBookInfo.lasttime, readyBookInfo.sat, readyBookInfo.tsid, readyBookInfo.servid);
         }
@@ -342,7 +342,7 @@ public class BookService extends BaseService implements WeakToolInterface {
     /**
      * 取消book
      */
-    private void cancelBook(HSubforProg_t bookInfo) {
+    private void cancelBook(HBooking_Struct_Timer bookInfo) {
         stopListenPower();
 
         if (bookInfo != null) {

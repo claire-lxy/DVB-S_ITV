@@ -2,7 +2,7 @@ package com.konkawise.dtv;
 
 import com.sw.dvblib.SWEpg;
 
-import vendor.konka.hardware.dtvmanager.V1_0.EpgEvent_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HEPG_Struct_Event;
 
 public class SWEpgManager {
 
@@ -18,7 +18,7 @@ public class SWEpgManager {
         return SWEpgManagerHolder.INSTANCE;
     }
 
-    public EpgEvent_t getNextEitOfService(int index) {
+    public HEPG_Struct_Event getNextEitOfService(int index) {
         return SWEpg.CreateInstance().getNextEitOfService(index);
     }
 
@@ -34,7 +34,7 @@ public class SWEpgManager {
      *
      * @param index index=0为当前频道的EpgEvent，index=1为下一个频道的EpgEvent
      */
-    public EpgEvent_t getPfEitOfServID(int sat, int tsid, int serviceid, int index) {
+    public HEPG_Struct_Event getPfEitOfServID(int sat, int tsid, int serviceid, int index) {
         return SWEpg.CreateInstance().getPfEitOfServID(sat, tsid, serviceid, index);
     }
 }

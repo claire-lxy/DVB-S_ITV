@@ -32,7 +32,7 @@ import com.sw.dvblib.SWDVB;
 import java.util.Timer;
 
 import butterknife.BindView;
-import vendor.konka.hardware.dtvmanager.V1_0.EpgEvent_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HEPG_Struct_Event;
 import vendor.konka.hardware.dtvmanager.V1_0. HProg_Struct_ProgInfo;
 
 public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, RealTimeManager.OnReceiveTimeListener {
@@ -174,15 +174,15 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
         @Override
         protected void runTimer() {
             HProg_Struct_ProgInfo currProgInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
-            EpgEvent_t currPfInfo = null;
-            EpgEvent_t nextPfInfo = null;
+            HEPG_Struct_Event currPfInfo = null;
+            HEPG_Struct_Event nextPfInfo = null;
             if (currProgInfo != null) {
                 currPfInfo = SWEpgManager.getInstance().getPfEitOfServID(currProgInfo.Sat, currProgInfo.TsID, currProgInfo.ServID, 0);
                 nextPfInfo = SWEpgManager.getInstance().getPfEitOfServID(currProgInfo.Sat, currProgInfo.TsID, currProgInfo.ServID, 1);
             }
 
-            final EpgEvent_t currPf = currPfInfo;
-            final EpgEvent_t nextPf = nextPfInfo;
+            final HEPG_Struct_Event currPf = currPfInfo;
+            final HEPG_Struct_Event nextPf = nextPfInfo;
             PfBarScanDialog dialog = mWeakReference.get();
             dialog.sHandler.post(new Runnable() {
                 @Override
@@ -203,7 +203,7 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
         super.dismiss();
     }
 
-    private void updateProgInfo(EpgEvent_t currPfInfo) {
+    private void updateProgInfo(HEPG_Struct_Event currPfInfo) {
         HProg_Struct_ProgInfo currProgInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
         if (currProgInfo != null) {
             mTvProgNum.setText(String.valueOf(currProgInfo.PShowNo));
@@ -219,12 +219,12 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
         }
     }
 
-    private void updateProgInformation(EpgEvent_t currPfInfo, EpgEvent_t nextPfInfo) {
+    private void updateProgInformation(HEPG_Struct_Event currPfInfo, HEPG_Struct_Event nextPfInfo) {
         mTvInformation1.setText(getInformation(currPfInfo));
         mTvInformation2.setText(getInformation(nextPfInfo));
     }
 
-    private String getInformation(EpgEvent_t info) {
+    private String getInformation(HEPG_Struct_Event info) {
         if (info != null && info.utcStartData > 0 && info.utcStartTime > 0) {
             return new DateModel(SWTimerManager.getInstance().getStartTime(info),
                     SWTimerManager.getInstance().getEndTime(info)).getFormatHourAndMinute() + " " + info.memEventName;

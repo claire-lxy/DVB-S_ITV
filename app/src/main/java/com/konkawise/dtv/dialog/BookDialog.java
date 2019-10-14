@@ -23,6 +23,7 @@ import com.konkawise.dtv.utils.EditUtils;
 import com.konkawise.dtv.utils.TimeUtils;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.sw.dvblib.SWBooking;
+import com.sw.dvblib.SWTimer;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -33,9 +34,8 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.OnFocusChange;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Type;
-import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Struct_Timer;
 import vendor.konka.hardware.dtvmanager.V1_0. HProg_Struct_ProgBasicInfo;
-import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
 
 public class BookDialog extends BaseItemFocusChangeDialogFragment {
     public static final String TAG = "BookDialog";
@@ -214,8 +214,8 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
 
             updateBookInfo();
 
-            SysTime_t startTime = new SysTime_t();
-            SysTime_t endTime = new SysTime_t();
+            SWTimer.TimeModel startTime = new SWTimer.TimeModel();
+            SWTimer.TimeModel endTime = new SWTimer.TimeModel();
             startTime.Year = endTime.Year = TimeUtils.getYear(mEtBookDateYear.getText().toString());
             startTime.Month = endTime.Month = TimeUtils.getMonth(mEtBookDateMonth.getText().toString());
             startTime.Day = endTime.Day = TimeUtils.getDay(mEtBookDateDay.getText().toString());
@@ -303,7 +303,7 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
 
             BookParameterModel bpm = new BookParameterModel();
             bpm.bookingModel = mBookModel;
-            HSubforProg_t conflictBookProg = SWBookingManager.getInstance().conflictCheck(bpm.bookingModel.bookInfo, 0);
+            HBooking_Struct_Timer conflictBookProg = SWBookingManager.getInstance().conflictCheck(bpm.bookingModel.bookInfo, 0);
             bpm.bookConflict = SWBookingManager.getInstance().getConflictType(conflictBookProg);
             if (bpm.bookConflict == Constants.BOOK_CONFLICT_ADD || bpm.bookConflict == Constants.BOOK_CONFLICT_REPLACE) {
                 bpm.conflictBookProg = conflictBookProg;
@@ -313,7 +313,7 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
         }
     }
 
-    private void computeBookTotalSeconds(SysTime_t startTime, SysTime_t endTime) {
+    private void computeBookTotalSeconds(SWTimer.TimeModel startTime, SWTimer.TimeModel endTime) {
         if (mCurrTypePosition == BOOK_TYPE_RECORD) {
             mBookModel.bookInfo.lasttime = TimeUtils.getTotalSeconds(startTime, endTime);
         }
@@ -1021,7 +1021,7 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
             mBookModel = new BookingModel();
         }
         if (mBookModel.bookInfo == null) {
-            mBookModel.bookInfo = new HSubforProg_t();
+            mBookModel.bookInfo = new HBooking_Struct_Timer();
         }
 
         mBookModel.bookInfo.schtype = getBookType();

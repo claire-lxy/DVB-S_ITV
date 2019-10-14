@@ -45,6 +45,7 @@ import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
 import com.sw.dvblib.SWBooking;
+import com.sw.dvblib.SWTimer;
 import com.sw.dvblib.msg.MsgEvent;
 import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
 
@@ -63,12 +64,11 @@ import butterknife.BindView;
 import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
-import vendor.konka.hardware.dtvmanager.V1_0.EpgEvent_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HEPG_Struct_Event;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Type;
 import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
-import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Struct_Timer;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
-import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
 
 public class EpgActivity extends BaseActivity implements RealTimeManager.OnReceiveTimeListener {
     private static final String TAG = "EpgActivity";
@@ -326,7 +326,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     }
 
     private void initCurrentDate() {
-        SysTime_t sysTime = SWTimerManager.getInstance().getLocalTime();
+        SWTimer.TimeModel sysTime = SWTimerManager.getInstance().getLocalTime();
         if (sysTime != null) {
             String date = sysTime.Year + "-" + sysTime.Month + "-" + sysTime.Day;
             mTvCurrentDate.setText(date);
@@ -334,7 +334,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     }
 
     private void updateCurrentDate() {
-        SysTime_t sysTime = SWTimerManager.getInstance().getLocalTime();
+        SWTimer.TimeModel sysTime = SWTimerManager.getInstance().getLocalTime();
         if (sysTime != null) {
             int maxDayOfMonth = TimeUtils.getDayOfMonthByYearAndMonth(sysTime.Year, sysTime.Month);
             int year = sysTime.Year;
@@ -354,7 +354,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     }
 
     private void initEpgChannelDate() {
-        SysTime_t sysTime = SWTimerManager.getInstance().getLocalTime();
+        SWTimer.TimeModel sysTime = SWTimerManager.getInstance().getLocalTime();
         mDates = new Button[mDateIds.length];
         for (int i = 0; i < mDateIds.length; i++) {
             mDates[i] = findViewById(mDateIds[i]);
@@ -492,14 +492,14 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
             return;
 
         HProg_Struct_ProgInfo progInfo = mProgAdapter.getItem(mCurrProgSelectPosition);
-        EpgEvent_t eventInfo = mEpgChannelAdapter.getItem(mCurrEpgSelectPosition);
+        HEPG_Struct_Event eventInfo = mEpgChannelAdapter.getItem(mCurrEpgSelectPosition);
 
         if (SWTimerManager.getInstance().isProgramPlaying(eventInfo)) {
             ToastUtils.showToast(R.string.toast_program_playing);
             return;
         }
 
-        final HSubforProg_t bookInfo = SWBookingManager.getInstance().progIsSubFored(progInfo.Sat, progInfo.TsID, progInfo.ServID, eventInfo.uiEventId);
+        final HBooking_Struct_Timer bookInfo = SWBookingManager.getInstance().progIsSubFored(progInfo.Sat, progInfo.TsID, progInfo.ServID, eventInfo.uiEventId);
         boolean isBooked = bookInfo != null && (bookInfo.schtype == SWBooking.BookSchType.PLAY.ordinal() || bookInfo.schtype == SWBooking.BookSchType.RECORD.ordinal());
 
         List<String> epgBookCheckContent = Arrays.asList(isBooked ? mEpgBookedArray : mEpgBookingArray);
@@ -510,11 +510,11 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
                 .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
                     @Override
                     public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
-                        HSubforProg_t newBookInfo;
+                        HBooking_Struct_Timer newBookInfo;
                         int bookSchType = getBookCheckSchType(checkContent);
                         if (!isBooked) {
-                            SysTime_t startTimeInfo = SWTimerManager.getInstance().getStartTime(eventInfo);
-                            SysTime_t endTimeInfo = SWTimerManager.getInstance().getEndTime(eventInfo);
+                            SWTimer.TimeModel startTimeInfo = SWTimerManager.getInstance().getStartTime(eventInfo);
+                            SWTimer.TimeModel endTimeInfo = SWTimerManager.getInstance().getEndTime(eventInfo);
                             EpgBookParameterModel parameterModel = new EpgBookParameterModel();
                             parameterModel.progInfo = progInfo;
                             parameterModel.eventInfo = eventInfo;
@@ -529,7 +529,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
                         }
                         Log.i(TAG, "new book info = " + newBookInfo);
 
-                        HSubforProg_t conflictBookInfo = SWBookingManager.getInstance().conflictCheck(newBookInfo, 0);
+                        HBooking_Struct_Timer conflictBookInfo = SWBookingManager.getInstance().conflictCheck(newBookInfo, 0);
                         int conflictType = SWBookingManager.getInstance().getConflictType(conflictBookInfo);
                         switch (conflictType) {
                             case Constants.BOOK_CONFLICT_NONE: // 当前参数的book没有冲突，正常添加删除
@@ -547,7 +547,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
                 }).show(getSupportFragmentManager(), CommCheckItemDialog.TAG);
     }
 
-    private void bookHandle(@BookConflictType int conflictType, int bookSchType, HSubforProg_t bookInfo, HSubforProg_t conflictBookInfo) {
+    private void bookHandle(@BookConflictType int conflictType, int bookSchType, HBooking_Struct_Timer bookInfo, HBooking_Struct_Timer conflictBookInfo) {
         if (bookSchType == SWBooking.BookSchType.NONE.ordinal()) { // 取消book
             SWBookingManager.getInstance().deleteProg(bookInfo);
             updateItemBookTag(bookSchType);
@@ -589,7 +589,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
      */
     private void updateItemBookTag(int bookSchType) {
         if (mProgAdapter.getCount() > 0 && mEpgChannelAdapter.getCount() > 0) {
-            EpgEvent_t item = mEpgChannelAdapter.getItem(mCurrEpgSelectPosition);
+            HEPG_Struct_Event item = mEpgChannelAdapter.getItem(mCurrEpgSelectPosition);
             if (item != null) {
                 if (bookSchType == SWBooking.BookSchType.NONE.ordinal()) {
                     item.schtype = (byte) SWBooking.BookSchType.NONE.ordinal();
@@ -617,7 +617,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     /**
      * Epg book对话框根据book内容获取选中索引
      */
-    private int getBookPosition(List<String> epgBookCheckContent, HSubforProg_t bookInfo) {
+    private int getBookPosition(List<String> epgBookCheckContent, HBooking_Struct_Timer bookInfo) {
         if (bookInfo == null) {
             return epgBookCheckContent.indexOf(getString(R.string.book_play));
         }
@@ -766,7 +766,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
         protected void loadBackground() {
             EpgActivity context = mWeakReference.get();
 
-            final List<EpgEvent_t> epgChannelList = UIApiManager.getInstance().getCurrProgSchInfo(context.mCurrentFocusDateIndex);
+            final List<HEPG_Struct_Event> epgChannelList = UIApiManager.getInstance().getCurrProgSchInfo(context.mCurrentFocusDateIndex);
             context.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {

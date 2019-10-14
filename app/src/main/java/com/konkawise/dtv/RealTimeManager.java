@@ -1,13 +1,13 @@
 package com.konkawise.dtv;
 
+import com.sw.dvblib.SWTimer;
 import com.sw.dvblib.msg.MsgEvent;
 import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
-import vendor.konka.hardware.dtvmanager.V1_0.UtcTime_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HCommon_Struct_MDJ;
 
 public class RealTimeManager {
     private MsgEvent mMsgEvent;
@@ -27,10 +27,10 @@ public class RealTimeManager {
             mMsgEvent.registerCallbackListener(new CallbackListenerAdapter() {
                 @Override
                 public int Timer_ITIS_BROADCTIME(int utcdate, int utctime, int param) {
-                    UtcTime_t utcTime_t = new UtcTime_t();
-                    utcTime_t.utcdate = utcdate;
-                    utcTime_t.utctime = utctime;
-                    SysTime_t sysTime = SWTimerManager.getInstance().mjdToLocal(utcTime_t);
+                    HCommon_Struct_MDJ utcTime_t = new HCommon_Struct_MDJ();
+                    utcTime_t.date = utcdate;
+                    utcTime_t.time = utctime;
+                    SWTimer.TimeModel sysTime = SWTimerManager.getInstance().mjdToLocal(utcTime_t);
                     if (sysTime != null) {
                         String time = sysTime.Year + "-" +
                                 (sysTime.Month < 10 ? "0" + sysTime.Month : sysTime.Month) + "-" +

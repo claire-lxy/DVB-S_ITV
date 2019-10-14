@@ -2,11 +2,11 @@ package com.konkawise.dtv;
 
 import com.sw.dvblib.SWFta;
 
-import vendor.konka.hardware.dtvmanager.V1_0.HPDPPlayInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HPlayer_Struct_ProgInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
-import vendor.konka.hardware.dtvmanager.V1_0.HSubtitle_t;
-import vendor.konka.hardware.dtvmanager.V1_0.HTeletext_t;
-import vendor.konka.hardware.dtvmanager.V1_0.ScanProgress_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HPlayer_Struct_Subtitle;
+import vendor.konka.hardware.dtvmanager.V1_0.HPlayer_Struct_Teletext;
+import vendor.konka.hardware.dtvmanager.V1_0.HSearch_Struct_Progress;
 
 public class SWFtaManager {
 
@@ -113,14 +113,14 @@ public class SWFtaManager {
     /**
      * 获取Subtitle信息
      */
-    public HSubtitle_t getSubtitleInfo(int serviceid, int index) {
+    public HPlayer_Struct_Subtitle getSubtitleInfo(int serviceid, int index) {
         return SWFta.CreateInstance().getSubtitleInfo(serviceid, index);
     }
 
     /**
      * 获取当前Subtitle信息
      */
-    public HSubtitle_t getCurSubtitleInfo(int serviceid) {
+    public HPlayer_Struct_Subtitle getCurSubtitleInfo(int serviceid) {
         return SWFta.CreateInstance().getCurSubtitleInfo(serviceid);
     }
 
@@ -141,7 +141,7 @@ public class SWFtaManager {
     /**
      * 获取Teletext信息
      */
-    public HTeletext_t getTeletextInfo(int serviceid, int index) {
+    public HPlayer_Struct_Teletext getTeletextInfo(int serviceid, int index) {
         return SWFta.CreateInstance().getTeletextInfo(serviceid, index);
     }
 
@@ -171,7 +171,7 @@ public class SWFtaManager {
     /**
      * 获取Booking即将播放的频道
      */
-    public HPDPPlayInfo_t getCurrPlayInfo(int param) {
+    public HPlayer_Struct_ProgInfo getCurrPlayInfo(int param) {
         return SWFta.CreateInstance().getCurrPlayInfo(param);
     }
 
@@ -205,7 +205,7 @@ public class SWFtaManager {
     /**
      * 盲扫回调进度，按周期循环调用获取进度
      */
-    public ScanProgress_t blindScanProgress() {
+    public HSearch_Struct_Progress blindScanProgress() {
         return SWFta.CreateInstance().blindScanProgress();
     }
 

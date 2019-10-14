@@ -42,7 +42,7 @@ import butterknife.BindView;
 import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
-import vendor.konka.hardware.dtvmanager.V1_0.HPVR_RecFile_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HPVR_Struct_RecFile;
 
 public class RecordListActivity extends BaseActivity implements UsbManager.OnUsbReceiveListener {
     private static final String TAG = "RecordListActivity";
@@ -116,7 +116,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     private int mCurrRecordPosition;
     private Map<String, List<RecordInfo>> fMaps = new HashMap<>();
     private List<UsbInfo> mUsbInfos = new ArrayList<>();
-    List<HPVR_RecFile_t> ltHpvrRecFileTS = new ArrayList<>();
+    List<HPVR_Struct_RecFile> ltHpvrRecFileTS = new ArrayList<>();
     private DeviceGroupAdapter deviceGroupAdapter;
     public static RecordListAdapter mAdapter;
     private LoadRecordListRunnable loadRecordListRunnable;
@@ -473,7 +473,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
                 RecordInfo recordInfo = new RecordInfo();
                 recordInfo.setRecordFile(f);
                 if (ltHpvrRecFileTS != null && ltHpvrRecFileTS.size() > 0) {
-                    for (HPVR_RecFile_t hpvrRecFileT : ltHpvrRecFileTS) {
+                    for (HPVR_Struct_RecFile hpvrRecFileT : ltHpvrRecFileTS) {
                         if ((hpvrRecFileT.path + "/" + hpvrRecFileT.filename).equals(f.getPath())) {
                             recordInfo.setHpvrRecFileT(hpvrRecFileT);
                             break;

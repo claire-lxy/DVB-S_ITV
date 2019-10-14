@@ -7,8 +7,8 @@ import com.sw.dvblib.SWPSearch;
 import java.util.ArrayList;
 
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgBasicInfo;
-import vendor.konka.hardware.dtvmanager.V1_0.PSRNum_t;
-import vendor.konka.hardware.dtvmanager.V1_0.PSSParam_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HSearch_Struct_ProgNumStat;
+import vendor.konka.hardware.dtvmanager.V1_0.HSearch_Struct_TP;
 
 public class SWPSearchManager {
     public static final int SIGNAL_STRENGTH = 0;
@@ -63,7 +63,7 @@ public class SWPSearchManager {
         SWPSearch.CreateInstance().searchByNET(Sat);
     }
 
-    public void searchByNet(int Sat, ArrayList<PSSParam_t> psList) {
+    public void searchByNet(int Sat, ArrayList<HSearch_Struct_TP> psList) {
         SWPSearch.CreateInstance().searchByNET(Sat, psList);
     }
 
@@ -80,7 +80,7 @@ public class SWPSearchManager {
         return SWPSearch.CreateInstance().seatchStop(storeProgram, storeType);
     }
 
-    public PSRNum_t getProgNumOfThisSarch(int sat, int freq) {
+    public HSearch_Struct_ProgNumStat getProgNumOfThisSarch(int sat, int freq) {
         return SWPSearch.CreateInstance().getProgNumOfThisSarch(sat, freq);
     }
 

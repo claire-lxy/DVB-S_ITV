@@ -48,9 +48,9 @@ import java.util.List;
 import java.util.Set;
 
 import butterknife.BindView;
-import vendor.konka.hardware.dtvmanager.V1_0.HPVR_Progress_t;
-import vendor.konka.hardware.dtvmanager.V1_0.HSubtitle_t;
-import vendor.konka.hardware.dtvmanager.V1_0.HTeletext_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HPVR_Struct_Progress;
+import vendor.konka.hardware.dtvmanager.V1_0.HPlayer_Struct_Subtitle;
+import vendor.konka.hardware.dtvmanager.V1_0.HPlayer_Struct_Teletext;
 
 public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiveListener {
     private static final String TAG = "RecordPlayer";
@@ -131,7 +131,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         protected void handleMsg(Message msg) {
             RecordPlayer context = mWeakReference.get();
             if (msg.what == MSG_UPGRADE_PROGRESS) {
-                HPVR_Progress_t hpvrProgressT = SWDJAPVRManager.getInstance().getPlayProgress();
+                HPVR_Struct_Progress hpvrProgressT = SWDJAPVRManager.getInstance().getPlayProgress();
                 int volid = hpvrProgressT.valid;
                 int progress = 0;
                 int secondProgress = 0;
@@ -528,7 +528,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         off.put(Constants.SUBTITLE_NAME, "OFF");
         subtitles.add(off);
         for (int index = 0; index < num; index++) {
-            HSubtitle_t subtitle = SWFtaManager.getInstance().getSubtitleInfo(serviceid, index);
+            HPlayer_Struct_Subtitle subtitle = SWFtaManager.getInstance().getSubtitleInfo(serviceid, index);
             if (subtitle.used != 0) {
                 pids[index] = subtitle.Pid;
                 HashMap<String, Object> map = new HashMap<>();
@@ -568,7 +568,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         String[] teletextNames = new String[num + 1];
         teletextNames[0] = "OFF";
         for (int index = 0; index < num; index++) {
-            HTeletext_t teletext = SWFtaManager.getInstance().getTeletextInfo(serviceid, index);
+            HPlayer_Struct_Teletext teletext = SWFtaManager.getInstance().getTeletextInfo(serviceid, index);
             if (teletext.used != 0) {
                 teletextNames[index + 1] = teletext.Name;
                 pids[index] = teletext.Pid;

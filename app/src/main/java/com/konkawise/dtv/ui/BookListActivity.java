@@ -38,7 +38,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnItemSelected;
-import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Struct_Timer;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgBasicInfo;
 
 public class BookListActivity extends BaseActivity implements RealTimeManager.OnReceiveTimeListener {
@@ -229,10 +229,10 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
 
-    private int findConflictBookProgPosition(@NonNull HSubforProg_t conflictBookProg) {
+    private int findConflictBookProgPosition(@NonNull HBooking_Struct_Timer conflictBookProg) {
         if (mAdapter.getCount() > 0) {
             for (int i = 0; i < mAdapter.getData().size(); i++) {
-                HSubforProg_t bookInfo = mAdapter.getData().get(i).bookInfo;
+                HBooking_Struct_Timer bookInfo = mAdapter.getData().get(i).bookInfo;
                 if (bookInfo == null) continue;
                 if (bookInfo.servid == conflictBookProg.servid && bookInfo.tsid == conflictBookProg.tsid && bookInfo.sat == conflictBookProg.sat) {
                     return i;

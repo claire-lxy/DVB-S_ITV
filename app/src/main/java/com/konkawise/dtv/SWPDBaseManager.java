@@ -442,25 +442,6 @@ public class SWPDBaseManager {
     }
 
     /**
-     * 根据喜爱分组索引获取对应的喜爱分组列表
-     *
-     * @param favIndex SWPDBase.SW_FAV0~7
-     */
-    public List<HProg_Struct_ProgInfo> getFavListByIndex(int favIndex) {
-        return getCurrGroupProgListByCond(2, favIndex);
-    }
-
-    /**
-     * 获取频道列表
-     *
-     * @param condType  condType=1所在卫星的频道列表 condType=2喜爱分组列表
-     * @param condindex condType=1则condindex应传入卫星索引，condType=2则condindex=SWPDBase.SW_FAV0~7
-     */
-    public List<HProg_Struct_ProgInfo> getCurrGroupProgListByCond(int condType, int condindex) {
-        return SWPDBase.CreateInstance().getCurrGroupProgListByCond(new int[1], condType, condindex);
-    }
-
-    /**
      * 获取喜爱分组名称列表
      */
     public List<String> getFavoriteGroupNameList(int size) {

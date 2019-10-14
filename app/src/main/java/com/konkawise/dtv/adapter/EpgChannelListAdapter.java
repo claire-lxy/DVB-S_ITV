@@ -9,23 +9,22 @@ import com.konkawise.dtv.adapter.base.BaseListViewAdapter;
 import com.konkawise.dtv.adapter.base.BaseListViewHolder;
 import com.konkawise.dtv.bean.DateModel;
 import com.sw.dvblib.SWBooking;
+import com.sw.dvblib.SWTimer;
 
 import java.util.List;
 
-import vendor.konka.hardware.dtvmanager.V1_0.EpgEvent_t;
-import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HEPG_Struct_Event;
 
+public class EpgChannelListAdapter extends BaseListViewAdapter<HEPG_Struct_Event> {
 
-public class EpgChannelListAdapter extends BaseListViewAdapter<EpgEvent_t> {
-
-    public EpgChannelListAdapter(Context context, List<EpgEvent_t> datas) {
+    public EpgChannelListAdapter(Context context, List<HEPG_Struct_Event> datas) {
         super(context, datas, R.layout.epg_channel_list_item);
     }
 
     @Override
-    protected void convert(BaseListViewHolder holder, int position, EpgEvent_t item) {
-        SysTime_t startTime = SWTimerManager.getInstance().getStartTime(item);
-        SysTime_t endTime = SWTimerManager.getInstance().getEndTime(item);
+    protected void convert(BaseListViewHolder holder, int position, HEPG_Struct_Event item) {
+        SWTimer.TimeModel startTime = SWTimerManager.getInstance().getStartTime(item);
+        SWTimer.TimeModel endTime = SWTimerManager.getInstance().getEndTime(item);
 
         holder.setText(R.id.epg_title, item.memEventName)
                 .setText(R.id.epg_time, new DateModel(startTime, endTime).getFormatHourAndMinute())

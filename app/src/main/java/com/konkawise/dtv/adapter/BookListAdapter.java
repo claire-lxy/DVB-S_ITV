@@ -10,7 +10,7 @@ import com.sw.dvblib.SWBooking;
 
 import java.util.List;
 
-import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Struct_Timer;
 
 public class BookListAdapter extends BaseListViewAdapter<BookingModel> {
 
@@ -28,7 +28,7 @@ public class BookListAdapter extends BaseListViewAdapter<BookingModel> {
                 .setText(R.id.tv_book_type, item.getBookType(mContext));
     }
 
-    private float getDateTextSize(HSubforProg_t bookInfo) {
+    private float getDateTextSize(HBooking_Struct_Timer bookInfo) {
         if (bookInfo == null) return 15;
 
         float textSize = 15;

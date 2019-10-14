@@ -9,14 +9,14 @@ import com.konkawise.dtv.bean.DateModel;
 import com.konkawise.dtv.bean.EpgBookParameterModel;
 import com.konkawise.dtv.utils.TimeUtils;
 import com.sw.dvblib.SWBooking;
+import com.sw.dvblib.SWTimer;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import vendor.konka.hardware.dtvmanager.V1_0.HForplayprog_t;
-import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Struct_PlayeTimer;
+import vendor.konka.hardware.dtvmanager.V1_0. HBooking_Struct_Timer;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgBasicInfo;
-import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
 
 public class SWBookingManager {
     public static final String DEFAULT_BOOK_CONTENT = "book";
@@ -44,14 +44,14 @@ public class SWBookingManager {
     /**
      * 根据索引号获取定时器
      */
-    public HSubforProg_t getProgInfo(int index) {
+    public  HBooking_Struct_Timer getProgInfo(int index) {
         return SWBooking.CreateInstance().getProgInfo(index);
     }
 
     /**
      * 添加一个定时器，处理冲突情况下添加定时器前移除旧定时器
      */
-    public void addProg(@BookConflictType int bookConflictType, HSubforProg_t deleteBookProg, HSubforProg_t bookProg) {
+    public void addProg(@BookConflictType int bookConflictType,  HBooking_Struct_Timer deleteBookProg,  HBooking_Struct_Timer bookProg) {
         if (bookConflictType == Constants.BOOK_CONFLICT_ADD && deleteBookProg != null) {
             deleteProg(deleteBookProg);
         }
@@ -61,28 +61,28 @@ public class SWBookingManager {
     /**
      * 添加一个定时器
      */
-    public void addProg(HSubforProg_t prog) {
+    public void addProg( HBooking_Struct_Timer prog) {
         SWBooking.CreateInstance().addProg(prog);
     }
 
     /**
      * 替换一个定时器
      */
-    public void replaceProg(HSubforProg_t oldProg, HSubforProg_t newProg) {
+    public void replaceProg( HBooking_Struct_Timer oldProg,  HBooking_Struct_Timer newProg) {
         SWBooking.CreateInstance().replaceProg(oldProg, newProg);
     }
 
     /**
      * 删除一个定时器
      */
-    public void deleteProg(HSubforProg_t prog) {
+    public void deleteProg( HBooking_Struct_Timer prog) {
         SWBooking.CreateInstance().deleteProg(prog);
     }
 
     /**
      * 检查一个事件是否被预订
      */
-    public HSubforProg_t progIsSubFored(int sat, int tsid, int servid, int eventid) {
+    public  HBooking_Struct_Timer progIsSubFored(int sat, int tsid, int servid, int eventid) {
         return SWBooking.CreateInstance().progIsSubFored(sat, tsid, servid, eventid);
     }
 
@@ -98,33 +98,33 @@ public class SWBookingManager {
      *
      * @return 返回一个与当前定时器有冲突的定时器
      */
-    public HSubforProg_t conflictCheck(HSubforProg_t prog, int telltype) {
+    public  HBooking_Struct_Timer conflictCheck( HBooking_Struct_Timer prog, int telltype) {
         return SWBooking.CreateInstance().conflictCheck(prog, telltype);
     }
 
     /**
      * 取消一个即将播放或预录的操作
      */
-    public int cancelSubForPlay(int keyType, HForplayprog_t prog) {
+    public int cancelSubForPlay(int keyType, HBooking_Struct_PlayeTimer prog) {
         return SWBooking.CreateInstance().cancelSubForPlay(keyType, prog);
     }
 
     /**
      * 获取即将触发的定时器
      */
-    public HSubforProg_t getReadyProgInfo() {
+    public  HBooking_Struct_Timer getReadyProgInfo() {
         return SWBooking.CreateInstance().getReadyProgInfo();
     }
 
     /**
      * 获取当前播放或录制的信息
      */
-    public HForplayprog_t getCurrSubForPlay() {
+    public HBooking_Struct_PlayeTimer getCurrSubForPlay() {
         return SWBooking.CreateInstance().getCurrSubForPlay();
     }
 
-    public HForplayprog_t getCancelBookProg(HSubforProg_t bookProg) {
-        HForplayprog_t cancelBookProg = new HForplayprog_t();
+    public HBooking_Struct_PlayeTimer getCancelBookProg( HBooking_Struct_Timer bookProg) {
+        HBooking_Struct_PlayeTimer cancelBookProg = new HBooking_Struct_PlayeTimer();
         cancelBookProg.used = bookProg.used;
         cancelBookProg.type = bookProg.type;
         cancelBookProg.schtype = bookProg.schtype;
@@ -147,8 +147,8 @@ public class SWBookingManager {
         return cancelBookProg;
     }
 
-    public HSubforProg_t newBookProg(@NonNull EpgBookParameterModel parameterModel) {
-        HSubforProg_t newBookProg = new HSubforProg_t();
+    public  HBooking_Struct_Timer newBookProg(@NonNull EpgBookParameterModel parameterModel) {
+        HBooking_Struct_Timer newBookProg = new  HBooking_Struct_Timer();
         newBookProg.used = 0;
         newBookProg.type = parameterModel.type;
         newBookProg.schtype = parameterModel.schtype;
@@ -165,8 +165,8 @@ public class SWBookingManager {
         newBookProg.minute = parameterModel.startTimeInfo != null ? parameterModel.startTimeInfo.Minute : TimeUtils.getMinute();
         newBookProg.second = parameterModel.startTimeInfo != null ? parameterModel.startTimeInfo.Second : 0;
         if (parameterModel.eventInfo != null) {
-            SysTime_t startTime = SWTimerManager.getInstance().getStartTime(parameterModel.eventInfo);
-            SysTime_t endTime = SWTimerManager.getInstance().getEndTime(parameterModel.eventInfo);
+            SWTimer.TimeModel startTime = SWTimerManager.getInstance().getStartTime(parameterModel.eventInfo);
+            SWTimer.TimeModel endTime = SWTimerManager.getInstance().getEndTime(parameterModel.eventInfo);
             newBookProg.lasttime = new DateModel(startTime, endTime).getBetweenSeconds();
             newBookProg.name = TextUtils.isEmpty(parameterModel.eventInfo.memEventName) ? DEFAULT_BOOK_CONTENT : parameterModel.eventInfo.memEventName;
             newBookProg.content = TextUtils.isEmpty(parameterModel.eventInfo.memEventDesc) ? DEFAULT_BOOK_CONTENT : parameterModel.eventInfo.memEventDesc;
@@ -178,7 +178,7 @@ public class SWBookingManager {
     }
 
     @BookConflictType
-    public int getConflictType(HSubforProg_t conflictBookProg) {
+    public int getConflictType( HBooking_Struct_Timer conflictBookProg) {
         if (conflictBookProg == null) return -1;
 
         if (conflictBookProg.used == SWBooking.BookUse.NONE.ordinal()) {
@@ -193,10 +193,10 @@ public class SWBookingManager {
     }
 
     public List<BookingModel> getBookingModelList() {
-        List<HSubforProg_t> bookingList = getBookingList();
+        List< HBooking_Struct_Timer> bookingList = getBookingList();
         List<BookingModel> bookingModels = new ArrayList<>();
         if (bookingList != null && !bookingList.isEmpty()) {
-            for (HSubforProg_t bookInfo : bookingList) {
+            for ( HBooking_Struct_Timer bookInfo : bookingList) {
                 HProg_Struct_ProgBasicInfo progInfo = SWPDBaseManager.getInstance().getProgInfoByServiceId(bookInfo.servid, bookInfo.tsid, bookInfo.sat);
                 if (progInfo != null) {
                     BookingModel bookingModel = new BookingModel(bookInfo, progInfo);
@@ -207,11 +207,11 @@ public class SWBookingManager {
         return bookingModels;
     }
 
-    public List<HSubforProg_t> getBookingList() {
-        List<HSubforProg_t> bookList = new ArrayList<>();
+    public List< HBooking_Struct_Timer> getBookingList() {
+        List< HBooking_Struct_Timer> bookList = new ArrayList<>();
         int num = getProgNum();
         for (int i = 0; i < num; i++) {
-            HSubforProg_t bookProg = getProgInfo(i);
+            HBooking_Struct_Timer bookProg = getProgInfo(i);
             if (bookProg != null) {
                 bookList.add(bookProg);
             }

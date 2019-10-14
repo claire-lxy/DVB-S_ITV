@@ -95,8 +95,8 @@ import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_TP;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Group;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Type;
 import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
-import vendor.konka.hardware.dtvmanager.V1_0.HSubtitle_t;
-import vendor.konka.hardware.dtvmanager.V1_0.HTeletext_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HPlayer_Struct_Subtitle;
+import vendor.konka.hardware.dtvmanager.V1_0.HPlayer_Struct_Teletext;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 
@@ -1088,28 +1088,6 @@ public class Topmost extends BaseActivity {
     }
 
     /**
-     * 预加载其他分组频道列表
-     */
-    private void preloadProgList() {
-        List<HProg_Struct_SatInfo> satList = getSatList();
-        if (satList != null && !satList.isEmpty()) {
-            for (HProg_Struct_SatInfo satInfo : satList) {
-                List<HProg_Struct_ProgInfo> progInfoList = mProgListMap.get(satInfo.SatIndex);
-                if (progInfoList == null || progInfoList.isEmpty()) {
-                    if (satInfo.SatIndex == -1) {
-                        progInfoList = SWPDBaseManager.getInstance().getWholeGroupProgList();
-                    } else if (satInfo.SatIndex >= SWPDBaseManager.RANGE_SAT_INDEX) {
-                        progInfoList = SWPDBaseManager.getInstance().getFavListByIndex(satInfo.SatIndex - SWPDBaseManager.RANGE_SAT_INDEX);
-                    } else {
-                        progInfoList = SWPDBaseManager.getInstance().getCurrGroupProgListByCond(1, satInfo.SatIndex);
-                    }
-                    mProgListMap.put(satInfo.SatIndex, progInfoList);
-                }
-            }
-        }
-    }
-
-    /**
      * 获取对应分组下的当前频道
      */
     private HProg_Struct_ProgInfo getCurrProgInfo() {
@@ -1584,7 +1562,7 @@ public class Topmost extends BaseActivity {
         off.put(Constants.SUBTITLE_NAME, "OFF");
         subtitles.add(off);
         for (int index = 0; index < num; index++) {
-            HSubtitle_t subtitle = SWFtaManager.getInstance().getSubtitleInfo(serviceid, index);
+            HPlayer_Struct_Subtitle subtitle = SWFtaManager.getInstance().getSubtitleInfo(serviceid, index);
             if (subtitle.used != 0) {
                 pids[index] = subtitle.Pid;
                 HashMap<String, Object> map = new HashMap<>();
@@ -1621,7 +1599,7 @@ public class Topmost extends BaseActivity {
         String[] teletextNames = new String[num + 1];
         teletextNames[0] = "OFF";
         for (int index = 0; index < num; index++) {
-            HTeletext_t teletext = SWFtaManager.getInstance().getTeletextInfo(serviceid, index);
+            HPlayer_Struct_Teletext teletext = SWFtaManager.getInstance().getTeletextInfo(serviceid, index);
             if (teletext.used != 0) {
                 teletextNames[index + 1] = teletext.Name;
                 pids[index] = teletext.Pid;

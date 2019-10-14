@@ -37,10 +37,10 @@ import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Type;
 import vendor.konka.hardware.dtvmanager.V1_0.HSearch_Enum_StoreType;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgBasicInfo;
-import vendor.konka.hardware.dtvmanager.V1_0.PSRNum_t;
-import vendor.konka.hardware.dtvmanager.V1_0.PSSParam_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HSearch_Struct_ProgNumStat;
+import vendor.konka.hardware.dtvmanager.V1_0.HSearch_Struct_TP;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
-import vendor.konka.hardware.dtvmanager.V1_0.ScanProgress_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HSearch_Struct_Progress;
 
 public class TpBlindActivity extends BaseActivity {
     public static String TAG = TpBlindActivity.class.getSimpleName();
@@ -159,7 +159,7 @@ public class TpBlindActivity extends BaseActivity {
             @Override
             public int PSearch_PROG_ONETSOK(int AllNum, int CurrIndex, int Sat,
                                             int freq, int symbol, int qam, int plpid) {
-                PSRNum_t psr = SWPSearchManager.getInstance().getProgNumOfThisSarch(Sat, freq);
+                HSearch_Struct_ProgNumStat psr = SWPSearchManager.getInstance().getProgNumOfThisSarch(Sat, freq);
                 if (null == psr) return 1;
 
                 ArrayList<HProg_Struct_ProgBasicInfo> list = SWPSearchManager.getInstance().getTsSearchResInfo(Sat, freq, symbol, qam, plpid);
@@ -245,7 +245,7 @@ public class TpBlindActivity extends BaseActivity {
 
             private void updateTpList(int freq, int symbol, int qam) {
                 BlindTpModel model = new BlindTpModel();
-                model.pssParam_t = new PSSParam_t();
+                model.pssParam_t = new HSearch_Struct_TP();
                 model.pssParam_t.Sat = getSatelliteIndex();
                 model.pssParam_t.Freq = freq;
                 model.pssParam_t.Rate = symbol;
@@ -355,7 +355,7 @@ public class TpBlindActivity extends BaseActivity {
         protected void runTimer() {
             TpBlindActivity context = mWeakReference.get();
 
-            ScanProgress_t scanProgress = SWFtaManager.getInstance().blindScanProgress();
+            HSearch_Struct_Progress scanProgress = SWFtaManager.getInstance().blindScanProgress();
             mWeakReference.get().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -387,8 +387,8 @@ public class TpBlindActivity extends BaseActivity {
         });
     }
 
-    private ArrayList<PSSParam_t> getPsList() {
-        ArrayList<PSSParam_t> psList = new ArrayList<>();
+    private ArrayList<HSearch_Struct_TP> getPsList() {
+        ArrayList<HSearch_Struct_TP> psList = new ArrayList<>();
         if (mBlindTpAdapter.getItemCount() > 0) {
             for (BlindTpModel model : mBlindTpAdapter.getData()) {
                 if (model.type == BlindTpModel.VIEW_TYPE_TP) {

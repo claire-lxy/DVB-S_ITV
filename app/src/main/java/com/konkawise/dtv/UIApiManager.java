@@ -8,7 +8,7 @@ import com.sw.dvblib.UIAPI;
 
 import java.util.ArrayList;
 
-import vendor.konka.hardware.dtvmanager.V1_0.EpgEvent_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HEPG_Struct_Event;
 
 public class UIApiManager {
 
@@ -81,7 +81,7 @@ public class UIApiManager {
      *
      * @param dayIndex 0~6
      */
-    public ArrayList<EpgEvent_t> getCurrProgSchInfo(int dayIndex) {
+    public ArrayList<HEPG_Struct_Event> getCurrProgSchInfo(int dayIndex) {
         return UIAPI.CreateInstance().getCurrProgSchInfo(dayIndex);
     }
 }

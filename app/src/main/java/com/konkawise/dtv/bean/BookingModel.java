@@ -8,7 +8,7 @@ import com.sw.dvblib.SWBooking;
 
 import java.text.MessageFormat;
 
-import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Struct_Timer;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgBasicInfo;
 
 public class BookingModel {
@@ -17,14 +17,14 @@ public class BookingModel {
     private static final String[] DAY_OF_WEEK_ARRAY = {
             "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
     };
-    public HSubforProg_t bookInfo;
+    public HBooking_Struct_Timer bookInfo;
     public HProg_Struct_ProgBasicInfo progInfo;
 
     public BookingModel() {
 
     }
 
-    public BookingModel(HSubforProg_t bookInfo, HProg_Struct_ProgBasicInfo progInfo) {
+    public BookingModel(HBooking_Struct_Timer bookInfo, HProg_Struct_ProgBasicInfo progInfo) {
         this.bookInfo = bookInfo;
         this.progInfo = progInfo;
     }
