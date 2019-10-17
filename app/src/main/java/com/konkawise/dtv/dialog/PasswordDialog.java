@@ -34,7 +34,8 @@ public class PasswordDialog extends BaseDialogFragment implements TextWatcher {
     @IntDef(flag = true, value = {
             CONTROL_ARROW_CURRENT_PROG, CONTROL_ARROW_NEXT_PROG, CONTROL_ARROW_LAST_PROG
     })
-    private @interface ControlArrowPlayProgType {}
+    private @interface ControlArrowPlayProgType {
+    }
 
     private OnPasswordInputListener mOnPasswordInputListener;
     private OnControlArrowKeyListener mOnControlArrowKeyListener;
@@ -122,7 +123,7 @@ public class PasswordDialog extends BaseDialogFragment implements TextWatcher {
         if (mOnPasswordInputListener != null) {
             mOnPasswordInputListener.onPasswordInput(s.toString(), mCurrentPassword, isPasswordValid);
         }
-        if (mOnControlArrowKeyListener != null) {
+        if (mOnControlArrowKeyListener != null && isPasswordValid) {
             mOnControlArrowKeyListener.onControlArrowKey(CONTROL_ARROW_CURRENT_PROG);
         }
     }
