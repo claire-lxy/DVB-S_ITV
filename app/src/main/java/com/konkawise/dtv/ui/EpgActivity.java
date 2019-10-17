@@ -163,10 +163,6 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     private Timer mUpdateChannelTimer;
 
     private boolean mPasswordEntered = false;
-    /**
-     * 创建dialog前ListView的item会回调onItemSelect()调用egpHandle()
-     * 添加标志位防止setOnKeyListener时同时回调监听到遥控器上下按键
-     */
     private boolean mPasswordDialogShowing;
     private PasswordDialog mPasswordDialog;
 
@@ -341,7 +337,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
             int month = sysTime.Month;
             int day = sysTime.Day + mCurrentFocusDateIndex;
             if (day > maxDayOfMonth) {
-                day = 1;
+                day = mCurrentFocusDateIndex - (maxDayOfMonth - sysTime.Day);
                 month++;
                 if (month > 12) {
                     month = 1;

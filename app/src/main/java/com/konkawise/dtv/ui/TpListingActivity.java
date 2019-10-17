@@ -82,7 +82,7 @@ public class TpListingActivity extends BaseActivity {
 
         if (SWPDBaseManager.getInstance().getSatList().size() - 1 > 0 && position < SWPDBaseManager.getInstance().getSatList().size()) {
             HProg_Struct_SatInfo satInfo = SWPDBaseManager.getInstance().getSatList().get(position);
-            mTvLnbPower.setText(satInfo.LnbPower == 0 ?  R.string.off : R.string.on);
+            mTvLnbPower.setText(satInfo.LnbPower == 0 ? R.string.off : R.string.on);
         }
         mTvFreq.setText(getTpName());
         SWFtaManager.getInstance().tunerLockFreq(getIndex(), getFreq(), getSymbol(), getQam(), 1, 0);
@@ -258,6 +258,8 @@ public class TpListingActivity extends BaseActivity {
     }
 
     private void showTpDialog(@TpType final int tpType) {
+        if (tpType == Constants.TP_TYPE_EDIT && mAdapter.isEmpty()) return;
+
         String freq = tpType == Constants.TP_TYPE_ADD ? "" : String.valueOf(getFreq());
         String symbol = tpType == Constants.TP_TYPE_ADD ? "" : String.valueOf(getSymbol());
         String qam = tpType == Constants.TP_TYPE_ADD ? "" : Utils.getVorH(this, getQam());
@@ -280,6 +282,8 @@ public class TpListingActivity extends BaseActivity {
     }
 
     private void showDeleteTpDialog() {
+        if (mAdapter.isEmpty()) return;
+
         new CommRemindDialog()
                 .content(getString(R.string.delete_selected_transponder))
                 .setOnPositiveListener("", new OnCommPositiveListener() {
