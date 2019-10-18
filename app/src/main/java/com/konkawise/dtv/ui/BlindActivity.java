@@ -13,8 +13,8 @@ import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.PreferenceManager;
+import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.dialog.ScanDialog;
 import com.konkawise.dtv.utils.Utils;
@@ -268,7 +268,7 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
     private void saveSatInfo() {
         if (isSatelliteEmpty()) return;
 
-        HProg_Struct_SatInfo satInfo = SWPDBaseManager.getInstance().getSatList().get(mCurrentSatellite);
+        HProg_Struct_SatInfo satInfo = DTVProgramManager.getInstance().getSatList().get(mCurrentSatellite);
 
         String lnb = mEtLnb.getText().toString();
         if (TextUtils.isEmpty(lnb)) lnb = "0";
@@ -294,8 +294,8 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
         }
         satInfo.LnbPower = isLnbPowerOn() ? 1 : 0;
 
-        SWPDBaseManager.getInstance().setSatInfo(satInfo.SatIndex, satInfo);
-        mSatList = SWPDBaseManager.getInstance().getSatList(); // 更新卫星列表
+        DTVProgramManager.getInstance().setSatInfo(satInfo.SatIndex, satInfo);
+        mSatList = DTVProgramManager.getInstance().getSatList(); // 更新卫星列表
     }
 
     /**
@@ -399,7 +399,7 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
 
     private List<HProg_Struct_SatInfo> getSatList() {
         if (mSatList == null) {
-            mSatList = SWPDBaseManager.getInstance().getSatList();
+            mSatList = DTVProgramManager.getInstance().getSatList();
         }
         return mSatList;
     }

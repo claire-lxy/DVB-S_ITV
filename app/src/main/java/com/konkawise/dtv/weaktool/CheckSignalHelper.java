@@ -3,7 +3,7 @@ package com.konkawise.dtv.weaktool;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.konkawise.dtv.SWPSearchManager;
+import com.konkawise.dtv.DTVSearchManager;
 
 import java.util.Timer;
 
@@ -66,11 +66,11 @@ public class CheckSignalHelper {
         }
 
         private int getSignalStrength() {
-            return getValidValue(SWPSearchManager.getInstance().getSignalStatus(SWPSearchManager.SIGNAL_STRENGTH));
+            return getValidValue(DTVSearchManager.getInstance().getSignalStatus(DTVSearchManager.SIGNAL_STRENGTH));
         }
 
         private int getSignalQuality() {
-            return getValidValue(SWPSearchManager.getInstance().getSignalStatus(SWPSearchManager.SIGNAL_QUALITY));
+            return getValidValue(DTVSearchManager.getInstance().getSignalStatus(DTVSearchManager.SIGNAL_QUALITY));
         }
 
         private int getValidValue(int value) {

@@ -15,17 +15,17 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
+import com.konkawise.dtv.DTVCommonManager;
+import com.konkawise.dtv.DTVPlayerManager;
+import com.konkawise.dtv.DTVProgramManager;
+import com.konkawise.dtv.DTVSettingManager;
 import com.konkawise.dtv.HandlerMsgManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.RealTimeManager;
-import com.konkawise.dtv.SWBookingManager;
-import com.konkawise.dtv.SWDVBManager;
-import com.konkawise.dtv.SWEpgManager;
-import com.konkawise.dtv.SWFtaManager;
-import com.konkawise.dtv.SWPDBaseManager;
-import com.konkawise.dtv.SWTimerManager;
+import com.konkawise.dtv.DTVBookingManager;
+import com.konkawise.dtv.DTVDVBManager;
+import com.konkawise.dtv.DTVEpgManager;
 import com.konkawise.dtv.ThreadPoolManager;
-import com.konkawise.dtv.UIApiManager;
 import com.konkawise.dtv.adapter.EpgChannelListAdapter;
 import com.konkawise.dtv.adapter.EpgProgListAdapter;
 import com.konkawise.dtv.annotation.BookConflictType;
@@ -44,8 +44,7 @@ import com.konkawise.dtv.view.TVListView;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
-import com.sw.dvblib.SWBooking;
-import com.sw.dvblib.SWTimer;
+import com.sw.dvblib.DTVCommon;
 import com.sw.dvblib.msg.MsgEvent;
 import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
 
@@ -64,6 +63,8 @@ import butterknife.BindView;
 import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Enum_From;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Enum_Task;
 import vendor.konka.hardware.dtvmanager.V1_0.HEPG_Struct_Event;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Type;
 import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
@@ -107,7 +108,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     @OnItemClick(R.id.lv_prog_list)
     void clickProgItem(int position) {
         int progNo = mProgAdapter.getItem(position).ProgNo;
-        SWPDBaseManager.getInstance().setCurrProgNo(progNo);
+        DTVProgramManager.getInstance().setCurrProgNo(progNo);
         Intent intent = new Intent(this, Topmost.class);
         startActivity(intent);
         finish();
@@ -120,7 +121,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
 
     @OnItemSelected(R.id.lv_prog_list)
     void selectProgItem(int position) {
-        SWPDBaseManager.getInstance().setCurrProgNo(mProgAdapter.getItem(position).ProgNo);
+        DTVProgramManager.getInstance().setCurrProgNo(mProgAdapter.getItem(position).ProgNo);
         mCurrProgSelectPosition = position;
         mProgAdapter.setSelectPosition(mCurrProgSelectPosition);
         if (!mPasswordEntered) {
@@ -197,15 +198,15 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
                 case MSG_PLAY_SELECT_PROG:
                     int conditon = msg.arg1;
                     HProg_Struct_ProgInfo currProgInfo = context.mProgAdapter.getItem(context.mCurrProgSelectPosition);
-                    SWPDBaseManager.getInstance().setCurrProgNo(currProgInfo.ProgNo);
-                    UIApiManager.getInstance().startPlayProgNo(currProgInfo.ProgNo, conditon);
+                    DTVProgramManager.getInstance().setCurrProgNo(currProgInfo.ProgNo);
+                    DTVPlayerManager.getInstance().startPlayProgNo(currProgInfo.ProgNo, conditon);
                     context.notifyEpgChange(currProgInfo);
                     break;
                 case MSG_EPG_CHANGE_LOAD:
                     if (msg.obj instanceof HProg_Struct_ProgInfo) {
                         context.showLoadingEpg();
                         HProg_Struct_ProgInfo progInfo = (HProg_Struct_ProgInfo) msg.obj;
-                        SWEpgManager.getInstance().sentDataReq(progInfo.Sat, progInfo.TsID, progInfo.ServID); // 通知底层立即搜索该频道的EPG
+                        DTVEpgManager.getInstance().sentDataReq(progInfo.Sat, progInfo.TsID, progInfo.ServID); // 通知底层立即搜索该频道的EPG
                     }
                     break;
                 case MSG_UPDATE_DATE:
@@ -225,7 +226,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
         @Override
         protected void runTimer() {
             final EpgActivity context = mWeakReference.get();
-            context.notifyEpgChange(SWPDBaseManager.getInstance().getCurrProgInfo());
+            context.notifyEpgChange(DTVProgramManager.getInstance().getCurrProgInfo());
             context.notifyUpdateDate();
         }
     }
@@ -237,7 +238,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
 
     @Override
     protected void setup() {
-        SWPDBaseManager.getInstance().setCurrProgType(HProg_Enum_Type.TVPROG, 0);
+        DTVProgramManager.getInstance().setCurrProgType(HProg_Enum_Type.TVPROG, 0);
         mEpgMsgHandler = new EpgMsgHandler(this);
         EventBus.getDefault().register(this);
 
@@ -262,7 +263,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
         super.onPause();
         RealTimeManager.getInstance().unregister(this);
         unregisterMsgEvent();
-        UIApiManager.getInstance().stopPlay(SWFtaManager.getInstance().getCommE2PInfo(HSetting_Enum_Property.PD_SwitchMode)); // 跳转或销毁界面要停止播放
+        DTVPlayerManager.getInstance().stopPlay(DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.PD_SwitchMode)); // 跳转或销毁界面要停止播放
     }
 
     @Override
@@ -280,32 +281,30 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     }
 
     private void registerMsgEvent() {
-        MsgEvent msgLockEvent = SWDVBManager.getInstance().registerMsgEvent(Constants.LOCK_CALLBACK_MSG_ID);
-        MsgEvent msgEpgEvent = SWDVBManager.getInstance().registerMsgEvent(Constants.EPG_CALLBACK_MSG_ID);
+        MsgEvent msgLockEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.LOCK_CALLBACK_MSG_ID);
+        MsgEvent msgEpgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.EPG_CALLBACK_MSG_ID);
         msgLockEvent.registerCallbackListener(new CallbackListenerAdapter() {
             @Override
-            public int ProgPlay_SWAV_ISLOCKED(int type, int progno, int progindex, int home) {
+            public void PLAYER_isLocked(int type, int progNo, int progIndex, int home) {
                 showEnterPasswordDialog();
-                return super.ProgPlay_SWAV_ISLOCKED(type, progno, progindex, home);
             }
         });
         msgEpgEvent.registerCallbackListener(new CallbackListenerAdapter() {
             @Override
-            public int Epg_SchInfoReady(int sat, int tsid, int servid) {
+            public void EPG_onSchInfoReady(int sat, int tsid, int servid) {
                 if (mProgAdapter.isPositionValid(mLvProgList)) {
                     HProg_Struct_ProgInfo progInfo = mProgAdapter.getItem(mCurrProgSelectPosition);
                     if (progInfo != null && progInfo.Sat == sat && progInfo.TsID == tsid && progInfo.ServID == servid) {
                         updateEpgChannel();
                     }
                 }
-                return super.Epg_SchInfoReady(sat, tsid, servid);
             }
         });
     }
 
     private void unregisterMsgEvent() {
-        SWDVBManager.getInstance().unregisterMsgEvent(Constants.LOCK_CALLBACK_MSG_ID);
-        SWDVBManager.getInstance().unregisterMsgEvent(Constants.EPG_CALLBACK_MSG_ID);
+        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.LOCK_CALLBACK_MSG_ID);
+        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.EPG_CALLBACK_MSG_ID);
     }
 
     private void initUpdateEpgChannelTimer() {
@@ -322,7 +321,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     }
 
     private void initCurrentDate() {
-        SWTimer.TimeModel sysTime = SWTimerManager.getInstance().getLocalTime();
+        DTVCommon.TimeModel sysTime = DTVCommonManager.getInstance().getLocalTime();
         if (sysTime != null) {
             String date = sysTime.Year + "-" + sysTime.Month + "-" + sysTime.Day;
             mTvCurrentDate.setText(date);
@@ -330,7 +329,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     }
 
     private void updateCurrentDate() {
-        SWTimer.TimeModel sysTime = SWTimerManager.getInstance().getLocalTime();
+        DTVCommon.TimeModel sysTime = DTVCommonManager.getInstance().getLocalTime();
         if (sysTime != null) {
             int maxDayOfMonth = TimeUtils.getDayOfMonthByYearAndMonth(sysTime.Year, sysTime.Month);
             int year = sysTime.Year;
@@ -350,7 +349,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     }
 
     private void initEpgChannelDate() {
-        SWTimer.TimeModel sysTime = SWTimerManager.getInstance().getLocalTime();
+        DTVCommon.TimeModel sysTime = DTVCommonManager.getInstance().getLocalTime();
         mDates = new Button[mDateIds.length];
         for (int i = 0; i < mDateIds.length; i++) {
             mDates[i] = findViewById(mDateIds[i]);
@@ -401,7 +400,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
             @Override
             protected void loadBackground() {
                 int[] currentSelectPosition = new int[1];
-                List<HProg_Struct_ProgInfo> progList = SWPDBaseManager.getInstance().getWholeGroupProgList(currentSelectPosition);
+                List<HProg_Struct_ProgInfo> progList = DTVProgramManager.getInstance().getWholeGroupProgInfoList(currentSelectPosition);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -448,8 +447,8 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
                 Log.i(TAG, "epg surface create");
-                UIApiManager.getInstance().setSurface(holder.getSurface());
-                UIApiManager.getInstance().setWindowSize(0, 0,
+                DTVPlayerManager.getInstance().setSurface(holder.getSurface());
+                DTVPlayerManager.getInstance().setWindowSize(0, 0,
                         getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
                 if (mProgAdapter.isPositionValid(mLvProgList)) {
                     notifyPlayProg(mPasswordEntered ? 0 : 1);
@@ -490,13 +489,13 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
         HProg_Struct_ProgInfo progInfo = mProgAdapter.getItem(mCurrProgSelectPosition);
         HEPG_Struct_Event eventInfo = mEpgChannelAdapter.getItem(mCurrEpgSelectPosition);
 
-        if (SWTimerManager.getInstance().isProgramPlaying(eventInfo)) {
+        if (DTVCommonManager.getInstance().isProgramPlaying(eventInfo)) {
             ToastUtils.showToast(R.string.toast_program_playing);
             return;
         }
 
-        final HBooking_Struct_Timer bookInfo = SWBookingManager.getInstance().progIsSubFored(progInfo.Sat, progInfo.TsID, progInfo.ServID, eventInfo.uiEventId);
-        boolean isBooked = bookInfo != null && (bookInfo.schtype == SWBooking.BookSchType.PLAY.ordinal() || bookInfo.schtype == SWBooking.BookSchType.RECORD.ordinal());
+        final HBooking_Struct_Timer bookInfo = DTVBookingManager.getInstance().progIsBooked(progInfo.Sat, progInfo.TsID, progInfo.ServID, eventInfo.uiEventId);
+        boolean isBooked = bookInfo != null && (bookInfo.schtype == HBooking_Enum_Task.PLAY || bookInfo.schtype == HBooking_Enum_Task.RECORD);
 
         List<String> epgBookCheckContent = Arrays.asList(isBooked ? mEpgBookedArray : mEpgBookingArray);
         new CommCheckItemDialog()
@@ -509,24 +508,24 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
                         HBooking_Struct_Timer newBookInfo;
                         int bookSchType = getBookCheckSchType(checkContent);
                         if (!isBooked) {
-                            SWTimer.TimeModel startTimeInfo = SWTimerManager.getInstance().getStartTime(eventInfo);
-                            SWTimer.TimeModel endTimeInfo = SWTimerManager.getInstance().getEndTime(eventInfo);
+                            DTVCommon.TimeModel startTimeInfo = DTVCommonManager.getInstance().getStartTime(eventInfo);
+                            DTVCommon.TimeModel endTimeInfo = DTVCommonManager.getInstance().getEndTime(eventInfo);
                             EpgBookParameterModel parameterModel = new EpgBookParameterModel();
                             parameterModel.progInfo = progInfo;
                             parameterModel.eventInfo = eventInfo;
                             parameterModel.startTimeInfo = startTimeInfo;
                             parameterModel.endTimeInfo = endTimeInfo;
                             parameterModel.schtype = bookSchType;
-                            parameterModel.schway = SWBooking.BookWay.EPG.ordinal();
-                            newBookInfo = SWBookingManager.getInstance().newBookProg(parameterModel);
+                            parameterModel.schway = HBooking_Enum_From.EPG;
+                            newBookInfo = DTVBookingManager.getInstance().newBookTimer(parameterModel);
                         } else {
                             newBookInfo = bookInfo;
                             newBookInfo.schtype = bookSchType;
                         }
                         Log.i(TAG, "new book info = " + newBookInfo);
 
-                        HBooking_Struct_Timer conflictBookInfo = SWBookingManager.getInstance().conflictCheck(newBookInfo, 0);
-                        int conflictType = SWBookingManager.getInstance().getConflictType(conflictBookInfo);
+                        HBooking_Struct_Timer conflictBookInfo = DTVBookingManager.getInstance().conflictCheck(newBookInfo);
+                        int conflictType = DTVBookingManager.getInstance().getConflictType(conflictBookInfo);
                         switch (conflictType) {
                             case Constants.BOOK_CONFLICT_NONE: // 当前参数的book没有冲突，正常添加删除
                             case Constants.BOOK_CONFLICT_ADD: // 当前参数的book有冲突，如果是添加需要先删除后再添加
@@ -538,28 +537,28 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
                                 break;
                         }
 
-                        SWBookingManager.getInstance().updateDBase(0);
+                        DTVBookingManager.getInstance().updateDBase(0);
                     }
                 }).show(getSupportFragmentManager(), CommCheckItemDialog.TAG);
     }
 
     private void bookHandle(@BookConflictType int conflictType, int bookSchType, HBooking_Struct_Timer bookInfo, HBooking_Struct_Timer conflictBookInfo) {
-        if (bookSchType == SWBooking.BookSchType.NONE.ordinal()) { // 取消book
-            SWBookingManager.getInstance().deleteProg(bookInfo);
+        if (bookSchType == HBooking_Enum_Task.NONE) { // 取消book
+            DTVBookingManager.getInstance().deleteTimer(bookInfo);
             updateItemBookTag(bookSchType);
-        } else if (bookSchType == SWBooking.BookSchType.PLAY.ordinal()
-                || bookSchType == SWBooking.BookSchType.RECORD.ordinal()) { // 添加book
+        } else if (bookSchType == HBooking_Enum_Task.PLAY
+                || bookSchType == HBooking_Enum_Task.RECORD) { // 添加book
             if (conflictType == Constants.BOOK_CONFLICT_REPLACE) {
                 BookingModel conflictBookModel = new BookingModel();
                 conflictBookModel.bookInfo = conflictBookInfo;
-                conflictBookModel.progInfo = SWPDBaseManager.getInstance().getProgInfoByServiceId(conflictBookInfo.servid, conflictBookInfo.tsid, conflictBookInfo.sat);
+                conflictBookModel.progInfo = DTVProgramManager.getInstance().getProgInfoByServiceId(conflictBookInfo.servid, conflictBookInfo.tsid, conflictBookInfo.sat);
 
                 BookingModel newBookModel = new BookingModel();
                 newBookModel.bookInfo = bookInfo;
-                newBookModel.progInfo = SWPDBaseManager.getInstance().getProgInfoByServiceId(bookInfo.servid, bookInfo.tsid, bookInfo.sat);
+                newBookModel.progInfo = DTVProgramManager.getInstance().getProgInfoByServiceId(bookInfo.servid, bookInfo.tsid, bookInfo.sat);
                 showReplaceBookDialog(bookSchType, conflictBookModel, newBookModel);
             } else {
-                SWBookingManager.getInstance().addProg(conflictType, conflictBookInfo, bookInfo);
+                DTVBookingManager.getInstance().addTimer(conflictType, conflictBookInfo, bookInfo);
                 updateItemBookTag(bookSchType);
             }
         }
@@ -574,7 +573,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
                 .setOnPositiveListener(getString(R.string.dialog_book_conflict_positive), new OnCommPositiveListener() {
                     @Override
                     public void onPositiveListener() {
-                        SWBookingManager.getInstance().replaceProg(conflictBookModel.bookInfo, newBookModel.bookInfo);
+                        DTVBookingManager.getInstance().replaceTimer(conflictBookModel.bookInfo, newBookModel.bookInfo);
                         updateItemBookTag(bookSchType);
                     }
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
@@ -587,12 +586,12 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
         if (mProgAdapter.getCount() > 0 && mEpgChannelAdapter.getCount() > 0) {
             HEPG_Struct_Event item = mEpgChannelAdapter.getItem(mCurrEpgSelectPosition);
             if (item != null) {
-                if (bookSchType == SWBooking.BookSchType.NONE.ordinal()) {
-                    item.schtype = (byte) SWBooking.BookSchType.NONE.ordinal();
-                } else if (bookSchType == SWBooking.BookSchType.PLAY.ordinal()) {
-                    item.schtype = (byte) SWBooking.BookSchType.PLAY.ordinal();
-                } else if (bookSchType == SWBooking.BookSchType.RECORD.ordinal()) {
-                    item.schtype = (byte) SWBooking.BookSchType.RECORD.ordinal();
+                if (bookSchType == HBooking_Enum_Task.NONE) {
+                    item.schtype = HBooking_Enum_Task.NONE;
+                } else if (bookSchType == HBooking_Enum_Task.PLAY) {
+                    item.schtype = HBooking_Enum_Task.PLAY;
+                } else if (bookSchType == HBooking_Enum_Task.RECORD) {
+                    item.schtype = HBooking_Enum_Task.RECORD;
                 }
                 mEpgChannelAdapter.updateData(mCurrEpgSelectPosition, item);
             }
@@ -601,11 +600,11 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
 
     private int getBookCheckSchType(String checkContent) {
         if (TextUtils.equals(checkContent, getString(R.string.book_non))) {
-            return SWBooking.BookSchType.NONE.ordinal();
+            return HBooking_Enum_Task.NONE;
         } else if (TextUtils.equals(checkContent, getString(R.string.book_play))) {
-            return SWBooking.BookSchType.PLAY.ordinal();
+            return HBooking_Enum_Task.PLAY;
         } else if (TextUtils.equals(checkContent, getString(R.string.book_record))) {
-            return SWBooking.BookSchType.RECORD.ordinal();
+            return HBooking_Enum_Task.RECORD;
         }
         return -1;
     }
@@ -617,9 +616,9 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
         if (bookInfo == null) {
             return epgBookCheckContent.indexOf(getString(R.string.book_play));
         }
-        if (bookInfo.schtype == SWBooking.BookSchType.PLAY.ordinal()) {
+        if (bookInfo.schtype == HBooking_Enum_Task.PLAY) {
             return epgBookCheckContent.indexOf(getString(R.string.book_play));
-        } else if (bookInfo.schtype == SWBooking.BookSchType.RECORD.ordinal()) {
+        } else if (bookInfo.schtype == HBooking_Enum_Task.RECORD) {
             return epgBookCheckContent.indexOf(getString(R.string.book_record));
         } else {
             return epgBookCheckContent.indexOf(getString(R.string.book_non));
@@ -762,7 +761,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
         protected void loadBackground() {
             EpgActivity context = mWeakReference.get();
 
-            final List<HEPG_Struct_Event> epgChannelList = UIApiManager.getInstance().getCurrProgSchInfo(context.mCurrentFocusDateIndex);
+            final List<HEPG_Struct_Event> epgChannelList = DTVEpgManager.getInstance().getCurrProgSchInfo(context.mCurrentFocusDateIndex);
             context.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {

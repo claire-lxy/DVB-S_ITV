@@ -9,11 +9,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
+import com.konkawise.dtv.DTVProgramManager;
+import com.konkawise.dtv.DTVSettingManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWDVBManager;
-import com.konkawise.dtv.SWFtaManager;
-import com.konkawise.dtv.SWPDBaseManager;
-import com.konkawise.dtv.SWPSearchManager;
+import com.konkawise.dtv.DTVDVBManager;
+import com.konkawise.dtv.DTVSearchManager;
 import com.konkawise.dtv.adapter.TvAndRadioRecycleViewAdapter;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.CommRemindDialog;
@@ -84,7 +84,9 @@ public class ScanTVandRadioActivity extends BaseActivity {
 
     private CheckSignalHelper mCheckSignalHelper;
 
-    private int nit;
+    private int mScanMode;
+    private int mNitOpen;
+    private int mCaFilter;
 
     @Override
     public int getLayoutId() {
@@ -93,9 +95,9 @@ public class ScanTVandRadioActivity extends BaseActivity {
 
     @Override
     protected void setup() {
-        nit = SWFtaManager.getInstance().getCurrNetwork();
-        SWPSearchManager.getInstance().config(SWFtaManager.getInstance().getCurrScanMode(),
-                SWFtaManager.getInstance().getCurrCAS(), nit);
+        mScanMode = DTVSettingManager.getInstance().getCurrScanMode();
+        mNitOpen = DTVSettingManager.getInstance().getCurrNetwork();
+        mCaFilter = DTVSettingManager.getInstance().getCurrCAS();
 
         registerMsgEvent();
 
@@ -114,7 +116,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
     protected void onPause() {
         super.onPause();
         mCheckSignalHelper.stopCheckSignal();
-        stopSearch(false, nit);
+        stopSearch(false, mNitOpen);
         SatelliteActivity.satList.clear();
     }
 
@@ -126,14 +128,14 @@ public class ScanTVandRadioActivity extends BaseActivity {
 
     private void stopSearch(boolean storeProgram, int nit) {
         if (nit == 0) {
-            SWPSearchManager.getInstance().seatchStop(storeProgram, HSearch_Enum_StoreType.BY_SERVID);
+            DTVSearchManager.getInstance().searchStop(storeProgram, HSearch_Enum_StoreType.BY_SERVID);
         } else {
-            SWPSearchManager.getInstance().seatchStop(storeProgram, HSearch_Enum_StoreType.BY_LOGIC_NUM);
+            DTVSearchManager.getInstance().searchStop(storeProgram, HSearch_Enum_StoreType.BY_LOGIC_NUM);
         }
     }
 
     private void registerMsgEvent() {
-        MsgEvent msgEvent = SWDVBManager.getInstance().registerMsgEvent(Constants.SCAN_CALLBACK_MSG_ID);
+        MsgEvent msgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.SCAN_CALLBACK_MSG_ID);
         msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
             private void onUpdateSearchProgress(int step, int max_step) {
                 if (step > 0 && max_step > 0) {
@@ -152,49 +154,37 @@ public class ScanTVandRadioActivity extends BaseActivity {
             }
 
             @Override
-            public int PSearch_PROG_NITDATAOK(int AllNum, int Curr) {
-                onUpdateSearchProgress(AllNum, Curr);
-                return 0;
-            }
-
-            @Override
-            public int PSearch_PROG_NITRECVTIMEOUT(int AllNum, int Curr) {
-                onUpdateSearchProgress(AllNum, Curr);
-                return 0;
+            public void SEARCH_onNITDataOk(int allNum, int currIndex) {
+                onUpdateSearchProgress(allNum, currIndex);
             }
 
             /**
              * 搜索 TS Fail  搜索节目失败
              */
             @Override
-            public int PSearch_PROG_ONETSFAIL(int AllNum, int CurrIndex, int Sat,
-                                              int freq, int symbol, int qam, int plpid) {
-                updateScan(freq, symbol, qam, AllNum, CurrIndex);
-                return 0;
+            public void SEARCH_onOneTsFailed(int allNum, int currIndex, int sat, int freq, int symbol, int qam, int plp) {
+                updateScan(freq, symbol, qam, allNum, currIndex);
             }
-
 
             /**
              * 搜索 TS ok   搜索节目成功回调
              *
-             * @param AllNum    搜索TP个数
-             * @param CurrIndex 当前tp
-             * @param Sat       卫星
+             * @param allNum    搜索TP个数
+             * @param currIndex 当前tp
+             * @param sat       卫星
              */
             @Override
-            public int PSearch_PROG_ONETSOK(int AllNum, int CurrIndex, int Sat,
-                                            int freq, int symbol, int qam, int plpid) {
-                onUpdateSearchProgress(AllNum, CurrIndex);
+            public void SEARCH_onOneTSOk(int allNum, int currIndex, int sat, int freq, int symbol, int qam, int plp) {
+                onUpdateSearchProgress(allNum, currIndex);
 
-                ArrayList<HProg_Struct_ProgBasicInfo> pdpInfo_ts = SWPSearchManager.getInstance().getTsSearchResInfo(Sat, freq, symbol, qam, plpid);
-                if (pdpInfo_ts == null) return 0;
+                ArrayList<HProg_Struct_ProgBasicInfo> pdpInfo_ts = DTVSearchManager.getInstance().getTsSearchResInfo(sat, freq, symbol, qam, plp);
+                if (pdpInfo_ts == null) return;
 
                 updateTvList(pdpInfo_ts);
                 updateRadioList(pdpInfo_ts);
 
                 mTvTvNum.setText(String.valueOf(mTvAdapter.getItemCount()));
                 mTvRadioNum.setText(String.valueOf(mRadioAdapter.getItemCount()));
-                return 0;
             }
 
             private void updateTvList(ArrayList<HProg_Struct_ProgBasicInfo> pdpInfoList) {
@@ -229,32 +219,23 @@ public class ScanTVandRadioActivity extends BaseActivity {
                 return radioList;
             }
 
-            /**
-             * 开始搜索
-             */
             @Override
-            public int PSearch_PROG_STARTSEARCH(int AllNum, int CurrIndex, int Sat,
-                                                int freq, int symbol, int qam, int plpid) {
-                updateScan(freq, symbol, qam, AllNum, CurrIndex);
-                return 0;
+            public void SEARCH_onStartSearch(int allNum, int currIndex, int sat, int freq, int symbol, int qam, int plp) {
+                updateScan(freq, symbol, qam, allNum, currIndex);
             }
 
-            /**
-             * 搜索完成
-             */
             @Override
-            public int PSearch_PROG_SEARCHFINISH(int AllNum, int Curr, int plpid) {
+            public void SEARCH_onSearchFinish(int allNum, int currIndex, int plp) {
                 if (mutiSateIndex != -1 && mutiSateIndex < mSatList.size() - 1) {
                     mutiSateIndex++;
-                    stopSearch(true, nit);
+                    stopSearch(true, mNitOpen);
                     searchMultiSatellite();
-                    return 1;
+                    return;
                 }
                 SatelliteActivity.satList.clear();
-                SWPDBaseManager.getInstance().setCurrProgType(SWFtaManager.getInstance().getCurrScanMode() == 2 ? HProg_Enum_Type.GBPROG : HProg_Enum_Type.TVPROG, 0);
-                stopSearch(true, nit);
+                DTVProgramManager.getInstance().setCurrProgType(DTVSettingManager.getInstance().getCurrScanMode() == 2 ? HProg_Enum_Type.GBPROG : HProg_Enum_Type.TVPROG, 0);
+                stopSearch(true, mNitOpen);
                 showSearchResultDialog();
-                return 0;
             }
 
             private void updateScan(int freq, int symbol, int qam, int num, int index) {
@@ -272,7 +253,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
     }
 
     private void unregisterMsgEvent() {
-        SWDVBManager.getInstance().unregisterMsgEvent(Constants.SCAN_CALLBACK_MSG_ID);
+        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.SCAN_CALLBACK_MSG_ID);
     }
 
     private void initIntent() {
@@ -283,13 +264,13 @@ public class ScanTVandRadioActivity extends BaseActivity {
             searchMultiSatellite();
         } else if (mSatList.size() == 0 && isFromSatelliteActivity()) {
             setSatInfo();
-            mTvSatelliteName.setText(SWPDBaseManager.getInstance().getSatInfo(getSatelliteIndex()).sat_name);
-            SWPSearchManager.getInstance().searchByNet(getSatelliteIndex());
+            mTvSatelliteName.setText(DTVProgramManager.getInstance().getSatInfo(getSatelliteIndex()).sat_name);
+            DTVSearchManager.getInstance().searchByNet(getSatelliteIndex(), mScanMode, mNitOpen, mCaFilter);
         }
 
         if (isFromEditManualActivity()) {
-            mTvSatelliteName.setText(SWPDBaseManager.getInstance().getSatInfo(getSatelliteIndex()).sat_name);
-            SWPSearchManager.getInstance().searchByNet(getSatelliteIndex());
+            mTvSatelliteName.setText(DTVProgramManager.getInstance().getSatInfo(getSatelliteIndex()).sat_name);
+            DTVSearchManager.getInstance().searchByNet(getSatelliteIndex(), mScanMode, mNitOpen, mCaFilter);
         }
 
         if (isFromTpListingActivity()) {
@@ -298,18 +279,18 @@ public class ScanTVandRadioActivity extends BaseActivity {
             int Symbol = getSymbol();
             int Qam = getQam();
 
-            mTvSatelliteName.setText(SWPDBaseManager.getInstance().getSatInfo(satIndex).sat_name);
-            if (SWFtaManager.getInstance().getCurrNetwork() == 0) {
-                SWPSearchManager.getInstance().searchByOneTS(satIndex, freq, Symbol, Qam);
+            mTvSatelliteName.setText(DTVProgramManager.getInstance().getSatInfo(satIndex).sat_name);
+            if (DTVSettingManager.getInstance().getCurrNetwork() == 0) {
+                DTVSearchManager.getInstance().searchByOneTS(satIndex, freq, Symbol, Qam, mScanMode, mNitOpen, mCaFilter);
             } else {
-                SWPSearchManager.getInstance().searchByNIT(satIndex, freq, Symbol, Qam);
+                DTVSearchManager.getInstance().searchByNIT(satIndex, freq, Symbol, Qam, mScanMode, mNitOpen, mCaFilter);
             }
 
         }
 
         if (isFromT2AutoSearch()) {
             mTvSatelliteName.setText(R.string.installation_t2);
-            SWPSearchManager.getInstance().searchByNet(getSatelliteIndex());
+            DTVSearchManager.getInstance().searchByNet(getSatelliteIndex(), mScanMode, mNitOpen, mCaFilter);
         }
 
         if (isFromT2ManualSearchActivity()) {
@@ -317,10 +298,10 @@ public class ScanTVandRadioActivity extends BaseActivity {
             int freq = getFreq();
             int satIndex = getSatelliteIndex();
             int Symbol = getSymbol();
-            if (SWFtaManager.getInstance().getCurrNetwork() == 0) {
-                SWPSearchManager.getInstance().searchByOneTS(satIndex, freq, Symbol, 0);
+            if (DTVSettingManager.getInstance().getCurrNetwork() == 0) {
+                DTVSearchManager.getInstance().searchByOneTS(satIndex, freq, Symbol, 0, mScanMode, mNitOpen, mCaFilter);
             } else {
-                SWPSearchManager.getInstance().searchByNIT(satIndex, freq, Symbol, 0);
+                DTVSearchManager.getInstance().searchByNIT(satIndex, freq, Symbol, 0, mScanMode, mNitOpen, mCaFilter);
             }
         }
 
@@ -393,17 +374,17 @@ public class ScanTVandRadioActivity extends BaseActivity {
     private void searchMultiSatellite() {
         String satelliteName = mSatList.get(mutiSateIndex).sat_name + "(" + (mutiSateIndex + 1) + "/" + mSatList.size() + ")";
         mTvSatelliteName.setText(satelliteName);
-        SWPSearchManager.getInstance().searchByNet(mSatList.get(mutiSateIndex).SatIndex);
+        DTVSearchManager.getInstance().searchByNet(mSatList.get(mutiSateIndex).SatIndex, mScanMode, mNitOpen, mCaFilter);
     }
 
     /**
      * 卫星信息设置到bean中
      */
     public void setSatInfo() {
-        int sat = SWPDBaseManager.getInstance().findPositionBySatIndex(getSatelliteIndex());
-        HProg_Struct_SatInfo satInfo = SWPDBaseManager.getInstance().getSatList().get(sat);
+        int sat = DTVProgramManager.getInstance().findPositionBySatIndex(getSatelliteIndex());
+        HProg_Struct_SatInfo satInfo = DTVProgramManager.getInstance().getSatList().get(sat);
 
-        HProg_Struct_SatInfo updateInfo = SWPDBaseManager.getInstance().getSatInfo(sat);
+        HProg_Struct_SatInfo updateInfo = DTVProgramManager.getInstance().getSatInfo(sat);
         updateInfo.LnbType = satInfo.LnbType;
         updateInfo.LnbPower = satInfo.LnbPower;
         updateInfo.diseqc10_pos = satInfo.diseqc10_pos;
@@ -412,7 +393,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
         updateInfo.lnb_high = satInfo.lnb_high;
         updateInfo.Enable = satInfo.Enable;
 
-        SWPDBaseManager.getInstance().setSatInfo(sat, updateInfo);
+        DTVProgramManager.getInstance().setSatInfo(sat, updateInfo);
     }
 
     @Override

@@ -8,8 +8,8 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 
+import com.konkawise.dtv.DTVSettingManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.base.BaseDialogFragment;
 import com.konkawise.dtv.utils.EditUtils;
 import com.konkawise.dtv.view.LastInputEditText;
@@ -101,7 +101,7 @@ public class PasswordDialog extends BaseDialogFragment implements TextWatcher {
         if (s.length() < PARENTAL_PASSWORD_MAX_LENGTH) return;
 
         if (mCurrentPassword == null) {
-            mCurrentPassword = SWFtaManager.getInstance().getCommPWDInfo(HSetting_Enum_Property.Password);
+            mCurrentPassword = DTVSettingManager.getInstance().getPasswd(HSetting_Enum_Property.Password);
         }
 
         boolean isPasswordValid;

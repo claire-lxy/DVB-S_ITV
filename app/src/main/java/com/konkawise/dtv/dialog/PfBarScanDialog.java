@@ -14,12 +14,13 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.konkawise.dtv.DTVCommonManager;
+import com.konkawise.dtv.DTVPlayerManager;
+import com.konkawise.dtv.DTVProgramManager;
+import com.konkawise.dtv.DTVSettingManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.RealTimeManager;
-import com.konkawise.dtv.SWEpgManager;
-import com.konkawise.dtv.SWFtaManager;
-import com.konkawise.dtv.SWPDBaseManager;
-import com.konkawise.dtv.SWTimerManager;
+import com.konkawise.dtv.DTVEpgManager;
 import com.konkawise.dtv.WeakToolManager;
 import com.konkawise.dtv.base.BaseDialog;
 import com.konkawise.dtv.bean.DateModel;
@@ -27,7 +28,7 @@ import com.konkawise.dtv.weaktool.CheckSignalHelper;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
 import com.konkawise.dtv.weaktool.WeakToolInterface;
-import com.sw.dvblib.SWDVB;
+import com.sw.dvblib.DTVManager;
 
 import java.util.Timer;
 
@@ -102,9 +103,9 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
     public PfBarScanDialog(Context context) {
         super(context);
         initBg();
-        SWDVB.GetInstance();
+        DTVManager.getInstance();
         mContext = context;
-        sHandler.sendEmptyMessageDelayed(0, SWFtaManager.getInstance().dismissTimeout());
+        sHandler.sendEmptyMessageDelayed(0, DTVSettingManager.getInstance().dismissTimeout());
     }
 
     @Override
@@ -173,12 +174,12 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
 
         @Override
         protected void runTimer() {
-            HProg_Struct_ProgInfo currProgInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
+            HProg_Struct_ProgInfo currProgInfo = DTVProgramManager.getInstance().getCurrProgInfo();
             HEPG_Struct_Event currPfInfo = null;
             HEPG_Struct_Event nextPfInfo = null;
             if (currProgInfo != null) {
-                currPfInfo = SWEpgManager.getInstance().getPfEitOfServID(currProgInfo.Sat, currProgInfo.TsID, currProgInfo.ServID, 0);
-                nextPfInfo = SWEpgManager.getInstance().getPfEitOfServID(currProgInfo.Sat, currProgInfo.TsID, currProgInfo.ServID, 1);
+                currPfInfo = DTVEpgManager.getInstance().getPFEventOfServID(currProgInfo.Sat, currProgInfo.TsID, currProgInfo.ServID, 0);
+                nextPfInfo = DTVEpgManager.getInstance().getPFEventOfServID(currProgInfo.Sat, currProgInfo.TsID, currProgInfo.ServID, 1);
             }
 
             final HEPG_Struct_Event currPf = currPfInfo;
@@ -204,12 +205,12 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
     }
 
     private void updateProgInfo(HEPG_Struct_Event currPfInfo) {
-        HProg_Struct_ProgInfo currProgInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
+        HProg_Struct_ProgInfo currProgInfo = DTVProgramManager.getInstance().getCurrProgInfo();
         if (currProgInfo != null) {
             mTvProgNum.setText(String.valueOf(currProgInfo.PShowNo));
             mTvProgName.setText(currProgInfo.Name);
-            mTvSubtitleNum.setText(String.valueOf(SWFtaManager.getInstance().getSubtitleNum(currProgInfo.ServID)));
-            mTvTeletxtNum.setText(String.valueOf(SWFtaManager.getInstance().getTeletextNum(currProgInfo.ServID)));
+            mTvSubtitleNum.setText(String.valueOf(DTVPlayerManager.getInstance().getSubtitleNum(currProgInfo.ServID)));
+            mTvTeletxtNum.setText(String.valueOf(DTVPlayerManager.getInstance().getTeletextNum(currProgInfo.ServID)));
             mTvRateNum.setText(String.valueOf(currPfInfo != null ? currPfInfo.Rating : 0));
             mTvSoundNum.setText(String.valueOf(currProgInfo.audioDB.audioName.size()));
 
@@ -226,8 +227,8 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
 
     private String getInformation(HEPG_Struct_Event info) {
         if (info != null && info.utcStartData > 0 && info.utcStartTime > 0) {
-            return new DateModel(SWTimerManager.getInstance().getStartTime(info),
-                    SWTimerManager.getInstance().getEndTime(info)).getFormatHourAndMinute() + " " + info.memEventName;
+            return new DateModel(DTVCommonManager.getInstance().getStartTime(info),
+                    DTVCommonManager.getInstance().getEndTime(info)).getFormatHourAndMinute() + " " + info.memEventName;
         }
         return mContext.getString(R.string.no_information);
     }

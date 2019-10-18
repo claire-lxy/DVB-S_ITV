@@ -24,18 +24,19 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.konkawise.dtv.DTVCommonManager;
 import com.konkawise.dtv.Constants;
+import com.konkawise.dtv.DTVPlayerManager;
+import com.konkawise.dtv.DTVProgramManager;
+import com.konkawise.dtv.DTVSettingManager;
 import com.konkawise.dtv.HandlerMsgManager;
 import com.konkawise.dtv.PreferenceManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.RealTimeManager;
-import com.konkawise.dtv.SWBookingManager;
-import com.konkawise.dtv.SWDJAPVRManager;
-import com.konkawise.dtv.SWDVBManager;
-import com.konkawise.dtv.SWFtaManager;
-import com.konkawise.dtv.SWPDBaseManager;
+import com.konkawise.dtv.DTVBookingManager;
+import com.konkawise.dtv.DTVPVRManager;
+import com.konkawise.dtv.DTVDVBManager;
 import com.konkawise.dtv.ThreadPoolManager;
-import com.konkawise.dtv.UIApiManager;
 import com.konkawise.dtv.UsbManager;
 import com.konkawise.dtv.adapter.TvListAdapter;
 import com.konkawise.dtv.annotation.DVBSelectType;
@@ -70,7 +71,7 @@ import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
-import com.sw.dvblib.SWDVB;
+import com.sw.dvblib.DTVManager;
 import com.sw.dvblib.msg.MsgEvent;
 import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
 
@@ -196,10 +197,10 @@ public class Topmost extends BaseActivity {
     @OnItemClick(R.id.lv_prog_list)
     void onItemClick(int position) {
         toggleProgList();
-        if (mProgListAdapter.getItem(position).ProgNo == SWPDBaseManager.getInstance().getCurrProgNo())
+        if (mProgListAdapter.getItem(position).ProgNo == DTVProgramManager.getInstance().getCurrProgNo())
             return;
 
-        SWPDBaseManager.getInstance().setCurrProgType(SWPDBaseManager.getInstance().getCurrProgType(), 0);
+        DTVProgramManager.getInstance().setCurrProgType(DTVProgramManager.getInstance().getCurrProgType(), 0);
         mProgListAdapter.setSelectPosition(position);
         playProg(mProgListAdapter.getItem(position).ProgNo);
     }
@@ -248,7 +249,7 @@ public class Topmost extends BaseActivity {
 
     @OnClick(R.id.item_channel_manage)
     void channelManage() {
-        if (SWPDBaseManager.getInstance().getProgNumOfGroup(HProg_Enum_Group.TOTAL_GROUP, 0) <= 0 && isShowChannelManageItem()) {
+        if (DTVProgramManager.getInstance().getProgNumOfGroup(HProg_Enum_Group.TOTAL_GROUP, 0) <= 0 && isShowChannelManageItem()) {
             if (mMenuShow) {
                 showRemindSearchDialog();
             }
@@ -259,7 +260,7 @@ public class Topmost extends BaseActivity {
 
     @OnClick(R.id.item_channel_edit)
     void channelEdit() {
-        if (SWFtaManager.getInstance().isOpenMenuLock() && !mPasswordEntered) {
+        if (DTVSettingManager.getInstance().isOpenMenuLock() && !mPasswordEntered) {
             showPasswordDialog(new PasswordDialog.OnPasswordInputListener() {
                 @Override
                 public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
@@ -276,7 +277,7 @@ public class Topmost extends BaseActivity {
 
     @OnClick(R.id.item_channel_favorite)
     void channelFavorite() {
-        if (SWFtaManager.getInstance().isOpenMenuLock() && !mPasswordEntered) {
+        if (DTVSettingManager.getInstance().isOpenMenuLock() && !mPasswordEntered) {
             showPasswordDialog(new PasswordDialog.OnPasswordInputListener() {
                 @Override
                 public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
@@ -293,7 +294,7 @@ public class Topmost extends BaseActivity {
 
     @OnClick(R.id.item_clear_channel)
     void clearChannel() {
-        if (SWFtaManager.getInstance().isOpenMenuLock() && !mPasswordEntered) {
+        if (DTVSettingManager.getInstance().isOpenMenuLock() && !mPasswordEntered) {
             showPasswordDialog(new PasswordDialog.OnPasswordInputListener() {
                 @Override
                 public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
@@ -325,7 +326,7 @@ public class Topmost extends BaseActivity {
 
     @OnClick(R.id.item_data_reset)
     void factoryReset() {
-        if (SWFtaManager.getInstance().isOpenMenuLock() && !mPasswordEntered) {
+        if (DTVSettingManager.getInstance().isOpenMenuLock() && !mPasswordEntered) {
             showPasswordDialog(new PasswordDialog.OnPasswordInputListener() {
                 @Override
                 public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
@@ -369,7 +370,7 @@ public class Topmost extends BaseActivity {
     private int mCurrSelectProgPosition;
     private int mCurrSatPosition;
     private List<HProg_Struct_SatInfo> mSatList;
-    // key:satIndex，fav分组的key从satIndex+SWPDBaseManager.RANGE_SAT_INDEX开始，获取喜爱分组列表时要-SWPDBaseManager.RANGE_SAT_INDEX
+    // key:satIndex，fav分组的key从satIndex+DTVProgramManager.RANGE_SAT_INDEX开始，获取喜爱分组列表时要-DTVProgramManager.RANGE_SAT_INDEX
     private SparseArray<List<HProg_Struct_ProgInfo>> mProgListMap = new SparseArray<>();
     private LoadProgRunnable mLoadProgRunnable;
     private LoadSatRunnable mLoadSatRunnable;
@@ -390,8 +391,8 @@ public class Topmost extends BaseActivity {
             Topmost context = mWeakReference.get();
             if (msg.what == MSG_PLAY_PROG) {
                 context.dismissPasswordDialog();
-                SWPDBaseManager.getInstance().setCurrProgNo(msg.arg1);
-                UIApiManager.getInstance().startPlayProgNo(msg.arg1, 1);
+                DTVProgramManager.getInstance().setCurrProgNo(msg.arg1);
+                DTVPlayerManager.getInstance().startPlayProgNo(msg.arg1, 1);
             }
         }
     }
@@ -440,7 +441,7 @@ public class Topmost extends BaseActivity {
             Topmost context = mWeakReference.get();
             if (msg.what == MSG_JUMP_PROG) {
                 int progNum = msg.arg1;
-                if (context.isJumpProgNumValid() && progNum != SWPDBaseManager.getInstance().getCurrProgNo()) {
+                if (context.isJumpProgNumValid() && progNum != DTVProgramManager.getInstance().getCurrProgNo()) {
                     context.mCurrSelectProgPosition = context.getPositionByProgNum(progNum);
                     context.playProg(progNum);
                 } else {
@@ -462,9 +463,9 @@ public class Topmost extends BaseActivity {
 
     @Override
     protected void setup() {
-        SWDVB.GetInstance(); // 必须先初始化库，否则使用库会出现空指针异常
-        mCurrProgGroup = SWPDBaseManager.getInstance().getCurrGroup();
-        mCurrProgGroupParams = SWPDBaseManager.getInstance().getCurrGroupParam();
+        DTVManager.getInstance(); // 必须先初始化库，否则使用库会出现空指针异常
+        mCurrProgGroup = DTVProgramManager.getInstance().getCurrGroup();
+        mCurrProgGroupParams = DTVProgramManager.getInstance().getCurrGroupParam();
 
         bootService();
         registerListener();
@@ -485,7 +486,7 @@ public class Topmost extends BaseActivity {
         restoreMenuItem(); // 恢复menu初始item显示
 
         checkLaunchSettingPassword();
-        if (!SWFtaManager.getInstance().isPasswordEmpty() && !SWPDBaseManager.getInstance().isProgCanPlay()) {
+        if (!DTVSettingManager.getInstance().isPasswordEmpty() && !DTVProgramManager.getInstance().isProgCanPlay()) {
             showSearchChannelDialog();
         }
     }
@@ -494,12 +495,12 @@ public class Topmost extends BaseActivity {
     protected void onPause() {
         super.onPause();
         hideSurface();
-        UIApiManager.getInstance().stopPlay(SWFtaManager.getInstance().getCommE2PInfo(HSetting_Enum_Property.PD_SwitchMode));
+        DTVPlayerManager.getInstance().stopPlay(DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.PD_SwitchMode));
         unregisterMsgEvent();
         stopRecord();
         if (isFinishing()) {
             RealTimeManager.getInstance().stop();
-            SWDVBManager.getInstance().releaseResource();
+            DTVDVBManager.getInstance().releaseResource();
         }
     }
 
@@ -522,35 +523,32 @@ public class Topmost extends BaseActivity {
     }
 
     private void registerMsgEvent() {
-        MsgEvent msgEvent = SWDVBManager.getInstance().registerMsgEvent(Constants.LOCK_CALLBACK_MSG_ID);
+        MsgEvent msgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.LOCK_CALLBACK_MSG_ID);
         msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
             @Override
-            public int ProgPlay_SWAV_ISLOCKED(int type, int progno, int progindex, int home) {
+            public void PLAYER_isLocked(int type, int progNo, int progIndex, int home) {
                 showPasswordDialog();
-                return super.ProgPlay_SWAV_ISLOCKED(type, progno, progindex, home);
             }
 
             @Override
-            public int ProgPlay_SWAV_USBAttach() {
+            public void PLAYER_onUSBCompleted() {
                 Log.i(TAG, "usb attach");
                 mUsbAttach = true;
                 ToastUtils.showToast(R.string.toast_storage_inserted);
-                return super.ProgPlay_SWAV_USBAttach();
             }
 
             @Override
-            public int ProgPlay_SWAV_USBDetach() {
+            public void PLAYER_onUSBRemoved() {
                 Log.i(TAG, "usb detach");
                 mUsbAttach = false;
                 ToastUtils.showToast(R.string.toast_storage_out);
                 stopRecord();
-                return super.ProgPlay_SWAV_USBDetach();
             }
         });
     }
 
     private void unregisterMsgEvent() {
-        SWDVBManager.getInstance().unregisterMsgEvent(Constants.LOCK_CALLBACK_MSG_ID);
+        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.LOCK_CALLBACK_MSG_ID);
     }
 
     @Override
@@ -570,7 +568,7 @@ public class Topmost extends BaseActivity {
         Log.i(TAG, "bookType = " + bookType + ", recordSeconds = " + recordSeconds + ", serviceid = " + serviceid + ", tsid = " + tsid + ", sat = " + sat);
         if (bookType == BookService.ACTION_BOOKING_PLAY) {
             if (serviceid != -1 && tsid != -1 && sat != -1) {
-                SWFtaManager.getInstance().forcePlayProgByServiceId(serviceid, tsid, sat);
+                DTVPlayerManager.getInstance().forcePlayProgByServiceId(serviceid, tsid, sat);
                 return true;
             }
         } else if (bookType == BookService.ACTION_BOOKING_RECORD) {
@@ -580,14 +578,14 @@ public class Topmost extends BaseActivity {
             }
 
             if (serviceid != -1 && tsid != -1 && sat != -1 && recordSeconds != -1) {
-                SWFtaManager.getInstance().forcePlayProgByServiceId(serviceid, tsid, sat);
+                DTVPlayerManager.getInstance().forcePlayProgByServiceId(serviceid, tsid, sat);
                 startRecord(new OnCommCallback() {
                     @Override
                     public void callback(Object object) {
                         int recordFlag = (int) object;
                         if (recordFlag == 0) {
                             startRecordingTimer(recordSeconds);
-                            SWBookingManager.getInstance().setRecording(true);
+                            DTVBookingManager.getInstance().setRecording(true);
                             sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
                             ToastUtils.showToast(R.string.toast_start_record);
                         } else {
@@ -602,7 +600,7 @@ public class Topmost extends BaseActivity {
     }
 
     private void startRecord(OnCommCallback callback) {
-        String uuid = SWFtaManager.getInstance().getDiskUUID();
+        String uuid = DTVSettingManager.getInstance().getDiskUUID();
         Set<UsbInfo> usbInfos = UsbManager.getInstance().queryUsbInfos(this);
         if (usbInfos == null || usbInfos.isEmpty()) callback.callback(UsbManager.USB_NOT_FOUND);
 
@@ -641,13 +639,13 @@ public class Topmost extends BaseActivity {
             ThreadPoolManager.getInstance().remove(mWaitingStartRecordRunnable);
         }
         mWaitingStartRecordRunnable.usbInfo = usbInfo;
-        if (usbInfo != null) SWFtaManager.getInstance().setDiskUUID(usbInfo.uuid);
+        if (usbInfo != null) DTVSettingManager.getInstance().setDiskUUID(usbInfo.uuid);
         ThreadPoolManager.getInstance().execute(mWaitingStartRecordRunnable);
     }
 
     private void stopRecord() {
         if (isRecording()) {
-            SWDJAPVRManager.getInstance().stopRecord();
+            DTVPVRManager.getInstance().stopRecord();
 
             cancelRecordingTimer();
             setRecordFlagStop();
@@ -665,7 +663,7 @@ public class Topmost extends BaseActivity {
             public void callback(Object object) {
                 int recordFlag = (int) object;
                 if (recordFlag == 0) {
-                    SWDJAPVRManager.getInstance().setRecording(true);
+                    DTVPVRManager.getInstance().setRecording(true);
                     startRecordingTimer(recordSeconds);
                     sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
                     ToastUtils.showToast(R.string.toast_start_record);
@@ -697,7 +695,7 @@ public class Topmost extends BaseActivity {
                     break;
                 }
 
-                result = SWDJAPVRManager.getInstance().startRecord(recordDelay, usbInfo.path);
+                result = DTVPVRManager.getInstance().startRecord(recordDelay, usbInfo.path);
 
                 if (result != -4) break;
                 if (tryStartRecordTime >= MAX_TRY_RECORD_TIME) break;
@@ -741,8 +739,8 @@ public class Topmost extends BaseActivity {
     }
 
     private void setRecordFlagStop() {
-        SWBookingManager.getInstance().setRecording(false);
-        SWDJAPVRManager.getInstance().setRecording(false);
+        DTVBookingManager.getInstance().setRecording(false);
+        DTVPVRManager.getInstance().setRecording(false);
     }
 
     private static class RecordingTimerTask extends WeakTimerTask<Topmost> {
@@ -808,7 +806,7 @@ public class Topmost extends BaseActivity {
         mTvProgNum.setText(String.valueOf(progNum));
         mTvProgNum.setVisibility(View.VISIBLE);
         if (sendMsgHide)
-            sendProgMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_PROG_NUM, SWFtaManager.getInstance().dismissTimeout()));
+            sendProgMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_PROG_NUM, DTVSettingManager.getInstance().dismissTimeout()));
     }
 
     /**
@@ -889,10 +887,10 @@ public class Topmost extends BaseActivity {
                 }
             }
 
-            HProg_Struct_ProgInfo currProgInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
+            HProg_Struct_ProgInfo currProgInfo = DTVProgramManager.getInstance().getCurrProgInfo();
             if (currProgInfo == null) return;
 
-            final int preProgIndex = SWPDBaseManager.getInstance().getCurrProgInfo().ProgIndex;
+            final int preProgIndex = DTVProgramManager.getInstance().getCurrProgInfo().ProgIndex;
             List<HProg_Struct_ProgInfo> progList = context.getProgList();
             context.runOnUiThread(new Runnable() {
                 @Override
@@ -907,7 +905,7 @@ public class Topmost extends BaseActivity {
                         context.mCurrSelectProgPosition = context.getPositionByIndex(preProgIndex);
                         HProg_Struct_ProgInfo progInfo = context.mProgListAdapter.getItem(context.mCurrSelectProgPosition);
                         context.updateProgListSelectionByPosotion(context.mCurrSelectProgPosition);
-                        SWPDBaseManager.getInstance().setCurrProgNo(progInfo.ProgNo);
+                        DTVProgramManager.getInstance().setCurrProgNo(progInfo.ProgNo);
 
                         // 更新完成频道列表，如果播放的不是当前频道或者切换了频道类型则切换播放
                         if (progInfo.ProgIndex != preProgIndex ||
@@ -977,7 +975,7 @@ public class Topmost extends BaseActivity {
         protected void loadBackground() {
             Topmost context = mWeakReference.get();
 
-            List<HProg_Struct_SatInfo> allSatList = SWPDBaseManager.getInstance().getAllSatListContainFav(context);
+            List<HProg_Struct_SatInfo> allSatList = DTVProgramManager.getInstance().getAllSatListContainFav(context);
             if (allSatList != null && !allSatList.isEmpty()) {
                 context.mSatList = new ArrayList<>(allSatList);
                 context.mCurrSatPosition = 0;
@@ -989,7 +987,7 @@ public class Topmost extends BaseActivity {
                         if (context.mCurrProgGroup == HProg_Enum_Group.SAT_GROUP && context.mCurrProgGroupParams == allSatList.get(i).SatIndex) {
                             context.mCurrSatPosition = i;
                             break;
-                        } else if (context.mCurrProgGroup == HProg_Enum_Group.FAV_GROUP && context.mCurrProgGroupParams == (allSatList.get(i).SatIndex - SWPDBaseManager.RANGE_SAT_INDEX)) {
+                        } else if (context.mCurrProgGroup == HProg_Enum_Group.FAV_GROUP && context.mCurrProgGroupParams == (allSatList.get(i).SatIndex - DTVProgramManager.RANGE_SAT_INDEX)) {
                             context.mCurrSatPosition = i;
                             break;
                         }
@@ -1014,15 +1012,15 @@ public class Topmost extends BaseActivity {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
                 Log.i(TAG, "topmost surface create");
-                UIApiManager.getInstance().setSurface(holder.getSurface());
-                UIApiManager.getInstance().setWindowSize(0, 0,
+                DTVPlayerManager.getInstance().setSurface(holder.getSurface());
+                DTVPlayerManager.getInstance().setWindowSize(0, 0,
                         getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
                 if (!handleBook()) {
                     Log.i(TAG, "non handle book");
-                    if (SWPDBaseManager.getInstance().isProgCanPlay() && !SWFtaManager.getInstance().isPasswordEmpty()) {
-                        SWPDBaseManager.getInstance().setCurrGroup(mCurrProgGroup, mCurrProgGroupParams);
-                        if (SWPDBaseManager.getInstance().getCurrProgNo() >= 0)
-                            playProg(SWPDBaseManager.getInstance().getCurrProgNo(), true);
+                    if (DTVProgramManager.getInstance().isProgCanPlay() && !DTVSettingManager.getInstance().isPasswordEmpty()) {
+                        DTVProgramManager.getInstance().setCurrGroup(mCurrProgGroup, mCurrProgGroupParams);
+                        if (DTVProgramManager.getInstance().getCurrProgNo() >= 0)
+                            playProg(DTVProgramManager.getInstance().getCurrProgNo(), true);
                     }
                 } else {
                     Log.i(TAG, "intent reset empty");
@@ -1067,19 +1065,19 @@ public class Topmost extends BaseActivity {
                 mCurrProgGroup = HProg_Enum_Group.WHOLE_GROUP;
                 mCurrProgGroupParams = 1;
 
-            } else if (satIndex >= SWPDBaseManager.RANGE_SAT_INDEX) {
+            } else if (satIndex >= DTVProgramManager.RANGE_SAT_INDEX) {
                 mCurrProgGroup = HProg_Enum_Group.FAV_GROUP;
-                mCurrProgGroupParams = satIndex - SWPDBaseManager.RANGE_SAT_INDEX;
+                mCurrProgGroupParams = satIndex - DTVProgramManager.RANGE_SAT_INDEX;
             } else {
                 mCurrProgGroup = HProg_Enum_Group.SAT_GROUP;
                 mCurrProgGroupParams = satIndex;
             }
-            SWPDBaseManager.getInstance().setCurrGroup(mCurrProgGroup, mCurrProgGroupParams);
+            DTVProgramManager.getInstance().setCurrGroup(mCurrProgGroup, mCurrProgGroupParams);
             if (progInfoList != null && !progInfoList.isEmpty()) {
                 return progInfoList;
             }
             int[] index = new int[1];
-            progInfoList = SWPDBaseManager.getInstance().getCurrGroupProgList(index);
+            progInfoList = DTVProgramManager.getInstance().getCurrGroupProgInfoList(index);
             mProgListMap.put(satIndex, progInfoList);
             return progInfoList;
         }
@@ -1116,7 +1114,7 @@ public class Topmost extends BaseActivity {
 
     /**
      * 获取在当前频道分组下当前频道的频道号
-     * SWPDBaseManager.getInstance().getCurrProgNo()是不区分频道分组的，在Topmost界面一般用来判断切换的频道号是否和当前相同，要和该方法有所区分
+     * DTVProgramManager.getInstance().getCurrProgNo()是不区分频道分组的，在Topmost界面一般用来判断切换的频道号是否和当前相同，要和该方法有所区分
      */
     private int getCurrentProgNo() {
         HProg_Struct_ProgInfo currProgInfo = getCurrProgInfo();
@@ -1241,11 +1239,11 @@ public class Topmost extends BaseActivity {
     }
 
     private void playProg(int progNum, boolean immediately) {
-        UIApiManager.getInstance().stopPlay(SWFtaManager.getInstance().getCommE2PInfo(HSetting_Enum_Property.PD_SwitchMode)); // 切台之前暂停当前频道播放
-        SWPDBaseManager.getInstance().setCurrProgNo(progNum);
+        DTVPlayerManager.getInstance().stopPlay(DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.PD_SwitchMode)); // 切台之前暂停当前频道播放
+        DTVProgramManager.getInstance().setCurrProgNo(progNum);
         removePlayProgMsg();
         showPfInfo();
-        showProgNum(SWPDBaseManager.getInstance().getCurrProgInfo().PShowNo);
+        showProgNum(DTVProgramManager.getInstance().getCurrProgInfo().PShowNo);
         showRadioBackground();
         sendPlayProgMsg(new HandlerMsgModel(PlayHandler.MSG_PLAY_PROG, progNum, immediately ? 0 : PLAY_PROG_DELAY));
     }
@@ -1326,11 +1324,11 @@ public class Topmost extends BaseActivity {
     }
 
     private void showRadioBackground() {
-        mIvRadioBackground.setVisibility(SWPDBaseManager.getInstance().getCurrProgType() == HProg_Enum_Type.GBPROG ? View.VISIBLE : View.INVISIBLE);
+        mIvRadioBackground.setVisibility(DTVProgramManager.getInstance().getCurrProgType() == HProg_Enum_Type.GBPROG ? View.VISIBLE : View.INVISIBLE);
     }
 
     private void checkLaunchSettingPassword() {
-        if (SWFtaManager.getInstance().isPasswordEmpty()) {
+        if (DTVSettingManager.getInstance().isPasswordEmpty()) {
             showSettingPasswordDialog();
         }
     }
@@ -1353,9 +1351,9 @@ public class Topmost extends BaseActivity {
 
         HProg_Struct_ProgInfo currProgInfo = getCurrProgInfo();
         if (currProgInfo != null) {
-            HProg_Struct_SatInfo satInfo = SWPDBaseManager.getInstance().getSatInfo(currProgInfo.Sat);
-            int[] pids = SWPDBaseManager.getInstance().getServicePID(currProgInfo.ProgNo);
-            HProg_Struct_TP channelInfo = SWPDBaseManager.getInstance().getChannelInfoBySat(currProgInfo.Sat, currProgInfo.ProgIndex);
+            HProg_Struct_SatInfo satInfo = DTVProgramManager.getInstance().getSatInfo(currProgInfo.Sat);
+            int[] pids = DTVProgramManager.getInstance().getServicePID(currProgInfo.ProgNo);
+            HProg_Struct_TP channelInfo = DTVProgramManager.getInstance().getTPInfoBySat(currProgInfo.Sat, currProgInfo.ProgIndex);
             mPfDetailDialog = new PfDetailDialog()
                     .information("")
                     .satelliteName(satInfo != null ? satInfo.sat_name : "")
@@ -1432,7 +1430,7 @@ public class Topmost extends BaseActivity {
                         dismissPasswordDialog();
                         Uri uri = Uri.parse("content://dvbchannellock/dvb_info/1");
                         getContentResolver().update(uri, null, null, null);
-                        UIApiManager.getInstance().startPlayProgNo(SWPDBaseManager.getInstance().getCurrProgNo(), 0);
+                        DTVPlayerManager.getInstance().startPlayProgNo(DTVProgramManager.getInstance().getCurrProgNo(), 0);
                         break;
                 }
             }
@@ -1494,7 +1492,7 @@ public class Topmost extends BaseActivity {
                 .setOnPositiveListener("", new OnCommPositiveListener() {
                     @Override
                     public void onPositiveListener() {
-                        SWFtaManager.getInstance().clearChannel();
+                        DTVPlayerManager.getInstance().programReset();
                         mCurrSatPosition = 0;
                         mProgListAdapter.clearData(); // 同步清空频道列表
                         mIvRadioBackground.setVisibility(View.GONE); // 隐藏音频背景
@@ -1508,7 +1506,7 @@ public class Topmost extends BaseActivity {
                     @Override
                     public void onPositiveListener() {
                         PreferenceManager.getInstance().clear();
-                        SWFtaManager.getInstance().factoryReset();
+                        DTVCommonManager.getInstance().factoryReset();
                         mProgListAdapter.clearData(); // 同步清空频道列表
                         toggleMenu(true);
                         mIvRadioBackground.setVisibility(View.GONE); // 隐藏音频背景
@@ -1551,18 +1549,18 @@ public class Topmost extends BaseActivity {
 
     private void showSubtitleDialog() {
         HProg_Struct_ProgInfo progInfo = getCurrProgInfo();
-        if (!SWPDBaseManager.getInstance().isProgCanPlay() || progInfo == null) return;
+        if (!DTVProgramManager.getInstance().isProgCanPlay() || progInfo == null) return;
 
         int currSubtitle = 0;
         int serviceid = progInfo.ServID;
-        int num = SWFtaManager.getInstance().getSubtitleNum(serviceid);
+        int num = DTVPlayerManager.getInstance().getSubtitleNum(serviceid);
         final int[] pids = new int[num];
         List<HashMap<String, Object>> subtitles = new ArrayList<>();
         HashMap<String, Object> off = new HashMap<>();
         off.put(Constants.SUBTITLE_NAME, "OFF");
         subtitles.add(off);
         for (int index = 0; index < num; index++) {
-            HPlayer_Struct_Subtitle subtitle = SWFtaManager.getInstance().getSubtitleInfo(serviceid, index);
+            HPlayer_Struct_Subtitle subtitle = DTVPlayerManager.getInstance().getSubtitleInfo(serviceid, index);
             if (subtitle.used != 0) {
                 pids[index] = subtitle.Pid;
                 HashMap<String, Object> map = new HashMap<>();
@@ -1570,7 +1568,7 @@ public class Topmost extends BaseActivity {
                 map.put(Constants.SUBTITLE_ORG_TYPE, subtitle.OrgType == 0);
                 map.put(Constants.SUBTITLE_TYPE, (subtitle.Type >= 0x20 && subtitle.Type <= 0x24) || subtitle.Type == 0x05);
                 subtitles.add(map);
-                if (SWFtaManager.getInstance().getCurSubtitleInfo(serviceid).Name.equals(subtitle.Name))
+                if (DTVPlayerManager.getInstance().getCurSubtitleInfo(serviceid).Name.equals(subtitle.Name))
                     currSubtitle = index;
             }
         }
@@ -1583,23 +1581,23 @@ public class Topmost extends BaseActivity {
                     @Override
                     public void onDismiss(SubtitleDialog dialog, int position, String checkContent) {
                         if (position > 0)
-                            SWFtaManager.getInstance().openSubtitle(pids[position - 1]);
+                            DTVPlayerManager.getInstance().openSubtitle(pids[position - 1]);
                     }
                 }).show(getSupportFragmentManager(), SubtitleDialog.TAG);
     }
 
     private void showTeletextDialog() {
         HProg_Struct_ProgInfo progInfo = getCurrProgInfo();
-        if (!SWPDBaseManager.getInstance().isProgCanPlay() || progInfo == null) return;
+        if (!DTVProgramManager.getInstance().isProgCanPlay() || progInfo == null) return;
 
         int currTeleText = 0;
         int serviceid = progInfo.ServID;
-        int num = SWFtaManager.getInstance().getTeletextNum(serviceid);
+        int num = DTVPlayerManager.getInstance().getTeletextNum(serviceid);
         final int[] pids = new int[num];
         String[] teletextNames = new String[num + 1];
         teletextNames[0] = "OFF";
         for (int index = 0; index < num; index++) {
-            HPlayer_Struct_Teletext teletext = SWFtaManager.getInstance().getTeletextInfo(serviceid, index);
+            HPlayer_Struct_Teletext teletext = DTVPlayerManager.getInstance().getTeletextInfo(serviceid, index);
             if (teletext.used != 0) {
                 teletextNames[index + 1] = teletext.Name;
                 pids[index] = teletext.Pid;
@@ -1614,13 +1612,13 @@ public class Topmost extends BaseActivity {
                     @Override
                     public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
                         if (position > 0)
-                            SWFtaManager.getInstance().openTeletext(pids[position - 1]);
+                            DTVPlayerManager.getInstance().openTeletext(pids[position - 1]);
                     }
                 }).show(getSupportFragmentManager(), "teletext");
     }
 
     private void showAudioDialog() {
-        if (!SWPDBaseManager.getInstance().isProgCanPlay()) return;
+        if (!DTVProgramManager.getInstance().isProgCanPlay()) return;
 
         new AudioDialog().title(getString(R.string.audio)).where(AudioDialog.WHERE_TOPMOST).show(getSupportFragmentManager(), AudioDialog.TAG);
     }
@@ -1629,12 +1627,12 @@ public class Topmost extends BaseActivity {
         mSettingPasswordDialog = new InitPasswordDialog().setOnSavePasswordListener(new InitPasswordDialog.OnSavePasswordListener() {
             @Override
             public void onSavePassword(String password) {
-                SWFtaManager.getInstance().setCommPWDInfo(HSetting_Enum_Property.Password, password);
-                SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.FirstOpen, 0);
+                DTVSettingManager.getInstance().setPasswd(HSetting_Enum_Property.Password, password);
+                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.FirstOpen, 0);
 
                 dismissSettingPasswordDialog();
 
-                if (!SWPDBaseManager.getInstance().isProgCanPlay()) {
+                if (!DTVProgramManager.getInstance().isProgCanPlay()) {
                     showSearchChannelDialog();
                 } else {
                     playProg();
@@ -1823,7 +1821,7 @@ public class Topmost extends BaseActivity {
 
             if (!mLongPressed) {
                 removeHidePfBarMsg();
-                sendProgMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_PF_BAR, SWFtaManager.getInstance().dismissTimeout()));
+                sendProgMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_PF_BAR, DTVSettingManager.getInstance().dismissTimeout()));
             }
         }
     }
@@ -1849,7 +1847,7 @@ public class Topmost extends BaseActivity {
         mItemChannelEdit.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
         mItemChannelFavorite.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
         mItemClearChannel.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
-        mItemRestoreUserData.setVisibility(isShowChannelManage && SWPDBaseManager.getInstance().isProgCanPlay() ? View.VISIBLE : View.GONE);
+        mItemRestoreUserData.setVisibility(isShowChannelManage && DTVProgramManager.getInstance().isProgCanPlay() ? View.VISIBLE : View.GONE);
         mItemBackupUserData.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
         mItemDtvSetting.setVisibility(isShowChannelManage ? View.GONE : View.VISIBLE);
         mItemDataReset.setVisibility(isShowChannelManage ? View.GONE : View.VISIBLE);
@@ -1973,11 +1971,11 @@ public class Topmost extends BaseActivity {
                 return true;
             }
 
-            if (SWBookingManager.getInstance().isRecording()) {
+            if (DTVBookingManager.getInstance().isRecording()) {
                 showQuitRecordDialog(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_UNKNOWN));
             } else {
                 if (mProgListAdapter.getCount() > 0) {
-                    int recordMinutes = SWFtaManager.getInstance().getCommE2PInfo(HSetting_Enum_Property.RecordMaxMin);
+                    int recordMinutes = DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.RecordMaxMin);
                     if (recordMinutes == 0) {
                         showInputPvrMinuteDialog(Constants.PVR_TYPE_RECORD);
                     } else {
@@ -1991,11 +1989,11 @@ public class Topmost extends BaseActivity {
         // TV/RADIO
         if (keyCode == KeyEvent.KEYCODE_TV_RADIO_SERVICE) {
             stopRecord();
-            int currProgType = SWPDBaseManager.getInstance().getCurrProgType();
+            int currProgType = DTVProgramManager.getInstance().getCurrProgType();
             int group = currProgType == HProg_Enum_Type.GBPROG ? HProg_Enum_Type.TVPROG : HProg_Enum_Type.GBPROG;
-            int num = SWPDBaseManager.getInstance().getProgNumOfType(group, 0);
+            int num = DTVProgramManager.getInstance().getProgNumOfType(group, 0);
             if (num > 0) {
-                SWPDBaseManager.getInstance().setCurrProgType(currProgType == HProg_Enum_Type.GBPROG ?
+                DTVProgramManager.getInstance().setCurrProgType(currProgType == HProg_Enum_Type.GBPROG ?
                         HProg_Enum_Type.TVPROG: HProg_Enum_Type.GBPROG, 0);
                 onProgramUpdate(new ProgramUpdateEvent(true));
             } else {
@@ -2250,7 +2248,7 @@ public class Topmost extends BaseActivity {
                     if (mProgListShow) {
                         return super.dispatchKeyEvent(event);
                     } else {
-                        if (mNewProgNum != SWPDBaseManager.getInstance().getCurrProgNo()) {
+                        if (mNewProgNum != DTVProgramManager.getInstance().getCurrProgNo()) {
                             if (mLongPressed) {
                                 mLongPressed = false;
                                 int position = getPositionByProgNum(mNewProgNum);
@@ -2296,7 +2294,7 @@ public class Topmost extends BaseActivity {
                     if (mProgListShow) {
                         return super.dispatchKeyEvent(event);
                     } else {
-                        if (mNewProgNum != SWPDBaseManager.getInstance().getCurrProgNo()) {
+                        if (mNewProgNum != DTVProgramManager.getInstance().getCurrProgNo()) {
                             if (mLongPressed) {
                                 mLongPressed = false;
                                 int position = getPositionByProgNum(mNewProgNum);
@@ -2361,7 +2359,7 @@ public class Topmost extends BaseActivity {
     }
 
     private boolean isRecording() {
-        return SWBookingManager.getInstance().isRecording() || SWDJAPVRManager.getInstance().isRecording();
+        return DTVBookingManager.getInstance().isRecording() || DTVPVRManager.getInstance().isRecording();
     }
 
     private boolean isUsbNotExit() {

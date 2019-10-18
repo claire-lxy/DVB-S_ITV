@@ -4,8 +4,8 @@ import android.content.Intent;
 import android.view.KeyEvent;
 import android.widget.RelativeLayout;
 
+import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.PasswordDialog;
@@ -73,7 +73,7 @@ public class DTVSettingActivity extends BaseActivity {
         ThreadPoolManager.getInstance().execute(new Runnable() {
             @Override
             public void run() {
-                List<HProg_Struct_ProgBasicInfo> progList = SWPDBaseManager.getInstance().getCurrGroupProgInfoList();
+                List<HProg_Struct_ProgBasicInfo> progList = DTVProgramManager.getInstance().getCurrGroupProgInfoList();
                 if (progList != null && !progList.isEmpty()) {
                     mProgList.addAll(progList);
                 }

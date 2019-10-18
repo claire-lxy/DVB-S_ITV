@@ -12,9 +12,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
+import com.konkawise.dtv.DTVProgramManager;
+import com.konkawise.dtv.DTVSearchManager;
+import com.konkawise.dtv.DTVSettingManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWFtaManager;
-import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.bean.LatLngModel;
@@ -25,7 +26,6 @@ import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakRunnable;
-import com.sw.dvblib.SWFta;
 
 import java.text.MessageFormat;
 import java.util.Collections;
@@ -271,8 +271,8 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         super.onStop();
         stopMotorCtrl();
         if (mSatInfo != null) saveLongitude();
-        SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.SAT_Longitude, mLocalLongitudeModel.getValueForStorage());
-        SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.SAT_Latitude, mLocalLatitudeModel.getValueForStorage());
+        DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.SAT_Longitude, mLocalLongitudeModel.getValueForStorage());
+        DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.SAT_Latitude, mLocalLatitudeModel.getValueForStorage());
     }
 
     private void stopMotorCtrl() {
@@ -307,15 +307,15 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
     private void initIntent() {
         mCurrentTp = getIntent().getIntExtra(Constants.IntentKey.INTENT_CURRENT_TP, -1);
         mSatelliteIndex = getIntent().getIntExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, -1);
-        mTpList = SWPDBaseManager.getInstance().getSatChannelInfoList(mSatelliteIndex);
-        List<HProg_Struct_SatInfo> satList = SWPDBaseManager.getInstance().getSatList();
-        int position = SWPDBaseManager.getInstance().findPositionBySatIndex(mSatelliteIndex);
+        mTpList = DTVProgramManager.getInstance().getSatTPInfo(mSatelliteIndex);
+        List<HProg_Struct_SatInfo> satList = DTVProgramManager.getInstance().getSatList();
+        int position = DTVProgramManager.getInstance().findPositionBySatIndex(mSatelliteIndex);
         if (satList != null && !satList.isEmpty() && position < satList.size()) {
             mSatInfo = satList.get(position);
             if (mSatInfo != null) {
                 mSatLongitudeModel = new LatLngModel(LatLngModel.MODE_LONGITUDE, LatLngModel.LONGITUDE_THRESHOLD, mSatInfo.diseqc12_longitude);
-                mLocalLongitudeModel = new LatLngModel(LatLngModel.MODE_LONGITUDE, LatLngModel.LONGITUDE_THRESHOLD, SWFtaManager.getInstance().getCommE2PInfo(HSetting_Enum_Property.SAT_Longitude));
-                mLocalLatitudeModel = new LatLngModel(LatLngModel.MODE_LATITUDE, LatLngModel.LATITUDE_THRESHOLD, SWFtaManager.getInstance().getCommE2PInfo(HSetting_Enum_Property.SAT_Latitude));
+                mLocalLongitudeModel = new LatLngModel(LatLngModel.MODE_LONGITUDE, LatLngModel.LONGITUDE_THRESHOLD, DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.SAT_Longitude));
+                mLocalLatitudeModel = new LatLngModel(LatLngModel.MODE_LATITUDE, LatLngModel.LATITUDE_THRESHOLD, DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.SAT_Latitude));
             }
         }
     }
@@ -339,7 +339,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
 
     private void tryLockTp() {
         if (mTpList != null && mTpList.size() != 0) {
-            SWFtaManager.getInstance().tunerLockFreq(mSatelliteIndex, mTpList.get(mCurrentTp).Freq, mTpList.get(mCurrentTp).Symbol, mTpList.get(mCurrentTp).Qam, 1, 0);
+            DTVSearchManager.getInstance().tunerLockFreq(mSatelliteIndex, mTpList.get(mCurrentTp).Freq, mTpList.get(mCurrentTp).Symbol, mTpList.get(mCurrentTp).Qam, 1, 0);
         }
     }
 
@@ -378,7 +378,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         protected void loadBackground() {
             MotorActivity context = mWeakReference.get();
 
-            SWFta.GetInstance().tunerMotorControl(ctrlCode, repeat, data);
+            DTVSearchManager.getInstance().tunerMotorControl(ctrlCode, repeat, data);
             String moveStep = context.mMoveStepArray[context.mMoveStep];
             if (TextUtils.equals(moveStep, context.getResources().getString(R.string.motor_move_step_west)) ||
                     TextUtils.equals(moveStep, context.getResources().getString(R.string.motor_move_step_east))) {
@@ -914,21 +914,21 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                 mSatInfo.diseqc12 = 2;
             }
 
-            SWPDBaseManager.getInstance().setSatInfo(mSatelliteIndex, mSatInfo);
+            DTVProgramManager.getInstance().setSatInfo(mSatelliteIndex, mSatInfo);
         }
     }
 
     private void savePosition() {
         if (mSatInfo != null) {
             mSatInfo.diseqc12_pos = mPositionStep;
-            SWPDBaseManager.getInstance().setSatInfo(mSatelliteIndex, mSatInfo);
+            DTVProgramManager.getInstance().setSatInfo(mSatelliteIndex, mSatInfo);
         }
     }
 
     private void saveLongitude() {
         if (mSatInfo != null) {
             mSatInfo.diseqc12_longitude = mSatLongitudeModel.getValueForStorage();
-            SWPDBaseManager.getInstance().setSatInfo(mSatelliteIndex, mSatInfo);
+            DTVProgramManager.getInstance().setSatInfo(mSatelliteIndex, mSatInfo);
         }
     }
 
@@ -940,7 +940,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         HProg_Struct_TP channelNew_t = mTpList.get(mCurrentTp);
         String tp = channelNew_t.Freq + Utils.getVorH(this, channelNew_t.Qam) + channelNew_t.Symbol;
         mTvTp.setText(tp);
-        SWFtaManager.getInstance().tunerLockFreq(mSatelliteIndex, channelNew_t.Freq, channelNew_t.Symbol, channelNew_t.Qam, 1, 0);
+        DTVSearchManager.getInstance().tunerLockFreq(mSatelliteIndex, channelNew_t.Freq, channelNew_t.Symbol, channelNew_t.Qam, 1, 0);
     }
 
     private boolean isTpEmpty() {

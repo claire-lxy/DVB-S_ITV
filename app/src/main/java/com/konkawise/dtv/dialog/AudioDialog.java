@@ -8,10 +8,10 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.konkawise.dtv.DTVPlayerManager;
+import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWDJAPVRManager;
-import com.konkawise.dtv.SWFtaManager;
-import com.konkawise.dtv.SWPDBaseManager;
+import com.konkawise.dtv.DTVPVRManager;
 import com.konkawise.dtv.base.BaseItemFocusChangeDialogFragment;
 
 import java.util.ArrayList;
@@ -74,13 +74,13 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
         mTvTitle.setText(mTitle);
 
 
-        audioTrackPosition = SWFtaManager.getInstance().getCurrProgParam(HPlayer_Enum_PlayParam.TRACK);
+        audioTrackPosition = DTVPlayerManager.getInstance().getCurrProgParam(HPlayer_Enum_PlayParam.TRACK);
         mTvAudioTrack.setText(mAudioTrackArray[audioTrackPosition]);
 
         if (where == WHERE_TOPMOST) {
-            audioLanguagePosition = SWFtaManager.getInstance().getCurrProgParam(HPlayer_Enum_PlayParam.AUDIO);
-            ArrayList<String> audioNameList = SWPDBaseManager.getInstance().getCurrProgInfo().audioDB.audioName;
-            audioTypeList = SWPDBaseManager.getInstance().getCurrProgInfo().audioDB.ucAudStrType;
+            audioLanguagePosition = DTVPlayerManager.getInstance().getCurrProgParam(HPlayer_Enum_PlayParam.AUDIO);
+            ArrayList<String> audioNameList = DTVProgramManager.getInstance().getCurrProgInfo().audioDB.audioName;
+            audioTypeList = DTVProgramManager.getInstance().getCurrProgInfo().audioDB.ucAudStrType;
             mAudioLanguageArray = new String[audioNameList.size()];
             for (int i = 0, j = 1; i < audioNameList.size(); i++) {
                 Log.i(TAG, "audioNameList[" + i + "]: " + audioNameList.get(i) + " AudioTypeList[" + i + "]: " + audioTypeList.get(i));
@@ -91,10 +91,10 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
             }
             mTvAudioLanguage.setText(mAudioLanguageArray[audioLanguagePosition]);
         } else {
-            audioLanguagePosition = SWDJAPVRManager.getInstance().getCurrAudioIndex();
-            ArrayList<String> audioNameList = SWDJAPVRManager.getInstance().getAudioList().audioName;
-            audioTypeList = SWDJAPVRManager.getInstance().getAudioList().ucAudStrType;
-            audioPidList = SWDJAPVRManager.getInstance().getAudioList().sAudPid;
+            audioLanguagePosition = DTVPVRManager.getInstance().getCurrAudioIndex();
+            ArrayList<String> audioNameList = DTVPVRManager.getInstance().getAudioList().audioName;
+            audioTypeList = DTVPVRManager.getInstance().getAudioList().ucAudStrType;
+            audioPidList = DTVPVRManager.getInstance().getAudioList().sAudPid;
             mAudioLanguageArray = new String[audioNameList.size()];
             for (int i = 0, j = 1; i < audioNameList.size(); i++) {
                 Log.i(TAG, "audioNameList2[" + i + "] : " + audioNameList.get(i) + " AudioTypeList2[" + i + "] : " + audioTypeList.get(i));
@@ -211,7 +211,7 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
                         if (--audioTrackPosition < 0)
                             audioTrackPosition = mAudioTrackArray.length - 1;
                         mTvAudioTrack.setText(mAudioTrackArray[audioTrackPosition]);
-                        SWFtaManager.getInstance().setCurrProgParam(HPlayer_Enum_PlayParam.TRACK, audioTrackPosition);
+                        DTVPlayerManager.getInstance().setCurrProgParam(HPlayer_Enum_PlayParam.TRACK, audioTrackPosition);
                         break;
 
                     case ITEM_AUDIO_LANGUAGE:
@@ -221,9 +221,9 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
                             audioLanguagePosition = mAudioLanguageArray.length - 1;
                         mTvAudioLanguage.setText(mAudioLanguageArray[audioLanguagePosition]);
                         if (where == WHERE_TOPMOST) {
-                            SWFtaManager.getInstance().setCurrProgParam(HPlayer_Enum_PlayParam.AUDIO, audioLanguagePosition);
+                            DTVPlayerManager.getInstance().setCurrProgParam(HPlayer_Enum_PlayParam.AUDIO, audioLanguagePosition);
                         } else {
-                            SWDJAPVRManager.getInstance().setAudioPid(audioPidList.get(audioLanguagePosition), audioTypeList.get(audioLanguagePosition));
+                            DTVPVRManager.getInstance().setAudioPid(audioPidList.get(audioLanguagePosition), audioTypeList.get(audioLanguagePosition));
                         }
 
                         break;
@@ -236,7 +236,7 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
                         if (++audioTrackPosition > mAudioTrackArray.length - 1)
                             audioTrackPosition = 0;
                         mTvAudioTrack.setText(mAudioTrackArray[audioTrackPosition]);
-                        SWFtaManager.getInstance().setCurrProgParam(HPlayer_Enum_PlayParam.TRACK, audioTrackPosition);
+                        DTVPlayerManager.getInstance().setCurrProgParam(HPlayer_Enum_PlayParam.TRACK, audioTrackPosition);
                         break;
 
                     case ITEM_AUDIO_LANGUAGE:
@@ -245,7 +245,7 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
                         if (++audioLanguagePosition > mAudioLanguageArray.length - 1)
                             audioLanguagePosition = 0;
                         mTvAudioLanguage.setText(mAudioLanguageArray[audioLanguagePosition]);
-                        SWFtaManager.getInstance().setCurrProgParam(HPlayer_Enum_PlayParam.AUDIO, audioLanguagePosition);
+                        DTVPlayerManager.getInstance().setCurrProgParam(HPlayer_Enum_PlayParam.AUDIO, audioLanguagePosition);
                         break;
                 }
             }

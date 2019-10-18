@@ -1,6 +1,6 @@
 package com.konkawise.dtv;
 
-import com.sw.dvblib.SWTimer;
+import com.sw.dvblib.DTVCommon;
 import com.sw.dvblib.msg.MsgEvent;
 import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
 
@@ -23,16 +23,16 @@ public class RealTimeManager {
 
     public void start() {
         if (mMsgEvent == null) {
-            mMsgEvent = SWDVBManager.getInstance().registerMsgEvent(Constants.TIME_CALLBACK_MSG_ID);
+            mMsgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.TIME_CALLBACK_MSG_ID);
             mMsgEvent.registerCallbackListener(new CallbackListenerAdapter() {
                 @Override
-                public int Timer_ITIS_BROADCTIME(int utcdate, int utctime, int param) {
+                public void TIME_onBroadcastDateTime(int date, int time, int param) {
                     HCommon_Struct_MDJ utcTime_t = new HCommon_Struct_MDJ();
-                    utcTime_t.date = utcdate;
-                    utcTime_t.time = utctime;
-                    SWTimer.TimeModel sysTime = SWTimerManager.getInstance().mjdToLocal(utcTime_t);
+                    utcTime_t.date = date;
+                    utcTime_t.time = time;
+                    DTVCommon.TimeModel sysTime = DTVCommonManager.getInstance().mjdToLocal(utcTime_t);
                     if (sysTime != null) {
-                        String time = sysTime.Year + "-" +
+                        String realTime = sysTime.Year + "-" +
                                 (sysTime.Month < 10 ? "0" + sysTime.Month : sysTime.Month) + "-" +
                                 (sysTime.Day < 10 ? "0" + sysTime.Day : sysTime.Day) + " " +
                                 (sysTime.Hour < 10 ? "0" + sysTime.Hour : sysTime.Hour) + ":" +
@@ -40,12 +40,10 @@ public class RealTimeManager {
                                 (sysTime.Second < 10 ? "0" + sysTime.Second : sysTime.Second);
                         for (OnReceiveTimeListener listener : mSystemTimeRegisters) {
                             if (listener != null) {
-                                listener.onReceiveTimeCallback(time);
+                                listener.onReceiveTimeCallback(realTime);
                             }
                         }
                     }
-
-                    return super.Timer_ITIS_BROADCTIME(utcdate, utctime, param);
                 }
             });
         }
@@ -53,7 +51,7 @@ public class RealTimeManager {
 
     public void stop() {
         if (mMsgEvent != null) {
-            SWDVBManager.getInstance().unregisterMsgEvent(Constants.TIME_CALLBACK_MSG_ID);
+            DTVDVBManager.getInstance().unregisterMsgEvent(Constants.TIME_CALLBACK_MSG_ID);
             mMsgEvent = null;
         }
     }

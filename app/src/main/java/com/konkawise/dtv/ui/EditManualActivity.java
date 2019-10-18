@@ -14,10 +14,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
+import com.konkawise.dtv.DTVProgramManager;
+import com.konkawise.dtv.DTVSearchManager;
 import com.konkawise.dtv.PreferenceManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWFtaManager;
-import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.bean.LatLngModel;
 import com.konkawise.dtv.dialog.AutoDiSEqCDialog;
@@ -177,7 +177,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
         mTvBottomBarYellow.setText(getString(R.string.motor_01));
 
         mLastFocusable22KHz = getResources().getString(R.string.on);
-        mCurrentSatellite = SWPDBaseManager.getInstance().findPositionBySatIndex(getIntent().getIntExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, -1));
+        mCurrentSatellite = DTVProgramManager.getInstance().findPositionBySatIndex(getIntent().getIntExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, -1));
 
         initCheckSignal();
         satelliteChange();
@@ -440,7 +440,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
                         if (portIndex >= 0) {
                             HProg_Struct_SatInfo satInfo = getSatList().get(mCurrentSatellite);
                             satInfo.diseqc10_pos = portIndex + 1;
-                            SWPDBaseManager.getInstance().setSatInfo(satInfo.SatIndex, satInfo);
+                            DTVProgramManager.getInstance().setSatInfo(satInfo.SatIndex, satInfo);
 
                             mCurrentDiseqc = portIndex + 3; // 和mDiseqcArray位置约定
                             diseqcChange();
@@ -454,7 +454,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
      * 保存设置的卫星信息
      */
     private void saveSatInfo() {
-        List<HProg_Struct_SatInfo> satList = SWPDBaseManager.getInstance().getSatList(); // 这里要获取最新的数据，不拿缓存
+        List<HProg_Struct_SatInfo> satList = DTVProgramManager.getInstance().getSatList(); // 这里要获取最新的数据，不拿缓存
         if (satList == null || satList.isEmpty()) return;
 
         HProg_Struct_SatInfo satInfo = satList.get(mCurrentSatellite);
@@ -484,8 +484,8 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
         }
         satInfo.LnbPower = isLnbPowerOn() ? 1 : 0;
 
-        SWPDBaseManager.getInstance().setSatInfo(satInfo.SatIndex, satInfo);
-        mSatList = SWPDBaseManager.getInstance().getSatList(); // 更新卫星列表
+        DTVProgramManager.getInstance().setSatInfo(satInfo.SatIndex, satInfo);
+        mSatList = DTVProgramManager.getInstance().getSatList(); // 更新卫星列表
     }
 
     /**
@@ -501,7 +501,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
         String tpName = channel.Freq + Utils.getVorH(this, channel.Qam) + channel.Symbol;
         mTvTp.setText(tpName);
 
-        SWFtaManager.getInstance().tunerLockFreq(channel.SatIndex, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
+        DTVSearchManager.getInstance().tunerLockFreq(channel.SatIndex, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
     }
 
     private boolean isTpEmpty() {
@@ -616,7 +616,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
 
     private List<HProg_Struct_SatInfo> getSatList() {
         if (mSatList == null) {
-            mSatList = SWPDBaseManager.getInstance().getSatList();
+            mSatList = DTVProgramManager.getInstance().getSatList();
         }
         return mSatList;
     }
@@ -625,7 +625,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
         List<HProg_Struct_SatInfo> satList = getSatList();
         if (satList == null || satList.isEmpty()) return new ArrayList<>();
 
-        mTpList = SWPDBaseManager.getInstance().getSatChannelInfoList(getSatList().get(mCurrentSatellite).SatIndex);
+        mTpList = DTVProgramManager.getInstance().getSatTPInfo(getSatList().get(mCurrentSatellite).SatIndex);
         return mTpList;
     }
 

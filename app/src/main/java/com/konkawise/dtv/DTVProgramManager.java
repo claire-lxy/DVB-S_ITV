@@ -5,7 +5,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.SparseArray;
 
-import com.sw.dvblib.SWPDBase;
+import com.sw.dvblib.DTVProg;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,19 +18,19 @@ import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgBasicInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 
-public class SWPDBaseManager {
+public class DTVProgramManager {
     public static final int RANGE_SAT_INDEX = 10000;
 
-    private static class SWPDBaseManagerHolder {
-        private static SWPDBaseManager INSTANCE = new SWPDBaseManager();
+    private static class DTVProgramManagerHolder {
+        private static DTVProgramManager INSTANCE = new DTVProgramManager();
     }
 
-    private SWPDBaseManager() {
-        SWPDBase.CreateInstance();
+    private DTVProgramManager() {
+        DTVProg.getInstance();
     }
 
-    public static SWPDBaseManager getInstance() {
-        return SWPDBaseManagerHolder.INSTANCE;
+    public static DTVProgramManager getInstance() {
+        return DTVProgramManagerHolder.INSTANCE;
     }
 
     /**
@@ -38,7 +38,7 @@ public class SWPDBaseManager {
      */
     public List<HProg_Struct_SatInfo> getSatList() {
         ArrayList<HProg_Struct_SatInfo> satelliteList = new ArrayList<>();
-        int satNum = SWPDBase.CreateInstance().getSatNum(getCurrProgNo());
+        int satNum = DTVProg.getInstance().getSatNum(getCurrProgNo());
 
         for (int i = 1; i < satNum; i++) {
             satelliteList.add(getSatInfo(i));
@@ -50,14 +50,14 @@ public class SWPDBaseManager {
      * 根据卫星索引获取某个卫星的信息
      */
     public HProg_Struct_SatInfo getSatInfo(int sat) {
-        return SWPDBase.CreateInstance().getSatInfo(sat);
+        return DTVProg.getInstance().getSatInfo(sat);
     }
 
     /**
      * 获取卫星列表，包含T2信号
      */
-    public List<HProg_Struct_SatInfo> getProgSatList() {
-        return SWPDBase.CreateInstance().getProgSatList();
+    public List<HProg_Struct_SatInfo> getSatInfoList() {
+        return DTVProg.getInstance().getSatInfoList();
     }
 
     /**
@@ -78,8 +78,8 @@ public class SWPDBaseManager {
     /**
      * 根据卫星索引获取卫星频道列表
      */
-    public List<HProg_Struct_TP> getSatChannelInfoList(int satIndex) {
-        return SWPDBase.CreateInstance().getSatChannelInfo(satIndex);
+    public List<HProg_Struct_TP> getSatTPInfo(int satIndex) {
+        return DTVProg.getInstance().getSatTPInfo(satIndex);
     }
 
     /**
@@ -88,44 +88,40 @@ public class SWPDBaseManager {
      * @param sat   卫星索引
      * @param index 循环索引 SWPDBase.getSatChannelNum()获取的数量索引
      */
-    public HProg_Struct_TP getChannelInfoBySat(int sat, int index) {
-        return SWPDBase.CreateInstance().getChannelInfoBySat(sat, index);
+    public HProg_Struct_TP getTPInfoBySat(int sat, int index) {
+        return DTVProg.getInstance().getTPInfoBySat(sat, index);
     }
 
     /**
      * 添加TP频点
      */
-    public void addChannelInfo(HProg_Struct_TP tp) {
-        SWPDBase.CreateInstance().addChannelInfo(tp);
+    public void addTPInfo(HProg_Struct_TP tp) {
+        DTVProg.getInstance().addTPInfo(tp);
     }
 
     /**
      * 删除TP频点
      */
-    public void delChannelInfo(HProg_Struct_TP tp) {
-        SWPDBase.CreateInstance().delChannelInfo(tp.TPIndex);
+    public void delTPInfo(HProg_Struct_TP tp) {
+        DTVProg.getInstance().delTPInfo(tp.TPIndex);
     }
 
     /**
      * 编辑TP频点
      */
-    public void setSatChannelInfo(HProg_Struct_TP tp) {
-        SWPDBase.CreateInstance().setSatChannelInfo(tp);
+    public void setTPInfo(HProg_Struct_TP tp) {
+        DTVProg.getInstance().setTPInfo(tp.TPIndex, tp);
     }
 
     /**
      * 获取所有频道列表
      */
-    public List<HProg_Struct_ProgInfo> getTotalGroupProgList() {
-        return getTotalGroupProgList(new int[1]);
+    public List<HProg_Struct_ProgInfo> getTotalGroupProgInfoList() {
+        return getTotalGroupProgInfoList(new int[1]);
     }
 
     /**
      * 获取Total分组下对应的卫星频道列表
-     *
-     * @param ltTotalProgs
-     * @param satIndex
-     * @return
      */
     public List<HProg_Struct_ProgInfo> getTotalGroupSatProgList(List<HProg_Struct_ProgInfo> ltTotalProgs, int satIndex) {
         List<HProg_Struct_ProgInfo> ltSatProgs = new ArrayList<>();
@@ -143,33 +139,33 @@ public class SWPDBaseManager {
         return ltSatProgs;
     }
 
-    public List<HProg_Struct_ProgInfo> getTotalGroupProgList(int[] index) {
-        return getGroupProgList(HProg_Enum_Group.TOTAL_GROUP, index);
+    public List<HProg_Struct_ProgInfo> getTotalGroupProgInfoList(int[] index) {
+        return getCurrGroupProgInfoList(HProg_Enum_Group.TOTAL_GROUP, index);
     }
 
     /**
      * 获取所有频道列表，不包含skip频道
      */
-    public List<HProg_Struct_ProgInfo> getWholeGroupProgList() {
-        return getWholeGroupProgList(new int[1]);
+    public List<HProg_Struct_ProgInfo> getWholeGroupProgInfoList() {
+        return getWholeGroupProgInfoList(new int[1]);
     }
 
-    public List<HProg_Struct_ProgInfo> getWholeGroupProgList(int[] index) {
-        return getGroupProgList(HProg_Enum_Group.WHOLE_GROUP, index);
+    public List<HProg_Struct_ProgInfo> getWholeGroupProgInfoList(int[] index) {
+        return getCurrGroupProgInfoList(HProg_Enum_Group.WHOLE_GROUP, index);
     }
 
-    private List<HProg_Struct_ProgInfo> getGroupProgList(int group, int[] index) {
+    private List<HProg_Struct_ProgInfo> getCurrGroupProgInfoList(int group, int[] index) {
         setCurrGroup(group, 1);
-        return getCurrGroupProgList(index);
+        return getCurrGroupProgInfoList(index);
     }
 
-    public ArrayList<HProg_Struct_ProgInfo> getCurrGroupProgList(int[] currProgNumArray) {
-        return SWPDBase.CreateInstance().getCurrGroupProgList(currProgNumArray);
+    public ArrayList<HProg_Struct_ProgInfo> getCurrGroupProgInfoList(int[] currProgNumArray) {
+        return DTVProg.getInstance().getCurrGroupProgInfoList(currProgNumArray);
     }
 
     public List<HProg_Struct_ProgBasicInfo> getCurrGroupProgInfoList() {
         List<HProg_Struct_ProgBasicInfo> progInfoList = new ArrayList<>();
-        List<HProg_Struct_ProgInfo> wholeGroupProgList = getWholeGroupProgList();
+        List<HProg_Struct_ProgInfo> wholeGroupProgList = getWholeGroupProgInfoList();
         if (wholeGroupProgList != null && !wholeGroupProgList.isEmpty()) {
             for (HProg_Struct_ProgInfo progInfo : wholeGroupProgList) {
                 HProg_Struct_ProgBasicInfo info = new HProg_Struct_ProgBasicInfo();
@@ -186,7 +182,7 @@ public class SWPDBaseManager {
     }
 
     public List<HProg_Struct_ProgBasicInfo> getAnotherTypeProgInfoList() {
-        int currProgType = SWPDBaseManager.getInstance().getCurrProgType();
+        int currProgType = DTVProgramManager.getInstance().getCurrProgType();
         setCurrProgType(currProgType == HProg_Enum_Type.GBPROG ? HProg_Enum_Type.TVPROG : HProg_Enum_Type.GBPROG, 0);
         List<HProg_Struct_ProgBasicInfo> progInfoList = getCurrGroupProgInfoList();
         setCurrProgType(currProgType, 0);
@@ -199,11 +195,10 @@ public class SWPDBaseManager {
      *
      * @param favType     喜爱分组索引 SWPDBase.SWFAV0~SWFAV7
      * @param favlist     添加到喜爱分组的频道索引号列表
-     * @param favlistsize 添加到喜爱分组的频道数量
      * @param store       是否保存 store=1表示保存
      */
-    public void editFavProgList(int favType, int[] favlist, int favlistsize, int store) {
-        SWPDBase.CreateInstance().editFavProgList(favType, favlist, favlistsize, store);
+    public void editFavProgList(int favType, int[] favlist, int store) {
+        DTVProg.getInstance().editFavProgList(favType, favlist, store);
     }
 
     /**
@@ -216,8 +211,7 @@ public class SWPDBaseManager {
 
             mFavoriteChannelsMap.put(i, editFavoriteList);
 
-            SWPDBaseManager.getInstance().editFavProgList(i,
-                    getFavoriteProgIndexs(mFavoriteChannelsMap.get(i)), mFavoriteChannelsMap.get(i).size(), 1);
+            DTVProgramManager.getInstance().editFavProgList(i, getFavoriteProgIndexs(mFavoriteChannelsMap.get(i)), 1);
         }
     }
 
@@ -233,14 +227,14 @@ public class SWPDBaseManager {
      * 保存频道编辑，lock、skip、rename、delete
      */
     public void editGroupProgList(ArrayList<HProg_Struct_ProgEditInfo> list) {
-        SWPDBase.CreateInstance().editGroupProgList(list);
+        DTVProg.getInstance().editGroupProgList(list);
     }
 
     /**
      * 获取排序方式
      */
     public int getSortType() {
-        return SWPDBase.CreateInstance().getSortType();
+        return DTVProg.getInstance().getSortType();
     }
 
     /**
@@ -251,7 +245,7 @@ public class SWPDBaseManager {
      *                 sortType=3 CAS
      */
     public void setSortType(int sortType) {
-        SWPDBase.CreateInstance().setSortType(sortType);
+        DTVProg.getInstance().setSortType(sortType);
     }
 
     /**
@@ -260,7 +254,7 @@ public class SWPDBaseManager {
      * @param index 频道索引号
      */
     public int[] getServicePID(int index) {
-        return SWPDBase.CreateInstance().getServicePID(index);
+        return DTVProg.getInstance().getServicePID(index);
     }
 
     /**
@@ -269,7 +263,7 @@ public class SWPDBaseManager {
      * @param index 频道索引号
      */
     public void setServicePID(int index, int vid, int aid, int pcrid) {
-        SWPDBase.CreateInstance().setServicePID(index, vid, aid, pcrid);
+        DTVProg.getInstance().setServicePID(index, vid, aid, pcrid);
     }
 
     /**
@@ -279,14 +273,14 @@ public class SWPDBaseManager {
      * @param satinfo 保存的卫星信息
      */
     public void setSatInfo(int Sat, HProg_Struct_SatInfo satinfo) {
-        SWPDBase.CreateInstance().setSatInfo(Sat, satinfo);
+        DTVProg.getInstance().setSatInfo(Sat, satinfo);
     }
 
     /**
      * 获取当前频道信息
      */
     public HProg_Struct_ProgInfo getCurrProgInfo() {
-        return SWPDBase.CreateInstance().getCurrProgMangInfo();
+        return DTVProg.getInstance().getCurrProgMangInfo();
     }
 
     /**
@@ -295,54 +289,54 @@ public class SWPDBaseManager {
      * @param type type=0代表TV类型，type=1代表RADIO类型
      */
     public void setCurrProgType(int type, int param) {
-        SWPDBase.CreateInstance().setCurrProgType(type, param);
+        DTVProg.getInstance().setCurrProgType(type, param);
     }
 
     /**
      * 设置当前频道播放号
      */
     public void setCurrProgNo(int index) {
-        SWPDBase.CreateInstance().setCurrProgNo(index);
+        DTVProg.getInstance().setCurrProgNo(index);
     }
 
     /**
      * 总频道数
      */
     public int getProgNumOfCurrGroup() {
-        return SWPDBase.CreateInstance().getProgNumOfCurrGroup();
+        return DTVProg.getInstance().getProgNumOfCurrGroup();
     }
 
     /**
      * 获取当前频道类型
      */
     public int getCurrProgType() {
-        return SWPDBase.CreateInstance().getCurrProgType();
+        return DTVProg.getInstance().getCurrProgType();
     }
 
     public void setCurrGroup(int group, int groupid) {
-        SWPDBase.CreateInstance().setCurrGroup(group, groupid);
+        DTVProg.getInstance().setCurrGroup(group, groupid);
     }
 
     public int getCurrGroup() {
-        return SWPDBase.CreateInstance().getCurrGroup();
+        return DTVProg.getInstance().getCurrGroup();
     }
 
     public int getCurrGroupParam() {
-        return SWPDBase.CreateInstance().getCurrGroupParam();
+        return DTVProg.getInstance().getCurrGroupParam();
     }
 
     /**
      * 获取当前频道播放号
      */
     public int getCurrProgNo() {
-        return SWPDBase.CreateInstance().getCurrProgNo();
+        return DTVProg.getInstance().getCurrProgNo();
     }
 
     /**
      * 根据serviceId、tsid、sat获取对应的频道
      */
     public HProg_Struct_ProgBasicInfo getProgInfoByServiceId(int serviceid, int tsid, int sat) {
-        HProg_Struct_ProgBasicInfo progInfo = SWPDBase.CreateInstance().getProgInfoOfServiceID(serviceid, tsid, sat);
+        HProg_Struct_ProgBasicInfo progInfo = DTVProg.getInstance().getProgInfoOfServiceID(serviceid, tsid, sat);
         if (progInfo != null) {
             progInfo.TsID = progInfo.Freq; // 底层获取到的tsid是对应在Freq，手动修改一次
         }
@@ -353,7 +347,7 @@ public class SWPDBaseManager {
      * 获取卫星列表，包含自定义的ALL
      */
     public List<HProg_Struct_SatInfo> getAllSatList(Context context) {
-        List<HProg_Struct_SatInfo> satList = getProgSatList();
+        List<HProg_Struct_SatInfo> satList = getSatInfoList();
         if (satList != null) {
             HProg_Struct_SatInfo allSatInfo = new HProg_Struct_SatInfo();
             allSatInfo.SatIndex = -1;
@@ -392,7 +386,7 @@ public class SWPDBaseManager {
      * @param param 所在分组，如果没有传0
      */
     public int getProgNumOfGroup(int group, int param) {
-        return SWPDBase.CreateInstance().getProgNumOfGroup(group, param);
+        return DTVProg.getInstance().getProgNumOfGroup(group, param);
     }
 
     /**
@@ -402,19 +396,17 @@ public class SWPDBaseManager {
      * @param param 所在分组，如果没有传0
      */
     public int getProgNumOfType(int type, int param) {
-        return SWPDBase.CreateInstance().getProgNumOfType(type, param);
+        return DTVProg.getInstance().getProgNumOfType(type, param);
     }
 
     /**
      * 通过已知的频道列表，解析出喜爱分组列表，并使用缓存，只需要从底层拿一次数据就可以
-     * @param ltChannels
-     * @return
      */
     public SparseArray<List<HProg_Struct_ProgInfo>> getFavChannelMap(List<HProg_Struct_ProgInfo> ltChannels) {
         SparseArray<List<HProg_Struct_ProgInfo>> mFavChannelsMap = new SparseArray<>();
 
         if (ltChannels == null || ltChannels.size() == 0) {
-            ltChannels = getTotalGroupProgList();
+            ltChannels = getTotalGroupProgInfoList();
         }
 
         int[] favIndexArray = getFavIndexArray();
@@ -458,12 +450,12 @@ public class SWPDBaseManager {
      * @param favIndex SWPDBase.SW_FAV0~7
      */
     private String getFavoriteGroupNameByIndex(int favIndex) {
-        String favoriteGroupName = SWPDBase.CreateInstance().getFavName(favIndex);
+        String favoriteGroupName = DTVProg.getInstance().getFavName(favIndex);
         return TextUtils.isEmpty(favoriteGroupName) ? "FAV" + favIndex : favoriteGroupName;
     }
 
     public void setFavGroupName(int favGroupIndex, String favGroupName) {
-        SWPDBase.CreateInstance().setFavName(favGroupIndex, favGroupName);
+        DTVProg.getInstance().setFavName(favGroupIndex, favGroupName);
     }
 
     public boolean isProgCanPlay() {

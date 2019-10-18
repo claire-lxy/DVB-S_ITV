@@ -3,10 +3,10 @@ package com.konkawise.dtv.utils;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.konkawise.dtv.DTVCommonManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWTimerManager;
 import com.konkawise.dtv.bean.DateModel;
-import com.sw.dvblib.SWTimer;
+import com.sw.dvblib.DTVCommon;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ public class TimeUtils {
 
     public static int getYear(String year) {
         if (TextUtils.isEmpty(year)) {
-            SWTimer.TimeModel sysTime_t = SWTimerManager.getInstance().getLocalTime();
+            DTVCommon.TimeModel sysTime_t = DTVCommonManager.getInstance().getLocalTime();
             if (sysTime_t != null) {
                 return sysTime_t.Year;
             }
@@ -49,7 +49,7 @@ public class TimeUtils {
 
     public static int getMonth(String month) {
         if (TextUtils.isEmpty(month)) {
-            SWTimer.TimeModel sysTime_t = SWTimerManager.getInstance().getLocalTime();
+            DTVCommon.TimeModel sysTime_t = DTVCommonManager.getInstance().getLocalTime();
             if (sysTime_t != null) {
                 return sysTime_t.Month;
             }
@@ -66,7 +66,7 @@ public class TimeUtils {
 
     public static int getDay(String day) {
         if (TextUtils.isEmpty(day)) {
-            SWTimer.TimeModel sysTime_t = SWTimerManager.getInstance().getLocalTime();
+            DTVCommon.TimeModel sysTime_t = DTVCommonManager.getInstance().getLocalTime();
             if (sysTime_t != null) {
                 return sysTime_t.Day;
             }
@@ -83,7 +83,7 @@ public class TimeUtils {
 
     public static int getHour(String hour) {
         if (TextUtils.isEmpty(hour)) {
-            SWTimer.TimeModel sysTime_t = SWTimerManager.getInstance().getLocalTime();
+            DTVCommon.TimeModel sysTime_t = DTVCommonManager.getInstance().getLocalTime();
             if (sysTime_t != null) {
                 return sysTime_t.Hour;
             }
@@ -100,7 +100,7 @@ public class TimeUtils {
 
     public static int getMinute(String minute) {
         if (TextUtils.isEmpty(minute)) {
-            SWTimer.TimeModel sysTime_t = SWTimerManager.getInstance().getLocalTime();
+            DTVCommon.TimeModel sysTime_t = DTVCommonManager.getInstance().getLocalTime();
             if (sysTime_t != null) {
                 return sysTime_t.Minute;
             }
@@ -166,7 +166,7 @@ public class TimeUtils {
         return instance.getActualMaximum(Calendar.DAY_OF_MONTH);
     }
 
-    public static int getTotalSeconds(SWTimer.TimeModel startTime, SWTimer.TimeModel endTime) {
+    public static int getTotalSeconds(DTVCommon.TimeModel startTime, DTVCommon.TimeModel endTime) {
         if (endTime.Hour < startTime.Hour) endTime.Day += 1; // 计算时间不需要理会超过当前月份天数问题，超过一天直接+1计算
         DateModel dateModel = new DateModel(startTime, endTime);
         return dateModel.getBetweenSeconds();

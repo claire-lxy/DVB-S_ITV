@@ -7,8 +7,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
+import com.konkawise.dtv.DTVSearchManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.WeakToolManager;
 import com.konkawise.dtv.base.BaseDialogFragment;
@@ -141,10 +141,10 @@ public class AutoDiSEqCDialog extends BaseDialogFragment implements WeakToolInte
                 }
 
                 if (!lockDiSEqC) {
-                    lockDiSEqC = SWFtaManager.getInstance().tunerLockFreqDiSEqC(context.mSatIndex, context.mTpData.Freq, context.mTpData.Symbol, context.mTpData.Qam, portIndex) == 1;
+                    lockDiSEqC = DTVSearchManager.getInstance().tunerLockFreqDiSEqC(context.mSatIndex, context.mTpData.Freq, context.mTpData.Symbol, context.mTpData.Qam, portIndex) == 1;
                 }
 
-                if (SWFtaManager.getInstance().tunerIsLocked()) {
+                if (DTVSearchManager.getInstance().tunerIsLocked()) {
                     foundDiSEqC = true;
                     context.showAutoDiSEqcResult(portIndex);
                     break;

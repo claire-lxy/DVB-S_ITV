@@ -6,8 +6,8 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
+import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.adapter.SatelliteListAdapter;
 import com.konkawise.dtv.base.BaseActivity;
@@ -107,7 +107,7 @@ public class SatelliteActivity extends BaseActivity {
 
         @Override
         protected List<HProg_Struct_SatInfo> backgroundExecute(Void... param) {
-            return SWPDBaseManager.getInstance().getSatList();
+            return DTVProgramManager.getInstance().getSatList();
         }
 
         @Override
@@ -183,7 +183,7 @@ public class SatelliteActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if ((requestCode == REQUEST_CODE_SATELLITE_EDIT || requestCode == REQUEST_CODE_TP_EDIT) && resultCode == RESULT_OK) {
-            mAdapter.updateData(SWPDBaseManager.getInstance().getSatList());
+            mAdapter.updateData(DTVProgramManager.getInstance().getSatList());
             if (data != null) {
                 int position = data.getIntExtra(Constants.IntentKey.INTENT_SATELLITE_POSITION, -1);
                 if (position != -1) {
@@ -212,10 +212,10 @@ public class SatelliteActivity extends BaseActivity {
         protected void loadBackground() {
             SatelliteActivity context = mWeakReference.get();
 
-            List<HProg_Struct_SatInfo> satList = SWPDBaseManager.getInstance().getSatList();
+            List<HProg_Struct_SatInfo> satList = DTVProgramManager.getInstance().getSatList();
             if (satList != null && !satList.isEmpty() && context.mCurrPosition < satList.size()) {
                 HProg_Struct_SatInfo satInfo = satList.get(context.mCurrPosition);
-                HProg_Struct_TP channelInfo = SWPDBaseManager.getInstance().getChannelInfoBySat(satInfo.SatIndex, 0);
+                HProg_Struct_TP channelInfo = DTVProgramManager.getInstance().getTPInfoBySat(satInfo.SatIndex, 0);
 
                 context.runOnUiThread(new Runnable() {
                     @Override

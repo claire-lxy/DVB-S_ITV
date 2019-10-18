@@ -99,7 +99,7 @@ public class Utils {
         } else if (satInfo.diseqc10_tone != 0) {
             return DiSEqcArray[satInfo.diseqc10_tone];
         } else if (satInfo.diseqc12 != 0) {
-            return DiSEqcArray[satInfo.diseqc12_pos + 22];
+            return DiSEqcArray[satInfo.diseqc12 + 22];
         } else {
             return DiSEqcArray[satInfo.skewonoff];
         }

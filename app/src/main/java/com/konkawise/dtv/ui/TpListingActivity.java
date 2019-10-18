@@ -9,9 +9,9 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
+import com.konkawise.dtv.DTVProgramManager;
+import com.konkawise.dtv.DTVSearchManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWFtaManager;
-import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.adapter.TpListingAdapter;
 import com.konkawise.dtv.annotation.TpType;
@@ -80,12 +80,12 @@ public class TpListingActivity extends BaseActivity {
     void onItemSelect(int position) {
         mSelectPosition = position;
 
-        if (SWPDBaseManager.getInstance().getSatList().size() - 1 > 0 && position < SWPDBaseManager.getInstance().getSatList().size()) {
-            HProg_Struct_SatInfo satInfo = SWPDBaseManager.getInstance().getSatList().get(position);
+        if (DTVProgramManager.getInstance().getSatList().size() - 1 > 0 && position < DTVProgramManager.getInstance().getSatList().size()) {
+            HProg_Struct_SatInfo satInfo = DTVProgramManager.getInstance().getSatList().get(position);
             mTvLnbPower.setText(satInfo.LnbPower == 0 ? R.string.off : R.string.on);
         }
         mTvFreq.setText(getTpName());
-        SWFtaManager.getInstance().tunerLockFreq(getIndex(), getFreq(), getSymbol(), getQam(), 1, 0);
+        DTVSearchManager.getInstance().tunerLockFreq(getIndex(), getFreq(), getSymbol(), getQam(), 1, 0);
     }
 
     private TpListingAdapter mAdapter;
@@ -177,7 +177,7 @@ public class TpListingActivity extends BaseActivity {
         @Override
         protected void loadBackground() {
             TpListingActivity context = mWeakReference.get();
-            List<HProg_Struct_TP> satChannelInfoList = SWPDBaseManager.getInstance().getSatChannelInfoList(context.getIndex());
+            List<HProg_Struct_TP> satChannelInfoList = DTVProgramManager.getInstance().getSatTPInfo(context.getIndex());
 
             context.runOnUiThread(new Runnable() {
                 @Override
@@ -188,7 +188,7 @@ public class TpListingActivity extends BaseActivity {
 
                         HProg_Struct_TP channel = context.mAdapter.getItem(position);
                         if (channel != null) {
-                            SWFtaManager.getInstance().tunerLockFreq(context.getIndex(), channel.Freq, channel.Symbol, channel.Qam, 1, 0);
+                            DTVSearchManager.getInstance().tunerLockFreq(context.getIndex(), channel.Freq, channel.Symbol, channel.Qam, 1, 0);
                         }
                     }
                 }
@@ -313,7 +313,7 @@ public class TpListingActivity extends BaseActivity {
         } else if (qam.equals(getString(R.string.v))) {
             newTp.Qam = 1;
         }
-        SWPDBaseManager.getInstance().addChannelInfo(newTp);
+        DTVProgramManager.getInstance().addTPInfo(newTp);
         int position = findTpPosition(newTp.Freq, newTp.Symbol, newTp.Qam);
         updateTpList(position <= -1 ? mAdapter.getCount() : position);
     }
@@ -333,7 +333,7 @@ public class TpListingActivity extends BaseActivity {
         } else if (qam.equals(getString(R.string.v))) {
             editTp.Qam = 1;
         }
-        SWPDBaseManager.getInstance().setSatChannelInfo(editTp);
+        DTVProgramManager.getInstance().setTPInfo(editTp);
         updateTpList(mSelectPosition);
 
         mTvFreq.setText(getTpName());
@@ -342,7 +342,7 @@ public class TpListingActivity extends BaseActivity {
     private void deleteTp() {
         if (mAdapter.getCount() > 0) {
             HProg_Struct_TP channelNew_t = mAdapter.getItem(mSelectPosition);
-            SWPDBaseManager.getInstance().delChannelInfo(channelNew_t);
+            DTVProgramManager.getInstance().delTPInfo(channelNew_t);
             updateTpList(0);
         }
     }

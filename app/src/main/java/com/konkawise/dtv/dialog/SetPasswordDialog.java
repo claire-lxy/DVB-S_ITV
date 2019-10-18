@@ -4,8 +4,8 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.TextView;
 
+import com.konkawise.dtv.DTVSettingManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.base.BaseDialogFragment;
 import com.konkawise.dtv.utils.EditUtils;
 import com.konkawise.dtv.utils.ToastUtils;
@@ -51,7 +51,7 @@ public class SetPasswordDialog extends BaseDialogFragment {
         String currentPassword = mEtCurrentPassword.getText().toString();
         String newPassword = mEtNewPassword.getText().toString();
         String confirmPassword = mEtConfirmPassword.getText().toString();
-        String password = SWFtaManager.getInstance().getCommPWDInfo(HSetting_Enum_Property.Password);
+        String password = DTVSettingManager.getInstance().getPasswd(HSetting_Enum_Property.Password);
         if (!currentPassword.equals(password)) {
             ToastUtils.showToast(R.string.toast_current_password_error);
             return false;

@@ -1,6 +1,6 @@
 package com.konkawise.dtv;
 
-import com.sw.dvblib.DJAPVR;
+import com.sw.dvblib.DTVPVR;
 
 import java.util.ArrayList;
 
@@ -8,19 +8,19 @@ import vendor.konka.hardware.dtvmanager.V1_0.HPVR_Struct_Progress;
 import vendor.konka.hardware.dtvmanager.V1_0.HPVR_Struct_RecFile;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_AudDB_t;
 
-public class SWDJAPVRManager {
+public class DTVPVRManager {
     private boolean mRecording;
 
-    private static class SWDJAPVRManagerHolder {
-        private static SWDJAPVRManager INSTANCE = new SWDJAPVRManager();
+    private static class DTVPVRManagerHolder {
+        private static DTVPVRManager INSTANCE = new DTVPVRManager();
     }
 
-    private SWDJAPVRManager() {
-        DJAPVR.CreateInstance();
+    private DTVPVRManager() {
+        DTVPVR.getInstance();
     }
 
-    public static SWDJAPVRManager getInstance() {
-        return SWDJAPVRManagerHolder.INSTANCE;
+    public static DTVPVRManager getInstance() {
+        return DTVPVRManagerHolder.INSTANCE;
     }
 
     /**
@@ -30,7 +30,7 @@ public class SWDJAPVRManager {
      * @return 0：启动成功  -4：正在启动需要继续等待  other:启动失败
      */
     public int startRecord(int delay) {
-        return DJAPVR.CreateInstance().startRecord(delay);
+        return DTVPVR.getInstance().startRecord(delay);
     }
 
     /**
@@ -41,82 +41,82 @@ public class SWDJAPVRManager {
      * @return 0：启动成功  -4：正在启动需要继续等待  other:启动失败
      */
     public int startRecord(int delay, String recordPath) {
-        return DJAPVR.CreateInstance().startRecordEx(delay, recordPath);
+        return DTVPVR.getInstance().startRecordEx(delay, recordPath);
     }
 
     /**
      * 停止录制
      */
     public int stopRecord() {
-        return DJAPVR.CreateInstance().stopRecord();
+        return DTVPVR.getInstance().stopRecord();
     }
 
     public int getRecordFileNum() {
-        return DJAPVR.CreateInstance().getRecordFileNum(null);
+        return DTVPVR.getInstance().getRecordFileNum(null);
     }
 
     public ArrayList<HPVR_Struct_RecFile> getRecordFileList(int begin, int limit) {
-        return DJAPVR.CreateInstance().getRecordFileList(null, begin, limit);
+        return DTVPVR.getInstance().getRecordFileList(null, begin, limit);
     }
 
     public String getRecordDirName() {
-        return DJAPVR.CreateInstance().getRecordDirName();
+        return DTVPVR.getInstance().getRecordDirName();
     }
 
     public int startPlay(String path, String fname, int loop) {
-        return DJAPVR.CreateInstance().startPlay(path, fname, loop);
+        return DTVPVR.getInstance().startPlay(path, fname, loop);
     }
 
     public int stopPlay() {
-        return DJAPVR.CreateInstance().stopPlay();
+        return DTVPVR.getInstance().stopPlay();
     }
 
     public int beginTimeshift() {
-        return DJAPVR.CreateInstance().beginTimeshift();
+        return DTVPVR.getInstance().beginTimeshift();
     }
 
     public int stopTimeshift() {
-        return DJAPVR.CreateInstance().stopTimeshift();
+        return DTVPVR.getInstance().stopTimeshift();
     }
 
     public HPVR_Struct_Progress getPlayProgress() {
-        return DJAPVR.CreateInstance().getPlayProgress();
+        return DTVPVR.getInstance().getPlayProgress();
     }
 
     public int playSeek(int time_ms) {
-        return DJAPVR.CreateInstance().playSeek(time_ms);
+        return DTVPVR.getInstance().playSeek(time_ms);
     }
 
     public int setPlaySpeed(int speed) {
-        return DJAPVR.CreateInstance().setPlaySpeed(speed);
+        return DTVPVR.getInstance().setPlaySpeed(speed);
     }
 
     public int playPause() {
-        return DJAPVR.CreateInstance().playPause();
+        return DTVPVR.getInstance().playPause();
     }
 
     public int playResume() {
-        return DJAPVR.CreateInstance().playResume();
+        return DTVPVR.getInstance().playResume();
     }
 
     public int lockRecordFile(String path, String fname, int lock) {
-        return DJAPVR.CreateInstance().lockRecordFile(path, fname, lock);
+        return DTVPVR.getInstance().lockRecordFile(path, fname, lock);
     }
 
     public HProg_Struct_AudDB_t getAudioList() {
-        return DJAPVR.CreateInstance().getAudioList();
+        return DTVPVR.getInstance().getAudioList();
     }
 
     public int getCurrAudioIndex() {
-        return DJAPVR.CreateInstance().getCurrAudioIndex();
+        return DTVPVR.getInstance().getCurrAudioIndex();
     }
 
     public int setAudioPid(int audPID, int audioType) {
-        return DJAPVR.CreateInstance().setAudioPid(audPID, audioType);
+        return DTVPVR.getInstance().setAudioPid(audPID, audioType);
     }
 
     public int injectSubTTXAudio(String path, String fname) {
-        return DJAPVR.CreateInstance().injectSubTTXAudio(path, fname);
+        return DTVPVR.getInstance().injectSubTTXAudio(path, fname);
     }
 
     public void setRecording(boolean recording) {

@@ -14,7 +14,7 @@ import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWDJAPVRManager;
+import com.konkawise.dtv.DTVPVRManager;
 import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.UsbManager;
 import com.konkawise.dtv.adapter.DeviceGroupAdapter;
@@ -129,8 +129,8 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     @Override
     protected void setup() {
         UsbManager.getInstance().registerUsbReceiveListener(this);
-        ltHpvrRecFileTS = SWDJAPVRManager.getInstance().getRecordFileList(0, -1);
-        RECORD_LIST_PATH = SWDJAPVRManager.getInstance().getRecordDirName() + "/";
+        ltHpvrRecFileTS = DTVPVRManager.getInstance().getRecordFileList(0, -1);
+        RECORD_LIST_PATH = DTVPVRManager.getInstance().getRecordDirName() + "/";
 
         mAdapter = new RecordListAdapter(this, new ArrayList<>());
         mListView.setAdapter(mAdapter);
@@ -299,7 +299,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
             recordInfo.getHpvrRecFileT().LockType = lockType;
 
         Log.i(TAG, "lockPath:" + recordInfo.getFile().getParent() + "lockName:" + recordInfo.getFile().getName());
-        SWDJAPVRManager.getInstance().lockRecordFile(recordInfo.getFile().getParent(), recordInfo.getFile().getName(), lockType);
+        DTVPVRManager.getInstance().lockRecordFile(recordInfo.getFile().getParent(), recordInfo.getFile().getName(), lockType);
     }
 
     private void deleteChannels() {
@@ -539,7 +539,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
 
     @Override
     public void onUsbReceive(int usbObserveType, Set<UsbInfo> usbInfos, UsbInfo currUsbInfo) {
-        ltHpvrRecFileTS = SWDJAPVRManager.getInstance().getRecordFileList(0, -1);
+        ltHpvrRecFileTS = DTVPVRManager.getInstance().getRecordFileList(0, -1);
 
         UsbInfo selectInfo = null;
         if (mUsbInfos != null && mUsbInfos.size() > 0)

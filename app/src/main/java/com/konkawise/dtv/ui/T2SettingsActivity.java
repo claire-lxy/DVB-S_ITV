@@ -5,8 +5,8 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.konkawise.dtv.DTVSettingManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
@@ -111,8 +111,8 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
     }
 
     private void initData() {
-        antennaPowerPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(HSetting_Enum_Property.AntennaPower));
-        lcnPosition = getSelectPosition(new int[]{0, 1}, SWFtaManager.getInstance().getCommE2PInfo(HSetting_Enum_Property.ShowNoType));
+        antennaPowerPosition = getSelectPosition(new int[]{0, 1}, DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.AntennaPower));
+        lcnPosition = getSelectPosition(new int[]{0, 1}, DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.ShowNoType));
         originalLcnPosition = lcnPosition;
     }
 
@@ -137,7 +137,7 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
                             case ITEM_ANTENNA_POWER:
                                 mTvAntennaPower.setText(checkContent);
                                 antennaPowerPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.AntennaPower, antennaPowerPosition);
+                                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.AntennaPower, antennaPowerPosition);
                                 break;
                             case ITEM_AREA_SETTING:
                                 mTvAreaSetting.setText(checkContent);
@@ -146,7 +146,7 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
                             case ITEM_LCN:
                                 mTvLcn.setText(checkContent);
                                 lcnPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.ShowNoType, lcnPosition);
+                                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.ShowNoType, lcnPosition);
                                 break;
                             default:
                                 break;
@@ -196,7 +196,7 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
                     if (--antennaPowerPosition < 0)
                         antennaPowerPosition = mGeneralSwitchArray.length - 1;
                     mTvAntennaPower.setText(mGeneralSwitchArray[antennaPowerPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.AntennaPower, antennaPowerPosition);
+                    DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.AntennaPower, antennaPowerPosition);
                     break;
 
                 case ITEM_AREA_SETTING:
@@ -208,7 +208,7 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
                 case ITEM_LCN:
                     if (--lcnPosition < 0) lcnPosition = mGeneralSwitchArray.length - 1;
                     mTvLcn.setText(mGeneralSwitchArray[lcnPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.ShowNoType, lcnPosition);
+                    DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.ShowNoType, lcnPosition);
                     break;
 
             }
@@ -221,7 +221,7 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
                     if (++antennaPowerPosition > mGeneralSwitchArray.length - 1)
                         antennaPowerPosition = 0;
                     mTvAntennaPower.setText(mGeneralSwitchArray[antennaPowerPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.AntennaPower, antennaPowerPosition);
+                    DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.AntennaPower, antennaPowerPosition);
                     break;
 
                 case ITEM_AREA_SETTING:
@@ -234,7 +234,7 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
                     if (++lcnPosition > mGeneralSwitchArray.length - 1)
                         lcnPosition = 0;
                     mTvLcn.setText(mGeneralSwitchArray[lcnPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.ShowNoType, lcnPosition);
+                    DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.ShowNoType, lcnPosition);
                     break;
 
             }

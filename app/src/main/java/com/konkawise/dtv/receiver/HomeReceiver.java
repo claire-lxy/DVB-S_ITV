@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.konkawise.dtv.SWDVBManager;
+import com.konkawise.dtv.DTVDVBManager;
 import com.konkawise.dtv.event.BookRegisterListenerEvent;
 
 import org.greenrobot.eventbus.EventBus;
@@ -22,10 +22,10 @@ public class HomeReceiver extends BroadcastReceiver {
             if (mOnReceiveHomeHandleListener != null) {
                 boolean handleCallback = mOnReceiveHomeHandleListener.onHomeHandleCallback();
                 if (handleCallback) {
-                    SWDVBManager.getInstance().releaseResource();
+                    DTVDVBManager.getInstance().releaseResource();
                 }
             } else {
-                SWDVBManager.getInstance().releaseResource();
+                DTVDVBManager.getInstance().releaseResource();
             }
         }
     }

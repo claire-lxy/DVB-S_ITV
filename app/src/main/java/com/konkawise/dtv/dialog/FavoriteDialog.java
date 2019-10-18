@@ -6,8 +6,8 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.adapter.CheckGroupAdapter;
 import com.konkawise.dtv.base.BaseDialogFragment;
 
@@ -64,7 +64,7 @@ public class FavoriteDialog extends BaseDialogFragment {
     protected void setup(View view) {
         mTvTitle.setText(mTitle);
 
-        mAdapter = new CheckGroupAdapter(getContext(), SWPDBaseManager.getInstance().getFavoriteGroupNameList(SWPDBaseManager.getInstance().getFavIndexArray().length));
+        mAdapter = new CheckGroupAdapter(getContext(), DTVProgramManager.getInstance().getFavoriteGroupNameList(DTVProgramManager.getInstance().getFavIndexArray().length));
         mListView.setAdapter(mAdapter);
         mListView.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -90,7 +90,7 @@ public class FavoriteDialog extends BaseDialogFragment {
         });
 
         if (mCurrChannelInfo != null) {
-            char[] favGroupArray = SWPDBaseManager.getInstance().getProgInfoFavGroupArray(mCurrChannelInfo);
+            char[] favGroupArray = DTVProgramManager.getInstance().getProgInfoFavGroupArray(mCurrChannelInfo);
             if (!mMulti) {
                 for (int i = 0; i < favGroupArray.length; i++) {
                     if (favGroupArray[i] == '1') {

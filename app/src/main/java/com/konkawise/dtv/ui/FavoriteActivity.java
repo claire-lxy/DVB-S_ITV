@@ -7,8 +7,8 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
+import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.adapter.FavoriteChannelAdapter;
 import com.konkawise.dtv.adapter.FavoriteGroupAdapter;
@@ -112,7 +112,7 @@ public class FavoriteActivity extends BaseActivity {
 
     @Override
     protected void setup() {
-        SWPDBaseManager.getInstance().setCurrGroup(HProg_Enum_Group.TOTAL_GROUP, 1);
+        DTVProgramManager.getInstance().setCurrGroup(HProg_Enum_Group.TOTAL_GROUP, 1);
         initFavoriteGroup();
         initFavoriteChannel();
     }
@@ -126,8 +126,8 @@ public class FavoriteActivity extends BaseActivity {
     }
 
     private void initFavoriteGroup() {
-        int[] favIndexArray = SWPDBaseManager.getInstance().getFavIndexArray();
-        mFavoriteGroupAdapter = new FavoriteGroupAdapter(this, SWPDBaseManager.getInstance().getFavoriteGroupNameList(favIndexArray.length));
+        int[] favIndexArray = DTVProgramManager.getInstance().getFavIndexArray();
+        mFavoriteGroupAdapter = new FavoriteGroupAdapter(this, DTVProgramManager.getInstance().getFavoriteGroupNameList(favIndexArray.length));
         mLvFavoriteGroup.setAdapter(mFavoriteGroupAdapter);
         mLvFavoriteGroup.setSelection(0);
     }
@@ -161,7 +161,7 @@ public class FavoriteActivity extends BaseActivity {
             FavoriteActivity context = mWeakReference.get();
 
             if(context.mFavoriteChannelsMap==null || context.mFavoriteChannelsMap.size()==0){
-                context.mFavoriteChannelsMap = SWPDBaseManager.getInstance().getFavChannelMap(SWPDBaseManager.getInstance().getCurrGroupProgList(new int[1]));
+                context.mFavoriteChannelsMap = DTVProgramManager.getInstance().getFavChannelMap(DTVProgramManager.getInstance().getCurrGroupProgInfoList(new int[1]));
             }
 
             context.runOnUiThread(new Runnable() {
@@ -193,7 +193,7 @@ public class FavoriteActivity extends BaseActivity {
                 .setOnRenameEditListener(new RenameDialog.onRenameEditListener() {
                     @Override
                     public void onRenameEdit(String newName) {
-                        SWPDBaseManager.getInstance().setFavGroupName(mFavoriteGroupIndex - 1, newName);
+                        DTVProgramManager.getInstance().setFavGroupName(mFavoriteGroupIndex - 1, newName);
                         mFavoriteGroupAdapter.updateData(mFavoriteGroupIndex - 1, newName);
 
                         mFavEdit = true;
@@ -298,6 +298,6 @@ public class FavoriteActivity extends BaseActivity {
     private void removeFAVChannels(List<HProg_Struct_ProgInfo> removeList, int position) {
         List<HProg_Struct_ProgInfo> ltPDPMInfo_t = mFavoriteChannelsMap.get(position);
         ltPDPMInfo_t.removeAll(removeList);
-        SWPDBaseManager.getInstance().saveFavorite(mFavoriteChannelsMap);
+        DTVProgramManager.getInstance().saveFavorite(mFavoriteChannelsMap);
     }
 }

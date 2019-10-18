@@ -10,8 +10,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
+import com.konkawise.dtv.DTVSettingManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.UsbManager;
 import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.bean.UsbInfo;
@@ -200,10 +200,10 @@ public class PVRSettingActivity extends BaseItemFocusChangeActivity implements U
     }
 
     private void initData() {
-        mTimeShiftLengthPosition = getSelectPosition(arrayTimeShift, SWFtaManager.getInstance().getCommE2PInfo(HSetting_Enum_Property.TimeshiftMaxMin));
-        mRecordLengthPosition = getSelectPosition(arrayRecordLength, SWFtaManager.getInstance().getCommE2PInfo(HSetting_Enum_Property.RecordMaxMin));
-        mRecordTypePosition = getSelectPosition(arrayRecordType, SWFtaManager.getInstance().getCommE2PInfo(HSetting_Enum_Property.RecordType));
-        mDeviceNamePosition = getdiskPosition(SWFtaManager.getInstance().getDiskUUID(), mUsbInfos);
+        mTimeShiftLengthPosition = getSelectPosition(arrayTimeShift, DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.TimeshiftMaxMin));
+        mRecordLengthPosition = getSelectPosition(arrayRecordLength, DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.RecordMaxMin));
+        mRecordTypePosition = getSelectPosition(arrayRecordType, DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.RecordType));
+        mDeviceNamePosition = getdiskPosition(DTVSettingManager.getInstance().getDiskUUID(), mUsbInfos);
 
 
         mTvTimeShiftLength.setText(mTimeShiftLengthArray[mTimeShiftLengthPosition]);
@@ -225,7 +225,7 @@ public class PVRSettingActivity extends BaseItemFocusChangeActivity implements U
             mTvDeviceFreeSpace.setText(MessageFormat.format(getString(R.string.device_free_space), mUsbInfos.get(devicePosition).availableSize));
             mTvDeviceTotalCapacity.setText(MessageFormat.format(getString(R.string.device_total_capacity), mUsbInfos.get(devicePosition).totalSize));
 
-            SWFtaManager.getInstance().setDiskUUID(mUsbInfos.get(devicePosition).uuid);
+            DTVSettingManager.getInstance().setDiskUUID(mUsbInfos.get(devicePosition).uuid);
         } else {
             if (mItemDeviceFormat.isFocused()) {
             /*    mItemTimeShiftLengthLeft.requestFocus();
@@ -306,19 +306,19 @@ public class PVRSettingActivity extends BaseItemFocusChangeActivity implements U
                             /*case ITEM_TIME_SHIFT_LENGTH:
                                 mTvTimeShiftLength.setText(checkContent);
                                 mTimeShiftLengthPosition = Arrays.asList(mTimeShiftLengthArray).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_TimeshiftMaxMin.ordinal(), arrayTimeShift[mTimeShiftLengthPosition]);
+                                DTVPlayerManager.getInstance().setDTVProperty(SWFta.E_E2PP.E2P_TimeshiftMaxMin.ordinal(), arrayTimeShift[mTimeShiftLengthPosition]);
                                 break; */
 
                             case ITEM_RECORD_LENGTH:
                                 mTvRecordLength.setText(checkContent);
                                 mRecordLengthPosition = Arrays.asList(mRecordLengthArray).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.RecordMaxMin, arrayRecordLength[mRecordLengthPosition]);
+                                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.RecordMaxMin, arrayRecordLength[mRecordLengthPosition]);
                                 break;
 
                             /*case ITEM_RECORD_TYPE:
                                 mTvRecordType.setText(checkContent);
                                 mRecordTypePosition = Arrays.asList(mRecordTypeArray).indexOf(checkContent);
-                                SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_RecordType.ordinal(), arrayRecordType[mRecordTypePosition]);
+                                DTVPlayerManager.getInstance().setDTVProperty(SWFta.E_E2PP.E2P_RecordType.ordinal(), arrayRecordType[mRecordTypePosition]);
                                 break; */
 
                             case ITEM_DEVICE_NAME:
@@ -386,21 +386,21 @@ public class PVRSettingActivity extends BaseItemFocusChangeActivity implements U
                     if (--mTimeShiftLengthPosition < 0)
                         mTimeShiftLengthPosition = mTimeShiftLengthArray.length - 1;
                     mTvTimeShiftLength.setText(mTimeShiftLengthArray[mTimeShiftLengthPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_TimeshiftMaxMin.ordinal(), arrayTimeShift[mTimeShiftLengthPosition]);
+                    DTVPlayerManager.getInstance().setDTVProperty(SWFta.E_E2PP.E2P_TimeshiftMaxMin.ordinal(), arrayTimeShift[mTimeShiftLengthPosition]);
                     break; */
 
                 case ITEM_RECORD_LENGTH:
                     if (--mRecordLengthPosition < 0)
                         mRecordLengthPosition = mRecordLengthArray.length - 1;
                     mTvRecordLength.setText(mRecordLengthArray[mRecordLengthPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.RecordMaxMin, arrayRecordLength[mRecordLengthPosition]);
+                    DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.RecordMaxMin, arrayRecordLength[mRecordLengthPosition]);
                     break;
 
             /*    case ITEM_RECORD_TYPE:
                     if (--mRecordTypePosition < 0)
                         mRecordTypePosition = mRecordTypeArray.length - 1;
                     mTvRecordType.setText(mRecordTypeArray[mRecordTypePosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_RecordType.ordinal(), arrayRecordType[mRecordTypePosition]);
+                    DTVPlayerManager.getInstance().setDTVProperty(SWFta.E_E2PP.E2P_RecordType.ordinal(), arrayRecordType[mRecordTypePosition]);
                     break; */
 
                 case ITEM_DEVICE_NAME:
@@ -424,21 +424,21 @@ public class PVRSettingActivity extends BaseItemFocusChangeActivity implements U
                     if (++mTimeShiftLengthPosition > mTimeShiftLengthArray.length - 1)
                         mTimeShiftLengthPosition = 0;
                     mTvTimeShiftLength.setText(mTimeShiftLengthArray[mTimeShiftLengthPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_TimeshiftMaxMin.ordinal(), arrayTimeShift[mTimeShiftLengthPosition]);
+                    DTVPlayerManager.getInstance().setDTVProperty(SWFta.E_E2PP.E2P_TimeshiftMaxMin.ordinal(), arrayTimeShift[mTimeShiftLengthPosition]);
                     break; */
 
                 case ITEM_RECORD_LENGTH:
                     if (++mRecordLengthPosition > mRecordLengthArray.length - 1)
                         mRecordLengthPosition = 0;
                     mTvRecordLength.setText(mRecordLengthArray[mRecordLengthPosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(HSetting_Enum_Property.RecordMaxMin, arrayRecordLength[mRecordLengthPosition]);
+                    DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.RecordMaxMin, arrayRecordLength[mRecordLengthPosition]);
                     break;
 
             /*    case ITEM_RECORD_TYPE:
                     if (++mRecordTypePosition > mRecordTypeArray.length - 1)
                         mRecordTypePosition = 0;
                     mTvRecordType.setText(mRecordTypeArray[mRecordTypePosition]);
-                    SWFtaManager.getInstance().setCommE2PInfo(SWFta.E_E2PP.E2P_RecordType.ordinal(), arrayRecordType[mRecordTypePosition]);
+                    DTVPlayerManager.getInstance().setDTVProperty(SWFta.E_E2PP.E2P_RecordType.ordinal(), arrayRecordType[mRecordTypePosition]);
                     break; */
 
                 case ITEM_DEVICE_NAME:
