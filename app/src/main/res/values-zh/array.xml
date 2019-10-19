@@ -128,8 +128,10 @@
 
     <string-array name="unicable">
         <item>1 Sat 4*SCR</item>
+        <item>1 Sat 8*SCR</item>
+        <item>2 Sat 4*SCR</item>
         <item>2 Sat 8*SCR</item>
-        <item>dCSS</item>
+        <item>DCSS</item>
     </string-array>
 
     <string-array name="position">
@@ -137,14 +139,14 @@
         <item>B</item>
     </string-array>
 
-    <string-array name="frequency_1Sat4SCR">
+    <string-array name="frequency_4SCR">
         <item>1210</item>
         <item>1420</item>
         <item>1680</item>
         <item>2040</item>
     </string-array>
 
-    <string-array name="frequency_2Sat8SCR">
+    <string-array name="frequency_8SCR">
         <item>1284</item>
         <item>1400</item>
         <item>1516</item>
@@ -155,7 +157,7 @@
         <item>2096</item>
     </string-array>
 
-    <string-array name="frequency_dCSS">
+    <string-array name="frequency_DCSS">
         <item>1210</item>
         <item>1420</item>
         <item>1680</item>

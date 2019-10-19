@@ -31,7 +31,6 @@ import butterknife.BindArray;
 import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_TP;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
-import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_Unicable;
 
 public class EditManualActivity extends BaseItemFocusChangeActivity {
     private static final String TAG = "EditManualActivity";
@@ -53,13 +52,14 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     private static final int DISEQC_MODE_DISEQC11 = 3;
     private static final int DISEQC_MODE_UNICABLE = 4;
 
-    private static final int UNICABLE_1SAT2SCR = 0;
-    private static final int UNICABLE_2SAT4SCR = 1;
+    private static final int UNICABLE_4SCR = 0;
+    private static final int UNICABLE_8SCR = 1;
     private static final int UNICABLE_DCSS = 2;
 
-    private static final int MAX_CHANNEL_1SAT4SCR = 4;
-    private static final int MAX_CHANNEL_2SAT8SCR = 8;
-    private static final int MAX_CHANNEL_DCSS = 32;
+    // channel最大索引
+    private static final int MAX_CHANNEL_4SCR = 3;
+    private static final int MAX_CHANNEL_8SCR = 7;
+    private static final int MAX_CHANNEL_DCSS = 31;
 
     // unicable为dcss模式下，frequency为0的channel范围17~32
     private static final int DCSS_FREQUENCY_ZERO_MIN_RANGE = 17;
@@ -245,14 +245,14 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     @BindArray(R.array.position)
     String[] mPositionArray;
 
-    @BindArray(R.array.frequency_1Sat4SCR)
-    String[] mFrequency1Sat4SCRArray;
+    @BindArray(R.array.frequency_4SCR)
+    String[] mFrequency4SCRArray;
 
-    @BindArray(R.array.frequency_2Sat8SCR)
-    String[] mFrequency2Sat8SCRArray;
+    @BindArray(R.array.frequency_8SCR)
+    String[] mFrequency8SCRArray;
 
-    @BindArray(R.array.frequency_dCSS)
-    String[] mFrequencydCSSArray;
+    @BindArray(R.array.frequency_DCSS)
+    String[] mFrequencyDCSSArray;
 
     private int mCurrentSelectItem = ITEM_SATELLITE;
     private int mCurrentSatellite;
@@ -264,7 +264,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     private int mCurrentDiSEqC11;
     private int mCurrentUnicable;
     private int mCurrentPosition;
-    private int mCurrentChannel = 1;
+    private int mCurrentChannel;
 
     private List<HProg_Struct_SatInfo> mSatList;
     private List<HProg_Struct_TP> mTpList;
@@ -358,7 +358,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
                             || mCurrentDiSEqCMode == DISEQC_MODE_DISEQC10 || mCurrentDiSEqCMode == DISEQC_MODE_DISEQC11) {
                         mCurrentSelectItem = ITEM_SATELLITE;
                     } else if (mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE) {
-                        if (mCurrentUnicable == UNICABLE_2SAT4SCR) {
+                        if (is8SCRUnicable()) {
                             mCurrentSelectItem = ITEM_POSITION;
                         } else {
                             mCurrentSelectItem = ITEM_CHANNEL;
@@ -407,7 +407,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
 
                 case ITEM_CHANNEL:
                     if (mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE) {
-                        if (mCurrentUnicable == UNICABLE_2SAT4SCR) {
+                        if (is8SCRUnicable()) {
                             mCurrentSelectItem = ITEM_POSITION;
                         } else {
                             mCurrentSelectItem = ITEM_DISEQC_TYPE;
@@ -472,12 +472,12 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
                     break;
 
                 case ITEM_CHANNEL:
-                    if (mCurrentUnicable == UNICABLE_1SAT2SCR) {
-                        mCurrentChannel = getMinusStep(mCurrentChannel, MAX_CHANNEL_1SAT4SCR, 1);
-                    } else if (mCurrentUnicable == UNICABLE_2SAT4SCR) {
-                        mCurrentChannel = getMinusStep(mCurrentChannel, MAX_CHANNEL_2SAT8SCR, 1);
+                    if (is4SCRUnicable()) {
+                        mCurrentChannel = getMinusStep(mCurrentChannel, MAX_CHANNEL_4SCR);
+                    } else if (is8SCRUnicable()) {
+                        mCurrentChannel = getMinusStep(mCurrentChannel, MAX_CHANNEL_8SCR);
                     } else {
-                        mCurrentChannel = getMinusStep(mCurrentChannel, MAX_CHANNEL_DCSS, 1);
+                        mCurrentChannel = getMinusStep(mCurrentChannel, MAX_CHANNEL_DCSS);
                     }
                     channelChange();
                     break;
@@ -537,14 +537,13 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
                     break;
 
                 case ITEM_CHANNEL:
-                    if (mCurrentUnicable == UNICABLE_1SAT2SCR) {
-                        mCurrentChannel = getPlusStep(mCurrentChannel, MAX_CHANNEL_1SAT4SCR);
-                    } else if (mCurrentUnicable == UNICABLE_2SAT4SCR) {
-                        mCurrentChannel = getPlusStep(mCurrentChannel, MAX_CHANNEL_2SAT8SCR);
+                    if (is4SCRUnicable()) {
+                        mCurrentChannel = getPlusStep(mCurrentChannel, MAX_CHANNEL_4SCR);
+                    } else if (is8SCRUnicable()) {
+                        mCurrentChannel = getPlusStep(mCurrentChannel, MAX_CHANNEL_8SCR);
                     } else {
                         mCurrentChannel = getPlusStep(mCurrentChannel, MAX_CHANNEL_DCSS);
                     }
-                    if (mCurrentChannel <= 0) mCurrentChannel += 1; // 从1开始
                     channelChange();
                     break;
             }
@@ -757,38 +756,55 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
         }
         satInfo.LnbPower = isLnbPowerOn() ? 1 : 0;
 
-        if (mCurrentDiSEqCMode == DISEQC_MODE_OFF) {
-            // diseqc10_tone=0, OFF
-            satInfo.diseqc10_pos = 0;
-            satInfo.diseqc10_tone = 0;
-        } else if (mCurrentDiSEqCMode == DISEQC_MODE_TONE_BURST) {
-            // diseqc10_tone=1, ToneBurst A
-            // diseqc10_tone=2, ToneBurst B
-            satInfo.diseqc10_pos = 0;
-            satInfo.diseqc10_tone = mCurrentToneBurst; // mToneBurstArray位置约定
-        } else if (mCurrentDiSEqCMode == DISEQC_MODE_DISEQC10) {
-            // diseqc10_pos=1~4, DiSEqC A~D
-            satInfo.diseqc10_pos = mCurrentDiSEqC10 + 1; // mDiSEqC10Array位置约定
-            satInfo.diseqc10_tone = 0;
-        } else if (mCurrentDiSEqCMode == DISEQC_MODE_DISEQC11) {
-            // diseqc10_pos=5~16, LNB 1~16
-            satInfo.diseqc10_pos = mCurrentDiSEqC11 + 5; // mDiSEqC11Array位置约定
-            satInfo.diseqc10_tone = 0;
-        } else {
-            // unicable
-            if (mCurrentUnicable == UNICABLE_1SAT2SCR) {
+        satInfo.diseqc10_pos = getSaveDiSEqCPos();
+        satInfo.diseqc10_tone = getSaveDiSEqCTone();
+        if (mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE) {
+            if (is4SCRUnicable()) {
                 satInfo.unicConfig.UnicEnable = 1;
                 satInfo.unicConfig.SCRType = 0;
-            } else if (mCurrentUnicable == UNICABLE_2SAT4SCR) {
+                satInfo.unicConfig.SCRNO = mCurrentChannel;
+                satInfo.unicConfig.SCR4UBand.add(Integer.valueOf(mTvFrequency.getText().toString()));
+            } else if (is8SCRUnicable()) {
                 satInfo.unicConfig.UnicEnable = 1;
-                satInfo.unicConfig.SCRType = 8;
+                satInfo.unicConfig.SCRType = 1;
+                satInfo.unicConfig.SCRNO = mCurrentChannel;
+                satInfo.unicConfig.SCR8UBand.add(Integer.valueOf(mTvFrequency.getText().toString()));
+                satInfo.unicConfig.SatPosition = mCurrentPosition;
             } else if (mCurrentUnicable == UNICABLE_DCSS) {
                 satInfo.unicConfig.UnicEnable = 2;
+                satInfo.unicConfig.DCSSNO = mCurrentChannel;
+                satInfo.unicConfig.DcssUBand.add(Integer.valueOf(mTvFrequency.getText().toString()));
             }
         }
 
         DTVProgramManager.getInstance().setSatInfo(satInfo.SatIndex, satInfo);
         mSatList = DTVProgramManager.getInstance().getSatList(); // 更新卫星列表
+    }
+
+    private int getSaveDiSEqCPos() {
+        if (mCurrentDiSEqCMode == DISEQC_MODE_OFF || mCurrentDiSEqCMode == DISEQC_MODE_TONE_BURST) {
+            // diseqc10_tone=0, OFF or ToneBurst
+            return 0;
+        } else if (mCurrentDiSEqCMode == DISEQC_MODE_DISEQC10) {
+            // diseqc10_pos=1~4, DiSEqC A~D
+            return mCurrentDiSEqC10 + 1; // mDiSEqC10Array位置约定
+        } else if (mCurrentDiSEqCMode == DISEQC_MODE_DISEQC11) {
+            // diseqc10_pos=5~16, LNB 1~16
+            return mCurrentDiSEqC11 + 5; // mDiSEqC11Array位置约定
+        }
+        return 0;
+    }
+
+    private int getSaveDiSEqCTone() {
+        if (mCurrentDiSEqCMode == DISEQC_MODE_OFF || mCurrentDiSEqCMode == DISEQC_MODE_DISEQC10 || mCurrentDiSEqCMode == DISEQC_MODE_DISEQC11) {
+            // diseqc10_tone=0, OFF
+            return 0;
+        } else if (mCurrentDiSEqCMode == DISEQC_MODE_TONE_BURST) {
+            // diseqc10_tone=1, ToneBurst A
+            // diseqc10_tone=2, ToneBurst B
+            return mCurrentToneBurst; // mToneBurstArray位置约定
+        }
+        return 0;
     }
 
     /**
@@ -814,33 +830,13 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
         LatLngModel latLngModel = new LatLngModel(LatLngModel.MODE_LONGITUDE, LatLngModel.LONGITUDE_THRESHOLD, satList.get(mCurrentSatellite).diseqc12_longitude);
         mTvLongitude.setText(latLngModel.getLatLngText());
 
-        if (satInfo.unicConfig.UnicEnable == 0) {
-            // diseqc10_pos=0, OFF or ToneBurst
-            if (satInfo.diseqc10_pos == 0) {
-                if (satInfo.diseqc10_tone != 0) {
-                    mCurrentDiSEqCMode = DISEQC_MODE_TONE_BURST;
-                    // diseqc10_tone=0, OFF
-                    // diseqc10_tone=1, ToneBurst A
-                    // diseqc10_tone=2, ToneBurst B
-                    mCurrentToneBurst = satInfo.diseqc10_tone - 1;
-                } else {
-                    mCurrentDiSEqCMode = DISEQC_MODE_OFF;
-                }
-            } else if (Utils.isDISEQC10(satInfo.diseqc10_pos)){
-                // diseqc10_pos=1~4, DiSEqC A~B
-                mCurrentDiSEqCMode = DISEQC_MODE_DISEQC10;
-                mCurrentDiSEqC10 = satInfo.diseqc10_pos - 1;
-            } else if (Utils.isDiSEqc11(satInfo.diseqc10_pos)) {
-                // diseqc10_pos=5~16, LNB 1~16
-                mCurrentDiSEqCMode = DISEQC_MODE_DISEQC11;
-                mCurrentDiSEqC11 = satInfo.diseqc10_pos - 5;
-            }
-        } else if (satInfo.unicConfig.UnicEnable > 0) {
-            mCurrentDiSEqCMode = DISEQC_MODE_UNICABLE;
-            mCurrentUnicable = getCurrUnicable(satInfo);
-            mCurrentPosition = getCurrPosition(satInfo);
-            mCurrentChannel = getCurrChannel(satInfo);
-        }
+        mCurrentDiSEqCMode = getCurrDiSEqCMode(satInfo);
+        mCurrentToneBurst = getCurrToneBurst(satInfo);
+        mCurrentDiSEqC10 = getCurrDiSEqC10(satInfo);
+        mCurrentDiSEqC11 = getCurrDiSEqC11(satInfo);
+        mCurrentUnicable = getCurrUnicable(satInfo);
+        mCurrentPosition = getCurrPosition(satInfo);
+        mCurrentChannel = getCurrChannel(satInfo);
         diseqcModeChange();
     }
 
@@ -944,7 +940,6 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
         diseqcChange();
         unicableChange();
         positionChange();
-        channelChange();
     }
 
     private void notifyDiSEqCItemVisible() {
@@ -986,20 +981,22 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
 
         notifyPositionItemVisible();
         positionChange();
+
+        mCurrentChannel = 0;
+        channelChange();
     }
 
     /**
      * Position参数修改
      */
     private void positionChange() {
-        if (mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE && mCurrentUnicable == UNICABLE_2SAT4SCR) {
+        if (mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE && is8SCRUnicable()) {
             mTvPosition.setText(mPositionArray[mCurrentPosition]);
         }
     }
 
     private void notifyPositionItemVisible() {
-        mItemPosition.setVisibility(mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE
-                && mCurrentUnicable == UNICABLE_2SAT4SCR ? View.VISIBLE : View.GONE);
+        mItemPosition.setVisibility(mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE && is8SCRUnicable() ? View.VISIBLE : View.GONE);
     }
 
     /**
@@ -1007,7 +1004,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
      */
     private void channelChange() {
         if (mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE) {
-            mTvChannel.setText(MessageFormat.format(getString(R.string.formater_satellite_param_channel_step), mCurrentChannel));
+            mTvChannel.setText(MessageFormat.format(getString(R.string.formater_satellite_param_channel_step), mCurrentChannel + 1));
             frequencyChange();
         }
     }
@@ -1016,15 +1013,15 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
      * Frequency参数修改
      */
     private void frequencyChange() {
-        if (mCurrentUnicable == UNICABLE_1SAT2SCR) {
-            mTvFrequency.setText(mFrequency1Sat4SCRArray[mCurrentChannel - 1]); // mCurrentChannel是从1开始，角标-1
-        } else if (mCurrentUnicable == UNICABLE_2SAT4SCR) {
-            mTvFrequency.setText(mFrequency2Sat8SCRArray[mCurrentChannel - 1]);
+        if (is4SCRUnicable()) {
+            mTvFrequency.setText(mFrequency4SCRArray[mCurrentChannel]);
+        } else if (is8SCRUnicable()) {
+            mTvFrequency.setText(mFrequency8SCRArray[mCurrentChannel]);
         } else if (mCurrentUnicable == UNICABLE_DCSS) {
             if (mCurrentChannel >= DCSS_FREQUENCY_ZERO_MIN_RANGE && mCurrentChannel <= DCSS_FREQUENCY_ZERO_MAX_RANGE) {
                 mTvFrequency.setText("0");
             } else {
-                mTvFrequency.setText(mFrequencydCSSArray[mCurrentChannel - 1]);
+                mTvFrequency.setText(mFrequencyDCSSArray[mCurrentChannel]);
             }
         }
     }
@@ -1069,33 +1066,87 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
         return 0;
     }
 
+    private int getCurrDiSEqCMode(HProg_Struct_SatInfo satInfo) {
+        if (satInfo.unicConfig.UnicEnable == 0) {
+            if (satInfo.diseqc10_pos == 0) {
+                if (satInfo.diseqc10_tone != 0) {
+                    return DISEQC_MODE_TONE_BURST;
+                } else {
+                    return DISEQC_MODE_OFF;
+                }
+            } else if (Utils.isDISEQC10(satInfo.diseqc10_pos)){
+                return DISEQC_MODE_DISEQC10;
+            } else if (Utils.isDiSEqc11(satInfo.diseqc10_pos)) {
+                return DISEQC_MODE_DISEQC11;
+            }
+        } else if (satInfo.unicConfig.UnicEnable > 0) {
+            return DISEQC_MODE_UNICABLE;
+        }
+        return 0;
+    }
+
+    private int getCurrToneBurst(HProg_Struct_SatInfo satInfo) {
+        if (satInfo.unicConfig.UnicEnable == 0 && satInfo.diseqc10_pos == 0 && satInfo.diseqc10_tone != 0) {
+            // diseqc10_pos=0, OFF or ToneBurst
+            // diseqc10_tone=0, OFF
+            // diseqc10_tone=1, ToneBurst A
+            // diseqc10_tone=2, ToneBurst B
+            return satInfo.diseqc10_tone - 1;
+        }
+        return 0;
+    }
+
+    private int getCurrDiSEqC10(HProg_Struct_SatInfo satInfo) {
+        if (satInfo.unicConfig.UnicEnable == 0 && satInfo.diseqc10_pos != 0 && Utils.isDISEQC10(satInfo.diseqc10_pos)) {
+            // diseqc10_pos=1~4, DiSEqC A~B
+            return satInfo.diseqc10_pos - 1;
+        }
+        return 0;
+    }
+
+    private int getCurrDiSEqC11(HProg_Struct_SatInfo satInfo) {
+        if (satInfo.unicConfig.UnicEnable == 0 && satInfo.diseqc10_pos != 0 && Utils.isDiSEqc11(satInfo.diseqc10_pos)) {
+            // diseqc10_pos=5~16, LNB 1~16
+            return satInfo.diseqc10_pos - 5;
+        }
+        return 0;
+    }
+
     private int getCurrUnicable(HProg_Struct_SatInfo satInfo) {
         if (satInfo.unicConfig.UnicEnable == 1) {
+            // SCRType=0, 4SCR
+            // SCRType=1, 8SCR
             if (satInfo.unicConfig.SCRType == 0) {
-                return UNICABLE_1SAT2SCR;
+                return UNICABLE_4SCR;
             } else if (satInfo.unicConfig.SCRType == 1) {
-                return UNICABLE_2SAT4SCR;
+                return UNICABLE_8SCR;
             }
         } else if (satInfo.unicConfig.UnicEnable == 2){
             return UNICABLE_DCSS;
         }
-        return UNICABLE_1SAT2SCR;
+        return 0;
     }
 
     private int getCurrPosition(HProg_Struct_SatInfo satInfo) {
         if (satInfo.unicConfig.UnicEnable == 1 && satInfo.unicConfig.SCRType == 1) {
-            // 待定
-            return 0;
+            return satInfo.unicConfig.SatPosition;
         }
         return 0;
     }
 
     private int getCurrChannel(HProg_Struct_SatInfo satInfo) {
         if (satInfo.unicConfig.UnicEnable > 0) {
-            // 待定
-            return 0;
+            return satInfo.unicConfig.SCRNO;
         }
         return 0;
+    }
+
+    private boolean is4SCRUnicable() {
+        return mCurrentUnicable == UNICABLE_4SCR;
+    }
+
+    private boolean is8SCRUnicable() {
+        return mCurrentUnicable == UNICABLE_8SCR;
     }
 
     private void itemFocusChange() {
@@ -1160,7 +1211,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     private void positionItemFocusChange() {
         if (mCurrentDiSEqCMode != DISEQC_MODE_OFF && mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE) {
             int selectItem = -1;
-            if (mCurrentSelectItem == ITEM_POSITION && mCurrentUnicable == UNICABLE_2SAT4SCR) {
+            if (mCurrentSelectItem == ITEM_POSITION && is8SCRUnicable()) {
                 selectItem = ITEM_POSITION;
             }
             itemChange(mCurrentSelectItem, selectItem, mItemPosition, mIvPositionLeft, mIvPositionRight, mTvPosition);
