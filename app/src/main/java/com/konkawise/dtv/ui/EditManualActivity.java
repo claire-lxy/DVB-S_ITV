@@ -1,6 +1,7 @@
 package com.konkawise.dtv.ui;
 
 import android.content.Intent;
+import android.os.Build;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -25,7 +26,9 @@ import com.konkawise.dtv.weaktool.CheckSignalHelper;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import butterknife.BindArray;
 import butterknife.BindView;
@@ -763,17 +766,17 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
                 satInfo.unicConfig.UnicEnable = 1;
                 satInfo.unicConfig.SCRType = 0;
                 satInfo.unicConfig.SCRNO = mCurrentChannel;
-                satInfo.unicConfig.SCR4UBand.add(Integer.valueOf(mTvFrequency.getText().toString()));
+                satInfo.unicConfig.SCR4UBand.addAll(getSaveFrequencyList());
             } else if (is8SCRUnicable()) {
                 satInfo.unicConfig.UnicEnable = 1;
                 satInfo.unicConfig.SCRType = 1;
                 satInfo.unicConfig.SCRNO = mCurrentChannel;
-                satInfo.unicConfig.SCR8UBand.add(Integer.valueOf(mTvFrequency.getText().toString()));
                 satInfo.unicConfig.SatPosition = mCurrentPosition;
+                satInfo.unicConfig.SCR8UBand.addAll(getSaveFrequencyList());
             } else if (mCurrentUnicable == UNICABLE_DCSS) {
                 satInfo.unicConfig.UnicEnable = 2;
                 satInfo.unicConfig.DCSSNO = mCurrentChannel;
-                satInfo.unicConfig.DcssUBand.add(Integer.valueOf(mTvFrequency.getText().toString()));
+                satInfo.unicConfig.DcssUBand.addAll(getSaveFrequencyList());
             }
         }
 
@@ -805,6 +808,19 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
             return mCurrentToneBurst; // mToneBurstArray位置约定
         }
         return 0;
+    }
+
+    private List<Integer> getSaveFrequencyList() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            if (is4SCRUnicable()) {
+                return Arrays.stream(mFrequency4SCRArray).map(Integer::valueOf).collect(Collectors.toList());
+            } else if (is8SCRUnicable()) {
+                return  Arrays.stream(mFrequency8SCRArray).map(Integer::valueOf).collect(Collectors.toList());
+            } else {
+                return Arrays.stream(mFrequencyDCSSArray).map(Integer::valueOf).collect(Collectors.toList());
+            }
+        }
+        return new ArrayList<>();
     }
 
     /**
@@ -1074,7 +1090,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
                 } else {
                     return DISEQC_MODE_OFF;
                 }
-            } else if (Utils.isDISEQC10(satInfo.diseqc10_pos)){
+            } else if (Utils.isDISEQC10(satInfo.diseqc10_pos)) {
                 return DISEQC_MODE_DISEQC10;
             } else if (Utils.isDiSEqc11(satInfo.diseqc10_pos)) {
                 return DISEQC_MODE_DISEQC11;
@@ -1121,7 +1137,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
             } else if (satInfo.unicConfig.SCRType == 1) {
                 return UNICABLE_8SCR;
             }
-        } else if (satInfo.unicConfig.UnicEnable == 2){
+        } else if (satInfo.unicConfig.UnicEnable == 2) {
             return UNICABLE_DCSS;
         }
         return 0;

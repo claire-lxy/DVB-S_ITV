@@ -66,39 +66,22 @@ public class Utils {
         }
     }
 
-    public static int getDiSEqC10Pos(int currDiSEqcIndex) {
-        if (currDiSEqcIndex >= 3 && currDiSEqcIndex < 23) {
-            return currDiSEqcIndex - 2;
-        }
-        return 0;
-    }
-
-    public static int getDiSEqC10Tone(int currDiSEqCIndex) {
-        if (currDiSEqCIndex == 1) return 1;
-        if (currDiSEqCIndex == 2) return 2;
-        return 0;
-    }
-
-    public static int getSkewOnOff(int currDiSEqCIndex) {
-        if (currDiSEqCIndex > 23) return currDiSEqCIndex;
-        return 0;
-    }
-
-    public static String getDiSEqC(HProg_Struct_SatInfo satInfo, String[] DiSEqcArray) {
+    public static String getDiSEqC(Context context, HProg_Struct_SatInfo satInfo) {
+        String[] diSEqCArray = context.getResources().getStringArray(R.array.DISEQC);
         if (satInfo.diseqc10_pos == Constants.DISEQC1X_OFF_OR_TONEBURST) {
             // diseqc10_pos=0, OFF or ToneBurst, diseqc10_tone value is valid
             // diseqc10_tone=0, OFF
             // diseqc10_tone=1, ToneBurst A
             // diseqc10_tone=2, ToneBurst B
-            return DiSEqcArray[satInfo.diseqc10_tone];
+            return diSEqCArray[satInfo.diseqc10_tone];
         } else if (isDISEQC10(satInfo.diseqc10_pos)) {
             // diseqc10_pos=1~4, DiSEqC A~D
-            return DiSEqcArray[satInfo.diseqc10_pos + 2];
+            return diSEqCArray[satInfo.diseqc10_pos + 2];
         } else if (isDiSEqc11(satInfo.diseqc10_pos)) {
             // diseqc10_pos=5~16, LNB 1~16
-            return DiSEqcArray[satInfo.diseqc10_pos + 2];
+            return diSEqCArray[satInfo.diseqc10_pos + 2];
         }
-        return DiSEqcArray[0];
+        return diSEqCArray[0];
     }
 
     public static boolean isDISEQC10(int diseqcPos) {

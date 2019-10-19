@@ -390,8 +390,7 @@ public class PVRSettingActivity extends BaseItemFocusChangeActivity implements U
                     break; */
 
                 case ITEM_RECORD_LENGTH:
-                    if (--mRecordLengthPosition < 0)
-                        mRecordLengthPosition = mRecordLengthArray.length - 1;
+                    mRecordLengthPosition = getMinusStep(mRecordLengthPosition, mRecordLengthArray.length - 1);
                     mTvRecordLength.setText(mRecordLengthArray[mRecordLengthPosition]);
                     DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.RecordMaxMin, arrayRecordLength[mRecordLengthPosition]);
                     break;
@@ -428,8 +427,7 @@ public class PVRSettingActivity extends BaseItemFocusChangeActivity implements U
                     break; */
 
                 case ITEM_RECORD_LENGTH:
-                    if (++mRecordLengthPosition > mRecordLengthArray.length - 1)
-                        mRecordLengthPosition = 0;
+                    mRecordLengthPosition = getPlusStep(mRecordLengthPosition, mRecordLengthArray.length - 1);
                     mTvRecordLength.setText(mRecordLengthArray[mRecordLengthPosition]);
                     DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.RecordMaxMin, arrayRecordLength[mRecordLengthPosition]);
                     break;

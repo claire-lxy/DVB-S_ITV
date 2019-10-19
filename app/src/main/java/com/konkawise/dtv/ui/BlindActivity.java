@@ -2,13 +2,10 @@ package com.konkawise.dtv.ui;
 
 import android.content.Intent;
 import android.text.TextUtils;
-import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
@@ -182,15 +179,15 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
             switch (mCurrentSelectItem) {
                 case ITEM_SATELLITE:
                     saveSatInfo();
-                    if (--mCurrentSatellite < 0) mCurrentSatellite = getSatList().size() - 1;
+                    mCurrentSatellite = getMinusStep(mCurrentSatellite, getSatList().size() - 1);
                     satelliteChange();
                     break;
                 case ITEM_LNB:
-                    if (--mCurrentLnb < 0) mCurrentLnb = mLnbArray.length - 1;
+                    mCurrentLnb = getMinusStep(mCurrentLnb, mLnbArray.length - 1);
                     lnbChange();
                     break;
                 case ITEM_DISEQC:
-                    if (--mCurrentDiseqc < 0) mCurrentDiseqc = mDiseqcArray.length - 1;
+                    mCurrentDiseqc = getMinusStep(mCurrentDiseqc, mDiseqcArray.length - 1);
                     diseqcChange();
                     break;
                 case ITEM_22K:
@@ -206,15 +203,15 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
             switch (mCurrentSelectItem) {
                 case ITEM_SATELLITE:
                     saveSatInfo();
-                    if (++mCurrentSatellite > getSatList().size() - 1) mCurrentSatellite = 0;
+                    mCurrentSatellite = getPlusStep(mCurrentSatellite, getSatList().size() - 1);
                     satelliteChange();
                     break;
                 case ITEM_LNB:
-                    if (++mCurrentLnb > mLnbArray.length - 1) mCurrentLnb = 0;
+                    mCurrentLnb = getPlusStep(mCurrentLnb, mLnbArray.length - 1);
                     lnbChange();
                     break;
                 case ITEM_DISEQC:
-                    if (++mCurrentDiseqc > mDiseqcArray.length - 1) mCurrentDiseqc = 0;
+                    mCurrentDiseqc = getPlusStep(mCurrentDiseqc, mDiseqcArray.length - 1);
                     diseqcChange();
                     break;
                 case ITEM_22K:
@@ -320,8 +317,8 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
             PreferenceManager.getInstance().putString(String.valueOf(mCurrentSatellite), lnb);
         }
 
-        satInfo.diseqc10_pos = Utils.getDiSEqC10Pos(mCurrentDiseqc);
-        satInfo.diseqc10_tone = Utils.getDiSEqC10Tone(mCurrentDiseqc);
+        satInfo.diseqc10_pos = getSaveDiSEqCPos();
+        satInfo.diseqc10_tone = mCurrentDiseqc;
 
         if (TextUtils.equals(mTv22khz.getText().toString(), getString(R.string.off))) {
             satInfo.switch_22k = 0;
@@ -334,6 +331,20 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
 
         DTVProgramManager.getInstance().setSatInfo(satInfo.SatIndex, satInfo);
         mSatList = DTVProgramManager.getInstance().getSatList(); // 更新卫星列表
+    }
+
+    private int getSaveDiSEqCPos() {
+        if (mCurrentDiseqc >= 0 && mCurrentDiseqc <= 2) {
+            // diseqc10_pos = 0, OFF or ToneBurst
+            return 0;
+        } else if (mCurrentDiseqc >= 3 && mCurrentDiseqc <= 6) {
+            // diseqc10_pos = 1~4, DiSEqC A~D
+            return mCurrentDiseqc - 2;
+        } else if (mCurrentDiseqc >= 7 && mCurrentDiseqc <= 22) {
+            // diseqc10_pos = 5~16, LNB 1`16
+            return mCurrentDiseqc - 2;
+        }
+        return 0;
     }
 
     /**
@@ -427,7 +438,7 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
         lnbChange();
 
         mCurrentDiseqc = getCurrDiseqc();
-        String diseqc = Utils.getDiSEqC(getSatList().get(mCurrentSatellite), mDiseqcArray);
+        String diseqc = Utils.getDiSEqC(this, getSatList().get(mCurrentSatellite));
         mTvDiSEqC.setText(TextUtils.isEmpty(diseqc) ? mDiseqcArray[0] : diseqc);
 
         mTvLnbPower.setText(getSatList().get(mCurrentSatellite).LnbPower == 1 ?
@@ -454,7 +465,7 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
     private int getCurrDiseqc() {
         if (isSatelliteEmpty()) return 0;
 
-        String diseqc = Utils.getDiSEqC(getSatList().get(mCurrentSatellite), mDiseqcArray);
+        String diseqc = Utils.getDiSEqC(this, getSatList().get(mCurrentSatellite));
         for (int i = 0; i < mDiseqcArray.length; i++) {
             if (diseqc.equals(mDiseqcArray[i])) return i;
         }

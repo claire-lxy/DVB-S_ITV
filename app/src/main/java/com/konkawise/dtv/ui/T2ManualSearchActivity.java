@@ -1,7 +1,6 @@
 package com.konkawise.dtv.ui;
 
 import android.content.Intent;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -114,8 +113,6 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
         mTvFrequency.setText(MessageFormat.format(getString(R.string.frequency_text), (channel.Freq / 10) + "." + (channel.Freq % 10)));
         mTvBandWidth.setText(MessageFormat.format(getString(R.string.bandwidth_text), channel.Symbol));
         DTVSearchManager.getInstance().tunerLockFreq(Constants.T2_SATELLITE_INDEX, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
-        Log.e("T2ManualSearchActivity", "satChannelInfoList.size:  " + satChannelInfoList.size() + "channel.Freq  " + channel.Freq + "channel.Symbol  " +
-                channel.Symbol + "channel.Qam  " + channel.Symbol + "TsID  " + channel.TsID + "channel.NetID  " + channel.NetID + "channel.ChannelIndex  " + channel.TPIndex);
     }
 
     private void initCheckSignal() {
@@ -189,42 +186,16 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
         }
 
         if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-            switch (mCurrSelectItem) {
-                case ITEM_TRANSPONDER:
-                    --mCurrntChannel;
-                    if (mCurrntChannel < 0) {
-                        mCurrntChannel = satChannelInfoList.size() - 1;
-                    }
-                    initT2Ui();
-                    break;
-
-                case ITEM_FREQUENCY:
-
-                    break;
-
-                case ITEM_BANDWIDTH:
-
-                    break;
+            if (mCurrSelectItem == ITEM_TRANSPONDER) {
+                mCurrntChannel = getMinusStep(mCurrntChannel, satChannelInfoList.size() - 1);
+                initT2Ui();
             }
         }
 
         if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-            switch (mCurrSelectItem) {
-                case ITEM_TRANSPONDER:
-                    ++mCurrntChannel;
-                    if (mCurrntChannel > satChannelInfoList.size() - 1) {
-                        mCurrntChannel = 0;
-                    }
-                    initT2Ui();
-                    break;
-
-                case ITEM_FREQUENCY:
-
-                    break;
-
-                case ITEM_BANDWIDTH:
-
-                    break;
+            if (mCurrSelectItem == ITEM_TRANSPONDER) {
+                mCurrntChannel = getPlusStep(mCurrntChannel, satChannelInfoList.size() - 1);
+                initT2Ui();
             }
         }
 

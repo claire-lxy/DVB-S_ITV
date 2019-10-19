@@ -487,22 +487,22 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
             if (mMotorType == Constants.MOTOR_TYPE_OFF) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
-                        if (--mMotorType < 0) mMotorType = mTypeListArray.length - 1;
+                        mMotorType = getMinusStep(mMotorType, mTypeListArray.length - 1);
                         motorTypeChange();
                         break;
                     case ITEM_TP:
-                        if (--mCurrentTp < 0) mCurrentTp = mTpList.size() - 1;
+                        mCurrentTp = getMinusStep(mCurrentTp, mTpList.size() - 1);
                         tpChange();
                         break;
                 }
             } else if (mMotorType == Constants.MOTOR_TYPE_USALS) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
-                        if (--mMotorType < 0) mMotorType = mTypeListArray.length - 1;
+                        mMotorType = getMinusStep(mMotorType, mTypeListArray.length - 1);
                         motorTypeChange();
                         break;
                     case ITEM_TP:
-                        if (--mCurrentTp < 0) mCurrentTp = mTpList.size() - 1;
+                        mCurrentTp = getMinusStep(mCurrentTp, mTpList.size() - 1);
                         tpChange();
                         break;
                     case ITEM_SAT_LONGITUDE:
@@ -515,41 +515,39 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                         mTvLocalLatitude.setText(mLocalLatitudeModel.deleteNumber());
                         break;
                     case ITEM_POSITION:
-                        if (--mPositionStep < MIN_POSITION) mPositionStep = MAX_POSITION;
+                        mPositionStep = getMinusStep(mPositionStep, MAX_POSITION, MIN_POSITION);
                         positionChange();
                         break;
                     case ITEM_COMMAND:
-                        if (--mUsalsCommandStep < 0)
-                            mUsalsCommandStep = mUsalsCommandArray.length - 1;
+                        mUsalsCommandStep = getMinusStep(mUsalsCommandStep, mUsalsCommandArray.length - 1);
                         commandChange();
                         break;
                 }
             } else if (mMotorType == Constants.MOTOR_TYPE_DISEQC) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
-                        if (--mMotorType < 0) mMotorType = mTypeListArray.length - 1;
+                        mMotorType = getMinusStep(mMotorType, mTypeListArray.length - 1);
                         motorTypeChange();
                         break;
                     case ITEM_TP:
-                        if (--mCurrentTp < 0) mCurrentTp = mTpList.size() - 1;
+                        mCurrentTp = getMinusStep(mCurrentTp, mTpList.size() - 1);
                         tpChange();
                         break;
                     case ITEM_MOVE_STEPS:
-                        if (--mMoveStep < 0) mMoveStep = mMoveStepArray.length - 1;
+                        mMoveStep = getMinusStep(mMoveStep, mMoveStepArray.length - 1);
                         moveStepChange();
                         moveStep();
                         break;
                     case ITEM_STEP_SIZE:
-                        if (--mStepSizeStep < 0) mStepSizeStep = mStepSizeArray.length - 1;
+                        mStepSizeStep = getMinusStep(mStepSizeStep, mStepSizeArray.length - 1);
                         stepSizeChange();
                         break;
                     case ITEM_POSITION_DIS:
-                        if (--mPositionStep < MIN_POSITION) mPositionStep = MAX_POSITION;
+                        mPositionStep = getMinusStep(mPositionStep, MAX_POSITION, MIN_POSITION);
                         positionChange();
                         break;
                     case ITEM_DISEQC_COMMAND:
-                        if (--mDISEqcCommandStep < 0)
-                            mDISEqcCommandStep = mDiSEqCCommandArray.length - 1;
+                        mDISEqcCommandStep = getMinusStep(mDISEqcCommandStep, mDiSEqCCommandArray.length - 1);
                         commandChange();
                         break;
                 }
@@ -560,24 +558,22 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
             if (mMotorType == Constants.MOTOR_TYPE_OFF) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
-                        if (++mMotorType > mTypeListArray.length - 1)
-                            mMotorType = Constants.MOTOR_TYPE_OFF;
+                        mMotorType = getPlusStep(mMotorType, mTypeListArray.length - 1);
                         motorTypeChange();
                         break;
                     case ITEM_TP:
-                        if (++mCurrentTp > mTpList.size() - 1) mCurrentTp = 0;
+                        mCurrentTp = getPlusStep(mCurrentTp, mTpList.size() - 1);
                         tpChange();
                         break;
                 }
             } else if (mMotorType == Constants.MOTOR_TYPE_USALS) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
-                        if (++mMotorType > mTypeListArray.length - 1)
-                            mMotorType = Constants.MOTOR_TYPE_OFF;
+                        mMotorType = getPlusStep(mMotorType, mTypeListArray.length - 1);
                         motorTypeChange();
                         break;
                     case ITEM_TP:
-                        if (++mCurrentTp > mTpList.size() - 1) mCurrentTp = 0;
+                        mCurrentTp = getPlusStep(mCurrentTp, mTpList.size() - 1);
                         tpChange();
                         break;
                     case ITEM_SAT_LONGITUDE:
@@ -593,42 +589,41 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                         localLatitudeChange();
                         break;
                     case ITEM_POSITION:
-                        if (++mPositionStep > MAX_POSITION) mPositionStep = MIN_POSITION;
+                        mPositionStep = getPlusStep(mPositionStep, MAX_POSITION);
+                        if (mPositionStep <= 0) mPositionStep = MIN_POSITION;
                         positionChange();
                         break;
                     case ITEM_COMMAND:
-                        if (++mUsalsCommandStep > mUsalsCommandArray.length - 1)
-                            mUsalsCommandStep = 0;
+                        mUsalsCommandStep = getPlusStep(mUsalsCommandStep, mUsalsCommandArray.length - 1);
                         commandChange();
                         break;
                 }
             } else if (mMotorType == Constants.MOTOR_TYPE_DISEQC) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
-                        if (++mMotorType > mTypeListArray.length - 1)
-                            mMotorType = Constants.MOTOR_TYPE_OFF;
+                        mMotorType = getPlusStep(mMotorType, mTypeListArray.length - 1);
                         motorTypeChange();
                         break;
                     case ITEM_TP:
-                        if (++mCurrentTp > mTpList.size() - 1) mCurrentTp = 0;
+                        mCurrentTp = getPlusStep(mCurrentTp, mTpList.size() - 1);
                         tpChange();
                         break;
                     case ITEM_MOVE_STEPS:
-                        if (++mMoveStep > mMoveStepArray.length - 1) mMoveStep = 0;
+                        mMoveStep = getPlusStep(mMoveStep, mMoveStepArray.length - 1);
                         moveStepChange();
                         moveStep();
                         break;
                     case ITEM_STEP_SIZE:
-                        if (++mStepSizeStep > mStepSizeArray.length - 1) mStepSizeStep = 0;
+                        mStepSizeStep = getPlusStep(mStepSizeStep, mStepSizeArray.length - 1);
                         stepSizeChange();
                         break;
                     case ITEM_POSITION_DIS:
-                        if (++mPositionStep > MAX_POSITION) mPositionStep = MIN_POSITION;
+                        mPositionStep = getPlusStep(mPositionStep, MAX_POSITION);
+                        if (mPositionStep <= 0) mPositionStep = MIN_POSITION;
                         positionChange();
                         break;
                     case ITEM_DISEQC_COMMAND:
-                        if (++mDISEqcCommandStep > mDiSEqCCommandArray.length - 1)
-                            mDISEqcCommandStep = 0;
+                        mDISEqcCommandStep = getPlusStep(mDISEqcCommandStep, mDiSEqCCommandArray.length - 1);
                         commandChange();
                         break;
                 }

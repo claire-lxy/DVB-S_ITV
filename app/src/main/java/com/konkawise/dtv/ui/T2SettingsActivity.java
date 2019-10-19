@@ -193,20 +193,18 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
             switch (mCurrentSelectItem) {
 
                 case ITEM_ANTENNA_POWER:
-                    if (--antennaPowerPosition < 0)
-                        antennaPowerPosition = mGeneralSwitchArray.length - 1;
+                    antennaPowerPosition = getMinusStep(antennaPowerPosition, mGeneralSwitchArray.length - 1);
                     mTvAntennaPower.setText(mGeneralSwitchArray[antennaPowerPosition]);
                     DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.AntennaPower, antennaPowerPosition);
                     break;
 
                 case ITEM_AREA_SETTING:
-                    if (--areaSettingPosition < 0)
-                        areaSettingPosition = mAreaSettingArray.length - 1;
+                    areaSettingPosition = getMinusStep(areaSettingPosition, mAreaSettingArray.length - 1);
                     mTvAreaSetting.setText(mAreaSettingArray[areaSettingPosition]);
                     break;
 
                 case ITEM_LCN:
-                    if (--lcnPosition < 0) lcnPosition = mGeneralSwitchArray.length - 1;
+                    lcnPosition = getMinusStep(lcnPosition, mGeneralSwitchArray.length - 1);
                     mTvLcn.setText(mGeneralSwitchArray[lcnPosition]);
                     DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.ShowNoType, lcnPosition);
                     break;
@@ -218,21 +216,18 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
             switch (mCurrentSelectItem) {
 
                 case ITEM_ANTENNA_POWER:
-                    if (++antennaPowerPosition > mGeneralSwitchArray.length - 1)
-                        antennaPowerPosition = 0;
+                    antennaPowerPosition = getPlusStep(antennaPowerPosition, mGeneralSwitchArray.length - 1);
                     mTvAntennaPower.setText(mGeneralSwitchArray[antennaPowerPosition]);
                     DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.AntennaPower, antennaPowerPosition);
                     break;
 
                 case ITEM_AREA_SETTING:
-                    if (++areaSettingPosition > mAreaSettingArray.length - 1)
-                        areaSettingPosition = 0;
+                    areaSettingPosition = getPlusStep(areaSettingPosition, mAreaSettingArray.length - 1);
                     mTvAreaSetting.setText(mAreaSettingArray[areaSettingPosition]);
                     break;
 
                 case ITEM_LCN:
-                    if (++lcnPosition > mGeneralSwitchArray.length - 1)
-                        lcnPosition = 0;
+                    lcnPosition = getPlusStep(lcnPosition, mGeneralSwitchArray.length - 1);
                     mTvLcn.setText(mGeneralSwitchArray[lcnPosition]);
                     DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.ShowNoType, lcnPosition);
                     break;

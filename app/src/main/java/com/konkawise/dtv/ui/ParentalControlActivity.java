@@ -206,13 +206,13 @@ public class ParentalControlActivity extends BaseItemFocusChangeActivity {
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
             switch (position) {
                 case ITEM_MENU_LOCK:
-                    if (--menuLockPosition < 0) menuLockPosition = mGeneralSwitch.length - 1;
+                    menuLockPosition = getMinusStep(menuLockPosition, mGeneralSwitch.length - 1);
                     mTvMenuLock.setText(mGeneralSwitch[menuLockPosition]);
                     DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.cMenuLock, menuLockPosition);
                     break;
 
                 case ITEM_CHANNEL_LOCK:
-                    if (--channelLockPosition < 0) channelLockPosition = mGeneralSwitch.length - 1;
+                    channelLockPosition = getMinusStep(channelLockPosition, mGeneralSwitch.length - 1);
                     mTvChannelLock.setText(mGeneralSwitch[channelLockPosition]);
                     DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.cParentLock, channelLockPosition);
                     break;
@@ -234,13 +234,13 @@ public class ParentalControlActivity extends BaseItemFocusChangeActivity {
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
             switch (position) {
                 case ITEM_MENU_LOCK:
-                    if (++menuLockPosition > mGeneralSwitch.length - 1) menuLockPosition = 0;
+                    menuLockPosition = getPlusStep(menuLockPosition, mGeneralSwitch.length - 1);
                     mTvMenuLock.setText(mGeneralSwitch[menuLockPosition]);
                     DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.cMenuLock, menuLockPosition);
                     break;
 
                 case ITEM_CHANNEL_LOCK:
-                    if (++channelLockPosition > mGeneralSwitch.length - 1) channelLockPosition = 0;
+                    channelLockPosition = getPlusStep(channelLockPosition, mGeneralSwitch.length - 1);
                     mTvChannelLock.setText(mGeneralSwitch[channelLockPosition]);
                     DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.cParentLock, channelLockPosition);
                     break;
