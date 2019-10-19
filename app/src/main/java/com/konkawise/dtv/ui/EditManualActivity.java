@@ -14,10 +14,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
+import com.konkawise.dtv.DTVProgramManager;
+import com.konkawise.dtv.DTVSearchManager;
 import com.konkawise.dtv.PreferenceManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWFtaManager;
-import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.bean.LatLngModel;
 import com.konkawise.dtv.dialog.AutoDiSEqCDialog;
@@ -31,8 +31,8 @@ import java.util.List;
 
 import butterknife.BindArray;
 import butterknife.BindView;
-import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
-import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_TP;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 
 public class EditManualActivity extends BaseItemFocusChangeActivity {
     private static final String TAG = "EditManualActivity";
@@ -159,8 +159,8 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     private int mCurrentTp;
     private int mCurrentLnb;
     private int mCurrentDiseqc;
-    private List<SatInfo_t> mSatList;
-    private List<ChannelNew_t> mTpList;
+    private List<HProg_Struct_SatInfo> mSatList;
+    private List<HProg_Struct_TP> mTpList;
     // 22KHz为Auto之前，上一个卫星22KHz的开关状态
     private String mLastFocusable22KHz;
 
@@ -177,7 +177,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
         mTvBottomBarYellow.setText(getString(R.string.motor_01));
 
         mLastFocusable22KHz = getResources().getString(R.string.on);
-        mCurrentSatellite = SWPDBaseManager.getInstance().findPositionBySatIndex(getIntent().getIntExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, -1));
+        mCurrentSatellite = DTVProgramManager.getInstance().findPositionBySatIndex(getIntent().getIntExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, -1));
 
         initCheckSignal();
         satelliteChange();
@@ -371,8 +371,8 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
         }
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_BLUE) {
-            List<SatInfo_t> satList = getSatList();
-            List<ChannelNew_t> tpList = getTpList();
+            List<HProg_Struct_SatInfo> satList = getSatList();
+            List<HProg_Struct_TP> tpList = getTpList();
             if (satList == null || satList.isEmpty()) return false;
             if (tpList == null || tpList.isEmpty()) return false;
 
@@ -430,7 +430,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
                 }).show(getSupportFragmentManager(), RenameDialog.TAG);
     }
 
-    private void showAutoDiSEqCDialog(List<SatInfo_t> satList, List<ChannelNew_t> tpList) {
+    private void showAutoDiSEqCDialog(List<HProg_Struct_SatInfo> satList, List<HProg_Struct_TP> tpList) {
         new AutoDiSEqCDialog()
                 .satIndex(satList.get(mCurrentSatellite).SatIndex)
                 .tpData(tpList.get(mCurrentTp))
@@ -438,9 +438,9 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
                     @Override
                     public void onAutoDiSEqCResult(int portIndex) {
                         if (portIndex >= 0) {
-                            SatInfo_t satInfo = getSatList().get(mCurrentSatellite);
+                            HProg_Struct_SatInfo satInfo = getSatList().get(mCurrentSatellite);
                             satInfo.diseqc10_pos = portIndex + 1;
-                            SWPDBaseManager.getInstance().setSatInfo(satInfo.SatIndex, satInfo);
+                            DTVProgramManager.getInstance().setSatInfo(satInfo.SatIndex, satInfo);
 
                             mCurrentDiseqc = portIndex + 3; // 和mDiseqcArray位置约定
                             diseqcChange();
@@ -454,10 +454,10 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
      * 保存设置的卫星信息
      */
     private void saveSatInfo() {
-        List<SatInfo_t> satList = SWPDBaseManager.getInstance().getSatList(); // 这里要获取最新的数据，不拿缓存
+        List<HProg_Struct_SatInfo> satList = DTVProgramManager.getInstance().getSatList(); // 这里要获取最新的数据，不拿缓存
         if (satList == null || satList.isEmpty()) return;
 
-        SatInfo_t satInfo = satList.get(mCurrentSatellite);
+        HProg_Struct_SatInfo satInfo = satList.get(mCurrentSatellite);
 
         String lnb = mEtLnb.getText().toString();
         if (TextUtils.isEmpty(lnb)) lnb = "0";
@@ -484,8 +484,8 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
         }
         satInfo.LnbPower = isLnbPowerOn() ? 1 : 0;
 
-        SWPDBaseManager.getInstance().setSatInfo(satInfo.SatIndex, satInfo);
-        mSatList = SWPDBaseManager.getInstance().getSatList(); // 更新卫星列表
+        DTVProgramManager.getInstance().setSatInfo(satInfo.SatIndex, satInfo);
+        mSatList = DTVProgramManager.getInstance().getSatList(); // 更新卫星列表
     }
 
     /**
@@ -497,11 +497,11 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
             mTvTp.setText(getString(R.string.empty_tp));
             return;
         }
-        ChannelNew_t channel = getTpList().get(mCurrentTp);
+        HProg_Struct_TP channel = getTpList().get(mCurrentTp);
         String tpName = channel.Freq + Utils.getVorH(this, channel.Qam) + channel.Symbol;
         mTvTp.setText(tpName);
 
-        SWFtaManager.getInstance().tunerLockFreq(channel.SatIndex, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
+        DTVSearchManager.getInstance().tunerLockFreq(channel.SatIndex, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
     }
 
     private boolean isTpEmpty() {
@@ -589,7 +589,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
      * Satellite参数改变
      */
     public void satelliteChange() {
-        List<SatInfo_t> satList = getSatList();
+        List<HProg_Struct_SatInfo> satList = getSatList();
         if (satList == null || satList.isEmpty()) return;
 
         mTvSatellite.setText(satList.get(mCurrentSatellite).sat_name);
@@ -614,18 +614,18 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
                 getResources().getString(R.string.on) : getResources().getString(R.string.off));
     }
 
-    private List<SatInfo_t> getSatList() {
+    private List<HProg_Struct_SatInfo> getSatList() {
         if (mSatList == null) {
-            mSatList = SWPDBaseManager.getInstance().getSatList();
+            mSatList = DTVProgramManager.getInstance().getSatList();
         }
         return mSatList;
     }
 
-    private List<ChannelNew_t> getTpList() {
-        List<SatInfo_t> satList = getSatList();
+    private List<HProg_Struct_TP> getTpList() {
+        List<HProg_Struct_SatInfo> satList = getSatList();
         if (satList == null || satList.isEmpty()) return new ArrayList<>();
 
-        mTpList = SWPDBaseManager.getInstance().getSatChannelInfoList(getSatList().get(mCurrentSatellite).SatIndex);
+        mTpList = DTVProgramManager.getInstance().getSatTPInfo(getSatList().get(mCurrentSatellite).SatIndex);
         return mTpList;
     }
 
@@ -636,7 +636,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     }
 
     private int getCurrDiseqc() {
-        List<SatInfo_t> satList = getSatList();
+        List<HProg_Struct_SatInfo> satList = getSatList();
         if (satList == null || satList.isEmpty()) return 0;
 
         String diseqc = Utils.getDiSEqC(satList.get(mCurrentSatellite), mDiSEqCArray);
@@ -647,7 +647,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     }
 
     private int getCurrLnb() {
-        List<SatInfo_t> satList = getSatList();
+        List<HProg_Struct_SatInfo> satList = getSatList();
         if (satList == null || satList.isEmpty()) return 0;
 
         String lnb = Utils.getLnb(satList.get(mCurrentSatellite));

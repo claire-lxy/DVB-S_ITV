@@ -23,7 +23,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnItemClick;
-import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0. HProg_Struct_ProgInfo;
 
 public class FindChannelDialog extends BaseDialogFragment implements TextWatcher, WeakToolInterface {
     public static final String TAG = "FindChannelDialog";
@@ -42,7 +42,7 @@ public class FindChannelDialog extends BaseDialogFragment implements TextWatcher
         }
     }
 
-    private List<PDPMInfo_t> mAllChannelList;
+    private List< HProg_Struct_ProgInfo> mAllChannelList;
     private FindChannelRunnable mFindChannelRunnable;
     private OnFindChannelCallback mOnFindChannelCallback;
     private FindChannelAdapter mAdapter;
@@ -71,7 +71,7 @@ public class FindChannelDialog extends BaseDialogFragment implements TextWatcher
         mListView.setAdapter(mAdapter);
     }
 
-    public FindChannelDialog channels(List<PDPMInfo_t> channelList) {
+    public FindChannelDialog channels(List< HProg_Struct_ProgInfo> channelList) {
         this.mAllChannelList = channelList == null ? new ArrayList<>() : channelList;
         return this;
     }
@@ -119,9 +119,9 @@ public class FindChannelDialog extends BaseDialogFragment implements TextWatcher
 
         @Override
         protected void loadBackground() {
-            List<PDPMInfo_t> findChannels = new ArrayList<>();
+            List< HProg_Struct_ProgInfo> findChannels = new ArrayList<>();
             if (!TextUtils.isEmpty(findKeyword)) {
-                for (PDPMInfo_t channel : mWeakReference.get().mAllChannelList) {
+                for ( HProg_Struct_ProgInfo channel : mWeakReference.get().mAllChannelList) {
                     if (channel.Name.toUpperCase().contains(findKeyword.toUpperCase())) {
                         findChannels.add(channel);
                     }
@@ -146,6 +146,6 @@ public class FindChannelDialog extends BaseDialogFragment implements TextWatcher
     }
 
     public interface OnFindChannelCallback {
-        void onFindChannels(PDPMInfo_t findChannel);
+        void onFindChannels( HProg_Struct_ProgInfo findChannel);
     }
 }

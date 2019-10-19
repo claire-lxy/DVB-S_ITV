@@ -3,17 +3,17 @@ package com.konkawise.dtv.bean;
 import java.io.File;
 import java.io.Serializable;
 
-import vendor.konka.hardware.dtvmanager.V1_0.HPVR_RecFile_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HPVR_Struct_RecFile;
 
 public class RecordInfo implements Serializable{
     private File recordFile;
-    private HPVR_RecFile_t mHpvrRecFileT;
+    private HPVR_Struct_RecFile mHpvrRecFileT;
 
     public RecordInfo() {
 
     }
 
-    public RecordInfo(File recordFile, HPVR_RecFile_t hpvrRecFileT) {
+    public RecordInfo(File recordFile, HPVR_Struct_RecFile hpvrRecFileT) {
         this.recordFile = recordFile;
         mHpvrRecFileT = hpvrRecFileT;
     }
@@ -22,7 +22,7 @@ public class RecordInfo implements Serializable{
         return recordFile;
     }
 
-    public HPVR_RecFile_t getHpvrRecFileT() {
+    public HPVR_Struct_RecFile getHpvrRecFileT() {
         return mHpvrRecFileT;
     }
 
@@ -30,7 +30,7 @@ public class RecordInfo implements Serializable{
         this.recordFile = recordFile;
     }
 
-    public void setHpvrRecFileT(HPVR_RecFile_t hpvrRecFileT) {
+    public void setHpvrRecFileT(HPVR_Struct_RecFile hpvrRecFileT) {
         mHpvrRecFileT = hpvrRecFileT;
     }
 }

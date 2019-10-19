@@ -10,10 +10,10 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
+import com.konkawise.dtv.DTVProgramManager;
+import com.konkawise.dtv.DTVSearchManager;
 import com.konkawise.dtv.PreferenceManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWFtaManager;
-import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.dialog.ScanDialog;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
@@ -22,7 +22,7 @@ import java.text.MessageFormat;
 import java.util.List;
 
 import butterknife.BindView;
-import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_TP;
 
 public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
     private static final int ITEM_TRANSPONDER = 1;
@@ -81,9 +81,9 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
 
     private int mCurrSelectItem = ITEM_TRANSPONDER;
 
-    private List<ChannelNew_t> satChannelInfoList;
+    private List<HProg_Struct_TP> satChannelInfoList;
 
-    private ChannelNew_t channel;
+    private HProg_Struct_TP channel;
 
     private CheckSignalHelper mCheckSignalHelper;
 
@@ -100,11 +100,11 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
     }
 
     private void initT2Data() {
-        satChannelInfoList = SWPDBaseManager.getInstance().getSatChannelInfoList(Constants.T2_SATELLITE_INDEX);
+        satChannelInfoList = DTVProgramManager.getInstance().getSatTPInfo(Constants.T2_SATELLITE_INDEX);
         if (satChannelInfoList != null) {
             channel = satChannelInfoList.get(mCurrntChannel);
             mCurrntChannel = PreferenceManager.getInstance().getInt(Constants.PrefsKey.SAVE_CHANNEL);
-            SWFtaManager.getInstance().tunerLockFreq(Constants.T2_SATELLITE_INDEX, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
+            DTVSearchManager.getInstance().tunerLockFreq(Constants.T2_SATELLITE_INDEX, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
         }
     }
 
@@ -113,9 +113,9 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
         channel = satChannelInfoList.get(mCurrntChannel);
         mTvFrequency.setText(MessageFormat.format(getString(R.string.frequency_text), (channel.Freq / 10) + "." + (channel.Freq % 10)));
         mTvBandWidth.setText(MessageFormat.format(getString(R.string.bandwidth_text), channel.Symbol));
-        SWFtaManager.getInstance().tunerLockFreq(Constants.T2_SATELLITE_INDEX, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
+        DTVSearchManager.getInstance().tunerLockFreq(Constants.T2_SATELLITE_INDEX, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
         Log.e("T2ManualSearchActivity", "satChannelInfoList.size:  " + satChannelInfoList.size() + "channel.Freq  " + channel.Freq + "channel.Symbol  " +
-                channel.Symbol + "channel.Qam  " + channel.Symbol + "TsID  " + channel.TsID + "channel.NetID  " + channel.NetID + "channel.ChannelIndex  " + channel.ChannelIndex);
+                channel.Symbol + "channel.Qam  " + channel.Symbol + "TsID  " + channel.TsID + "channel.NetID  " + channel.NetID + "channel.ChannelIndex  " + channel.TPIndex);
     }
 
     private void initCheckSignal() {

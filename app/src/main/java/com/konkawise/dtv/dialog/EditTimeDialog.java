@@ -11,7 +11,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWDJAPVRManager;
+import com.konkawise.dtv.DTVPVRManager;
 import com.konkawise.dtv.base.BaseDialogFragment;
 
 import butterknife.BindView;
@@ -163,7 +163,7 @@ public class EditTimeDialog extends BaseDialogFragment {
         if(from == FROM_CHANNEL_SCAN_TIEM){
             return (h * 60 * 60 + m * 60 + s)*1000 <= totalDuration;
         }
-        return (h * 60 * 60 + m * 60 + s)*1000 <= SWDJAPVRManager.getInstance().getPlayProgress().endMs;
+        return (h * 60 * 60 + m * 60 + s)*1000 <= DTVPVRManager.getInstance().getPlayProgress().endMs;
     }
 
     public EditTimeDialog setTimeLimit(int totalDuration) {

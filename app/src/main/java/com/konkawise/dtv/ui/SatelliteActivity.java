@@ -6,8 +6,8 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
+import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.adapter.SatelliteListAdapter;
 import com.konkawise.dtv.base.BaseActivity;
@@ -24,8 +24,8 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
-import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
-import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_TP;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 
 public class SatelliteActivity extends BaseActivity {
     private static final String TAG = "SatelliteActivity";
@@ -63,9 +63,9 @@ public class SatelliteActivity extends BaseActivity {
     void clickSatelliteItem(int position) {
         if (mAdapter.isSatelliteCheck(position)) {
             if (satList.size() > 0) {
-                Iterator<SatInfo_t> it = satList.iterator();
+                Iterator<HProg_Struct_SatInfo> it = satList.iterator();
                 while (it.hasNext()) {
-                    SatInfo_t satInfo = it.next();
+                    HProg_Struct_SatInfo satInfo = it.next();
                     if (satInfo.SatIndex == position) {
                         it.remove();
                     }
@@ -78,7 +78,7 @@ public class SatelliteActivity extends BaseActivity {
     }
 
     private SatelliteListAdapter mAdapter;
-    public static List<SatInfo_t> satList = new ArrayList(); // ScanTVandRadioActivity传递选中的卫星列表
+    public static List<HProg_Struct_SatInfo> satList = new ArrayList(); // ScanTVandRadioActivity传递选中的卫星列表
     private int mCurrPosition;
 
     private UpdateSatParamRunnable mUpdateSatParamRunnable;
@@ -99,19 +99,19 @@ public class SatelliteActivity extends BaseActivity {
         new LoadSatelliteTask(this).execute();
     }
 
-    private static class LoadSatelliteTask extends WeakAsyncTask<SatelliteActivity, Void, List<SatInfo_t>> {
+    private static class LoadSatelliteTask extends WeakAsyncTask<SatelliteActivity, Void, List<HProg_Struct_SatInfo>> {
 
         LoadSatelliteTask(SatelliteActivity view) {
             super(view);
         }
 
         @Override
-        protected List<SatInfo_t> backgroundExecute(Void... param) {
-            return SWPDBaseManager.getInstance().getSatList();
+        protected List<HProg_Struct_SatInfo> backgroundExecute(Void... param) {
+            return DTVProgramManager.getInstance().getSatList();
         }
 
         @Override
-        protected void postExecute(List<SatInfo_t> satList) {
+        protected void postExecute(List<HProg_Struct_SatInfo> satList) {
             if (satList != null && !satList.isEmpty()) {
                 SatelliteActivity context = mWeakReference.get();
 
@@ -183,7 +183,7 @@ public class SatelliteActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if ((requestCode == REQUEST_CODE_SATELLITE_EDIT || requestCode == REQUEST_CODE_TP_EDIT) && resultCode == RESULT_OK) {
-            mAdapter.updateData(SWPDBaseManager.getInstance().getSatList());
+            mAdapter.updateData(DTVProgramManager.getInstance().getSatList());
             if (data != null) {
                 int position = data.getIntExtra(Constants.IntentKey.INTENT_SATELLITE_POSITION, -1);
                 if (position != -1) {
@@ -212,10 +212,10 @@ public class SatelliteActivity extends BaseActivity {
         protected void loadBackground() {
             SatelliteActivity context = mWeakReference.get();
 
-            List<SatInfo_t> satList = SWPDBaseManager.getInstance().getSatList();
+            List<HProg_Struct_SatInfo> satList = DTVProgramManager.getInstance().getSatList();
             if (satList != null && !satList.isEmpty() && context.mCurrPosition < satList.size()) {
-                SatInfo_t satInfo = satList.get(context.mCurrPosition);
-                ChannelNew_t channelInfo = SWPDBaseManager.getInstance().getChannelInfoBySat(satInfo.SatIndex, 0);
+                HProg_Struct_SatInfo satInfo = satList.get(context.mCurrPosition);
+                HProg_Struct_TP channelInfo = DTVProgramManager.getInstance().getTPInfoBySat(satInfo.SatIndex, 0);
 
                 context.runOnUiThread(new Runnable() {
                     @Override

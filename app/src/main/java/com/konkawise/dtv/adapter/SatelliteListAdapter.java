@@ -10,17 +10,17 @@ import com.konkawise.dtv.adapter.base.BaseListViewHolder;
 
 import java.util.List;
 
-import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 
-public class SatelliteListAdapter extends BaseListViewAdapter<SatInfo_t> {
+public class SatelliteListAdapter extends BaseListViewAdapter<HProg_Struct_SatInfo> {
     private SparseBooleanArray mCheckSatelliteMap = new SparseBooleanArray();
 
-    public SatelliteListAdapter(Context context, List<SatInfo_t> datas) {
+    public SatelliteListAdapter(Context context, List<HProg_Struct_SatInfo> datas) {
         super(context, datas, R.layout.satellite_list_item);
     }
 
     @Override
-    protected void convert(BaseListViewHolder holder, int position, SatInfo_t item) {
+    protected void convert(BaseListViewHolder holder, int position, HProg_Struct_SatInfo item) {
         holder.setText(R.id.tv_sat_position, String.valueOf(position + 1))
                 .setText(R.id.tv_sat_name, item.sat_name);
         CheckBox checkBox = holder.getView(R.id.checkbox);

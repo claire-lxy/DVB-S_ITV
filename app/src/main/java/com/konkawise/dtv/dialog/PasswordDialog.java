@@ -8,14 +8,14 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 
+import com.konkawise.dtv.DTVSettingManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWFtaManager;
 import com.konkawise.dtv.base.BaseDialogFragment;
 import com.konkawise.dtv.utils.EditUtils;
 import com.konkawise.dtv.view.LastInputEditText;
 
 import butterknife.BindView;
-import vendor.konka.hardware.dtvmanager.V1_0.HProperty_E;
+import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 
 /**
  * 密码对话框
@@ -102,7 +102,7 @@ public class PasswordDialog extends BaseDialogFragment implements TextWatcher {
         if (s.length() < PARENTAL_PASSWORD_MAX_LENGTH) return;
 
         if (mCurrentPassword == null) {
-            mCurrentPassword = SWFtaManager.getInstance().getCommPWDInfo(HProperty_E.Password);
+            mCurrentPassword = DTVSettingManager.getInstance().getPasswd(HSetting_Enum_Property.Password);
         }
 
         boolean isPasswordValid;
@@ -123,7 +123,7 @@ public class PasswordDialog extends BaseDialogFragment implements TextWatcher {
         if (mOnPasswordInputListener != null) {
             mOnPasswordInputListener.onPasswordInput(s.toString(), mCurrentPassword, isPasswordValid);
         }
-        if (mOnControlArrowKeyListener != null && isPasswordValid) {
+        if (mOnControlArrowKeyListener != null) {
             mOnControlArrowKeyListener.onControlArrowKey(CONTROL_ARROW_CURRENT_PROG);
         }
     }

@@ -8,11 +8,11 @@ import android.view.KeyEvent;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
+import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.PropertiesManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.RealTimeManager;
-import com.konkawise.dtv.SWBookingManager;
-import com.konkawise.dtv.SWPDBaseManager;
+import com.konkawise.dtv.DTVBookingManager;
 import com.konkawise.dtv.adapter.BookListAdapter;
 import com.konkawise.dtv.annotation.BookType;
 import com.konkawise.dtv.base.BaseActivity;
@@ -26,7 +26,6 @@ import com.konkawise.dtv.event.BookUpdateEvent;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.view.TVListView;
 import com.konkawise.dtv.weaktool.WeakAsyncTask;
-import com.sw.dvblib.SWBooking;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -38,8 +37,9 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnItemSelected;
-import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
-import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Enum_Repeat;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Struct_Timer;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgBasicInfo;
 
 public class BookListActivity extends BaseActivity implements RealTimeManager.OnReceiveTimeListener {
     @BindView(R.id.tv_system_time)
@@ -58,8 +58,8 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
     private BookListAdapter mAdapter;
     private int mCurrSelectPosition;
     private LoadBookingTask mLoadBookingTask;
-    private List<PDPInfo_t> mCurrTypeProgList;
-    private List<PDPInfo_t> mAnotherTypeProgList;
+    private List<HProg_Struct_ProgBasicInfo> mCurrTypeProgList;
+    private List<HProg_Struct_ProgBasicInfo> mAnotherTypeProgList;
 
     @Override
     public int getLayoutId() {
@@ -123,10 +123,10 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
         protected List<BookingModel> backgroundExecute(Void... param) {
             BookListActivity context = mWeakReference.get();
 
-            context.mCurrTypeProgList = SWPDBaseManager.getInstance().getCurrGroupProgInfoList();
-            context.mAnotherTypeProgList = SWPDBaseManager.getInstance().getAnotherTypeProgInfoList();
+            context.mCurrTypeProgList = DTVProgramManager.getInstance().getCurrGroupProgInfoList();
+            context.mAnotherTypeProgList = DTVProgramManager.getInstance().getAnotherTypeProgInfoList();
 
-            return SWBookingManager.getInstance().getBookingModelList();
+            return DTVBookingManager.getInstance().getBookingModelList();
         }
 
         @Override
@@ -161,7 +161,7 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
     private void showBookDialog(String title, @BookType final int bookingType) {
         if (bookingType == Constants.BOOK_TYPE_EDIT && mAdapter.getCount() <= 0) return;
 
-        List<PDPInfo_t> progList = getCurrTypeProgList();
+        List<HProg_Struct_ProgBasicInfo> progList = getCurrTypeProgList();
         if (progList == null || progList.isEmpty()) return;
 
         new BookDialog()
@@ -179,10 +179,10 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
                         switch (pm.bookConflict) {
                             case Constants.BOOK_CONFLICT_NONE: // 当前参数的book没有冲突，正常添加
                                 if (bookingType == Constants.BOOK_TYPE_ADD) {
-                                    SWBookingManager.getInstance().addProg(pm.bookingModel.bookInfo);
+                                    DTVBookingManager.getInstance().addTimer(pm.bookingModel.bookInfo);
                                     mAdapter.addData(mAdapter.getCount(), pm.bookingModel);
                                 } else {
-                                    SWBookingManager.getInstance().replaceProg(mAdapter.getItem(mCurrSelectPosition).bookInfo, pm.bookingModel.bookInfo);
+                                    DTVBookingManager.getInstance().replaceTimer(mAdapter.getItem(mCurrSelectPosition).bookInfo, pm.bookingModel.bookInfo);
                                     mAdapter.updateData(mCurrSelectPosition, pm.bookingModel);
                                 }
                                 break;
@@ -192,7 +192,7 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
                             case Constants.BOOK_CONFLICT_ADD: // 当前参数的book有冲突，如果是添加需要先删除后再添加
                                 int conflictPosition = findConflictBookProgPosition(pm.conflictBookProg);
                                 if (conflictPosition != -1) {
-                                    SWBookingManager.getInstance().addProg(pm.bookConflict, pm.conflictBookProg, pm.bookingModel.bookInfo);
+                                    DTVBookingManager.getInstance().addTimer(pm.bookConflict, pm.conflictBookProg, pm.bookingModel.bookInfo);
                                     mAdapter.removeData(conflictPosition);
                                     mAdapter.addData(mAdapter.getCount(), pm.bookingModel);
                                 }
@@ -200,13 +200,13 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
                             case Constants.BOOK_CONFLICT_REPLACE: // 当前参数的book有冲突，需要询问替换
                                 BookingModel conflictBookModel = new BookingModel();
                                 conflictBookModel.bookInfo = pm.conflictBookProg;
-                                conflictBookModel.progInfo = SWPDBaseManager.getInstance().getProgInfoByServiceId(pm.conflictBookProg.servid, pm.conflictBookProg.tsid, pm.conflictBookProg.sat);
+                                conflictBookModel.progInfo = DTVProgramManager.getInstance().getProgInfoByServiceId(pm.conflictBookProg.servid, pm.conflictBookProg.tsid, pm.conflictBookProg.sat);
                                 showReplaceBookDialog(conflictBookModel, pm.bookingModel);
                                 break;
                         }
 
                         mBook = true;
-                        SWBookingManager.getInstance().updateDBase(0);
+                        DTVBookingManager.getInstance().updateDBase(0);
                     }
                 }).show(getSupportFragmentManager(), BookDialog.TAG);
     }
@@ -220,7 +220,7 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
                 .setOnPositiveListener(getString(R.string.dialog_book_conflict_positive), new OnCommPositiveListener() {
                     @Override
                     public void onPositiveListener() {
-                        SWBookingManager.getInstance().replaceProg(conflictBookModel.bookInfo, newBookModel.bookInfo);
+                        DTVBookingManager.getInstance().replaceTimer(conflictBookModel.bookInfo, newBookModel.bookInfo);
                         int conflictPosition = findConflictBookProgPosition(conflictBookModel.bookInfo);
                         if (conflictPosition != -1) {
                             mAdapter.updateData(conflictPosition, newBookModel);
@@ -229,10 +229,10 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
 
-    private int findConflictBookProgPosition(@NonNull HSubforProg_t conflictBookProg) {
+    private int findConflictBookProgPosition(@NonNull HBooking_Struct_Timer conflictBookProg) {
         if (mAdapter.getCount() > 0) {
             for (int i = 0; i < mAdapter.getData().size(); i++) {
-                HSubforProg_t bookInfo = mAdapter.getData().get(i).bookInfo;
+                HBooking_Struct_Timer bookInfo = mAdapter.getData().get(i).bookInfo;
                 if (bookInfo == null) continue;
                 if (bookInfo.servid == conflictBookProg.servid && bookInfo.tsid == conflictBookProg.tsid && bookInfo.sat == conflictBookProg.sat) {
                     return i;
@@ -243,11 +243,11 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
     }
 
     private int getChannelNamePosition(int bookingType) {
-        List<PDPInfo_t> progList = getCurrTypeProgList();
+        List<HProg_Struct_ProgBasicInfo> progList = getCurrTypeProgList();
         if (progList != null && !progList.isEmpty()) {
             String progName = "";
             if (bookingType == Constants.BOOK_TYPE_ADD) {
-                progName = SWPDBaseManager.getInstance().getCurrProgInfo().Name;
+                progName = DTVProgramManager.getInstance().getCurrProgInfo().Name;
             } else if (bookingType == Constants.BOOK_TYPE_EDIT) {
                 BookingModel bookingModel = mAdapter.getItem(mCurrSelectPosition);
                 if (bookingModel != null) {
@@ -266,20 +266,20 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
         return 0;
     }
 
-    private List<PDPInfo_t> getCurrTypeProgList() {
+    private List<HProg_Struct_ProgBasicInfo> getCurrTypeProgList() {
         if (mCurrTypeProgList != null && !mCurrTypeProgList.isEmpty()) {
             return mCurrTypeProgList;
         }
-        return SWPDBaseManager.getInstance().getCurrGroupProgInfoList();
+        return DTVProgramManager.getInstance().getCurrGroupProgInfoList();
     }
 
-    private List<PDPInfo_t> getAnotherTypeProgList(int bookingType) {
+    private List<HProg_Struct_ProgBasicInfo> getAnotherTypeProgList(int bookingType) {
         switch (bookingType) {
             case Constants.BOOK_TYPE_ADD:
                 if (mAnotherTypeProgList != null && !mAnotherTypeProgList.isEmpty()) {
                     return mAnotherTypeProgList;
                 }
-                return SWPDBaseManager.getInstance().getAnotherTypeProgInfoList();
+                return DTVProgramManager.getInstance().getAnotherTypeProgInfoList();
             case Constants.BOOK_TYPE_EDIT:
                 return null;
         }
@@ -294,11 +294,11 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
                 .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
                     @Override
                     public void onPositiveListener() {
-                        SWBookingManager.getInstance().deleteProg(mAdapter.getItem(mCurrSelectPosition).bookInfo);
+                        DTVBookingManager.getInstance().deleteTimer(mAdapter.getItem(mCurrSelectPosition).bookInfo);
                         mAdapter.removeData(mCurrSelectPosition);
 
                         mBook = true;
-                        SWBookingManager.getInstance().updateDBase(0);
+                        DTVBookingManager.getInstance().updateDBase(0);
                     }
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
@@ -366,7 +366,7 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
     public void onBookUpdate(BookUpdateEvent event) {
         if (event.bookInfo != null) {
             int position = findConflictBookProgPosition(event.bookInfo);
-            if (event.bookInfo.repeatway == SWBooking.BookRepeatWay.ONCE.ordinal() && position > 0) {
+            if (event.bookInfo.repeatway == HBooking_Enum_Repeat.ONCE && position > 0) {
                 mAdapter.removeData(position);
             }
         }

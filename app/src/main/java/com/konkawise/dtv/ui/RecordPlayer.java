@@ -18,12 +18,11 @@ import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.HandlerMsgManager;
+import com.konkawise.dtv.DTVPlayerManager;
+import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWDJAPVRManager;
-import com.konkawise.dtv.SWDVBManager;
-import com.konkawise.dtv.SWFtaManager;
-import com.konkawise.dtv.SWPDBaseManager;
-import com.konkawise.dtv.UIApiManager;
+import com.konkawise.dtv.DTVPVRManager;
+import com.konkawise.dtv.DTVDVBManager;
 import com.konkawise.dtv.UsbManager;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.bean.HandlerMsgModel;
@@ -48,9 +47,9 @@ import java.util.List;
 import java.util.Set;
 
 import butterknife.BindView;
-import vendor.konka.hardware.dtvmanager.V1_0.HPVR_Progress_t;
-import vendor.konka.hardware.dtvmanager.V1_0.HSubtitle_t;
-import vendor.konka.hardware.dtvmanager.V1_0.HTeletext_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HPVR_Struct_Progress;
+import vendor.konka.hardware.dtvmanager.V1_0.HPlayer_Struct_Subtitle;
+import vendor.konka.hardware.dtvmanager.V1_0.HPlayer_Struct_Teletext;
 
 public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiveListener {
     private static final String TAG = "RecordPlayer";
@@ -131,7 +130,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         protected void handleMsg(Message msg) {
             RecordPlayer context = mWeakReference.get();
             if (msg.what == MSG_UPGRADE_PROGRESS) {
-                HPVR_Progress_t hpvrProgressT = SWDJAPVRManager.getInstance().getPlayProgress();
+                HPVR_Struct_Progress hpvrProgressT = DTVPVRManager.getInstance().getPlayProgress();
                 int volid = hpvrProgressT.valid;
                 int progress = 0;
                 int secondProgress = 0;
@@ -181,39 +180,39 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         protected void handleMsg(Message msg) {
             switch (msg.what) {
                 case MSG_BEGIN_TIMESHIFT:
-                    SWDJAPVRManager.getInstance().beginTimeshift();
+                    DTVPVRManager.getInstance().beginTimeshift();
                     break;
 
                 case MSG_STOP_TIMESHIFT:
-                    SWDJAPVRManager.getInstance().stopTimeshift();
+                    DTVPVRManager.getInstance().stopTimeshift();
                     break;
 
                 case MSG_PLAY_RESUME:
-                    SWDJAPVRManager.getInstance().playResume();
+                    DTVPVRManager.getInstance().playResume();
                     break;
 
                 case MSG_START_PLAY:
                     Bundle bundle = msg.getData();
                     String path = bundle.getString(KEY_PATH);
                     String fName = bundle.getString(KEY_FNAME);
-                    SWDJAPVRManager.getInstance().startPlay(path, fName, bundle.getInt(KEY_LOOP));
-                    SWDJAPVRManager.getInstance().injectSubTTXAudio(path, fName);
+                    DTVPVRManager.getInstance().startPlay(path, fName, bundle.getInt(KEY_LOOP));
+                    DTVPVRManager.getInstance().injectSubTTXAudio(path, fName);
                     break;
 
                 case MSG_STOP_PLAY:
-                    SWDJAPVRManager.getInstance().stopPlay();
+                    DTVPVRManager.getInstance().stopPlay();
                     break;
 
                 case MSG_PLAY_SEEK:
-                    SWDJAPVRManager.getInstance().playSeek(msg.arg1);
+                    DTVPVRManager.getInstance().playSeek(msg.arg1);
                     break;
 
                 case MSG_PLAY_SPEED:
-                    SWDJAPVRManager.getInstance().setPlaySpeed(msg.arg1);
+                    DTVPVRManager.getInstance().setPlaySpeed(msg.arg1);
                     break;
 
                 case MSG_PLAY_PAUSE:
-                    SWDJAPVRManager.getInstance().playPause();
+                    DTVPVRManager.getInstance().playPause();
             }
         }
     }
@@ -251,10 +250,10 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     }
 
     private void registerMsgEvent() {
-        MsgEvent msgEvent = SWDVBManager.getInstance().registerMsgEvent(Constants.PVR_CALLBACK_MSG_ID);
+        MsgEvent msgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.PVR_CALLBACK_MSG_ID);
         msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
             @Override
-            public int PVRPlay_MODULE(int p0, int p1, int p2, int p3, int p4) {
+            public void PVR_onPvrPlayModule(int p0, int p1, int p2, int p3, int p4) {
                 Log.i(TAG, "PVRPlay_MODULE---p0:" + p0 + " p1:" + p1 + " p2:" + p2 + " p3:" + p3 + " p4:" + p4);
                 if (from == FROM_TOPMOST) {
                     if (p3 == 2) {
@@ -272,24 +271,22 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
                     }
 
                 }
-                return super.PVRPlay_MODULE(p0, p1, p2, p3, p4);
             }
 
             @Override
-            public int PVRPlay_PlaybackFailed(int p0, int p1, int p2, int p3, int p4) {
+            public void PVRPLAY_onPlaybackFailed(int p0, int p1, int p2, int p3, int p4) {
                 Log.i(TAG, "PVRPlay_PlaybackFailed---p0:" + p0 + " p1:" + p1 + " p2:" + p2 + " p3:" + p3 + " p4:" + p4);
                 if (from == FROM_RECORD_LIST && LOOPER) {
                     playNextRecord();
                 } else {
                     finish();
                 }
-                return super.PVRPlay_PlaybackFailed(p0, p1, p2, p3, p4);
             }
         });
     }
 
     private void unregisterMsgEvent() {
-        SWDVBManager.getInstance().unregisterMsgEvent(Constants.PVR_CALLBACK_MSG_ID);
+        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.PVR_CALLBACK_MSG_ID);
     }
 
     private void init() {
@@ -304,8 +301,8 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         holder.addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
-                UIApiManager.getInstance().setSurface(holder.getSurface());
-                UIApiManager.getInstance().setWindowSize(0, 0,
+                DTVPlayerManager.getInstance().setSurface(holder.getSurface());
+                DTVPlayerManager.getInstance().setWindowSize(0, 0,
                         getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels);
                 play();
             }
@@ -410,8 +407,8 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
                 if (currType == TYPE_PLAY) {
                     pause();
                     new EditTimeDialog()
-                            .setCurrTime(SWDJAPVRManager.getInstance().getPlayProgress().currentMs > 0 ? SWDJAPVRManager.getInstance().getPlayProgress().currentMs : 0)
-                            .setTimeLimit(SWDJAPVRManager.getInstance().getPlayProgress().endMs > 0 ? SWDJAPVRManager.getInstance().getPlayProgress().endMs : 0)
+                            .setCurrTime(DTVPVRManager.getInstance().getPlayProgress().currentMs > 0 ? DTVPVRManager.getInstance().getPlayProgress().currentMs : 0)
+                            .setTimeLimit(DTVPVRManager.getInstance().getPlayProgress().endMs > 0 ? DTVPVRManager.getInstance().getPlayProgress().endMs : 0)
                             .setTimeListener(new EditTimeDialog.OnTimeListener() {
                                 @Override
                                 public void time(int hour, int minute, int second) {
@@ -516,19 +513,19 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         int currSubtitle = 0;
         int serviceid;
         if (from == FROM_TOPMOST) {
-            serviceid = SWPDBaseManager.getInstance().getCurrProgInfo().ServID;
+            serviceid = DTVProgramManager.getInstance().getCurrProgInfo().ServID;
         } else {
             serviceid = recordInfo.getHpvrRecFileT().ServId;
         }
         Log.i("testljm", "serviceid2:" + serviceid);
-        int num = SWFtaManager.getInstance().getSubtitleNum(serviceid);
+        int num = DTVPlayerManager.getInstance().getSubtitleNum(serviceid);
         final int[] pids = new int[num];
         List<HashMap<String, Object>> subtitles = new ArrayList<>();
         HashMap<String, Object> off = new HashMap<>();
         off.put(Constants.SUBTITLE_NAME, "OFF");
         subtitles.add(off);
         for (int index = 0; index < num; index++) {
-            HSubtitle_t subtitle = SWFtaManager.getInstance().getSubtitleInfo(serviceid, index);
+            HPlayer_Struct_Subtitle subtitle = DTVPlayerManager.getInstance().getSubtitleInfo(serviceid, index);
             if (subtitle.used != 0) {
                 pids[index] = subtitle.Pid;
                 HashMap<String, Object> map = new HashMap<>();
@@ -536,7 +533,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
                 map.put(Constants.SUBTITLE_ORG_TYPE, subtitle.OrgType == 0);
                 map.put(Constants.SUBTITLE_TYPE, (subtitle.Type >= 0x20 && subtitle.Type <= 0x24) || subtitle.Type == 0x05);
                 subtitles.add(map);
-                if (SWFtaManager.getInstance().getCurSubtitleInfo(serviceid).Name.equals(subtitle.Name))
+                if (DTVPlayerManager.getInstance().getCurSubtitleInfo(serviceid).Name.equals(subtitle.Name))
                     currSubtitle = index;
             }
         }
@@ -549,7 +546,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
                     @Override
                     public void onDismiss(SubtitleDialog dialog, int position, String checkContent) {
                         if (position > 0)
-                            SWFtaManager.getInstance().openSubtitle(pids[position - 1]);
+                            DTVPlayerManager.getInstance().openSubtitle(pids[position - 1]);
                     }
                 }).show(getSupportFragmentManager(), SubtitleDialog.TAG);
     }
@@ -559,16 +556,16 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         int currTeleText = 0;
         int serviceid;
         if (from == FROM_TOPMOST) {
-            serviceid = SWPDBaseManager.getInstance().getCurrProgInfo().ServID;
+            serviceid = DTVProgramManager.getInstance().getCurrProgInfo().ServID;
         } else {
             serviceid = recordInfo.getHpvrRecFileT().ServId;
         }
-        int num = SWFtaManager.getInstance().getTeletextNum(serviceid);
+        int num = DTVPlayerManager.getInstance().getTeletextNum(serviceid);
         final int[] pids = new int[num];
         String[] teletextNames = new String[num + 1];
         teletextNames[0] = "OFF";
         for (int index = 0; index < num; index++) {
-            HTeletext_t teletext = SWFtaManager.getInstance().getTeletextInfo(serviceid, index);
+            HPlayer_Struct_Teletext teletext = DTVPlayerManager.getInstance().getTeletextInfo(serviceid, index);
             if (teletext.used != 0) {
                 teletextNames[index + 1] = teletext.Name;
                 pids[index] = teletext.Pid;
@@ -583,7 +580,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
                     @Override
                     public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
                         if (position > 0)
-                            SWFtaManager.getInstance().openTeletext(pids[position - 1]);
+                            DTVPlayerManager.getInstance().openTeletext(pids[position - 1]);
                     }
                 }).show(getSupportFragmentManager(), "teletext");
     }
@@ -646,11 +643,11 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     private void playTimeShift() {
 //        totalDuration = getIntent().getIntExtra(Constants.IntentKey.INTENT_TIMESHIFT_TIME, 0) * 60 * 1000;
 //        if (totalDuration == 0) {
-//            totalDuration = SWFtaManager.getInstance().getCommE2PInfo(SWFta.E_E2PP.E2P_TimeshiftMaxMin.ordinal()) * 60 * 1000;
+//            totalDuration = DTVPlayerManager.getInstance().getDTVProperty(SWFta.E_E2PP.E2P_TimeshiftMaxMin.ordinal()) * 60 * 1000;
 //        }
         switchPlayTypeUI(TYPE_PAUSE, -1);
         showControlUI(false);
-        initUIContent(getIntent().getStringExtra(Constants.IntentKey.INTENT_TIMESHIFT_PROGNUM) + "  " + SWPDBaseManager.getInstance().getCurrProgInfo().Name, 0);
+        initUIContent(getIntent().getStringExtra(Constants.IntentKey.INTENT_TIMESHIFT_PROGNUM) + "  " + DTVProgramManager.getInstance().getCurrProgInfo().Name, 0);
         sendUpgradePrgressMsg(new HandlerMsgModel(PlayHandler.MSG_UPGRADE_PROGRESS));
         pvrHandler.sendEmptyMessage(PVRHandler.MSG_BEGIN_TIMESHIFT);
     }

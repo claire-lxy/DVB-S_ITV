@@ -8,17 +8,17 @@ import com.konkawise.dtv.adapter.base.BaseListViewHolder;
 
 import java.util.List;
 
-import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
 
-public class FindChannelAdapter extends BaseListViewAdapter<PDPMInfo_t> {
+public class FindChannelAdapter extends BaseListViewAdapter<HProg_Struct_ProgInfo> {
     private String mHighLightKeywords;
 
-    public FindChannelAdapter(Context context, List<PDPMInfo_t> datas) {
+    public FindChannelAdapter(Context context, List<HProg_Struct_ProgInfo> datas) {
         super(context, datas, R.layout.find_channel_list_item);
     }
 
     @Override
-    protected void convert(BaseListViewHolder holder, int position, PDPMInfo_t item) {
+    protected void convert(BaseListViewHolder holder, int position, HProg_Struct_ProgInfo item) {
         holder.setText(R.id.tv_prog_num, String.valueOf(item.PShowNo))
                 .setText(R.id.tv_prog_name, getHighLightName(item.Name));
     }

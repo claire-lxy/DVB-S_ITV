@@ -4,12 +4,13 @@ import android.content.Context;
 
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.utils.TimeUtils;
-import com.sw.dvblib.SWBooking;
 
 import java.text.MessageFormat;
 
-import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
-import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Enum_Repeat;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Enum_Task;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Struct_Timer;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgBasicInfo;
 
 public class BookingModel {
     public static final String BOOK_TIME_SEPARATOR_EMPTY = "";
@@ -17,14 +18,14 @@ public class BookingModel {
     private static final String[] DAY_OF_WEEK_ARRAY = {
             "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
     };
-    public HSubforProg_t bookInfo;
-    public PDPInfo_t progInfo;
+    public HBooking_Struct_Timer bookInfo;
+    public HProg_Struct_ProgBasicInfo progInfo;
 
     public BookingModel() {
 
     }
 
-    public BookingModel(HSubforProg_t bookInfo, PDPInfo_t progInfo) {
+    public BookingModel(HBooking_Struct_Timer bookInfo, HProg_Struct_ProgBasicInfo progInfo) {
         this.bookInfo = bookInfo;
         this.progInfo = progInfo;
     }
@@ -39,7 +40,7 @@ public class BookingModel {
     public String getBookProgName() {
         if (bookInfo == null) return "";
 
-        return bookInfo.schtype == SWBooking.BookSchType.NONE.ordinal() ? "----" : progInfo.Name;
+        return bookInfo.schtype == HBooking_Enum_Task.NONE ? "----" : progInfo.Name;
     }
 
     public String getBookDate(Context context, String separator) {
@@ -57,11 +58,11 @@ public class BookingModel {
         String endMinute;
         String dayOfWeek;
         String dayOfMonth;
-        if (bookInfo.schtype == SWBooking.BookSchType.RECORD.ordinal()) {
+        if (bookInfo.schtype == HBooking_Enum_Task.RECORD) {
             int[] endDateArr = TimeUtils.getEndDate(bookInfo.year, bookInfo.month, bookInfo.day, bookInfo.hour, bookInfo.minute, bookInfo.lasttime);
             if (endDateArr == null) return "";
 
-            if (bookInfo.repeatway == SWBooking.BookRepeatWay.ONCE.ordinal()) {
+            if (bookInfo.repeatway == HBooking_Enum_Repeat.ONCE) {
                 // 2019-6-27 12:00-2019-6-27 14:00
                 startYear = String.valueOf(bookInfo.year);
                 startMonth = String.valueOf(bookInfo.month);
@@ -76,14 +77,14 @@ public class BookingModel {
                 return MessageFormat.format(context.getString(R.string.book_time_once_format),
                         startYear, startMonth, startDay, startHour, startMinute,
                         separator, endYear, endMonth, endDay, endHour, endMinute);
-            } else if (bookInfo.repeatway == SWBooking.BookRepeatWay.DAILY.ordinal()) {
+            } else if (bookInfo.repeatway == HBooking_Enum_Repeat.DAILY) {
                 // 12:00-14:00
                 startHour = String.valueOf(bookInfo.hour);
                 startMinute = String.valueOf(bookInfo.minute);
                 endHour = String.valueOf(endDateArr[TimeUtils.HOUR]);
                 endMinute = String.valueOf(endDateArr[TimeUtils.MINUTE]);
                 return MessageFormat.format(context.getString(R.string.book_time_daily_format), startHour, startMinute, endHour, endMinute);
-            } else if (bookInfo.repeatway == SWBooking.BookRepeatWay.WEEKLY.ordinal()) {
+            } else if (bookInfo.repeatway == HBooking_Enum_Repeat.WEEKLY) {
                 // Mon Thu 12:00-14:00
                 dayOfWeek = DAY_OF_WEEK_ARRAY[TimeUtils.getDayOfWeek(bookInfo.year, bookInfo.month, bookInfo.day) - 1];
                 startHour = String.valueOf(bookInfo.hour);
@@ -102,8 +103,8 @@ public class BookingModel {
             }
         }
 
-        if (bookInfo.schtype == SWBooking.BookSchType.PLAY.ordinal() || bookInfo.schtype == SWBooking.BookSchType.NONE.ordinal()) {
-            if (bookInfo.repeatway == SWBooking.BookRepeatWay.ONCE.ordinal()) {
+        if (bookInfo.schtype == HBooking_Enum_Task.PLAY || bookInfo.schtype == HBooking_Enum_Task.NONE) {
+            if (bookInfo.repeatway == HBooking_Enum_Repeat.ONCE) {
                 // 2019-6-27 12:00
                 startYear = String.valueOf(bookInfo.year);
                 startMonth = String.valueOf(bookInfo.month);
@@ -111,12 +112,12 @@ public class BookingModel {
                 startHour = String.valueOf(bookInfo.hour);
                 startMinute = String.valueOf(bookInfo.minute);
                 return MessageFormat.format(context.getString(R.string.book_time_once_format_non_endtime), startYear, startMonth, startDay, startHour, startMinute);
-            } else if (bookInfo.repeatway == SWBooking.BookRepeatWay.DAILY.ordinal()) {
+            } else if (bookInfo.repeatway == HBooking_Enum_Repeat.DAILY) {
                 // 12:00
                 startHour = String.valueOf(bookInfo.hour);
                 startMinute = String.valueOf(bookInfo.minute);
                 return MessageFormat.format(context.getString(R.string.book_time_daily_format_non_endtime), startHour, startMinute);
-            } else if (bookInfo.repeatway == SWBooking.BookRepeatWay.WEEKLY.ordinal()) {
+            } else if (bookInfo.repeatway == HBooking_Enum_Repeat.WEEKLY) {
                 // Mon Thu 12:00
                 dayOfWeek = DAY_OF_WEEK_ARRAY[TimeUtils.getDayOfWeek(bookInfo.year, bookInfo.month, bookInfo.day) - 1];
                 startHour = String.valueOf(bookInfo.hour);
@@ -137,11 +138,11 @@ public class BookingModel {
     public String getBookMode(Context context) {
         if (bookInfo == null) return "";
 
-        if (bookInfo.repeatway == SWBooking.BookRepeatWay.ONCE.ordinal()) {
+        if (bookInfo.repeatway == HBooking_Enum_Repeat.ONCE) {
             return context.getString(R.string.book_once);
-        } else if (bookInfo.repeatway == SWBooking.BookRepeatWay.DAILY.ordinal()) {
+        } else if (bookInfo.repeatway == HBooking_Enum_Repeat.DAILY) {
             return context.getString(R.string.book_daily);
-        } else if (bookInfo.repeatway == SWBooking.BookRepeatWay.WEEKLY.ordinal()) {
+        } else if (bookInfo.repeatway == HBooking_Enum_Repeat.WEEKLY) {
             return context.getString(R.string.book_weekly);
         } else {
             return context.getString(R.string.book_monthly);
@@ -151,9 +152,9 @@ public class BookingModel {
     public String getBookType(Context context) {
         if (bookInfo == null) return "";
 
-        if (bookInfo.schtype == SWBooking.BookSchType.RECORD.ordinal()) {
+        if (bookInfo.schtype == HBooking_Enum_Task.RECORD) {
             return context.getString(R.string.book_record);
-        } else if (bookInfo.schtype == SWBooking.BookSchType.PLAY.ordinal()) {
+        } else if (bookInfo.schtype == HBooking_Enum_Task.PLAY) {
             return context.getString(R.string.book_play);
         } else {
             return context.getString(R.string.book_standby);

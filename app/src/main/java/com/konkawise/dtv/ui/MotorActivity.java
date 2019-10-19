@@ -12,9 +12,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
+import com.konkawise.dtv.DTVProgramManager;
+import com.konkawise.dtv.DTVSearchManager;
+import com.konkawise.dtv.DTVSettingManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWFtaManager;
-import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.bean.LatLngModel;
@@ -25,7 +26,6 @@ import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakRunnable;
-import com.sw.dvblib.SWFta;
 
 import java.text.MessageFormat;
 import java.util.Collections;
@@ -33,10 +33,10 @@ import java.util.List;
 
 import butterknife.BindArray;
 import butterknife.BindView;
-import vendor.konka.hardware.dtvmanager.V1_0.ChannelNew_t;
-import vendor.konka.hardware.dtvmanager.V1_0.HMotorCtrlCode;
-import vendor.konka.hardware.dtvmanager.V1_0.HProperty_E;
-import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_TP;
+import vendor.konka.hardware.dtvmanager.V1_0.HTuner_Enum_MotorCtrlCode;
+import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 
 public class MotorActivity extends BaseItemFocusChangeActivity {
     private static final String TAG = "MotorActivity";
@@ -223,7 +223,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
 
     private int mCurrentTp;
     private int mSatelliteIndex;
-    private List<ChannelNew_t> mTpList;
+    private List<HProg_Struct_TP> mTpList;
     private int mMotorType;
 
     private int mMoveStep;
@@ -234,7 +234,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
     private CheckSignalHelper mCheckSignalHelper;
     private MotorHandler mMotorHandler;
     private MotorCtrlRunnable mMotorRunnable;
-    private SatInfo_t mSatInfo;
+    private HProg_Struct_SatInfo mSatInfo;
 
     private LatLngModel mSatLongitudeModel = new LatLngModel();
     private LatLngModel mLocalLongitudeModel = new LatLngModel();
@@ -271,13 +271,13 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         super.onStop();
         stopMotorCtrl();
         if (mSatInfo != null) saveLongitude();
-        SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.SAT_Longitude, mLocalLongitudeModel.getValueForStorage());
-        SWFtaManager.getInstance().setCommE2PInfo(HProperty_E.SAT_Latitude, mLocalLatitudeModel.getValueForStorage());
+        DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.SAT_Longitude, mLocalLongitudeModel.getValueForStorage());
+        DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.SAT_Latitude, mLocalLatitudeModel.getValueForStorage());
     }
 
     private void stopMotorCtrl() {
         ThreadPoolManager.getInstance().remove(mMotorRunnable);
-        mMotorRunnable.ctrlCode = HMotorCtrlCode.DIRECT_STOP;
+        mMotorRunnable.ctrlCode = HTuner_Enum_MotorCtrlCode.STOP;
         mMotorRunnable.data = new int[]{0};
         ThreadPoolManager.getInstance().execute(mMotorRunnable);
 
@@ -307,15 +307,15 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
     private void initIntent() {
         mCurrentTp = getIntent().getIntExtra(Constants.IntentKey.INTENT_CURRENT_TP, -1);
         mSatelliteIndex = getIntent().getIntExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, -1);
-        mTpList = SWPDBaseManager.getInstance().getSatChannelInfoList(mSatelliteIndex);
-        List<SatInfo_t> satList = SWPDBaseManager.getInstance().getSatList();
-        int position = SWPDBaseManager.getInstance().findPositionBySatIndex(mSatelliteIndex);
+        mTpList = DTVProgramManager.getInstance().getSatTPInfo(mSatelliteIndex);
+        List<HProg_Struct_SatInfo> satList = DTVProgramManager.getInstance().getSatList();
+        int position = DTVProgramManager.getInstance().findPositionBySatIndex(mSatelliteIndex);
         if (satList != null && !satList.isEmpty() && position < satList.size()) {
             mSatInfo = satList.get(position);
             if (mSatInfo != null) {
                 mSatLongitudeModel = new LatLngModel(LatLngModel.MODE_LONGITUDE, LatLngModel.LONGITUDE_THRESHOLD, mSatInfo.diseqc12_longitude);
-                mLocalLongitudeModel = new LatLngModel(LatLngModel.MODE_LONGITUDE, LatLngModel.LONGITUDE_THRESHOLD, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.SAT_Longitude));
-                mLocalLatitudeModel = new LatLngModel(LatLngModel.MODE_LATITUDE, LatLngModel.LATITUDE_THRESHOLD, SWFtaManager.getInstance().getCommE2PInfo(HProperty_E.SAT_Latitude));
+                mLocalLongitudeModel = new LatLngModel(LatLngModel.MODE_LONGITUDE, LatLngModel.LONGITUDE_THRESHOLD, DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.SAT_Longitude));
+                mLocalLatitudeModel = new LatLngModel(LatLngModel.MODE_LATITUDE, LatLngModel.LATITUDE_THRESHOLD, DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.SAT_Latitude));
             }
         }
     }
@@ -339,7 +339,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
 
     private void tryLockTp() {
         if (mTpList != null && mTpList.size() != 0) {
-            SWFtaManager.getInstance().tunerLockFreq(mSatelliteIndex, mTpList.get(mCurrentTp).Freq, mTpList.get(mCurrentTp).Symbol, mTpList.get(mCurrentTp).Qam, 1, 0);
+            DTVSearchManager.getInstance().tunerLockFreq(mSatelliteIndex, mTpList.get(mCurrentTp).Freq, mTpList.get(mCurrentTp).Symbol, mTpList.get(mCurrentTp).Qam, 1, 0);
         }
     }
 
@@ -378,7 +378,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         protected void loadBackground() {
             MotorActivity context = mWeakReference.get();
 
-            SWFta.GetInstance().tunerMotorControl(ctrlCode, repeat, data);
+            DTVSearchManager.getInstance().tunerMotorControl(ctrlCode, repeat, data);
             String moveStep = context.mMoveStepArray[context.mMoveStep];
             if (TextUtils.equals(moveStep, context.getResources().getString(R.string.motor_move_step_west)) ||
                     TextUtils.equals(moveStep, context.getResources().getString(R.string.motor_move_step_east))) {
@@ -814,32 +814,32 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
             }
         } else if (TextUtils.equals(command, getString(R.string.motor_diseqc_command_recalculate))) {
             title = getString(R.string.dialog_calculate);
-            ctrlCode = HMotorCtrlCode.DIRECT_RECALCULATE;
+            ctrlCode = HTuner_Enum_MotorCtrlCode.RECALCULATE;
         } else if (TextUtils.equals(command, getString(R.string.motor_diseqc_command_disablelimit))) {
             title = getString(R.string.dialog_disable_limit);
-            ctrlCode = HMotorCtrlCode.DIRECT_DISABLE_LIMIT;
+            ctrlCode = HTuner_Enum_MotorCtrlCode.DISABLE_LIMIT;
         } else if (TextUtils.equals(command, getString(R.string.motor_diseqc_command_eastlimit))) {
             title = getString(R.string.dialog_east_limit);
-            ctrlCode = HMotorCtrlCode.DIRECT_EAST_LIMIT;
+            ctrlCode = HTuner_Enum_MotorCtrlCode.EAST_LIMIT;
         } else if (TextUtils.equals(command, getString(R.string.motor_diseqc_command_westlimit))) {
             title = getString(R.string.dialog_west_limit);
-            ctrlCode = HMotorCtrlCode.DIRECT_WEST_LIMIT;
+            ctrlCode = HTuner_Enum_MotorCtrlCode.WEST_LIMIT;
         } else if (TextUtils.equals(command, getString(R.string.motor_command_gotoref))) {
             if (mMotorType == MOROT_TYPE_DISEQC && position == ITEM_DISEQC_COMMAND) {
                 title = getString(R.string.dialog_goto_ref);
             } else if (mMotorType == MOROT_TYPE_USALS && position == ITEM_COMMAND) {
                 title = getString(R.string.dialog_command_goto_ref);
             }
-            ctrlCode = HMotorCtrlCode.DIRECT_GO_REFERENCE;
+            ctrlCode = HTuner_Enum_MotorCtrlCode.GO_REFERENCE;
         } else if (TextUtils.equals(command, getString(R.string.motor_usals_command_gotoxx))) {
             title = getString(R.string.dialog_goto_xx);
-            ctrlCode = HMotorCtrlCode.DIRECT_USAL_GOTOXX;
+            ctrlCode = HTuner_Enum_MotorCtrlCode.USAL_GOTOXX;
         } else if (TextUtils.equals(command, getString(R.string.motor_usals_command_calculate))) {
             title = getString(R.string.dialog_commannd_calculate);
-            ctrlCode = HMotorCtrlCode.DIRECT_RECALCULATE;
+            ctrlCode = HTuner_Enum_MotorCtrlCode.RECALCULATE;
         } else if (TextUtils.equals(command, getString(R.string.motor_usals_command_shift))) {
             title = getString(R.string.dialog_shift);
-            ctrlCode = HMotorCtrlCode.DIRECT_USAL_SHIFT;
+            ctrlCode = HTuner_Enum_MotorCtrlCode.USAL_SHIFT;
         }
         return new MotorCtrlModel(title, ctrlCode, repeat, data);
     }
@@ -852,18 +852,18 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         String moveStep = mMoveStepArray[mMoveStep];
 
         if (TextUtils.equals(moveStep, getResources().getString(R.string.motor_move_step_stop))) {
-            ctrlCode = HMotorCtrlCode.DIRECT_STOP;
+            ctrlCode = HTuner_Enum_MotorCtrlCode.STOP;
         } else if (TextUtils.equals(moveStep, getResources().getString(R.string.motor_move_step_west))) {
             if (data[0] == 0) { // data[0] == 0 Continue持续转动
-                ctrlCode = HMotorCtrlCode.DIRECT_RIGHT_CONTINUE;
+                ctrlCode = HTuner_Enum_MotorCtrlCode.RIGHT_CONTINUE;
             } else {
-                ctrlCode = HMotorCtrlCode.DIRECT_RIGHT_STEP;
+                ctrlCode = HTuner_Enum_MotorCtrlCode.RIGHT_STEP;
             }
         } else if (TextUtils.equals(moveStep, getResources().getString(R.string.motor_move_step_east))) {
             if (data[0] == 0) {
-                ctrlCode = HMotorCtrlCode.DIRECT_LEFT_CONTINUE;
+                ctrlCode = HTuner_Enum_MotorCtrlCode.LEFT_CONTINUE;
             } else {
-                ctrlCode = HMotorCtrlCode.DIRECT_LEFT_STEP;
+                ctrlCode = HTuner_Enum_MotorCtrlCode.LEFT_STEP;
             }
         }
         return new MotorCtrlModel(ctrlCode, repeat, data);
@@ -914,21 +914,21 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                 mSatInfo.diseqc12 = 2;
             }
 
-            SWPDBaseManager.getInstance().setSatInfo(mSatelliteIndex, mSatInfo);
+            DTVProgramManager.getInstance().setSatInfo(mSatelliteIndex, mSatInfo);
         }
     }
 
     private void savePosition() {
         if (mSatInfo != null) {
             mSatInfo.diseqc12_pos = mPositionStep;
-            SWPDBaseManager.getInstance().setSatInfo(mSatelliteIndex, mSatInfo);
+            DTVProgramManager.getInstance().setSatInfo(mSatelliteIndex, mSatInfo);
         }
     }
 
     private void saveLongitude() {
         if (mSatInfo != null) {
             mSatInfo.diseqc12_longitude = mSatLongitudeModel.getValueForStorage();
-            SWPDBaseManager.getInstance().setSatInfo(mSatelliteIndex, mSatInfo);
+            DTVProgramManager.getInstance().setSatInfo(mSatelliteIndex, mSatInfo);
         }
     }
 
@@ -937,10 +937,10 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
             mTvTp.setText(getString(R.string.empty_tp));
             return;
         }
-        ChannelNew_t channelNew_t = mTpList.get(mCurrentTp);
+        HProg_Struct_TP channelNew_t = mTpList.get(mCurrentTp);
         String tp = channelNew_t.Freq + Utils.getVorH(this, channelNew_t.Qam) + channelNew_t.Symbol;
         mTvTp.setText(tp);
-        SWFtaManager.getInstance().tunerLockFreq(mSatelliteIndex, channelNew_t.Freq, channelNew_t.Symbol, channelNew_t.Qam, 1, 0);
+        DTVSearchManager.getInstance().tunerLockFreq(mSatelliteIndex, channelNew_t.Freq, channelNew_t.Symbol, channelNew_t.Qam, 1, 0);
     }
 
     private boolean isTpEmpty() {

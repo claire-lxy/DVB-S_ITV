@@ -12,9 +12,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
+import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWBookingManager;
-import com.konkawise.dtv.SWPDBaseManager;
+import com.konkawise.dtv.DTVBookingManager;
 import com.konkawise.dtv.annotation.BookType;
 import com.konkawise.dtv.base.BaseItemFocusChangeDialogFragment;
 import com.konkawise.dtv.bean.BookParameterModel;
@@ -22,7 +22,7 @@ import com.konkawise.dtv.bean.BookingModel;
 import com.konkawise.dtv.utils.EditUtils;
 import com.konkawise.dtv.utils.TimeUtils;
 import com.konkawise.dtv.utils.ToastUtils;
-import com.sw.dvblib.SWBooking;
+import com.sw.dvblib.DTVCommon;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -32,10 +32,13 @@ import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.OnFocusChange;
-import vendor.konka.hardware.dtvmanager.V1_0.HProgType_E;
-import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
-import vendor.konka.hardware.dtvmanager.V1_0.PDPInfo_t;
-import vendor.konka.hardware.dtvmanager.V1_0.SysTime_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Enum_From;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Enum_ProgType;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Enum_Repeat;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Enum_Task;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Type;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Struct_Timer;
+import vendor.konka.hardware.dtvmanager.V1_0. HProg_Struct_ProgBasicInfo;
 
 public class BookDialog extends BaseItemFocusChangeDialogFragment {
     public static final String TAG = "BookDialog";
@@ -214,8 +217,8 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
 
             updateBookInfo();
 
-            SysTime_t startTime = new SysTime_t();
-            SysTime_t endTime = new SysTime_t();
+            DTVCommon.TimeModel startTime = new DTVCommon.TimeModel();
+            DTVCommon.TimeModel endTime = new DTVCommon.TimeModel();
             startTime.Year = endTime.Year = TimeUtils.getYear(mEtBookDateYear.getText().toString());
             startTime.Month = endTime.Month = TimeUtils.getMonth(mEtBookDateMonth.getText().toString());
             startTime.Day = endTime.Day = TimeUtils.getDay(mEtBookDateDay.getText().toString());
@@ -237,8 +240,8 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
             mBookModel.bookInfo.tsid = mBookModel.progInfo.TsID;
             mBookModel.bookInfo.servid = mBookModel.progInfo.ServID;
             // 需要添加默认值，否则接口调用会出现崩溃情况
-            mBookModel.bookInfo.name = SWBookingManager.DEFAULT_BOOK_CONTENT;
-            mBookModel.bookInfo.content = SWBookingManager.DEFAULT_BOOK_CONTENT;
+            mBookModel.bookInfo.name = DTVBookingManager.DEFAULT_BOOK_CONTENT;
+            mBookModel.bookInfo.content = DTVBookingManager.DEFAULT_BOOK_CONTENT;
 
             switch (mCurrModePosition) {
                 case BOOK_MODE_WEEKLY:
@@ -303,8 +306,8 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
 
             BookParameterModel bpm = new BookParameterModel();
             bpm.bookingModel = mBookModel;
-            HSubforProg_t conflictBookProg = SWBookingManager.getInstance().conflictCheck(bpm.bookingModel.bookInfo, 0);
-            bpm.bookConflict = SWBookingManager.getInstance().getConflictType(conflictBookProg);
+            HBooking_Struct_Timer conflictBookProg = DTVBookingManager.getInstance().conflictCheck(bpm.bookingModel.bookInfo);
+            bpm.bookConflict = DTVBookingManager.getInstance().getConflictType(conflictBookProg);
             if (bpm.bookConflict == Constants.BOOK_CONFLICT_ADD || bpm.bookConflict == Constants.BOOK_CONFLICT_REPLACE) {
                 bpm.conflictBookProg = conflictBookProg;
             }
@@ -313,7 +316,7 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
         }
     }
 
-    private void computeBookTotalSeconds(SysTime_t startTime, SysTime_t endTime) {
+    private void computeBookTotalSeconds(DTVCommon.TimeModel startTime, DTVCommon.TimeModel endTime) {
         if (mCurrTypePosition == BOOK_TYPE_RECORD) {
             mBookModel.bookInfo.lasttime = TimeUtils.getTotalSeconds(startTime, endTime);
         }
@@ -322,7 +325,7 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
     private boolean isInputValid() {
         if (mBookModel == null) return false;
 
-        if (mBookModel.bookInfo.repeatway == SWBooking.BookRepeatWay.ONCE.ordinal()) {
+        if (mBookModel.bookInfo.repeatway == HBooking_Enum_Repeat.ONCE) {
             return isDateValid() && isHourAndMinuteValid();
         }
 
@@ -374,7 +377,7 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
         // 如果是Daily和Weekly，只需要时间点不为空和结束小时不小于开始小时即可
         // 如果年、月、日比当前大，只需要处理时间点是否为空和有效即可
         boolean dateOverCurrent = true;
-        if (mBookModel.bookInfo.repeatway == SWBooking.BookRepeatWay.ONCE.ordinal()) {
+        if (mBookModel.bookInfo.repeatway == HBooking_Enum_Repeat.ONCE) {
             String yearStr = mEtBookDateYear.getText().toString();
             String monthStr = mEtBookDateMonth.getText().toString();
             String dayStr = mEtBookDateDay.getText().toString();
@@ -394,7 +397,7 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
             return false;
         }
 
-        if (mBookModel.bookInfo.schtype != SWBooking.BookSchType.RECORD.ordinal()) {
+        if (mBookModel.bookInfo.schtype != HBooking_Enum_Task.RECORD) {
             return true;
         }
 
@@ -489,11 +492,11 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
     private int mBookType;
 
     // 主要操作的频道列表
-    private List<PDPInfo_t> mProgList = new ArrayList<>();
+    private List< HProg_Struct_ProgBasicInfo> mProgList = new ArrayList<>();
     // 当前播放类型的频道列表，TV or Radio
-    private List<PDPInfo_t> mCurrTypeProgList;
+    private List< HProg_Struct_ProgBasicInfo> mCurrTypeProgList;
     // 其他播放类型的频道列表，TV or Radio
-    private List<PDPInfo_t> mAnotherTypeProgList;
+    private List< HProg_Struct_ProgBasicInfo> mAnotherTypeProgList;
     // 记录原始的频道类型，主要用于TV和Radio列表都存在时，切换Channel Type时通知更新mProgList列表
     private int mOriginChannelTypePosition;
 
@@ -561,9 +564,9 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
             return mBookTypeArray[BOOK_TYPE_RECORD];
         }
 
-        if (mBookModel.bookInfo.schtype == SWBooking.BookSchType.PLAY.ordinal()) {
+        if (mBookModel.bookInfo.schtype == HBooking_Enum_Task.PLAY) {
             return mBookTypeArray[BOOK_TYPE_PLAY];
-        } else if (mBookModel.bookInfo.schtype == SWBooking.BookSchType.RECORD.ordinal()) {
+        } else if (mBookModel.bookInfo.schtype == HBooking_Enum_Task.RECORD) {
             return mBookTypeArray[BOOK_TYPE_RECORD];
         }
 //        return mBookTypeArray[BOOK_TYPE_STANDBY]; // modify
@@ -575,13 +578,13 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
             return mBookModeArray[0];
         }
 
-        if (mBookModel.bookInfo.repeatway == SWBooking.BookRepeatWay.ONCE.ordinal()) {
+        if (mBookModel.bookInfo.repeatway == HBooking_Enum_Repeat.ONCE) {
             return mBookModeArray[0];
-        } else if (mBookModel.bookInfo.repeatway == SWBooking.BookRepeatWay.DAILY.ordinal()) {
+        } else if (mBookModel.bookInfo.repeatway == HBooking_Enum_Repeat.DAILY) {
             return mBookModeArray[1];
-        } else if (mBookModel.bookInfo.repeatway == SWBooking.BookRepeatWay.WEEKLY.ordinal()) {
+        } else if (mBookModel.bookInfo.repeatway == HBooking_Enum_Repeat.WEEKLY) {
             return mBookModeArray[2];
-        } else if (mBookModel.bookInfo.repeatway == SWBooking.BookRepeatWay.MONTHLY.ordinal()) {
+        } else if (mBookModel.bookInfo.repeatway == HBooking_Enum_Repeat.MONTHLY) {
             return mBookModeArray[3];
         }
         return mBookModeArray[0];
@@ -589,7 +592,7 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
 
     private String[] getBookChannelTypeArray() {
         if (isBookEdit() && mBookModel != null) {
-            if (mBookModel.bookInfo.type == SWBooking.BookType.TV.ordinal()) {
+            if (mBookModel.bookInfo.type == HBooking_Enum_ProgType.TV) {
                 return getResources().getStringArray(R.array.book_channel_type_tv);
             } else {
                 return getResources().getStringArray(R.array.book_channel_type_radio);
@@ -598,8 +601,8 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
             if (mCurrTypeProgList != null && !mCurrTypeProgList.isEmpty() && mAnotherTypeProgList != null && !mAnotherTypeProgList.isEmpty()) {
                 return getResources().getStringArray(R.array.book_channel_type);
             } else {
-                int currProgType = SWPDBaseManager.getInstance().getCurrProgType();
-                if (currProgType == HProgType_E.TVPROG) {
+                int currProgType = DTVProgramManager.getInstance().getCurrProgType();
+                if (currProgType == HProg_Enum_Type.TVPROG) {
                     return getResources().getStringArray(R.array.book_channel_type_tv);
                 } else {
                     return getResources().getStringArray(R.array.book_channel_type_radio);
@@ -610,7 +613,7 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
 
     private String getBookChannelTypeText() {
         if (mBookModel == null) {
-            int currProgType = SWPDBaseManager.getInstance().getCurrProgType();
+            int currProgType = DTVProgramManager.getInstance().getCurrProgType();
             if (currProgType > mBookChannelTypeArray.length - 1) {
                 return mBookChannelTypeArray[0];
             } else {
@@ -618,9 +621,9 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
             }
         }
 
-        if (mBookModel.bookInfo.type == SWBooking.BookType.TV.ordinal()) {
+        if (mBookModel.bookInfo.type == HBooking_Enum_ProgType.TV) {
             return getStrings(R.string.tv);
-        } else if (mBookModel.bookInfo.type == SWBooking.BookType.RADIO.ordinal()) {
+        } else if (mBookModel.bookInfo.type == HBooking_Enum_ProgType.RADIO) {
             return getStrings(R.string.radio);
         }
         return getStrings(R.string.tv);
@@ -760,13 +763,13 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
         return this;
     }
 
-    public BookDialog currTypeProgList(List<PDPInfo_t> currTypeProgList) {
+    public BookDialog currTypeProgList(List< HProg_Struct_ProgBasicInfo> currTypeProgList) {
         this.mCurrTypeProgList = currTypeProgList;
         mProgList.addAll(mCurrTypeProgList);
         return this;
     }
 
-    public BookDialog anotherTypeProgList(List<PDPInfo_t> anotherTypeProgList) {
+    public BookDialog anotherTypeProgList(List< HProg_Struct_ProgBasicInfo> anotherTypeProgList) {
         this.mAnotherTypeProgList = anotherTypeProgList;
         return this;
     }
@@ -1021,12 +1024,12 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
             mBookModel = new BookingModel();
         }
         if (mBookModel.bookInfo == null) {
-            mBookModel.bookInfo = new HSubforProg_t();
+            mBookModel.bookInfo = new HBooking_Struct_Timer();
         }
 
         mBookModel.bookInfo.schtype = getBookType();
         mBookModel.bookInfo.repeatway = getBookMode();
-        mBookModel.bookInfo.schway = SWBooking.BookWay.MANUAL.ordinal();
+        mBookModel.bookInfo.schway = HBooking_Enum_From.MANUAL;
 
         // 添加时才更新频道类型和频道
         if (!isBookEdit()) {
@@ -1040,37 +1043,37 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
     private int getBookType() {
         switch (mCurrTypePosition) {
             case BOOK_TYPE_STANDBY:
-                return SWBooking.BookSchType.NONE.ordinal();
+                return HBooking_Enum_Task.NONE;
             case BOOK_TYPE_PLAY:
-                return SWBooking.BookSchType.PLAY.ordinal();
+                return HBooking_Enum_Task.PLAY;
             case BOOK_TYPE_RECORD:
-                return SWBooking.BookSchType.RECORD.ordinal();
+                return HBooking_Enum_Task.RECORD;
         }
-        return SWBooking.BookSchType.RECORD.ordinal();
+        return HBooking_Enum_Task.RECORD;
     }
 
     private int getBookMode() {
         switch (mCurrModePosition) {
             case BOOK_MODE_ONCE:
-                return SWBooking.BookRepeatWay.ONCE.ordinal();
+                return HBooking_Enum_Repeat.ONCE;
             case BOOK_MODE_DAILY:
-                return SWBooking.BookRepeatWay.DAILY.ordinal();
+                return HBooking_Enum_Repeat.DAILY;
             case BOOK_MODE_WEEKLY:
-                return SWBooking.BookRepeatWay.WEEKLY.ordinal();
+                return HBooking_Enum_Repeat.WEEKLY;
             case BOOK_MODE_MONTHLY:
-                return SWBooking.BookRepeatWay.MONTHLY.ordinal();
+                return HBooking_Enum_Repeat.MONTHLY;
         }
-        return SWBooking.BookRepeatWay.ONCE.ordinal();
+        return HBooking_Enum_Repeat.ONCE;
     }
 
     private int getBookChannelType() {
         switch (mCurrChannelTypePosition) {
             case BOOK_CHANNEL_TYPE_TV:
-                return SWBooking.BookType.TV.ordinal();
+                return HBooking_Enum_ProgType.TV;
             case BOOK_CHANNEL_TYPE_RADIO:
-                return SWBooking.BookType.RADIO.ordinal();
+                return HBooking_Enum_ProgType.RADIO;
         }
-        return SWBooking.BookType.TV.ordinal();
+        return HBooking_Enum_ProgType.TV;
     }
 
     private boolean isBookEdit() {

@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.konkawise.dtv.R;
 
-import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 
 public class Utils {
     private static int[] lnbFreq0 = {5150, 5750, 9750, 10600, 11300};
@@ -46,7 +46,7 @@ public class Utils {
         }
     }
 
-    public static String getLnb(SatInfo_t satInfo) {
+    public static String getLnb(HProg_Struct_SatInfo satInfo) {
         if (satInfo.LnbType == 0) {
             if (satInfo.lnb_low == 9750) {
                 return "Uni" + satInfo.lnb_low + "/" + satInfo.lnb_high;
@@ -93,19 +93,19 @@ public class Utils {
         return 0;
     }
 
-    public static String getDiSEqC(SatInfo_t satInfo, String[] DiSEqcArray) {
+    public static String getDiSEqC(HProg_Struct_SatInfo satInfo, String[] DiSEqcArray) {
         if (satInfo.diseqc10_pos != 0) {
             return DiSEqcArray[satInfo.diseqc10_pos + 2];
         } else if (satInfo.diseqc10_tone != 0) {
             return DiSEqcArray[satInfo.diseqc10_tone];
         } else if (satInfo.diseqc12 != 0) {
-            return DiSEqcArray[satInfo.diseqc12_pos + 22];
+            return DiSEqcArray[satInfo.diseqc12 + 22];
         } else {
             return DiSEqcArray[satInfo.skewonoff];
         }
     }
 
-    public static String getMotorType(Context context, SatInfo_t satInfo) {
+    public static String getMotorType(Context context, HProg_Struct_SatInfo satInfo) {
         if (satInfo == null) return "";
 
         if (satInfo.diseqc12 == 0) {

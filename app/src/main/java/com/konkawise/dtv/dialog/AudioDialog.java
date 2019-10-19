@@ -8,10 +8,10 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.konkawise.dtv.DTVPlayerManager;
+import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWDJAPVRManager;
-import com.konkawise.dtv.SWFtaManager;
-import com.konkawise.dtv.SWPDBaseManager;
+import com.konkawise.dtv.DTVPVRManager;
 import com.konkawise.dtv.base.BaseItemFocusChangeDialogFragment;
 
 import java.util.ArrayList;
@@ -19,8 +19,8 @@ import java.util.List;
 
 import butterknife.BindArray;
 import butterknife.BindView;
-import vendor.konka.hardware.dtvmanager.V1_0.HKKAV_StreamType_t;
-import vendor.konka.hardware.dtvmanager.V1_0.OSDFTA_ProgParam_e;
+import vendor.konka.hardware.dtvmanager.V1_0.HPlayer_Enum_StreamType;
+import vendor.konka.hardware.dtvmanager.V1_0.HPlayer_Enum_PlayParam;
 
 public class AudioDialog extends BaseItemFocusChangeDialogFragment {
 
@@ -74,13 +74,13 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
         mTvTitle.setText(mTitle);
 
 
-        audioTrackPosition = SWFtaManager.getInstance().getCurrProgParam(OSDFTA_ProgParam_e.OSDFTA_TRACK);
+        audioTrackPosition = DTVPlayerManager.getInstance().getCurrProgParam(HPlayer_Enum_PlayParam.TRACK);
         mTvAudioTrack.setText(mAudioTrackArray[audioTrackPosition]);
 
         if (where == WHERE_TOPMOST) {
-            audioLanguagePosition = SWFtaManager.getInstance().getCurrProgParam(OSDFTA_ProgParam_e.OSDFTA_AUDIO);
-            ArrayList<String> audioNameList = SWPDBaseManager.getInstance().getCurrProgInfo().audioDB.audioName;
-            audioTypeList = SWPDBaseManager.getInstance().getCurrProgInfo().audioDB.ucAudStrType;
+            audioLanguagePosition = DTVPlayerManager.getInstance().getCurrProgParam(HPlayer_Enum_PlayParam.AUDIO);
+            ArrayList<String> audioNameList = DTVProgramManager.getInstance().getCurrProgInfo().audioDB.audioName;
+            audioTypeList = DTVProgramManager.getInstance().getCurrProgInfo().audioDB.ucAudStrType;
             mAudioLanguageArray = new String[audioNameList.size()];
             for (int i = 0, j = 1; i < audioNameList.size(); i++) {
                 Log.i(TAG, "audioNameList[" + i + "]: " + audioNameList.get(i) + " AudioTypeList[" + i + "]: " + audioTypeList.get(i));
@@ -91,10 +91,10 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
             }
             mTvAudioLanguage.setText(mAudioLanguageArray[audioLanguagePosition]);
         } else {
-            audioLanguagePosition = SWDJAPVRManager.getInstance().getCurrAudioIndex();
-            ArrayList<String> audioNameList = SWDJAPVRManager.getInstance().getAudioList().audioName;
-            audioTypeList = SWDJAPVRManager.getInstance().getAudioList().ucAudStrType;
-            audioPidList = SWDJAPVRManager.getInstance().getAudioList().sAudPid;
+            audioLanguagePosition = DTVPVRManager.getInstance().getCurrAudioIndex();
+            ArrayList<String> audioNameList = DTVPVRManager.getInstance().getAudioList().audioName;
+            audioTypeList = DTVPVRManager.getInstance().getAudioList().ucAudStrType;
+            audioPidList = DTVPVRManager.getInstance().getAudioList().sAudPid;
             mAudioLanguageArray = new String[audioNameList.size()];
             for (int i = 0, j = 1; i < audioNameList.size(); i++) {
                 Log.i(TAG, "audioNameList2[" + i + "] : " + audioNameList.get(i) + " AudioTypeList2[" + i + "] : " + audioTypeList.get(i));
@@ -113,59 +113,59 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
 
     private String getAudioNameByType(int streamType) {
         switch (streamType) {
-            case HKKAV_StreamType_t.KKAV_PRIVATE_SECTIONS:
-            case HKKAV_StreamType_t.KKAV_PRIVATE_PES:
+            case HPlayer_Enum_StreamType.PRIVATE_SECTIONS:
+            case HPlayer_Enum_StreamType.PRIVATE_PES:
                 return getResources().getString(R.string.audio_language_type_private);
 
-            case HKKAV_StreamType_t.KKAV_AUDIO_MPEG1:
+            case HPlayer_Enum_StreamType.AUDIO_MPEG1:
                 return getResources().getString(R.string.audio_language_type_mpeg1);
 
-            case HKKAV_StreamType_t.KKAV_AUDIO_MPEG2:
+            case HPlayer_Enum_StreamType.AUDIO_MPEG2:
                 return getResources().getString(R.string.audio_language_type_mpeg2);
 
-            case HKKAV_StreamType_t.KKAV_AUDIO_AAC_ADTS:
-            case HKKAV_StreamType_t.KKAV_AUDIO_AAC_LATM:
-            case HKKAV_StreamType_t.KKAV_AUDIO_AAC_RAW:
+            case HPlayer_Enum_StreamType.AUDIO_AAC_ADTS:
+            case HPlayer_Enum_StreamType.AUDIO_AAC_LATM:
+            case HPlayer_Enum_StreamType.AUDIO_AAC_RAW:
                 return getResources().getString(R.string.audio_language_type_aac);
 
-            case HKKAV_StreamType_t.KKAV_AUDIO_AC3:
+            case HPlayer_Enum_StreamType.AUDIO_AC3:
                 return getResources().getString(R.string.audio_language_type_ac3);
 
-            case HKKAV_StreamType_t.KKAV_AUDIO_AC3_PLUS:
+            case HPlayer_Enum_StreamType.AUDIO_AC3_PLUS:
                 return getResources().getString(R.string.audio_language_type_ac3_plus);
 
-            case HKKAV_StreamType_t.KKAV_AUDIO_DTS:
+            case HPlayer_Enum_StreamType.AUDIO_DTS:
                 return getResources().getString(R.string.audio_language_type_dts);
 
-            case HKKAV_StreamType_t.KKAV_AUDIO_LPCM:
+            case HPlayer_Enum_StreamType.AUDIO_LPCM:
                 return getResources().getString(R.string.audio_language_type_lpcm);
 
-            case HKKAV_StreamType_t.KKAV_AUDIO_WM9:
+            case HPlayer_Enum_StreamType.AUDIO_WM9:
                 return getResources().getString(R.string.audio_language_type_wm9);
 
 
-            case HKKAV_StreamType_t.KKAV_MHEG:
+            case HPlayer_Enum_StreamType.MHEG:
                 return getResources().getString(R.string.audio_language_type_mheg);
 
-            case HKKAV_StreamType_t.KKAV_DSM_CC:
+            case HPlayer_Enum_StreamType.DSM_CC:
                 return getResources().getString(R.string.audio_language_type_dsm_cc);
 
-            case HKKAV_StreamType_t.KKAV_TYPE_H2221:
+            case HPlayer_Enum_StreamType.TYPE_H2221:
                 return getResources().getString(R.string.audio_language_type_h2221);
 
-            case HKKAV_StreamType_t.KKAV_TYPE_A:
+            case HPlayer_Enum_StreamType.TYPE_A:
                 return getResources().getString(R.string.audio_language_type_a);
 
-            case HKKAV_StreamType_t.KKAV_TYPE_B:
+            case HPlayer_Enum_StreamType.TYPE_B:
                 return getResources().getString(R.string.audio_language_type_b);
 
-            case HKKAV_StreamType_t.KKAV_TYPE_C:
+            case HPlayer_Enum_StreamType.TYPE_C:
                 return getResources().getString(R.string.audio_language_type_c);
 
-            case HKKAV_StreamType_t.KKAV_TYPE_D:
+            case HPlayer_Enum_StreamType.TYPE_D:
                 return getResources().getString(R.string.audio_language_type_d);
 
-            case HKKAV_StreamType_t.KKAV_TYPE_AUX:
+            case HPlayer_Enum_StreamType.TYPE_AUX:
                 return getResources().getString(R.string.audio_language_type_aux);
 
         }
@@ -211,7 +211,7 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
                         if (--audioTrackPosition < 0)
                             audioTrackPosition = mAudioTrackArray.length - 1;
                         mTvAudioTrack.setText(mAudioTrackArray[audioTrackPosition]);
-                        SWFtaManager.getInstance().setCurrProgParam( OSDFTA_ProgParam_e.OSDFTA_TRACK, audioTrackPosition);
+                        DTVPlayerManager.getInstance().setCurrProgParam(HPlayer_Enum_PlayParam.TRACK, audioTrackPosition);
                         break;
 
                     case ITEM_AUDIO_LANGUAGE:
@@ -221,9 +221,9 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
                             audioLanguagePosition = mAudioLanguageArray.length - 1;
                         mTvAudioLanguage.setText(mAudioLanguageArray[audioLanguagePosition]);
                         if (where == WHERE_TOPMOST) {
-                            SWFtaManager.getInstance().setCurrProgParam(OSDFTA_ProgParam_e.OSDFTA_AUDIO, audioLanguagePosition);
+                            DTVPlayerManager.getInstance().setCurrProgParam(HPlayer_Enum_PlayParam.AUDIO, audioLanguagePosition);
                         } else {
-                            SWDJAPVRManager.getInstance().setAudioPid(audioPidList.get(audioLanguagePosition), audioTypeList.get(audioLanguagePosition));
+                            DTVPVRManager.getInstance().setAudioPid(audioPidList.get(audioLanguagePosition), audioTypeList.get(audioLanguagePosition));
                         }
 
                         break;
@@ -236,7 +236,7 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
                         if (++audioTrackPosition > mAudioTrackArray.length - 1)
                             audioTrackPosition = 0;
                         mTvAudioTrack.setText(mAudioTrackArray[audioTrackPosition]);
-                        SWFtaManager.getInstance().setCurrProgParam(OSDFTA_ProgParam_e.OSDFTA_TRACK, audioTrackPosition);
+                        DTVPlayerManager.getInstance().setCurrProgParam(HPlayer_Enum_PlayParam.TRACK, audioTrackPosition);
                         break;
 
                     case ITEM_AUDIO_LANGUAGE:
@@ -245,7 +245,7 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
                         if (++audioLanguagePosition > mAudioLanguageArray.length - 1)
                             audioLanguagePosition = 0;
                         mTvAudioLanguage.setText(mAudioLanguageArray[audioLanguagePosition]);
-                        SWFtaManager.getInstance().setCurrProgParam(OSDFTA_ProgParam_e.OSDFTA_AUDIO, audioLanguagePosition);
+                        DTVPlayerManager.getInstance().setCurrProgParam(HPlayer_Enum_PlayParam.AUDIO, audioLanguagePosition);
                         break;
                 }
             }

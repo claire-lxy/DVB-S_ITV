@@ -11,18 +11,18 @@ import com.konkawise.dtv.adapter.base.BaseListViewHolder;
 import java.util.ArrayList;
 import java.util.List;
 
-import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
 
-public class ChannelEditAdapter extends BaseListViewAdapter<PDPMInfo_t> {
+public class ChannelEditAdapter extends BaseListViewAdapter<HProg_Struct_ProgInfo> {
     private SparseBooleanArray mSelectMap = new SparseBooleanArray();
     private SparseBooleanArray mDeleteMap = new SparseBooleanArray();
 
-    public ChannelEditAdapter(Context context, List<PDPMInfo_t> datas) {
+    public ChannelEditAdapter(Context context, List<HProg_Struct_ProgInfo> datas) {
         super(context, datas, R.layout.channel_edit_list_item);
     }
 
     @Override
-    protected void convert(BaseListViewHolder holder, int position, PDPMInfo_t item) {
+    protected void convert(BaseListViewHolder holder, int position, HProg_Struct_ProgInfo item) {
         holder.setText(R.id.tv_channel_num, String.valueOf(item.PShowNo))
                 .setText(R.id.tv_program_nanme, item.Name);
 
@@ -60,8 +60,8 @@ public class ChannelEditAdapter extends BaseListViewAdapter<PDPMInfo_t> {
         return mDeleteMap;
     }
 
-    public List<PDPMInfo_t> moveChannels() {
-        List<PDPMInfo_t> moveChannels = new ArrayList<>();
+    public List<HProg_Struct_ProgInfo> moveChannels() {
+        List<HProg_Struct_ProgInfo> moveChannels = new ArrayList<>();
         for (int i = 0; i < mDatas.size(); i++) {
             if (mSelectMap.get(i)) {
                 moveChannels.add(getItem(i));

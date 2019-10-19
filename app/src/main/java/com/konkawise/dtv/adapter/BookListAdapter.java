@@ -6,11 +6,12 @@ import com.konkawise.dtv.R;
 import com.konkawise.dtv.adapter.base.BaseListViewAdapter;
 import com.konkawise.dtv.adapter.base.BaseListViewHolder;
 import com.konkawise.dtv.bean.BookingModel;
-import com.sw.dvblib.SWBooking;
 
 import java.util.List;
 
-import vendor.konka.hardware.dtvmanager.V1_0.HSubforProg_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Enum_Repeat;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Enum_Task;
+import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Struct_Timer;
 
 public class BookListAdapter extends BaseListViewAdapter<BookingModel> {
 
@@ -28,20 +29,20 @@ public class BookListAdapter extends BaseListViewAdapter<BookingModel> {
                 .setText(R.id.tv_book_type, item.getBookType(mContext));
     }
 
-    private float getDateTextSize(HSubforProg_t bookInfo) {
+    private float getDateTextSize(HBooking_Struct_Timer bookInfo) {
         if (bookInfo == null) return 15;
 
         float textSize = 15;
-        if (bookInfo.schtype == SWBooking.BookSchType.RECORD.ordinal()) {
-            if (bookInfo.repeatway == SWBooking.BookRepeatWay.DAILY.ordinal()) {
+        if (bookInfo.schtype == HBooking_Enum_Task.RECORD) {
+            if (bookInfo.repeatway == HBooking_Enum_Repeat.DAILY) {
                 textSize = 19;
             }
         }
 
-        if (bookInfo.schtype == SWBooking.BookSchType.PLAY.ordinal()
-                || bookInfo.schtype == SWBooking.BookSchType.NONE.ordinal()) {
-            if (bookInfo.repeatway == SWBooking.BookRepeatWay.ONCE.ordinal()
-                    || bookInfo.repeatway == SWBooking.BookRepeatWay.DAILY.ordinal()) {
+        if (bookInfo.schtype == HBooking_Enum_Task.PLAY
+                || bookInfo.schtype == HBooking_Enum_Task.NONE) {
+            if (bookInfo.repeatway == HBooking_Enum_Repeat.ONCE
+                    || bookInfo.repeatway == HBooking_Enum_Repeat.DAILY) {
                 textSize = 19;
             }
         }

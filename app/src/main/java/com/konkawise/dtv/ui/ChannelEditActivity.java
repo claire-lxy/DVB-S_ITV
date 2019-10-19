@@ -11,8 +11,8 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.SWPDBaseManager;
 import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.adapter.ChannelEditAdapter;
 import com.konkawise.dtv.base.BaseActivity;
@@ -37,10 +37,10 @@ import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
-import vendor.konka.hardware.dtvmanager.V1_0.HGroup_E;
-import vendor.konka.hardware.dtvmanager.V1_0.PDPEdit_t;
-import vendor.konka.hardware.dtvmanager.V1_0.PDPMInfo_t;
-import vendor.konka.hardware.dtvmanager.V1_0.SatInfo_t;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Group;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgEditInfo;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 
 public class ChannelEditActivity extends BaseActivity {
     private static final int EDIT_TYPE_LOCK = 1 << 1;
@@ -104,20 +104,20 @@ public class ChannelEditActivity extends BaseActivity {
     }
 
     // 存储原始或保存后的喜爱分组
-    private SparseArray<List<PDPMInfo_t>> mFavChannelsMap = new SparseArray<>();
+    private SparseArray<List<HProg_Struct_ProgInfo>> mFavChannelsMap = new SparseArray<>();
     // 存储编辑操作的喜爱分组
-    private SparseArray<List<PDPMInfo_t>> mEditFavChannelsMap;
+    private SparseArray<List<HProg_Struct_ProgInfo>> mEditFavChannelsMap;
     // 存储编辑操作的pid
     private SparseArray<int[]> mEditPidMap = new SparseArray<>(); // key:progNo
     // 存储编辑操作的sortType
-    private int mEditSortType = SWPDBaseManager.getInstance().getSortType();
+    private int mEditSortType = DTVProgramManager.getInstance().getSortType();
     // 存储编辑操作的rename
     private SparseArray<String> mEditRenameMap = new SparseArray<>(); // key:progNo
 
-    private List<SatInfo_t> mSatList;
+    private List<HProg_Struct_SatInfo> mSatList;
     private int mCurrSatPosition;
 
-    private List<PDPMInfo_t> ltTotalProgList = new ArrayList<>();
+    private List<HProg_Struct_ProgInfo> ltTotalProgList = new ArrayList<>();
     private boolean loadFlag = true;
     private boolean analyFavFlag = true;
 
@@ -141,7 +141,7 @@ public class ChannelEditActivity extends BaseActivity {
 
     @Override
     protected void setup() {
-        SWPDBaseManager.getInstance().setCurrGroup(HGroup_E.TOTAL_GROUP, 1);
+        DTVProgramManager.getInstance().setCurrGroup(HProg_Enum_Group.TOTAL_GROUP, 1);
         initChannelList();
         mTvSatelliteName.setText(R.string.all);
     }
@@ -171,7 +171,7 @@ public class ChannelEditActivity extends BaseActivity {
         @Override
         protected void loadBackground() {
             ChannelEditActivity context = mWeakReference.get();
-            List<PDPMInfo_t> channelList = context.getChannelList();
+            List<HProg_Struct_ProgInfo> channelList = context.getChannelList();
             context.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -185,7 +185,7 @@ public class ChannelEditActivity extends BaseActivity {
                 }
             });
             if (context.analyFavFlag) {
-                context.mFavChannelsMap = SWPDBaseManager.getInstance().getFavChannelMap(context.ltTotalProgList);
+                context.mFavChannelsMap = DTVProgramManager.getInstance().getFavChannelMap(context.ltTotalProgList);
                 context.mEditFavChannelsMap = mWeakReference.get().mFavChannelsMap.clone();
             }
         }
@@ -205,7 +205,7 @@ public class ChannelEditActivity extends BaseActivity {
     private void updateChannelList() {
         if (mLoadChannelRunnable == null) {
             mLoadChannelRunnable = new LoadChannelRunnable(this);
-            PDPMInfo_t currProgInfo = SWPDBaseManager.getInstance().getCurrProgInfo();
+            HProg_Struct_ProgInfo currProgInfo = DTVProgramManager.getInstance().getCurrProgInfo();
             if (currProgInfo != null) {
                 mLoadChannelRunnable.scrollToProgIndex = currProgInfo.ProgIndex;
             }
@@ -221,10 +221,10 @@ public class ChannelEditActivity extends BaseActivity {
         ThreadPoolManager.getInstance().execute(mLoadChannelRunnable);
     }
 
-    private List<SatInfo_t> getSateList() {
+    private List<HProg_Struct_SatInfo> getSateList() {
         if (mSatList == null) {
             mSatList = new ArrayList<>();
-            List<SatInfo_t> allSatList = SWPDBaseManager.getInstance().getAllSatList(this);
+            List<HProg_Struct_SatInfo> allSatList = DTVProgramManager.getInstance().getAllSatList(this);
             if (allSatList != null && !allSatList.isEmpty()) {
                 mSatList.addAll(allSatList);
             }
@@ -289,7 +289,7 @@ public class ChannelEditActivity extends BaseActivity {
     }
 
     private void resetSortType() {
-        SWPDBaseManager.getInstance().setSortType(mEditSortType);
+        DTVProgramManager.getInstance().setSortType(mEditSortType);
     }
 
     /**
@@ -297,13 +297,12 @@ public class ChannelEditActivity extends BaseActivity {
      */
     private void saveFavorite() {
         for (int i = 0; i < mEditFavChannelsMap.size(); i++) {
-            List<PDPMInfo_t> editFavoriteList = mEditFavChannelsMap.get(i);
+            List<HProg_Struct_ProgInfo> editFavoriteList = mEditFavChannelsMap.get(i);
             if (editFavoriteList == null) continue;
 
             mFavChannelsMap.put(i, editFavoriteList);
 
-            SWPDBaseManager.getInstance().editFavProgList(i,
-                    getFavoriteProgIndexs(mFavChannelsMap.get(i)), mFavChannelsMap.get(i).size(), 1);
+            DTVProgramManager.getInstance().editFavProgList(i, getFavoriteProgIndexs(mFavChannelsMap.get(i)), 1);
         }
     }
 
@@ -311,9 +310,9 @@ public class ChannelEditActivity extends BaseActivity {
      * 保存频道编辑，lock、skip、rename、delete
      */
     private void saveEditChannel() {
-        ArrayList<PDPEdit_t> editList = getEditList();
+        ArrayList<HProg_Struct_ProgEditInfo> editList = getEditList();
         if (editList != null && !editList.isEmpty()) {
-            SWPDBaseManager.getInstance().editGroupProgList(editList);
+            DTVProgramManager.getInstance().editGroupProgList(editList);
         }
     }
 
@@ -322,12 +321,12 @@ public class ChannelEditActivity extends BaseActivity {
      */
     private void savePid() {
         if (mAdapter.getCount() > 0) {
-            List<PDPMInfo_t> channelList = mAdapter.getData();
+            List<HProg_Struct_ProgInfo> channelList = mAdapter.getData();
             if (channelList != null && !channelList.isEmpty() && mEditPidMap != null && mEditPidMap.size() > 0) {
                 for (int i = 0; i < channelList.size(); i++) {
                     int[] pids = mEditPidMap.get(channelList.get(i).ProgNo);
                     if (pids != null && pids.length == 3) {
-                        SWPDBaseManager.getInstance().setServicePID(i, pids[0], pids[1], pids[2]);
+                        DTVProgramManager.getInstance().setServicePID(i, pids[0], pids[1], pids[2]);
                     }
                 }
             }
@@ -338,7 +337,7 @@ public class ChannelEditActivity extends BaseActivity {
      * 保存频道编辑，sortType
      */
     private void saveSortType() {
-        mEditSortType = SWPDBaseManager.getInstance().getSortType();
+        mEditSortType = DTVProgramManager.getInstance().getSortType();
     }
 
     private void showFavDialog() {
@@ -383,11 +382,11 @@ public class ChannelEditActivity extends BaseActivity {
         }
         int binaryFavFlag = Integer.valueOf(sb.toString(), 2);
         int hexFavFlag = Integer.valueOf(Integer.toHexString(binaryFavFlag), 16);
-        PDPMInfo_t favChannelInfo = mAdapter.getItem(position);
+        HProg_Struct_ProgInfo favChannelInfo = mAdapter.getItem(position);
         favChannelInfo.FavFlag = hexFavFlag;
 
         for (int favIndex = mEditFavChannelsMap.size() - 1; favIndex >= 0; favIndex--) {
-            List<PDPMInfo_t> favChannelList = mEditFavChannelsMap.get(favIndex);
+            List<HProg_Struct_ProgInfo> favChannelList = mEditFavChannelsMap.get(favIndex);
             if (favChannelList == null) {
                 favChannelList = new ArrayList<>();
             }
@@ -417,14 +416,14 @@ public class ChannelEditActivity extends BaseActivity {
      *
      * @return 返回在该喜爱分组中的索引值position，不存在返回-1
      */
-    private int isChannelInFavGroup(List<PDPMInfo_t> favoriteChannelList, PDPMInfo_t favChannelInfo) {
+    private int isChannelInFavGroup(List<HProg_Struct_ProgInfo> favoriteChannelList, HProg_Struct_ProgInfo favChannelInfo) {
         for (int i = 0; i < favoriteChannelList.size(); i++) {
             if (favoriteChannelList.get(i).ProgIndex == favChannelInfo.ProgIndex) return i;
         }
         return -1;
     }
 
-    private int[] getFavoriteProgIndexs(List<PDPMInfo_t> favoriteChannelList) {
+    private int[] getFavoriteProgIndexs(List<HProg_Struct_ProgInfo> favoriteChannelList) {
         int[] favoriteProgIndexs = new int[favoriteChannelList.size()];
         for (int i = 0; i < favoriteChannelList.size(); i++) {
             favoriteProgIndexs[i] = favoriteChannelList.get(i).ProgIndex;
@@ -436,9 +435,9 @@ public class ChannelEditActivity extends BaseActivity {
      * 频道编辑，move
      */
     private void moveChannels() {
-        PDPMInfo_t item = mAdapter.getItem(mCurrSelectPosition); // 移动前选中的频道信息
+        HProg_Struct_ProgInfo item = mAdapter.getItem(mCurrSelectPosition); // 移动前选中的频道信息
 
-        List<PDPMInfo_t> moveChannels = mAdapter.moveChannels();
+        List<HProg_Struct_ProgInfo> moveChannels = mAdapter.moveChannels();
         if (moveChannels != null && !moveChannels.isEmpty()) {
             mAdapter.addData(getChannelMoveAfterPosition(item), moveChannels);
             mAdapter.clearSelect();
@@ -451,7 +450,7 @@ public class ChannelEditActivity extends BaseActivity {
     /**
      * 获取频道移动后勾选的频道插入列表位置
      */
-    private int getChannelMoveAfterPosition(PDPMInfo_t moveBeforeChannelInfo) {
+    private int getChannelMoveAfterPosition(HProg_Struct_ProgInfo moveBeforeChannelInfo) {
         for (int i = 0; i < mAdapter.getCount(); i++) {
             if (moveBeforeChannelInfo.ProgIndex == mAdapter.getItem(i).ProgIndex) {
                 return i;
@@ -482,7 +481,7 @@ public class ChannelEditActivity extends BaseActivity {
      * 频道编辑，lock、skip
      */
     private void editChannel(@EditType int editType) {
-        List<PDPMInfo_t> channelList = mAdapter.getData();
+        List<HProg_Struct_ProgInfo> channelList = mAdapter.getData();
         if (channelList == null || channelList.isEmpty()) return;
 
         if (isMulti()) {
@@ -498,10 +497,10 @@ public class ChannelEditActivity extends BaseActivity {
         mAdapter.clearSelect();
     }
 
-    private void editLockOrSkip(List<PDPMInfo_t> channelList, @EditType int editType, int position) {
+    private void editLockOrSkip(List<HProg_Struct_ProgInfo> channelList, @EditType int editType, int position) {
         recordSaveData(EDIT_SAVE_CHANNEL);
 
-        PDPMInfo_t newChannelInfo = channelList.get(position);
+        HProg_Struct_ProgInfo newChannelInfo = channelList.get(position);
         switch (editType) {
             case EDIT_TYPE_HIDE:
                 newChannelInfo.HideFlag = newChannelInfo.HideFlag == 1 ? 0 : 1;
@@ -519,7 +518,7 @@ public class ChannelEditActivity extends BaseActivity {
     public void renameChannel(String newName) {
         recordSaveData(EDIT_SAVE_CHANNEL);
 
-        PDPMInfo_t channelInfo = mAdapter.getItem(mCurrSelectPosition);
+        HProg_Struct_ProgInfo channelInfo = mAdapter.getItem(mCurrSelectPosition);
         channelInfo.Name = newName;
         mAdapter.updateData(mCurrSelectPosition, channelInfo);
         mAdapter.notifyDataSetChanged();
@@ -533,7 +532,7 @@ public class ChannelEditActivity extends BaseActivity {
     private void deleteChannels() {
         recordSaveData(EDIT_SAVE_CHANNEL);
 
-        List<PDPMInfo_t> channelList = mAdapter.getData();
+        List<HProg_Struct_ProgInfo> channelList = mAdapter.getData();
         if (channelList != null && !channelList.isEmpty()) {
             for (int i = 0; i < channelList.size(); i++) {
                 if (mAdapter.getSelectMap().get(i)) {
@@ -547,14 +546,14 @@ public class ChannelEditActivity extends BaseActivity {
         mAdapter.clearSelect();
     }
 
-    private ArrayList<PDPEdit_t> getEditList() {
-        List<PDPMInfo_t> channelList = mAdapter.getData();
+    private ArrayList<HProg_Struct_ProgEditInfo> getEditList() {
+        List<HProg_Struct_ProgInfo> channelList = mAdapter.getData();
         if (channelList == null || channelList.isEmpty()) return null;
 
-        ArrayList<PDPEdit_t> editList = new ArrayList<>();
-        List<PDPMInfo_t> ltRmProgList = new ArrayList<>();
+        ArrayList<HProg_Struct_ProgEditInfo> editList = new ArrayList<>();
+        List<HProg_Struct_ProgInfo> ltRmProgList = new ArrayList<>();
         for (int i = 0; i < channelList.size(); i++) {
-            PDPEdit_t editInfo = new PDPEdit_t();
+            HProg_Struct_ProgEditInfo editInfo = new HProg_Struct_ProgEditInfo();
             editInfo.used = 1;
             editInfo.progindex = channelList.get(i).ProgIndex;
             editInfo.delFlag = mAdapter.getDeleteMap().get(i) ? 1 : 0;
@@ -578,11 +577,11 @@ public class ChannelEditActivity extends BaseActivity {
         return editList;
     }
 
-    private List<PDPMInfo_t> getChannelList() {
+    private List<HProg_Struct_ProgInfo> getChannelList() {
         if (loadFlag) {
-            ltTotalProgList = SWPDBaseManager.getInstance().getCurrGroupProgList(new int[1]);
+            ltTotalProgList = DTVProgramManager.getInstance().getCurrGroupProgInfoList(new int[1]);
         }
-        return SWPDBaseManager.getInstance().getTotalGroupSatProgList(ltTotalProgList, getSateList().get(mCurrSatPosition).SatIndex);
+        return DTVProgramManager.getInstance().getTotalGroupSatProgList(ltTotalProgList, getSateList().get(mCurrSatPosition).SatIndex);
     }
 
 
@@ -626,7 +625,7 @@ public class ChannelEditActivity extends BaseActivity {
     private void showSortDialog() {
         if (mAdapter.getCount() <= 0) return;
 
-        int currSortType = SWPDBaseManager.getInstance().getSortType();
+        int currSortType = DTVProgramManager.getInstance().getSortType();
         new CommCheckItemDialog()
                 .title(getString(R.string.channel_sort))
                 .content(Arrays.asList(mSortArray))
@@ -635,7 +634,7 @@ public class ChannelEditActivity extends BaseActivity {
                     @Override
                     public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
                         if (currSortType != (position + 1)) {
-                            SWPDBaseManager.getInstance().setSortType(position + 1);
+                            DTVProgramManager.getInstance().setSortType(position + 1);
                             loadFlag = true;
                             analyFavFlag = true;
                             updateChannelList();
@@ -656,7 +655,7 @@ public class ChannelEditActivity extends BaseActivity {
         if (mEditPidMap.get(progNo) != null && mEditPidMap.get(progNo).length == 3) {
             currPids = mEditPidMap.get(progNo);
         } else {
-            currPids = SWPDBaseManager.getInstance().getServicePID(progNo);
+            currPids = DTVProgramManager.getInstance().getServicePID(progNo);
         }
         if (currPids == null) return;
 
