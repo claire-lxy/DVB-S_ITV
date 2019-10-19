@@ -85,7 +85,94 @@
         <item>LNB-15</item>
         <item>LNB-16</item>
         <item>Auto</item>
+    </string-array>
 
+    <string-array name="DiSEqc_mode">
+        <item>OFF</item>
+        <item>ToneBurst</item>
+        <item>DiSEqC 1.0</item>
+        <item>DiSEqC 1.1</item>
+        <item>Unicable</item>
+    </string-array>
+
+    <string-array name="tone_burst">
+        <item>ToneBurst A</item>
+        <item>ToneBurst B</item>
+    </string-array>
+
+    <string-array name="DiSEqc10">
+        <item>DiSEqC A</item>
+        <item>DiSEqC B</item>
+        <item>DiSEqC C</item>
+        <item>DiSEqC D</item>
+    </string-array>
+
+    <string-array name="DiSEqC11">
+        <item>LNB-1</item>
+        <item>LNB-2</item>
+        <item>LNB-3</item>
+        <item>LNB-4</item>
+        <item>LNB-5</item>
+        <item>LNB-6</item>
+        <item>LNB-7</item>
+        <item>LNB-8</item>
+        <item>LNB-9</item>
+        <item>LNB-10</item>
+        <item>LNB-11</item>
+        <item>LNB-12</item>
+        <item>LNB-13</item>
+        <item>LNB-14</item>
+        <item>LNB-15</item>
+        <item>LNB-16</item>
+    </string-array>
+
+    <string-array name="unicable">
+        <item>1 Sat 4*SCR</item>
+        <item>2 Sat 8*SCR</item>
+        <item>dCSS</item>
+    </string-array>
+
+    <string-array name="position">
+        <item>A</item>
+        <item>B</item>
+    </string-array>
+
+    <string-array name="frequency_1Sat4SCR">
+        <item>1210</item>
+        <item>1420</item>
+        <item>1680</item>
+        <item>2040</item>
+    </string-array>
+
+    <string-array name="frequency_2Sat8SCR">
+        <item>1284</item>
+        <item>1400</item>
+        <item>1516</item>
+        <item>1632</item>
+        <item>1748</item>
+        <item>1864</item>
+        <item>1980</item>
+        <item>2096</item>
+    </string-array>
+
+    <string-array name="frequency_dCSS">
+        <item>1210</item>
+        <item>1420</item>
+        <item>1680</item>
+        <item>2040</item>
+        <item>985</item>
+        <item>1050</item>
+        <item>1115</item>
+        <item>1275</item>
+        <item>1340</item>
+        <item>1485</item>
+        <item>1550</item>
+        <item>1615</item>
+        <item>1745</item>
+        <item>1810</item>
+        <item>1875</item>
+        <item>1940</item>
+        <item>0</item>
     </string-array>
 
     <!-- sort排序方式 -->

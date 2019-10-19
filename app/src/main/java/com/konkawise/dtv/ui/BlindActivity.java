@@ -54,9 +54,6 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
     @BindView(R.id.tv_lnb)
     TextView mTvLnb;
 
-    @BindView(R.id.et_lnb)
-    EditText mEtLnb;
-
     @BindView(R.id.iv_lnb_right)
     ImageView mIvLnbRight;
 
@@ -191,9 +188,6 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
                 case ITEM_LNB:
                     if (--mCurrentLnb < 0) mCurrentLnb = mLnbArray.length - 1;
                     lnbChange();
-
-                    if (mCurrentLnb == 0) mEtLnb.requestFocus();
-                    else mTvLnb.requestFocus();
                     break;
                 case ITEM_DISEQC:
                     if (--mCurrentDiseqc < 0) mCurrentDiseqc = mDiseqcArray.length - 1;
@@ -218,9 +212,6 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
                 case ITEM_LNB:
                     if (++mCurrentLnb > mLnbArray.length - 1) mCurrentLnb = 0;
                     lnbChange();
-
-                    if (mCurrentLnb == 0) mEtLnb.requestFocus();
-                    else mTvLnb.requestFocus();
                     break;
                 case ITEM_DISEQC:
                     if (++mCurrentDiseqc > mDiseqcArray.length - 1) mCurrentDiseqc = 0;
@@ -233,6 +224,56 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
                     lnbPowerChange();
                     break;
             }
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_0) {
+            inputLnb("0");
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_1) {
+            inputLnb("1");
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_2) {
+            inputLnb("2");
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_3) {
+            inputLnb("3");
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_4) {
+            inputLnb("4");
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_5) {
+            inputLnb("5");
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_6) {
+            inputLnb("6");
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_7) {
+            inputLnb("7");
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_8) {
+            inputLnb("8");
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_9) {
+            inputLnb("9");
+            return true;
         }
 
         return super.onKeyDown(keyCode, event);
@@ -270,7 +311,7 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
 
         HProg_Struct_SatInfo satInfo = DTVProgramManager.getInstance().getSatList().get(mCurrentSatellite);
 
-        String lnb = mEtLnb.getText().toString();
+        String lnb = mTvLnb.getText().toString();
         if (TextUtils.isEmpty(lnb)) lnb = "0";
         satInfo.LnbType = Utils.getLnbType(mCurrentLnb);
         satInfo.lnb_low = Utils.getLnbLow(mCurrentLnb, mCurrentLnb == 0 ? Integer.parseInt(lnb) : 0);
@@ -281,9 +322,6 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
 
         satInfo.diseqc10_pos = Utils.getDiSEqC10Pos(mCurrentDiseqc);
         satInfo.diseqc10_tone = Utils.getDiSEqC10Tone(mCurrentDiseqc);
-//        satInfo.diseqc12_pos = Utils.getDiSEqC12Pos(mCurrentDiseqc);
-//        satInfo.diseqc12 = Utils.getDiSEqC12(mCurrentDiseqc);
-        satInfo.skewonoff = Utils.getSkewOnOff(mCurrentDiseqc);
 
         if (TextUtils.equals(mTv22khz.getText().toString(), getString(R.string.off))) {
             satInfo.switch_22k = 0;
@@ -302,23 +340,22 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
      * Lnb参数修改
      */
     private void lnbChange() {
-        mEtLnb.setVisibility(mCurrentLnb == 0 ? View.VISIBLE : View.GONE);
-        mEtLnb.setText(mLnbArray[0]);
-        mTvLnb.setVisibility(mCurrentLnb == 0 ? View.GONE : View.VISIBLE);
-        mTvLnb.setText(mLnbArray[mCurrentLnb]);
-        RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) mIvLnbLeft.getLayoutParams();
-        if (lp != null) {
-            if (mCurrentLnb == 0) {
-                lp.addRule(RelativeLayout.LEFT_OF, 0);
-                lp.leftMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 255, getResources().getDisplayMetrics());
-            } else {
-                lp.addRule(RelativeLayout.LEFT_OF, R.id.tv_lnb);
-                lp.leftMargin = 0;
-            }
-            mIvLnbLeft.setLayoutParams(lp);
+        if (mCurrentLnb == 0) {
+            mTvLnb.setText(mLnbArray[0]);
+        } else {
+            mTvLnb.setText(mLnbArray[mCurrentLnb]);
         }
 
         notify22kChange();
+    }
+
+    private void inputLnb(String inputNumber) {
+        if (mCurrentLnb == 0 && mCurrentSelectItem == ITEM_LNB) {
+            if (mTvLnb.getText().toString().length() >= 4) {
+                mTvLnb.setText("");
+            }
+            mTvLnb.append(inputNumber);
+        }
     }
 
     /**

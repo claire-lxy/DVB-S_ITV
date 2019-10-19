@@ -44,6 +44,11 @@ public class Constants {
     public static final int DVB_SELECT_TYPE_INSTALLATION = 0x8001;
     public static final int DVB_SELECT_TYPE_SEARCH = 0x8002;
 
+    // item select type
+    public static final int STEP_TYPE_NONE_STEP = 0x9001;
+    public static final int STEP_TYPE_PLUS_STEP = 0x9002;
+    public static final int STEP_TYPE_MINUS_STEP = 0x9003;
+
     // DiSEqC index
     public static final int DISEQC_A = 0;
     public static final int DISEQC_B = 1;
@@ -72,6 +77,19 @@ public class Constants {
     public static final int SEARCH_TYPE_EDITMANUAL = 3;
     public static final int SEARCH_TYPE_T2MANUAL = 4;
     public static final int SEARCH_TYPE_T2AUTO = 5;
+
+    public static final int MOTOR_TYPE_OFF = 0;
+    public static final int MOTOR_TYPE_DISEQC = 1;
+    public static final int MOTOR_TYPE_USALS = 2;
+
+    // diseqc10_pos=0，OFF或ToneBurst
+    public static final int DISEQC1X_OFF_OR_TONEBURST = 0;
+    // diseqc10_pos=1~4，DiSEqC A~D
+    public static final int DISEQC1X_DISEQC_MIN_RANGE = 1;
+    public static final int DISEQC1X_DISEQC_MAX_RANGE = 4;
+    // diseqc10_pos=5~16，LNB 1~16
+    public static final int DISEQC1X_LNB_MIN_RANGE = 5;
+    public static final int DISEQC1X_LNB_MAX_RANGE = 16;
 
     public interface IntentKey {
         String INTENT_SATELLITE_INDEX = "satelliteIndex";

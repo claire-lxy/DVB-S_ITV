@@ -27,4 +27,20 @@ public class ItemFocusChangeDelegate {
             textView.setBackgroundResource(currSelectItem == selectItem ? R.drawable.btn_red_bg_shape : 0);
         }
     }
+
+    public int minusStep(int currStep) {
+        return minusStep(currStep, 1);
+    }
+
+    public int minusStep(int currStep, int step) {
+        return currStep - step;
+    }
+
+    public int plusStep(int currStep) {
+        return plusStep(currStep, 1);
+    }
+
+    public int plusStep(int currStep, int step) {
+        return currStep + step;
+    }
 }
