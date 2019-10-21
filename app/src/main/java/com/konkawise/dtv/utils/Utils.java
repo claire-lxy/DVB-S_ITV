@@ -68,14 +68,14 @@ public class Utils {
 
     public static String getDiSEqC(Context context, HProg_Struct_SatInfo satInfo) {
         String[] diSEqCArray = context.getResources().getStringArray(R.array.DISEQC);
-        if (satInfo.diseqc10_pos == Constants.DISEQC1X_OFF_OR_TONEBURST) {
+        if (satInfo.diseqc10_pos == Constants.DiSEqCPosValueRange.OFF_OR_TONEBURST) {
             // diseqc10_pos=0, OFF or ToneBurst, diseqc10_tone value is valid
             // diseqc10_tone=0, OFF
-            // diseqc10_tone=1, ToneBurst A
-            // diseqc10_tone=2, ToneBurst B
+            // diseqc10_tone=1, ToneBurst DISEQC_A
+            // diseqc10_tone=2, ToneBurst DISEQC_B
             return diSEqCArray[satInfo.diseqc10_tone];
         } else if (isDISEQC10(satInfo.diseqc10_pos)) {
-            // diseqc10_pos=1~4, DiSEqC A~D
+            // diseqc10_pos=1~4, DiSEqC DISEQC_A~D
             return diSEqCArray[satInfo.diseqc10_pos + 2];
         } else if (isDiSEqc11(satInfo.diseqc10_pos)) {
             // diseqc10_pos=5~16, LNB 1~16
@@ -85,21 +85,21 @@ public class Utils {
     }
 
     public static boolean isDISEQC10(int diseqcPos) {
-        return diseqcPos >= Constants.DISEQC1X_DISEQC_MIN_RANGE && diseqcPos <= Constants.DISEQC1X_DISEQC_MAX_RANGE;
+        return diseqcPos >= Constants.DiSEqCPosValueRange.DISEQC_MIN_RANGE && diseqcPos <= Constants.DiSEqCPosValueRange.DISEQC_MAX_RANGE;
     }
 
     public static boolean isDiSEqc11(int diseqcPos) {
-        return diseqcPos >= Constants.DISEQC1X_LNB_MIN_RANGE && diseqcPos <= Constants.DISEQC1X_LNB_MAX_RANGE;
+        return diseqcPos >= Constants.DiSEqCPosValueRange.LNB_MIN_RANGE && diseqcPos <= Constants.DiSEqCPosValueRange.LNB_MAX_RANGE;
     }
 
     public static String getMotorType(Context context, HProg_Struct_SatInfo satInfo) {
         if (satInfo == null) return "";
 
-        if (satInfo.diseqc12 == Constants.MOTOR_TYPE_OFF) {
+        if (satInfo.diseqc12 == Constants.MotorType.OFF) {
             return context.getString(R.string.motor_type_off);
-        } else if (satInfo.diseqc12 == Constants.MOTOR_TYPE_DISEQC) {
+        } else if (satInfo.diseqc12 == Constants.MotorType.DISEQC) {
             return context.getString(R.string.motor_type_diseqc);
-        } else if (satInfo.diseqc12 == Constants.MOTOR_TYPE_USALS) {
+        } else if (satInfo.diseqc12 == Constants.MotorType.USALS) {
             return context.getString(R.string.motor_type_usals);
         }
         return "";

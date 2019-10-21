@@ -152,21 +152,21 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
                     @Override
                     public void onPositiveListener() {
                         // 设置为浅待机
-                        PropertiesManager.getInstance().setProperty(Constants.STANDBY_PROPERTY, Constants.STANDBY_SMART_SUSPEND);
+                        PropertiesManager.getInstance().setProperty(Constants.STANDBY_PROPERTY, Constants.StandbyProperty.SMART_SUSPEND);
                         showBookDialog(bookTitle, bookingType);
                     }
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
 
     private void showBookDialog(String title, @BookType final int bookingType) {
-        if (bookingType == Constants.BOOK_TYPE_EDIT && mAdapter.getCount() <= 0) return;
+        if (bookingType == Constants.BookType.EDIT && mAdapter.getCount() <= 0) return;
 
         List<HProg_Struct_ProgBasicInfo> progList = getCurrTypeProgList();
         if (progList == null || progList.isEmpty()) return;
 
         new BookDialog()
                 .title(title)
-                .bookModel(bookingType == Constants.BOOK_TYPE_ADD ? null : mAdapter.getItem(mCurrSelectPosition))
+                .bookModel(bookingType == Constants.BookType.ADD ? null : mAdapter.getItem(mCurrSelectPosition))
                 .bookType(bookingType)
                 .currTypeProgList(progList)
                 .anotherTypeProgList(getAnotherTypeProgList(bookingType)) // if book type is edit, it will be null
@@ -177,8 +177,8 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
                         if (pm.bookingModel == null) return;
 
                         switch (pm.bookConflict) {
-                            case Constants.BOOK_CONFLICT_NONE: // 当前参数的book没有冲突，正常添加
-                                if (bookingType == Constants.BOOK_TYPE_ADD) {
+                            case Constants.BookConflictType.NONE: // 当前参数的book没有冲突，正常添加
+                                if (bookingType == Constants.BookType.ADD) {
                                     DTVBookingManager.getInstance().addTimer(pm.bookingModel.bookInfo);
                                     mAdapter.addData(mAdapter.getCount(), pm.bookingModel);
                                 } else {
@@ -186,10 +186,10 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
                                     mAdapter.updateData(mCurrSelectPosition, pm.bookingModel);
                                 }
                                 break;
-                            case Constants.BOOK_CONFLICT_LIMIT:
+                            case Constants.BookConflictType.LIMIT:
                                 ToastUtils.showToast(R.string.toast_book_limit);
                                 break;
-                            case Constants.BOOK_CONFLICT_ADD: // 当前参数的book有冲突，如果是添加需要先删除后再添加
+                            case Constants.BookConflictType.ADD: // 当前参数的book有冲突，如果是添加需要先删除后再添加
                                 int conflictPosition = findConflictBookProgPosition(pm.conflictBookProg);
                                 if (conflictPosition != -1) {
                                     DTVBookingManager.getInstance().addTimer(pm.bookConflict, pm.conflictBookProg, pm.bookingModel.bookInfo);
@@ -197,7 +197,7 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
                                     mAdapter.addData(mAdapter.getCount(), pm.bookingModel);
                                 }
                                 break;
-                            case Constants.BOOK_CONFLICT_REPLACE: // 当前参数的book有冲突，需要询问替换
+                            case Constants.BookConflictType.REPLACE: // 当前参数的book有冲突，需要询问替换
                                 BookingModel conflictBookModel = new BookingModel();
                                 conflictBookModel.bookInfo = pm.conflictBookProg;
                                 conflictBookModel.progInfo = DTVProgramManager.getInstance().getProgInfoByServiceId(pm.conflictBookProg.servid, pm.conflictBookProg.tsid, pm.conflictBookProg.sat);
@@ -246,9 +246,9 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
         List<HProg_Struct_ProgBasicInfo> progList = getCurrTypeProgList();
         if (progList != null && !progList.isEmpty()) {
             String progName = "";
-            if (bookingType == Constants.BOOK_TYPE_ADD) {
+            if (bookingType == Constants.BookType.ADD) {
                 progName = DTVProgramManager.getInstance().getCurrProgInfo().Name;
-            } else if (bookingType == Constants.BOOK_TYPE_EDIT) {
+            } else if (bookingType == Constants.BookType.EDIT) {
                 BookingModel bookingModel = mAdapter.getItem(mCurrSelectPosition);
                 if (bookingModel != null) {
                     progName = bookingModel.progInfo.Name;
@@ -275,12 +275,12 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
 
     private List<HProg_Struct_ProgBasicInfo> getAnotherTypeProgList(int bookingType) {
         switch (bookingType) {
-            case Constants.BOOK_TYPE_ADD:
+            case Constants.BookType.ADD:
                 if (mAnotherTypeProgList != null && !mAnotherTypeProgList.isEmpty()) {
                     return mAnotherTypeProgList;
                 }
                 return DTVProgramManager.getInstance().getAnotherTypeProgInfoList();
-            case Constants.BOOK_TYPE_EDIT:
+            case Constants.BookType.EDIT:
                 return null;
         }
         return null;
@@ -304,25 +304,25 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
     }
 
     private boolean isPowerSavingOff() {
-        return Constants.STANDBY_SMART_SUSPEND.equals(PropertiesManager.getInstance().getProperty(Constants.STANDBY_PROPERTY, ""));
+        return Constants.StandbyProperty.SMART_SUSPEND.equals(PropertiesManager.getInstance().getProperty(Constants.STANDBY_PROPERTY, ""));
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_PROG_RED) {
             if (isPowerSavingOff()) {
-                showBookDialog(getString(R.string.add), Constants.BOOK_TYPE_ADD);
+                showBookDialog(getString(R.string.add), Constants.BookType.ADD);
             } else {
-                showPowerSavingOffDialog(getString(R.string.add), Constants.BOOK_TYPE_ADD);
+                showPowerSavingOffDialog(getString(R.string.add), Constants.BookType.ADD);
             }
             return true;
         }
 
         if (keyCode == KeyEvent.KEYCODE_PROG_GREEN) {
             if (isPowerSavingOff()) {
-                showBookDialog(getString(R.string.edit), Constants.BOOK_TYPE_EDIT);
+                showBookDialog(getString(R.string.edit), Constants.BookType.EDIT);
             } else {
-                showPowerSavingOffDialog(getString(R.string.edit), Constants.BOOK_TYPE_EDIT);
+                showPowerSavingOffDialog(getString(R.string.edit), Constants.BookType.EDIT);
             }
             return true;
         }

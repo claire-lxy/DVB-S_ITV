@@ -685,7 +685,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
                     public void onClick(View v) {
                         Intent intent = new Intent(EditManualActivity.this, ScanTVandRadioActivity.class);
                         intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, getSatList().get(mCurrentSatellite).SatIndex);
-                        intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.SEARCH_TYPE_EDITMANUAL);
+                        intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.IntentValue.SEARCH_TYPE_EDITMANUAL);
                         startActivity(intent);
                         finish();
                     }
@@ -789,7 +789,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
             // diseqc10_tone=0, OFF or ToneBurst
             return 0;
         } else if (mCurrentDiSEqCMode == DISEQC_MODE_DISEQC10) {
-            // diseqc10_pos=1~4, DiSEqC A~D
+            // diseqc10_pos=1~4, DiSEqC DISEQC_A~D
             return mCurrentDiSEqC10 + 1; // mDiSEqC10Array位置约定
         } else if (mCurrentDiSEqCMode == DISEQC_MODE_DISEQC11) {
             // diseqc10_pos=5~16, LNB 1~16
@@ -803,8 +803,8 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
             // diseqc10_tone=0, OFF
             return 0;
         } else if (mCurrentDiSEqCMode == DISEQC_MODE_TONE_BURST) {
-            // diseqc10_tone=1, ToneBurst A
-            // diseqc10_tone=2, ToneBurst B
+            // diseqc10_tone=1, ToneBurst DISEQC_A
+            // diseqc10_tone=2, ToneBurst DISEQC_B
             return mCurrentToneBurst; // mToneBurstArray位置约定
         }
         return 0;
@@ -1105,8 +1105,8 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
         if (satInfo.unicConfig.UnicEnable == 0 && satInfo.diseqc10_pos == 0 && satInfo.diseqc10_tone != 0) {
             // diseqc10_pos=0, OFF or ToneBurst
             // diseqc10_tone=0, OFF
-            // diseqc10_tone=1, ToneBurst A
-            // diseqc10_tone=2, ToneBurst B
+            // diseqc10_tone=1, ToneBurst DISEQC_A
+            // diseqc10_tone=2, ToneBurst DISEQC_B
             return satInfo.diseqc10_tone - 1;
         }
         return 0;
@@ -1114,7 +1114,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
 
     private int getCurrDiSEqC10(HProg_Struct_SatInfo satInfo) {
         if (satInfo.unicConfig.UnicEnable == 0 && satInfo.diseqc10_pos != 0 && Utils.isDISEQC10(satInfo.diseqc10_pos)) {
-            // diseqc10_pos=1~4, DiSEqC A~B
+            // diseqc10_pos=1~4, DiSEqC DISEQC_A~DISEQC_B
             return satInfo.diseqc10_pos - 1;
         }
         return 0;

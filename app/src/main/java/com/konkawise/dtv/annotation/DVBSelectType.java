@@ -5,7 +5,7 @@ import android.annotation.IntDef;
 import com.konkawise.dtv.Constants;
 
 @IntDef(flag = true, value = {
-        Constants.DVB_SELECT_TYPE_INSTALLATION, Constants.DVB_SELECT_TYPE_SEARCH
+        Constants.DVBSelectType.INSTALLATION, Constants.DVBSelectType.SEARCH
 })
 public @interface DVBSelectType {
 }

@@ -251,18 +251,18 @@ public class TpListingActivity extends BaseActivity {
                         intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, getIndex());
                         intent.putExtra(Constants.IntentKey.INTENT_SYMBOL, getSymbol());
                         intent.putExtra(Constants.IntentKey.INTENT_QAM, getQam());
-                        intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.SEARCH_TYPE_TPLISTING);
+                        intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.IntentValue.SEARCH_TYPE_TPLISTING);
                         startActivity(intent);
                     }
                 }).show(getSupportFragmentManager(), ScanDialog.TAG);
     }
 
     private void showTpDialog(@TpType final int tpType) {
-        if (tpType == Constants.TP_TYPE_EDIT && mAdapter.isEmpty()) return;
+        if (tpType == Constants.TpType.EDIT && mAdapter.isEmpty()) return;
 
-        String freq = tpType == Constants.TP_TYPE_ADD ? "" : String.valueOf(getFreq());
-        String symbol = tpType == Constants.TP_TYPE_ADD ? "" : String.valueOf(getSymbol());
-        String qam = tpType == Constants.TP_TYPE_ADD ? "" : Utils.getVorH(this, getQam());
+        String freq = tpType == Constants.TpType.ADD ? "" : String.valueOf(getFreq());
+        String symbol = tpType == Constants.TpType.ADD ? "" : String.valueOf(getSymbol());
+        String qam = tpType == Constants.TpType.ADD ? "" : Utils.getVorH(this, getQam());
 
         new TpParamDialog()
                 .freq(freq)
@@ -272,7 +272,7 @@ public class TpListingActivity extends BaseActivity {
                 .setOnTpParamListener(new TpParamDialog.OnTpParamListener() {
                     @Override
                     public void onEditTp(String freq, String symbol, String qam) {
-                        if (tpType == Constants.TP_TYPE_ADD) {
+                        if (tpType == Constants.TpType.ADD) {
                             newTp(freq, symbol, qam);
                         } else {
                             editTp(freq, symbol, qam);
@@ -377,12 +377,12 @@ public class TpListingActivity extends BaseActivity {
         }
 
         if (keyCode == KeyEvent.KEYCODE_PROG_GREEN) {
-            showTpDialog(Constants.TP_TYPE_ADD);
+            showTpDialog(Constants.TpType.ADD);
             return true;
         }
 
         if (keyCode == KeyEvent.KEYCODE_PROG_YELLOW) {
-            showTpDialog(Constants.TP_TYPE_EDIT);
+            showTpDialog(Constants.TpType.EDIT);
             return true;
         }
 

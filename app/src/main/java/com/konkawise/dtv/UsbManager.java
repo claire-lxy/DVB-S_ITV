@@ -54,7 +54,7 @@ public class UsbManager {
     public void usbObserveReceive(Context context, Intent intent, @UsbObserveType int usbObserveType) {
         Set<UsbInfo> tUsbInfos = queryUsbInfos(context);
         UsbInfo attachUsbInfo = new UsbInfo();
-        if (usbObserveType == Constants.USB_TYPE_ATTACH) {
+        if (usbObserveType == Constants.UsbType.ATTACH) {
             for (UsbInfo usbInfo : tUsbInfos) {
                 if (intent.getData().getPath().equals(usbInfo.path)) {
                     usbInfo.uri = intent.getData();

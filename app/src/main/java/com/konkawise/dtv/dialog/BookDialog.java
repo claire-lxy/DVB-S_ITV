@@ -308,7 +308,7 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
             bpm.bookingModel = mBookModel;
             HBooking_Struct_Timer conflictBookProg = DTVBookingManager.getInstance().conflictCheck(bpm.bookingModel.bookInfo);
             bpm.bookConflict = DTVBookingManager.getInstance().getConflictType(conflictBookProg);
-            if (bpm.bookConflict == Constants.BOOK_CONFLICT_ADD || bpm.bookConflict == Constants.BOOK_CONFLICT_REPLACE) {
+            if (bpm.bookConflict == Constants.BookConflictType.ADD || bpm.bookConflict == Constants.BookConflictType.REPLACE) {
                 bpm.conflictBookProg = conflictBookProg;
             }
             Log.i(TAG, "parameter model = " + bpm);
@@ -1073,7 +1073,7 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
     }
 
     private boolean isBookEdit() {
-        return mBookType == Constants.BOOK_TYPE_EDIT;
+        return mBookType == Constants.BookType.EDIT;
     }
 
     /**

@@ -93,13 +93,13 @@ public class AutoDiSEqCDialog extends BaseDialogFragment implements WeakToolInte
 
     private String getFoundDiSEqC(int portIndex) {
         switch (portIndex) {
-            case Constants.DISEQC_A:
+            case Constants.DiSEqCPortIndex.DISEQC_A:
                 return "DiSEqC A";
-            case Constants.DISEQC_B:
+            case Constants.DiSEqCPortIndex.DISEQC_B:
                 return "DiSEqC B";
-            case Constants.DISEQC_C:
+            case Constants.DiSEqCPortIndex.DISEQC_C:
                 return "DiSEqC C";
-            case Constants.DISEQC_D:
+            case Constants.DiSEqCPortIndex.DISEQC_D:
                 return "DiSEqC D";
             default:
                 return "";

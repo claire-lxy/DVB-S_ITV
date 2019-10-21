@@ -5,7 +5,7 @@ import android.annotation.IntDef;
 import com.konkawise.dtv.Constants;
 
 @IntDef(flag = true, value = {
-        Constants.BOOK_TYPE_ADD, Constants.BOOK_TYPE_EDIT
+        Constants.BookType.ADD, Constants.BookType.EDIT
 })
 public @interface BookType {
 }

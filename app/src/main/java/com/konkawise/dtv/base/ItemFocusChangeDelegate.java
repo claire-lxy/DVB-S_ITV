@@ -39,19 +39,19 @@ public class ItemFocusChangeDelegate {
     }
 
     public int getMinusStep(int currStep, int maxSize, int limit) {
-        return getSelectStep(Constants.STEP_TYPE_MINUS_STEP, currStep, maxSize, limit);
+        return getSelectStep(Constants.StepType.MINUS, currStep, maxSize, limit);
     }
 
     public int getPlusStep(int currStep, int maxSize, int limit) {
-        return getSelectStep(Constants.STEP_TYPE_PLUS_STEP, currStep, maxSize, limit);
+        return getSelectStep(Constants.StepType.PLUS, currStep, maxSize, limit);
     }
 
     private int getSelectStep(@StepType int stepType, int currStep, int maxSize, int limit) {
-        if (stepType == Constants.STEP_TYPE_PLUS_STEP) {
+        if (stepType == Constants.StepType.PLUS) {
             currStep = plusStep(currStep);
             if (currStep > limit) currStep = 0;
             return currStep;
-        } else if (stepType == Constants.STEP_TYPE_MINUS_STEP) {
+        } else if (stepType == Constants.StepType.MINUS) {
             currStep = minusStep(currStep);
             if (currStep < limit) currStep = maxSize;
             return currStep;

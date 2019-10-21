@@ -132,7 +132,7 @@ public class SatelliteActivity extends BaseActivity {
                         public void onClick(View v) {
                             Intent intent = new Intent(SatelliteActivity.this, ScanTVandRadioActivity.class);
                             intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mAdapter.getItem(mCurrPosition).SatIndex);
-                            intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.SEARCH_TYPE_SATELLITE);
+                            intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.IntentValue.SEARCH_TYPE_SATELLITE);
                             startActivity(intent);
                             finish();
                         }

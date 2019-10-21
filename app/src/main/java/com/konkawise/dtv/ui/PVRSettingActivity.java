@@ -244,7 +244,7 @@ public class PVRSettingActivity extends BaseItemFocusChangeActivity implements U
     }
 
     private void updateTipsDialog(UsbInfo currUsbInfo, int usbObserveType) {
-        if (mCommTipsDialog != null && mCommTipsDialog.isVisible() && usbObserveType == Constants.USB_TYPE_DETACH) {
+        if (mCommTipsDialog != null && mCommTipsDialog.isVisible() && usbObserveType == Constants.UsbType.DETACH) {
             if (mUsbInfos.get(mDeviceNamePosition).uuid.equals(currUsbInfo.uuid)) {
                 mCommTipsDialog.dismiss();
                 mCommTipsDialog = null;

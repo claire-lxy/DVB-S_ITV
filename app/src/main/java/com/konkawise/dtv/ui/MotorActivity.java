@@ -388,7 +388,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP) {
-            if (mMotorType == Constants.MOTOR_TYPE_OFF) {
+            if (mMotorType == Constants.MotorType.OFF) {
                 switch (position) {
                     case ITEM_TP:
                         position--;
@@ -399,7 +399,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                         itemFocusChange();
                         return true;
                 }
-            } else if (mMotorType == Constants.MOTOR_TYPE_USALS) {
+            } else if (mMotorType == Constants.MotorType.USALS) {
                 switch (position) {
                     case ITEM_TP:
                     case ITEM_SAT_LONGITUDE:
@@ -415,7 +415,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                         itemFocusChange();
                         return true;
                 }
-            } else if (mMotorType == Constants.MOTOR_TYPE_DISEQC) {
+            } else if (mMotorType == Constants.MotorType.DISEQC) {
                 switch (position) {
                     case ITEM_TP:
                     case ITEM_MOVE_STEPS:
@@ -436,7 +436,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         }
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN) {
-            if (mMotorType == Constants.MOTOR_TYPE_OFF) {
+            if (mMotorType == Constants.MotorType.OFF) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
                         position++;
@@ -447,7 +447,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                         itemFocusChange();
                         return true;
                 }
-            } else if (mMotorType == Constants.MOTOR_TYPE_USALS) {
+            } else if (mMotorType == Constants.MotorType.USALS) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
                     case ITEM_TP:
@@ -463,7 +463,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                         itemFocusChange();
                         return true;
                 }
-            } else if (mMotorType == Constants.MOTOR_TYPE_DISEQC) {
+            } else if (mMotorType == Constants.MotorType.DISEQC) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
                     case ITEM_TP:
@@ -484,7 +484,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         }
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
-            if (mMotorType == Constants.MOTOR_TYPE_OFF) {
+            if (mMotorType == Constants.MotorType.OFF) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
                         mMotorType = getMinusStep(mMotorType, mTypeListArray.length - 1);
@@ -495,7 +495,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                         tpChange();
                         break;
                 }
-            } else if (mMotorType == Constants.MOTOR_TYPE_USALS) {
+            } else if (mMotorType == Constants.MotorType.USALS) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
                         mMotorType = getMinusStep(mMotorType, mTypeListArray.length - 1);
@@ -523,7 +523,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                         commandChange();
                         break;
                 }
-            } else if (mMotorType == Constants.MOTOR_TYPE_DISEQC) {
+            } else if (mMotorType == Constants.MotorType.DISEQC) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
                         mMotorType = getMinusStep(mMotorType, mTypeListArray.length - 1);
@@ -555,7 +555,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         }
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
-            if (mMotorType == Constants.MOTOR_TYPE_OFF) {
+            if (mMotorType == Constants.MotorType.OFF) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
                         mMotorType = getPlusStep(mMotorType, mTypeListArray.length - 1);
@@ -566,7 +566,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                         tpChange();
                         break;
                 }
-            } else if (mMotorType == Constants.MOTOR_TYPE_USALS) {
+            } else if (mMotorType == Constants.MotorType.USALS) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
                         mMotorType = getPlusStep(mMotorType, mTypeListArray.length - 1);
@@ -598,7 +598,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                         commandChange();
                         break;
                 }
-            } else if (mMotorType == Constants.MOTOR_TYPE_DISEQC) {
+            } else if (mMotorType == Constants.MotorType.DISEQC) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
                         mMotorType = getPlusStep(mMotorType, mTypeListArray.length - 1);
@@ -697,14 +697,14 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
-            if ((mMotorType == Constants.MOTOR_TYPE_DISEQC && position == ITEM_DISEQC_COMMAND) ||
-                    mMotorType == Constants.MOTOR_TYPE_USALS && position == ITEM_COMMAND) {
+            if ((mMotorType == Constants.MotorType.DISEQC && position == ITEM_DISEQC_COMMAND) ||
+                    mMotorType == Constants.MotorType.USALS && position == ITEM_COMMAND) {
                 MotorCtrlModel motorCtrlModel = getMotorCtrlModelByCommand();
                 showCommandDialog(motorCtrlModel.title, new OnCommCallback() {
                     @Override
                     public void callback(Object object) {
                         if (TextUtils.equals(mTvCommand.getText().toString(), getString(R.string.motor_command_savepos))) {
-                            if (mMotorType == Constants.MOTOR_TYPE_DISEQC && position == ITEM_DISEQC_COMMAND) {
+                            if (mMotorType == Constants.MotorType.DISEQC && position == ITEM_DISEQC_COMMAND) {
                                 saveMotorType();
                             }
                             savePosition();
@@ -742,22 +742,22 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
     }
 
     private void satLongitudeChange() {
-        mLocalLongitudeLayout.setVisibility(mMotorType == Constants.MOTOR_TYPE_USALS ? View.VISIBLE : View.GONE);
+        mLocalLongitudeLayout.setVisibility(mMotorType == Constants.MotorType.USALS ? View.VISIBLE : View.GONE);
         mTvSatLongitude.setText(mSatLongitudeModel.getLatLngText());
     }
 
     private void localLongitudeChange() {
-        mLocalLongitudeLayout.setVisibility(mMotorType == Constants.MOTOR_TYPE_USALS ? View.VISIBLE : View.GONE);
+        mLocalLongitudeLayout.setVisibility(mMotorType == Constants.MotorType.USALS ? View.VISIBLE : View.GONE);
         mTvLocalLongitude.setText(mLocalLongitudeModel.getLatLngText());
     }
 
     private void localLatitudeChange() {
-        mLocalLongitudeLayout.setVisibility(mMotorType == Constants.MOTOR_TYPE_USALS ? View.VISIBLE : View.GONE);
+        mLocalLongitudeLayout.setVisibility(mMotorType == Constants.MotorType.USALS ? View.VISIBLE : View.GONE);
         mTvLocalLatitude.setText(mLocalLatitudeModel.getLatLngText());
     }
 
     private void moveStepChange() {
-        mItemMoveStep.setVisibility(mMotorType == Constants.MOTOR_TYPE_DISEQC ? View.VISIBLE : View.GONE);
+        mItemMoveStep.setVisibility(mMotorType == Constants.MotorType.DISEQC ? View.VISIBLE : View.GONE);
         mTvMoveStep.setText(mMoveStepArray[mMoveStep]);
     }
 
@@ -771,21 +771,21 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
     }
 
     private void stepSizeChange() {
-        mItemStepSize.setVisibility(mMotorType == Constants.MOTOR_TYPE_DISEQC ? View.VISIBLE : View.GONE);
-        mTvStepSize.setText(mMotorType == Constants.MOTOR_TYPE_DISEQC ? getString(R.string.motor_continue) : "");
+        mItemStepSize.setVisibility(mMotorType == Constants.MotorType.DISEQC ? View.VISIBLE : View.GONE);
+        mTvStepSize.setText(mMotorType == Constants.MotorType.DISEQC ? getString(R.string.motor_continue) : "");
     }
 
     private void positionChange() {
-        mItemPosition.setVisibility(mMotorType != Constants.MOTOR_TYPE_OFF ? View.VISIBLE : View.GONE);
+        mItemPosition.setVisibility(mMotorType != Constants.MotorType.OFF ? View.VISIBLE : View.GONE);
         mTvPosition.setText(MessageFormat.format(getString(R.string.motor_position_text), String.valueOf(mPositionStep)));
     }
 
     private void commandChange() {
-        mItemCommand.setVisibility(mMotorType != Constants.MOTOR_TYPE_OFF ? View.VISIBLE : View.GONE);
-        mTvCommandTitle.setText(getString(mMotorType == Constants.MOTOR_TYPE_DISEQC ? R.string.motor_diseqc_command_title : R.string.motor_usals_command_title));
-        if (mMotorType == Constants.MOTOR_TYPE_USALS) {
+        mItemCommand.setVisibility(mMotorType != Constants.MotorType.OFF ? View.VISIBLE : View.GONE);
+        mTvCommandTitle.setText(getString(mMotorType == Constants.MotorType.DISEQC ? R.string.motor_diseqc_command_title : R.string.motor_usals_command_title));
+        if (mMotorType == Constants.MotorType.USALS) {
             mTvCommand.setText(mUsalsCommandArray[mUsalsCommandStep]);
-        } else if (mMotorType == Constants.MOTOR_TYPE_DISEQC) {
+        } else if (mMotorType == Constants.MotorType.DISEQC) {
             mTvCommand.setText(mDiSEqCCommandArray[mDISEqcCommandStep]);
         }
     }
@@ -798,9 +798,9 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         int[] data = new int[1];
 
         if (TextUtils.equals(mTvCommand.getText().toString(), getString(R.string.motor_command_savepos))) {
-            if (mMotorType == Constants.MOTOR_TYPE_DISEQC && position == ITEM_DISEQC_COMMAND) {
+            if (mMotorType == Constants.MotorType.DISEQC && position == ITEM_DISEQC_COMMAND) {
                 title = getString(R.string.dialog_save_position);
-            } else if (mMotorType == Constants.MOTOR_TYPE_USALS && position == ITEM_COMMAND) {
+            } else if (mMotorType == Constants.MotorType.USALS && position == ITEM_COMMAND) {
                 title = getString(R.string.dialog_save_pos);
             }
         } else if (TextUtils.equals(command, getString(R.string.motor_diseqc_command_recalculate))) {
@@ -816,9 +816,9 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
             title = getString(R.string.dialog_west_limit);
             ctrlCode = HTuner_Enum_MotorCtrlCode.WEST_LIMIT;
         } else if (TextUtils.equals(command, getString(R.string.motor_command_gotoref))) {
-            if (mMotorType == Constants.MOTOR_TYPE_DISEQC && position == ITEM_DISEQC_COMMAND) {
+            if (mMotorType == Constants.MotorType.DISEQC && position == ITEM_DISEQC_COMMAND) {
                 title = getString(R.string.dialog_goto_ref);
-            } else if (mMotorType == Constants.MOTOR_TYPE_USALS && position == ITEM_COMMAND) {
+            } else if (mMotorType == Constants.MotorType.USALS && position == ITEM_COMMAND) {
                 title = getString(R.string.dialog_command_goto_ref);
             }
             ctrlCode = HTuner_Enum_MotorCtrlCode.GO_REFERENCE;
@@ -955,7 +955,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
 
     private void positionItemFocusChange() {
         int selectItem = ITEM_POSITION;
-        if (mMotorType == Constants.MOTOR_TYPE_DISEQC) {
+        if (mMotorType == Constants.MotorType.DISEQC) {
             selectItem = ITEM_POSITION_DIS;
         }
         itemChange(position, selectItem, mItemPosition, mIvPositionLeft, mIvPositionRight, mTvPosition);
@@ -963,7 +963,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
 
     private void commandItemFocusChange() {
         int selectItem = ITEM_COMMAND;
-        if (mMotorType == Constants.MOTOR_TYPE_DISEQC) {
+        if (mMotorType == Constants.MotorType.DISEQC) {
             selectItem = ITEM_DISEQC_COMMAND;
         }
         itemChange(position, selectItem, mItemCommand, mIvDiSEqCCommandLeft, mIvCommandRight, mTvCommand);

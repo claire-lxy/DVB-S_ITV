@@ -250,7 +250,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     }
 
     private void registerMsgEvent() {
-        MsgEvent msgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.PVR_CALLBACK_MSG_ID);
+        MsgEvent msgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.PVR);
         msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
             @Override
             public void PVR_onPvrPlayModule(int p0, int p1, int p2, int p3, int p4) {
@@ -286,7 +286,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     }
 
     private void unregisterMsgEvent() {
-        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.PVR_CALLBACK_MSG_ID);
+        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.PVR);
     }
 
     private void init() {
@@ -771,7 +771,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         if (from == FROM_TOPMOST) {
 
         } else {
-            if (usbObserveType == Constants.USB_TYPE_DETACH && recordInfo.getFile().getParentFile().getParent().equals(currUsbInfo.path)) {
+            if (usbObserveType == Constants.UsbType.DETACH && recordInfo.getFile().getParentFile().getParent().equals(currUsbInfo.path)) {
                 finish();
             }
         }

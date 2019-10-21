@@ -54,7 +54,7 @@ public class DTVBookingManager {
      * 添加一个定时器，处理冲突情况下添加定时器前移除旧定时器
      */
     public void addTimer(@BookConflictType int bookConflictType, HBooking_Struct_Timer deleteBookProg, HBooking_Struct_Timer bookProg) {
-        if (bookConflictType == Constants.BOOK_CONFLICT_ADD && deleteBookProg != null) {
+        if (bookConflictType == Constants.BookConflictType.ADD && deleteBookProg != null) {
             deleteTimer(deleteBookProg);
         }
         addTimer(bookProg);
@@ -184,11 +184,11 @@ public class DTVBookingManager {
         if (conflictBookProg == null) return -1;
 
         if (conflictBookProg.used == HBooking_Enum_Status.INVALID) {
-            return DTVBookingManager.getInstance().getTimerNum() >= DTVBooking.MAX_BOOKING_NUM ? Constants.BOOK_CONFLICT_LIMIT : Constants.BOOK_CONFLICT_NONE;
+            return DTVBookingManager.getInstance().getTimerNum() >= DTVBooking.MAX_BOOKING_NUM ? Constants.BookConflictType.LIMIT : Constants.BookConflictType.NONE;
         } else if (conflictBookProg.used == HBooking_Enum_Status.VALID) {
-            return Constants.BOOK_CONFLICT_ADD;
+            return Constants.BookConflictType.ADD;
         } else if (conflictBookProg.used == HBooking_Enum_Status.CONCLICT) {
-            return Constants.BOOK_CONFLICT_REPLACE;
+            return Constants.BookConflictType.REPLACE;
         }
 
         return -1;

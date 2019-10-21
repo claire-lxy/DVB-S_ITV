@@ -212,7 +212,7 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
                         intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, Constants.T2_SATELLITE_INDEX);//mCurrentSatellite == 0
                         intent.putExtra(Constants.IntentKey.INTENT_FREQ, channel.Freq);
                         intent.putExtra(Constants.IntentKey.INTENT_SYMBOL, channel.Symbol);
-                        intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.SEARCH_TYPE_T2MANUAL);
+                        intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.IntentValue.SEARCH_TYPE_T2MANUAL);
                         startActivity(intent);
                         finish();
                     }

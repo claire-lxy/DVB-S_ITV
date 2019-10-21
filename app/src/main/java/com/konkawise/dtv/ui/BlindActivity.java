@@ -338,7 +338,7 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
             // diseqc10_pos = 0, OFF or ToneBurst
             return 0;
         } else if (mCurrentDiseqc >= 3 && mCurrentDiseqc <= 6) {
-            // diseqc10_pos = 1~4, DiSEqC A~D
+            // diseqc10_pos = 1~4, DiSEqC DISEQC_A~D
             return mCurrentDiseqc - 2;
         } else if (mCurrentDiseqc >= 7 && mCurrentDiseqc <= 22) {
             // diseqc10_pos = 5~16, LNB 1`16

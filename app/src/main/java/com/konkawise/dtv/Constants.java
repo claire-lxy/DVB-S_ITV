@@ -3,93 +3,106 @@ package com.konkawise.dtv;
 import android.Manifest;
 
 public class Constants {
-    // support language
-    public static final int LOCALE_TYPE_SYSTEM = 0x1001;
-    public static final int LOCALE_TYPE_ITALIAN = 0x1002;
-    public static final int LOCALE_TYPE_ENGLISH = 0x1003;
-    public static final int LOCALE_TYPE_CHINESE = 0x1004;
 
-    // usb receive type
-    public static final int USB_TYPE_ATTACH = 0x2001;
-    public static final int USB_TYPE_DETACH = 0x2002;
+    public interface LocaleType {
+        int SYSTEM = 0;
+        int ITALIAN = 1;
+        int ENGLISH = 2;
+        int CHINESE = 3;
+    }
 
-    // book type
-    public static final int BOOK_TYPE_ADD = 0x3001; // 添加book
-    public static final int BOOK_TYPE_EDIT = 0x3002; // 编辑book
+    public interface UsbType {
+        int ATTACH = 0;
+        int DETACH = 1;
+    }
 
-    // book conflict type
-    public static final int BOOK_CONFLICT_LIMIT = 0x4001; // book达到最大值32个，提示不能添加
-    public static final int BOOK_CONFLICT_NONE = 0x4002; // book没冲突，正常添加
-    public static final int BOOK_CONFLICT_ADD = 0x4003; // book冲突，需要先删除后添加
-    public static final int BOOK_CONFLICT_REPLACE = 0x4004; // book冲突，需要替换
+    public interface BookType {
+        int ADD = 0; // 添加book
+        int EDIT = 1; // 编辑book
+    }
 
-    // tp type
-    public static final int TP_TYPE_ADD = 0x5001;
-    public static final int TP_TYPE_EDIT = 0x5002;
+    public interface BookConflictType {
+        int LIMIT = 0; // book达到最大值32个，提示不能添加
+        int NONE = 1; // book没冲突，正常添加
+        int ADD = 2; // book冲突，需要先删除后添加
+        int REPLACE = 3; // book冲突，需要替换
+    }
 
-    // msg callback id
-    public static final int SCAN_CALLBACK_MSG_ID = 0x6001; // 频道扫描消息回调通道id
-    public static final int BOOK_CALLBACK_MSG_ID = 0x6002; // book消息回调通道id
-    public static final int LOCK_CALLBACK_MSG_ID = 0x6003; // 频道锁消息回调通道id
-    public static final int TIME_CALLBACK_MSG_ID = 0x6004; // 系统时间消息回调通道id
-    public static final int PVR_CALLBACK_MSG_ID = 0x6005; // PVR播放消息回调通道id
-    public static final int EPG_CALLBACK_MSG_ID = 0x6006; // EPG消息回调通道id
-    public static final int REFRESH_CHANNEL_CALLBACK_MSG_ID = 0x6007; // 提示更新搜台消息回调id
+    public interface TpType {
+        int ADD = 0;
+        int EDIT = 1;
+    }
 
-    // pvr type
-    public static final int PVR_TYPE_TIMESHIFT = 0x7001;
-    public static final int PVR_TYPE_RECORD = 0x7002;
+    public interface MsgCallbackId {
+        int SCAN = 0; // 频道扫描消息回调通道id
+        int BOOK = 1; // book消息回调通道id
+        int LOCK = 2; // 频道锁消息回调通道id
+        int TIME = 3; // 系统时间消息回调通道id
+        int PVR = 4; // PVR播放消息回调通道id
+        int EPG = 5; // EPG消息回调通道id
+        int REFRESH_CHANNEL = 6; // 提示更新搜台消息回调id
+    }
 
-    // dvb type
-    public static final int DVB_SELECT_TYPE_INSTALLATION = 0x8001;
-    public static final int DVB_SELECT_TYPE_SEARCH = 0x8002;
+    public interface PVRType {
+        int TIMESHIFT = 0;
+        int RECORD = 1;
+    }
 
-    // item select type
-    public static final int STEP_TYPE_NONE_STEP = 0x9001;
-    public static final int STEP_TYPE_PLUS_STEP = 0x9002;
-    public static final int STEP_TYPE_MINUS_STEP = 0x9003;
+    public interface DVBSelectType {
+        int INSTALLATION = 0;
+        int SEARCH = 1;
+    }
 
-    // DiSEqC index
-    public static final int DISEQC_A = 0;
-    public static final int DISEQC_B = 1;
-    public static final int DISEQC_C = 2;
-    public static final int DISEQC_D = 3;
+    public interface StepType {
+        int NONE = 0;
+        int PLUS = 1;
+        int MINUS = 2;
+    }
+
+    // DiSEqC常量值是和底层约定的，不可修改
+    public interface DiSEqCPortIndex {
+        int DISEQC_A = 0;
+        int DISEQC_B = 1;
+        int DISEQC_C = 2;
+        int DISEQC_D = 3;
+    }
+
+    public interface Permissions {
+        String READ_EXTERNAL_STORAGE = Manifest.permission.READ_EXTERNAL_STORAGE;
+        String WRITE_EXTERNAL_STORAGE = Manifest.permission.WRITE_EXTERNAL_STORAGE;
+    }
+
+    public static final String STANDBY_PROPERTY = "persist.suspend.mode"; // 待机唤醒属性
+    public interface StandbyProperty {
+        String DEEP_RESTART = "deep_restart"; // 系统唤醒重启
+        String SMART_SUSPEND = "smart_suspend"; // 系统唤醒返回Launcher
+    }
+
+    public interface MotorType {
+        int OFF = 0;
+        int DISEQC = 1;
+        int USALS = 2;
+    }
+
+    public interface DiSEqCPosValueRange {
+        // diseqc10_pos=0，OFF或ToneBurst
+        int OFF_OR_TONEBURST = 0;
+        // diseqc10_pos=1~4，DiSEqC DISEQC_A~D
+        int DISEQC_MIN_RANGE = 1;
+        int DISEQC_MAX_RANGE = 4;
+        // diseqc10_pos=5~16，LNB 1~16
+        int LNB_MIN_RANGE = 5;
+        int LNB_MAX_RANGE = 16;
+    }
 
     public static final String SUBTITLE_NAME = "subtitleName";
     public static final String SUBTITLE_ORG_TYPE = "subtitleOrgType";
     public static final String SUBTITLE_TYPE = "subtitleType";
 
-    // permission
-    public static final String READ_EXTERNAL_STORAGE = Manifest.permission.READ_EXTERNAL_STORAGE;
-    public static final String WRITE_EXTERNAL_STORAGE = Manifest.permission.WRITE_EXTERNAL_STORAGE;
-
-    public static final String STANDBY_PROPERTY = "persist.suspend.mode"; // 待机唤醒属性
-    public static final String STANDBY_DEEP_RESTART = "deep_restart"; // 系统唤醒重启
-    public static final String STANDBY_SMART_SUSPEND = "smart_suspend"; // 系统唤醒返回Launcher
-
     public static final String RECORD_FILE_TYPE = "ts";
     public static final String RECORD_CONFIG_FILE_TYPE = ".idx";
 
     public static final int T2_SATELLITE_INDEX = 0;
-
-    public static final int SEARCH_TYPE_SATELLITE = 1;
-    public static final int SEARCH_TYPE_TPLISTING = 2;
-    public static final int SEARCH_TYPE_EDITMANUAL = 3;
-    public static final int SEARCH_TYPE_T2MANUAL = 4;
-    public static final int SEARCH_TYPE_T2AUTO = 5;
-
-    public static final int MOTOR_TYPE_OFF = 0;
-    public static final int MOTOR_TYPE_DISEQC = 1;
-    public static final int MOTOR_TYPE_USALS = 2;
-
-    // diseqc10_pos=0，OFF或ToneBurst
-    public static final int DISEQC1X_OFF_OR_TONEBURST = 0;
-    // diseqc10_pos=1~4，DiSEqC A~D
-    public static final int DISEQC1X_DISEQC_MIN_RANGE = 1;
-    public static final int DISEQC1X_DISEQC_MAX_RANGE = 4;
-    // diseqc10_pos=5~16，LNB 1~16
-    public static final int DISEQC1X_LNB_MIN_RANGE = 5;
-    public static final int DISEQC1X_LNB_MAX_RANGE = 16;
 
     public interface IntentKey {
         String INTENT_SATELLITE_INDEX = "satelliteIndex";
@@ -119,15 +132,21 @@ public class Constants {
         String INTENT_RECORD_POSITION = "recordPosition";
     }
 
+    public interface IntentValue {
+        int SEARCH_TYPE_SATELLITE = 1;
+        int SEARCH_TYPE_TPLISTING = 2;
+        int SEARCH_TYPE_EDITMANUAL = 3;
+        int SEARCH_TYPE_T2MANUAL = 4;
+        int SEARCH_TYPE_T2AUTO = 5;
+    }
+
     public interface RequestCode {
         int REQUEST_CODE_EPG_BOOK = 1;
-
         int REQUEST_CODE_MOTOR = 2;
     }
 
     public interface PrefsKey {
         String LOCALE_TYPE = "localeType";
-
         String SAVE_CHANNEL = "channel";
     }
 }

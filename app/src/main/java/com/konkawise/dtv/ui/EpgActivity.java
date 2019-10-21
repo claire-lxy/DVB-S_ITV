@@ -281,8 +281,8 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     }
 
     private void registerMsgEvent() {
-        MsgEvent msgLockEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.LOCK_CALLBACK_MSG_ID);
-        MsgEvent msgEpgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.EPG_CALLBACK_MSG_ID);
+        MsgEvent msgLockEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.LOCK);
+        MsgEvent msgEpgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.EPG);
         msgLockEvent.registerCallbackListener(new CallbackListenerAdapter() {
             @Override
             public void PLAYER_isLocked(int type, int progNo, int progIndex, int home) {
@@ -303,8 +303,8 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     }
 
     private void unregisterMsgEvent() {
-        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.LOCK_CALLBACK_MSG_ID);
-        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.EPG_CALLBACK_MSG_ID);
+        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.LOCK);
+        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.EPG);
     }
 
     private void initUpdateEpgChannelTimer() {
@@ -527,12 +527,12 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
                         HBooking_Struct_Timer conflictBookInfo = DTVBookingManager.getInstance().conflictCheck(newBookInfo);
                         int conflictType = DTVBookingManager.getInstance().getConflictType(conflictBookInfo);
                         switch (conflictType) {
-                            case Constants.BOOK_CONFLICT_NONE: // 当前参数的book没有冲突，正常添加删除
-                            case Constants.BOOK_CONFLICT_ADD: // 当前参数的book有冲突，如果是添加需要先删除后再添加
-                            case Constants.BOOK_CONFLICT_REPLACE: // 当前参数的book有冲突，需要询问替换
+                            case Constants.BookConflictType.NONE: // 当前参数的book没有冲突，正常添加删除
+                            case Constants.BookConflictType.ADD: // 当前参数的book有冲突，如果是添加需要先删除后再添加
+                            case Constants.BookConflictType.REPLACE: // 当前参数的book有冲突，需要询问替换
                                 bookHandle(conflictType, getBookCheckSchType(checkContent), newBookInfo, conflictBookInfo);
                                 break;
-                            case Constants.BOOK_CONFLICT_LIMIT:
+                            case Constants.BookConflictType.LIMIT:
                                 ToastUtils.showToast(R.string.toast_book_limit);
                                 break;
                         }
@@ -548,7 +548,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
             updateItemBookTag(bookSchType);
         } else if (bookSchType == HBooking_Enum_Task.PLAY
                 || bookSchType == HBooking_Enum_Task.RECORD) { // 添加book
-            if (conflictType == Constants.BOOK_CONFLICT_REPLACE) {
+            if (conflictType == Constants.BookConflictType.REPLACE) {
                 BookingModel conflictBookModel = new BookingModel();
                 conflictBookModel.bookInfo = conflictBookInfo;
                 conflictBookModel.progInfo = DTVProgramManager.getInstance().getProgInfoByServiceId(conflictBookInfo.servid, conflictBookInfo.tsid, conflictBookInfo.sat);
