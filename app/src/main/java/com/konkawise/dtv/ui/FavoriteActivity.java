@@ -136,7 +136,7 @@ public class FavoriteActivity extends BaseActivity {
         mFavoriteChannelAdapter = new FavoriteChannelAdapter(this, new ArrayList<>());
         mLvFavoriteChannel.setAdapter(mFavoriteChannelAdapter);
 
-        loadFavoriteChannels(0);
+//        loadFavoriteChannels(0);
     }
 
     private void loadFavoriteChannels(int favIndex) {
@@ -160,8 +160,9 @@ public class FavoriteActivity extends BaseActivity {
         protected void loadBackground() {
             FavoriteActivity context = mWeakReference.get();
 
-            if(context.mFavoriteChannelsMap==null || context.mFavoriteChannelsMap.size()==0){
-                context.mFavoriteChannelsMap = DTVProgramManager.getInstance().getFavChannelMap(DTVProgramManager.getInstance().getCurrGroupProgInfoList(new int[1]));
+            if (context.mFavoriteChannelsMap == null || context.mFavoriteChannelsMap.size() == 0) {
+                List<HProg_Struct_ProgInfo> ltChannels = DTVProgramManager.getInstance().getCurrGroupProgInfoList(new int[1]);
+                context.mFavoriteChannelsMap = DTVProgramManager.getInstance().getFavChannelMap(ltChannels);
             }
 
             context.runOnUiThread(new Runnable() {
@@ -169,8 +170,8 @@ public class FavoriteActivity extends BaseActivity {
                 public void run() {
                     context.mPbLoadingFaovrite.setVisibility(View.GONE);
                     List<HProg_Struct_ProgInfo> showProgList = new ArrayList<>();
-                    for(HProg_Struct_ProgInfo pdpMInfo_t: context.mFavoriteChannelsMap.get(favIndex)){
-                        if(pdpMInfo_t.HideFlag == 0){
+                    for (HProg_Struct_ProgInfo pdpMInfo_t : context.mFavoriteChannelsMap.get(favIndex)) {
+                        if (pdpMInfo_t.HideFlag == 0) {
                             showProgList.add(pdpMInfo_t);
                         }
                     }
@@ -215,8 +216,8 @@ public class FavoriteActivity extends BaseActivity {
                         removeFAVChannels(ltRemoves, mFavoriteGroupIndex - 1);
                         mFavoriteChannelAdapter.clearSelect();
                         List<HProg_Struct_ProgInfo> showProgList = new ArrayList<>();
-                        for(HProg_Struct_ProgInfo pdpMInfo_t: mFavoriteChannelsMap.get(mFavoriteGroupIndex - 1)){
-                            if(pdpMInfo_t.HideFlag == 0){
+                        for (HProg_Struct_ProgInfo pdpMInfo_t : mFavoriteChannelsMap.get(mFavoriteGroupIndex - 1)) {
+                            if (pdpMInfo_t.HideFlag == 0) {
                                 showProgList.add(pdpMInfo_t);
                             }
                         }

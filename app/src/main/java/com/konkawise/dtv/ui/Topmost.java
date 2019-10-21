@@ -1441,7 +1441,16 @@ public class Topmost extends BaseActivity {
             return;
 
         getContentResolver().update(Uri.parse("content://dvbchannellock/dvb_info/0"), null, null, null);
-        showPasswordDialog(null, new PasswordDialog.OnControlArrowKeyListener() {
+        showPasswordDialog(new PasswordDialog.OnPasswordInputListener() {
+            @Override
+            public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
+                if (isValid) {
+                    Uri uri = Uri.parse("content://dvbchannellock/dvb_info/1");
+                    getContentResolver().update(uri, null, null, null);
+                    DTVPlayerManager.getInstance().startPlayProgNo(DTVProgramManager.getInstance().getCurrProgNo(), 0);
+                }
+            }
+        }, new PasswordDialog.OnControlArrowKeyListener() {
             @Override
             public void onControlArrowKey(int playProgType) {
                 switch (playProgType) {
@@ -1450,12 +1459,6 @@ public class Topmost extends BaseActivity {
                         break;
                     case PasswordDialog.CONTROL_ARROW_NEXT_PROG:
                         nextProg();
-                        break;
-                    case PasswordDialog.CONTROL_ARROW_CURRENT_PROG:
-                        dismissPasswordDialog();
-                        Uri uri = Uri.parse("content://dvbchannellock/dvb_info/1");
-                        getContentResolver().update(uri, null, null, null);
-                        DTVPlayerManager.getInstance().startPlayProgNo(DTVProgramManager.getInstance().getCurrProgNo(), 0);
                         break;
                 }
             }
