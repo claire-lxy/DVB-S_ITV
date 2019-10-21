@@ -68,6 +68,7 @@ import com.konkawise.dtv.service.PowerService;
 import com.konkawise.dtv.utils.TimeUtils;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.utils.Utils;
+import com.konkawise.dtv.weaktool.CheckSignalHelper;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakRunnable;
 import com.konkawise.dtv.weaktool.WeakTimerTask;
@@ -379,6 +380,9 @@ public class Topmost extends BaseActivity {
 
     private boolean mUsbAttach;
 
+    private CheckSignalHelper mCheckSignalHelper;
+    private boolean mSignalOk = true;
+
     private static class PlayHandler extends WeakHandler<Topmost> {
         static final int MSG_PLAY_PROG = 0;
 
@@ -473,6 +477,7 @@ public class Topmost extends BaseActivity {
         initSatList();
         initProgList();
         initSurfaceView();
+        initCheckSignal();
         showRadioBackground();
     }
 
@@ -484,6 +489,7 @@ public class Topmost extends BaseActivity {
         showSurface();
         updatePfBarInfo();
         restoreMenuItem(); // 恢复menu初始item显示
+        mCheckSignalHelper.startCheckSignal();
 
         checkLaunchSettingPassword();
         if (!DTVSettingManager.getInstance().isPasswordEmpty() && !DTVProgramManager.getInstance().isProgCanPlay()) {
@@ -498,6 +504,7 @@ public class Topmost extends BaseActivity {
         DTVPlayerManager.getInstance().stopPlay(DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.PD_SwitchMode));
         unregisterMsgEvent();
         stopRecord();
+        mCheckSignalHelper.stopCheckSignal();
         if (isFinishing()) {
             RealTimeManager.getInstance().stop();
             DTVDVBManager.getInstance().releaseResource();
@@ -1050,6 +1057,24 @@ public class Topmost extends BaseActivity {
         if (mSurfaceView.getVisibility() != View.GONE) {
             mSurfaceView.setVisibility(View.GONE);
         }
+    }
+
+    private void initCheckSignal() {
+        mCheckSignalHelper = new CheckSignalHelper(this);
+        mCheckSignalHelper.setSignalRandom(false);
+        mCheckSignalHelper.setOnCheckSignalListener((strength, quality) -> {
+            if (strength <= 0 && quality <= 0) {
+                if (mProgListAdapter != null && mProgListAdapter.getCount() > 0 && mSignalOk) {
+                    mSignalOk = false;
+                    mSurfaceView.setVisibility(View.GONE);
+                }
+            } else {
+                if (!mSignalOk) {
+                    mSignalOk = true;
+                    mSurfaceView.setVisibility(View.VISIBLE);
+                }
+            }
+        });
     }
 
     /**
