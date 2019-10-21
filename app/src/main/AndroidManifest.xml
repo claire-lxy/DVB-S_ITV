@@ -42,7 +42,9 @@
         <activity android:name="com.konkawise.dtv.ui.EditManualActivity" />
         <activity android:name="com.konkawise.dtv.ui.ScanTVandRadioActivity" />
         <activity android:name="com.konkawise.dtv.ui.BlindActivity" />
-        <activity android:name="com.konkawise.dtv.ui.DTVSettingActivity" />
+        <activity
+            android:name="com.konkawise.dtv.ui.DTVSettingActivity"
+            android:label="DTVSetting" />
         <activity android:name="com.konkawise.dtv.ui.FavoriteActivity" />
         <activity android:name="com.konkawise.dtv.ui.BookListActivity" />
 

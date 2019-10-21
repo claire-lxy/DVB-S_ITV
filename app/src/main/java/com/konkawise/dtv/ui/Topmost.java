@@ -651,6 +651,7 @@ public class Topmost extends BaseActivity {
             setRecordFlagStop();
             mRecordingLayout.setVisibility(View.GONE);
             mTvRecordingTime.setText("00:00:00");
+            Log.d("stopRecord", "tvRecordTime:" + mTvRecordingTime.getText());
             ToastUtils.showToast(R.string.toast_stop_record);
 
             showPfInfo();
@@ -664,6 +665,7 @@ public class Topmost extends BaseActivity {
                 int recordFlag = (int) object;
                 if (recordFlag == 0) {
                     DTVPVRManager.getInstance().setRecording(true);
+                    Log.d("recordProg", "tvRecordTime:" + mTvRecordingTime);
                     startRecordingTimer(recordSeconds);
                     sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
                     ToastUtils.showToast(R.string.toast_start_record);
@@ -1682,6 +1684,7 @@ public class Topmost extends BaseActivity {
                         @Override
                         public void onPositiveListener() {
                             stopRecord();
+                            Log.d("showQuitRecordDialog", "tvRecordTime:" + mTvRecordingTime.getText());
                         }
                     }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
         }
@@ -1817,6 +1820,7 @@ public class Topmost extends BaseActivity {
             showPfBarScanDialog();
 
             // 当前处于录制，显示录制时长
+            Log.d("showPfInfo", "停止录制，隐藏录制时间view");
             sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
 
             if (!mLongPressed) {
@@ -1994,7 +1998,7 @@ public class Topmost extends BaseActivity {
             int num = DTVProgramManager.getInstance().getProgNumOfType(group, 0);
             if (num > 0) {
                 DTVProgramManager.getInstance().setCurrProgType(currProgType == HProg_Enum_Type.GBPROG ?
-                        HProg_Enum_Type.TVPROG: HProg_Enum_Type.GBPROG, 0);
+                        HProg_Enum_Type.TVPROG : HProg_Enum_Type.GBPROG, 0);
                 onProgramUpdate(new ProgramUpdateEvent(true));
             } else {
                 ToastUtils.showToast(group == HProg_Enum_Type.GBPROG ? R.string.toast_no_radio : R.string.toast_no_tv);

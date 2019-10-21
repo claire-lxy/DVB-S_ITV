@@ -15,7 +15,7 @@
             android:id="@+id/dtv_setting_title"
             style="@style/TitleStyle"
             android:layout_marginTop="22dp"
-            android:text="@string/preference_settings" />
+            android:text="@string/dtv_setting" />
 
         <View
             android:id="@+id/dtv_setting_title_divider"
