@@ -55,9 +55,12 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     private static final int DISEQC_MODE_DISEQC11 = 3;
     private static final int DISEQC_MODE_UNICABLE = 4;
 
-    private static final int UNICABLE_4SCR = 0;
-    private static final int UNICABLE_8SCR = 1;
-    private static final int UNICABLE_DCSS = 2;
+    // 与unicable位置约定
+    private static final int UNICABLE_1SAT4SCR = 0;
+    private static final int UNICABLE_1SAT8SCR = 1;
+    private static final int UNICABLE_2SAT4SCR = 2;
+    private static final int UNICABLE_2SAT8SCR = 3;
+    private static final int UNICABLE_DCSS = 4;
 
     // channel最大索引
     private static final int MAX_CHANNEL_4SCR = 3;
@@ -1130,12 +1133,18 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
 
     private int getCurrUnicable(HProg_Struct_SatInfo satInfo) {
         if (satInfo.unicConfig.UnicEnable == 1) {
-            // SCRType=0, 4SCR
-            // SCRType=1, 8SCR
-            if (satInfo.unicConfig.SCRType == 0) {
-                return UNICABLE_4SCR;
-            } else if (satInfo.unicConfig.SCRType == 1) {
-                return UNICABLE_8SCR;
+            // SatPosition=0, SCRType=0, 1Sat4SCR
+            // SatPosition=0, SCRType=1, 1Sat8SCR
+            // SatPosition=1, SCRType=0, 2Sat4SCR
+            // SatPosition=1, SCRType=1, 2Sat8SCR
+            if (satInfo.unicConfig.SatPosition == 0 && satInfo.unicConfig.SCRType == 0) {
+                return UNICABLE_1SAT4SCR;
+            } else if (satInfo.unicConfig.SatPosition == 0 && satInfo.unicConfig.SCRType == 1) {
+                return UNICABLE_1SAT8SCR;
+            } else if (satInfo.unicConfig.SatPosition == 1 && satInfo.unicConfig.SCRType == 0) {
+                return UNICABLE_2SAT4SCR;
+            } else if (satInfo.unicConfig.SatPosition == 1 && satInfo.unicConfig.SCRType == 1) {
+                return UNICABLE_2SAT8SCR;
             }
         } else if (satInfo.unicConfig.UnicEnable == 2) {
             return UNICABLE_DCSS;
@@ -1158,11 +1167,11 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     }
 
     private boolean is4SCRUnicable() {
-        return mCurrentUnicable == UNICABLE_4SCR;
+        return mCurrentUnicable == UNICABLE_1SAT4SCR || mCurrentUnicable == UNICABLE_2SAT4SCR;
     }
 
     private boolean is8SCRUnicable() {
-        return mCurrentUnicable == UNICABLE_8SCR;
+        return mCurrentUnicable == UNICABLE_1SAT8SCR || mCurrentUnicable == UNICABLE_2SAT8SCR;
     }
 
     private void itemFocusChange() {
