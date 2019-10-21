@@ -116,7 +116,7 @@ public class DTVSearchManager {
     /**
      * Auto DiSEqC指定端口锁频
      *
-     * @param portIndex 端口索引，portIndex=0~4代表DiSEqC A~D
+     * @param portIndex 端口索引，portIndex=0~4代表DiSEqC DISEQC_A~D
      */
     public int tunerLockFreqDiSEqC(int sat, int freq, int rate, int qam, int portIndex) {
         HSearch_Struct_TP tp = new HSearch_Struct_TP();

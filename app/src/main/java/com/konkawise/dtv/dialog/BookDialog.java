@@ -308,7 +308,7 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
             bpm.bookingModel = mBookModel;
             HBooking_Struct_Timer conflictBookProg = DTVBookingManager.getInstance().conflictCheck(bpm.bookingModel.bookInfo);
             bpm.bookConflict = DTVBookingManager.getInstance().getConflictType(conflictBookProg);
-            if (bpm.bookConflict == Constants.BOOK_CONFLICT_ADD || bpm.bookConflict == Constants.BOOK_CONFLICT_REPLACE) {
+            if (bpm.bookConflict == Constants.BookConflictType.ADD || bpm.bookConflict == Constants.BookConflictType.REPLACE) {
                 bpm.conflictBookProg = conflictBookProg;
             }
             Log.i(TAG, "parameter model = " + bpm);
@@ -922,20 +922,19 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
         if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && event.getAction() == KeyEvent.ACTION_DOWN) {
             switch (mCurrentSelectItem) {
                 case ITEM_TYPE:
-                    if (--mCurrTypePosition < 0) mCurrTypePosition = mBookTypeArray.length - 1;
+                    mCurrTypePosition = getMinusStep(mCurrTypePosition, mBookTypeArray.length - 1);
                     mTvBookType.setText(mBookTypeArray[mCurrTypePosition]);
                     notifySomeItemFocusableChange();
                     break;
 
                 case ITEM_MODE:
-                    if (--mCurrModePosition < 0) mCurrModePosition = mBookModeArray.length - 1;
+                    mCurrModePosition = getMinusStep(mCurrModePosition, mBookModeArray.length - 1);
                     mTvBookMode.setText(mBookModeArray[mCurrModePosition]);
                     notifyBookDateItemChange();
                     break;
 
                 case ITEM_CHANNEL_TYPE:
-                    if (--mCurrChannelTypePosition < 0)
-                        mCurrChannelTypePosition = mBookChannelTypeArray.length - 1;
+                    mCurrChannelTypePosition = getMinusStep(mCurrChannelTypePosition, mBookChannelTypeArray.length - 1);
                     mTvBookChannelType.setText(mBookChannelTypeArray[mCurrChannelTypePosition]);
                     notifyChannelListChange();
                     break;
@@ -943,7 +942,7 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
                 case ITEM_CHANNEL_NAME:
                     if (mProgList == null || mProgList.isEmpty()) return false;
 
-                    if (--mChannelNamePosition < 0) mChannelNamePosition = mProgList.size() - 1;
+                    mChannelNamePosition = getMinusStep(mChannelNamePosition, mProgList.size() - 1);
                     mTvBookChannelName.setText(mProgList.get(mChannelNamePosition).Name);
                     break;
 
@@ -955,8 +954,7 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
 //                    }
 
                     if (mCurrModePosition == BOOK_MODE_WEEKLY) {
-                        if (--mCurrBookDayOfWeekPosition < 0)
-                            mCurrBookDayOfWeekPosition = mBookDateWeeklyArray.length - 1;
+                        mCurrBookDayOfWeekPosition = getMinusStep(mCurrBookDayOfWeekPosition, mBookDateWeeklyArray.length - 1);
                         mTvBookDateWeekly.setText(mBookDateWeeklyArray[mCurrBookDayOfWeekPosition]);
                     }
                     break;
@@ -967,20 +965,19 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
         if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && event.getAction() == KeyEvent.ACTION_DOWN) {
             switch (mCurrentSelectItem) {
                 case ITEM_TYPE:
-                    if (++mCurrTypePosition >= mBookTypeArray.length) mCurrTypePosition = 0;
+                    mCurrTypePosition = getPlusStep(mCurrTypePosition, mBookTypeArray.length - 1);
                     mTvBookType.setText(mBookTypeArray[mCurrTypePosition]);
                     notifySomeItemFocusableChange();
                     break;
 
                 case ITEM_MODE:
-                    if (++mCurrModePosition >= mBookModeArray.length) mCurrModePosition = 0;
+                    mCurrModePosition = getPlusStep(mCurrModePosition, mBookModeArray.length - 1);
                     mTvBookMode.setText(mBookModeArray[mCurrModePosition]);
                     notifyBookDateItemChange();
                     break;
 
                 case ITEM_CHANNEL_TYPE:
-                    if (++mCurrChannelTypePosition >= mBookChannelTypeArray.length)
-                        mCurrChannelTypePosition = 0;
+                    mCurrChannelTypePosition = getPlusStep(mCurrChannelTypePosition, mBookChannelTypeArray.length - 1);
                     mTvBookChannelType.setText(mBookChannelTypeArray[mCurrChannelTypePosition]);
                     notifyChannelListChange();
                     break;
@@ -988,7 +985,7 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
                 case ITEM_CHANNEL_NAME:
                     if (mProgList == null || mProgList.isEmpty()) return false;
 
-                    if (++mChannelNamePosition > mProgList.size() - 1) mChannelNamePosition = 0;
+                    mChannelNamePosition = getPlusStep(mChannelNamePosition, mProgList.size() - 1);
                     mTvBookChannelName.setText(mProgList.get(mChannelNamePosition).Name);
                     break;
 
@@ -1000,8 +997,7 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
 //                    }
 
                     if (mCurrModePosition == BOOK_MODE_WEEKLY) {
-                        if (++mCurrBookDayOfWeekPosition >= mBookDateWeeklyArray.length)
-                            mCurrBookDayOfWeekPosition = 0;
+                        mCurrBookDayOfWeekPosition = getPlusStep(mCurrBookDayOfWeekPosition, mBookDateWeeklyArray.length - 1);
                         mTvBookDateWeekly.setText(mBookDateWeeklyArray[mCurrBookDayOfWeekPosition]);
                     }
                     break;
@@ -1077,7 +1073,7 @@ public class BookDialog extends BaseItemFocusChangeDialogFragment {
     }
 
     private boolean isBookEdit() {
-        return mBookType == Constants.BOOK_TYPE_EDIT;
+        return mBookType == Constants.BookType.EDIT;
     }
 
     /**

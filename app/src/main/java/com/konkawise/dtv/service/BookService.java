@@ -84,7 +84,7 @@ public class BookService extends BaseService implements WeakToolInterface {
             mDTVListener = null;
         }
         if (mMsgEvent != null) {
-            DTVDVBManager.getInstance().unregisterMsgEvent(Constants.BOOK_CALLBACK_MSG_ID);
+            DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.BOOK);
             mMsgEvent = null;
         }
         super.onDestroy();
@@ -94,7 +94,7 @@ public class BookService extends BaseService implements WeakToolInterface {
         if (mMsgEvent == null) {
             Log.i(TAG, "register book msg");
             mDTVListener = new DTVManager.DTVListener(DTVManager.getInstance());
-            mMsgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.BOOK_CALLBACK_MSG_ID);
+            mMsgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.BOOK);
             mMsgEvent.registerCallbackListener(new CallbackListenerAdapter() {
                 // 预订节目播放倒计时
                 @Override

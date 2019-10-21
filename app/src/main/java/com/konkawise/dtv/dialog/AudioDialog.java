@@ -208,8 +208,7 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
             if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
                 switch (mCurrentSelectItem) {
                     case ITEM_AUDIO_TRACK:
-                        if (--audioTrackPosition < 0)
-                            audioTrackPosition = mAudioTrackArray.length - 1;
+                        audioTrackPosition = getMinusStep(audioTrackPosition, mAudioTrackArray.length - 1);
                         mTvAudioTrack.setText(mAudioTrackArray[audioTrackPosition]);
                         DTVPlayerManager.getInstance().setCurrProgParam(HPlayer_Enum_PlayParam.TRACK, audioTrackPosition);
                         break;
@@ -217,8 +216,7 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
                     case ITEM_AUDIO_LANGUAGE:
                         if (mAudioLanguageArray.length == 0)
                             break;
-                        if (--audioLanguagePosition < 0)
-                            audioLanguagePosition = mAudioLanguageArray.length - 1;
+                        audioLanguagePosition = getMinusStep(audioLanguagePosition, mAudioLanguageArray.length - 1);
                         mTvAudioLanguage.setText(mAudioLanguageArray[audioLanguagePosition]);
                         if (where == WHERE_TOPMOST) {
                             DTVPlayerManager.getInstance().setCurrProgParam(HPlayer_Enum_PlayParam.AUDIO, audioLanguagePosition);
@@ -233,8 +231,7 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
             if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
                 switch (mCurrentSelectItem) {
                     case ITEM_AUDIO_TRACK:
-                        if (++audioTrackPosition > mAudioTrackArray.length - 1)
-                            audioTrackPosition = 0;
+                        audioTrackPosition = getPlusStep(audioTrackPosition, mAudioTrackArray.length - 1);
                         mTvAudioTrack.setText(mAudioTrackArray[audioTrackPosition]);
                         DTVPlayerManager.getInstance().setCurrProgParam(HPlayer_Enum_PlayParam.TRACK, audioTrackPosition);
                         break;
@@ -242,8 +239,7 @@ public class AudioDialog extends BaseItemFocusChangeDialogFragment {
                     case ITEM_AUDIO_LANGUAGE:
                         if (mAudioLanguageArray.length == 0)
                             break;
-                        if (++audioLanguagePosition > mAudioLanguageArray.length - 1)
-                            audioLanguagePosition = 0;
+                        audioLanguagePosition = getPlusStep(audioLanguagePosition, mAudioLanguageArray.length - 1);
                         mTvAudioLanguage.setText(mAudioLanguageArray[audioLanguagePosition]);
                         DTVPlayerManager.getInstance().setCurrProgParam(HPlayer_Enum_PlayParam.AUDIO, audioLanguagePosition);
                         break;

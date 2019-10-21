@@ -60,11 +60,11 @@ public class LanguageManager {
 
     private Locale getLocale(int localeType) {
         switch (localeType) {
-            case Constants.LOCALE_TYPE_ITALIAN:
+            case Constants.LocaleType.ITALIAN:
                 return Locale.ITALIAN;
-            case Constants.LOCALE_TYPE_ENGLISH:
+            case Constants.LocaleType.ENGLISH:
                 return Locale.ENGLISH;
-            case Constants.LOCALE_TYPE_CHINESE:
+            case Constants.LocaleType.CHINESE:
                 return Locale.CHINESE;
             default:
                 return Resources.getSystem().getConfiguration().locale;

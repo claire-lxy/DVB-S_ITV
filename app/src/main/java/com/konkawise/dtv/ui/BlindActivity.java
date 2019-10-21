@@ -2,13 +2,10 @@ package com.konkawise.dtv.ui;
 
 import android.content.Intent;
 import android.text.TextUtils;
-import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
@@ -53,9 +50,6 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
 
     @BindView(R.id.tv_lnb)
     TextView mTvLnb;
-
-    @BindView(R.id.et_lnb)
-    EditText mEtLnb;
 
     @BindView(R.id.iv_lnb_right)
     ImageView mIvLnbRight;
@@ -185,18 +179,15 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
             switch (mCurrentSelectItem) {
                 case ITEM_SATELLITE:
                     saveSatInfo();
-                    if (--mCurrentSatellite < 0) mCurrentSatellite = getSatList().size() - 1;
+                    mCurrentSatellite = getMinusStep(mCurrentSatellite, getSatList().size() - 1);
                     satelliteChange();
                     break;
                 case ITEM_LNB:
-                    if (--mCurrentLnb < 0) mCurrentLnb = mLnbArray.length - 1;
+                    mCurrentLnb = getMinusStep(mCurrentLnb, mLnbArray.length - 1);
                     lnbChange();
-
-                    if (mCurrentLnb == 0) mEtLnb.requestFocus();
-                    else mTvLnb.requestFocus();
                     break;
                 case ITEM_DISEQC:
-                    if (--mCurrentDiseqc < 0) mCurrentDiseqc = mDiseqcArray.length - 1;
+                    mCurrentDiseqc = getMinusStep(mCurrentDiseqc, mDiseqcArray.length - 1);
                     diseqcChange();
                     break;
                 case ITEM_22K:
@@ -212,18 +203,15 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
             switch (mCurrentSelectItem) {
                 case ITEM_SATELLITE:
                     saveSatInfo();
-                    if (++mCurrentSatellite > getSatList().size() - 1) mCurrentSatellite = 0;
+                    mCurrentSatellite = getPlusStep(mCurrentSatellite, getSatList().size() - 1);
                     satelliteChange();
                     break;
                 case ITEM_LNB:
-                    if (++mCurrentLnb > mLnbArray.length - 1) mCurrentLnb = 0;
+                    mCurrentLnb = getPlusStep(mCurrentLnb, mLnbArray.length - 1);
                     lnbChange();
-
-                    if (mCurrentLnb == 0) mEtLnb.requestFocus();
-                    else mTvLnb.requestFocus();
                     break;
                 case ITEM_DISEQC:
-                    if (++mCurrentDiseqc > mDiseqcArray.length - 1) mCurrentDiseqc = 0;
+                    mCurrentDiseqc = getPlusStep(mCurrentDiseqc, mDiseqcArray.length - 1);
                     diseqcChange();
                     break;
                 case ITEM_22K:
@@ -233,6 +221,56 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
                     lnbPowerChange();
                     break;
             }
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_0) {
+            inputLnb("0");
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_1) {
+            inputLnb("1");
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_2) {
+            inputLnb("2");
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_3) {
+            inputLnb("3");
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_4) {
+            inputLnb("4");
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_5) {
+            inputLnb("5");
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_6) {
+            inputLnb("6");
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_7) {
+            inputLnb("7");
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_8) {
+            inputLnb("8");
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_9) {
+            inputLnb("9");
+            return true;
         }
 
         return super.onKeyDown(keyCode, event);
@@ -270,7 +308,7 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
 
         HProg_Struct_SatInfo satInfo = DTVProgramManager.getInstance().getSatList().get(mCurrentSatellite);
 
-        String lnb = mEtLnb.getText().toString();
+        String lnb = mTvLnb.getText().toString();
         if (TextUtils.isEmpty(lnb)) lnb = "0";
         satInfo.LnbType = Utils.getLnbType(mCurrentLnb);
         satInfo.lnb_low = Utils.getLnbLow(mCurrentLnb, mCurrentLnb == 0 ? Integer.parseInt(lnb) : 0);
@@ -279,11 +317,8 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
             PreferenceManager.getInstance().putString(String.valueOf(mCurrentSatellite), lnb);
         }
 
-        satInfo.diseqc10_pos = Utils.getDiSEqC10Pos(mCurrentDiseqc);
-        satInfo.diseqc10_tone = Utils.getDiSEqC10Tone(mCurrentDiseqc);
-//        satInfo.diseqc12_pos = Utils.getDiSEqC12Pos(mCurrentDiseqc);
-//        satInfo.diseqc12 = Utils.getDiSEqC12(mCurrentDiseqc);
-        satInfo.skewonoff = Utils.getSkewOnOff(mCurrentDiseqc);
+        satInfo.diseqc10_pos = getSaveDiSEqCPos();
+        satInfo.diseqc10_tone = mCurrentDiseqc;
 
         if (TextUtils.equals(mTv22khz.getText().toString(), getString(R.string.off))) {
             satInfo.switch_22k = 0;
@@ -298,27 +333,40 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
         mSatList = DTVProgramManager.getInstance().getSatList(); // 更新卫星列表
     }
 
+    private int getSaveDiSEqCPos() {
+        if (mCurrentDiseqc >= 0 && mCurrentDiseqc <= 2) {
+            // diseqc10_pos = 0, OFF or ToneBurst
+            return 0;
+        } else if (mCurrentDiseqc >= 3 && mCurrentDiseqc <= 6) {
+            // diseqc10_pos = 1~4, DiSEqC DISEQC_A~D
+            return mCurrentDiseqc - 2;
+        } else if (mCurrentDiseqc >= 7 && mCurrentDiseqc <= 22) {
+            // diseqc10_pos = 5~16, LNB 1`16
+            return mCurrentDiseqc - 2;
+        }
+        return 0;
+    }
+
     /**
      * Lnb参数修改
      */
     private void lnbChange() {
-        mEtLnb.setVisibility(mCurrentLnb == 0 ? View.VISIBLE : View.GONE);
-        mEtLnb.setText(mLnbArray[0]);
-        mTvLnb.setVisibility(mCurrentLnb == 0 ? View.GONE : View.VISIBLE);
-        mTvLnb.setText(mLnbArray[mCurrentLnb]);
-        RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) mIvLnbLeft.getLayoutParams();
-        if (lp != null) {
-            if (mCurrentLnb == 0) {
-                lp.addRule(RelativeLayout.LEFT_OF, 0);
-                lp.leftMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 255, getResources().getDisplayMetrics());
-            } else {
-                lp.addRule(RelativeLayout.LEFT_OF, R.id.tv_lnb);
-                lp.leftMargin = 0;
-            }
-            mIvLnbLeft.setLayoutParams(lp);
+        if (mCurrentLnb == 0) {
+            mTvLnb.setText(mLnbArray[0]);
+        } else {
+            mTvLnb.setText(mLnbArray[mCurrentLnb]);
         }
 
         notify22kChange();
+    }
+
+    private void inputLnb(String inputNumber) {
+        if (mCurrentLnb == 0 && mCurrentSelectItem == ITEM_LNB) {
+            if (mTvLnb.getText().toString().length() >= 4) {
+                mTvLnb.setText("");
+            }
+            mTvLnb.append(inputNumber);
+        }
     }
 
     /**
@@ -390,7 +438,7 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
         lnbChange();
 
         mCurrentDiseqc = getCurrDiseqc();
-        String diseqc = Utils.getDiSEqC(getSatList().get(mCurrentSatellite), mDiseqcArray);
+        String diseqc = Utils.getDiSEqC(this, getSatList().get(mCurrentSatellite));
         mTvDiSEqC.setText(TextUtils.isEmpty(diseqc) ? mDiseqcArray[0] : diseqc);
 
         mTvLnbPower.setText(getSatList().get(mCurrentSatellite).LnbPower == 1 ?
@@ -417,7 +465,7 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
     private int getCurrDiseqc() {
         if (isSatelliteEmpty()) return 0;
 
-        String diseqc = Utils.getDiSEqC(getSatList().get(mCurrentSatellite), mDiseqcArray);
+        String diseqc = Utils.getDiSEqC(this, getSatList().get(mCurrentSatellite));
         for (int i = 0; i < mDiseqcArray.length; i++) {
             if (diseqc.equals(mDiseqcArray[i])) return i;
         }

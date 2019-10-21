@@ -56,10 +56,6 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
     private static final int ITEM_DISEQC_COMMAND = 6;
     private static final int ITEM_COMMAND = 7;
 
-    private static final int MOROT_TYPE_OFF = 0;
-    private static final int MOROT_TYPE_DISEQC = 1;
-    private static final int MOROT_TYPE_USALS = 2;
-
     private static final int MIN_POSITION = 1;
     private static final int MAX_POSITION = 51;
 
@@ -392,7 +388,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP) {
-            if (mMotorType == MOROT_TYPE_OFF) {
+            if (mMotorType == Constants.MotorType.OFF) {
                 switch (position) {
                     case ITEM_TP:
                         position--;
@@ -403,7 +399,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                         itemFocusChange();
                         return true;
                 }
-            } else if (mMotorType == MOROT_TYPE_USALS) {
+            } else if (mMotorType == Constants.MotorType.USALS) {
                 switch (position) {
                     case ITEM_TP:
                     case ITEM_SAT_LONGITUDE:
@@ -419,7 +415,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                         itemFocusChange();
                         return true;
                 }
-            } else if (mMotorType == MOROT_TYPE_DISEQC) {
+            } else if (mMotorType == Constants.MotorType.DISEQC) {
                 switch (position) {
                     case ITEM_TP:
                     case ITEM_MOVE_STEPS:
@@ -440,7 +436,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         }
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN) {
-            if (mMotorType == MOROT_TYPE_OFF) {
+            if (mMotorType == Constants.MotorType.OFF) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
                         position++;
@@ -451,7 +447,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                         itemFocusChange();
                         return true;
                 }
-            } else if (mMotorType == MOROT_TYPE_USALS) {
+            } else if (mMotorType == Constants.MotorType.USALS) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
                     case ITEM_TP:
@@ -467,7 +463,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                         itemFocusChange();
                         return true;
                 }
-            } else if (mMotorType == MOROT_TYPE_DISEQC) {
+            } else if (mMotorType == Constants.MotorType.DISEQC) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
                     case ITEM_TP:
@@ -488,25 +484,25 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         }
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
-            if (mMotorType == MOROT_TYPE_OFF) {
+            if (mMotorType == Constants.MotorType.OFF) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
-                        if (--mMotorType < 0) mMotorType = mTypeListArray.length - 1;
+                        mMotorType = getMinusStep(mMotorType, mTypeListArray.length - 1);
                         motorTypeChange();
                         break;
                     case ITEM_TP:
-                        if (--mCurrentTp < 0) mCurrentTp = mTpList.size() - 1;
+                        mCurrentTp = getMinusStep(mCurrentTp, mTpList.size() - 1);
                         tpChange();
                         break;
                 }
-            } else if (mMotorType == MOROT_TYPE_USALS) {
+            } else if (mMotorType == Constants.MotorType.USALS) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
-                        if (--mMotorType < 0) mMotorType = mTypeListArray.length - 1;
+                        mMotorType = getMinusStep(mMotorType, mTypeListArray.length - 1);
                         motorTypeChange();
                         break;
                     case ITEM_TP:
-                        if (--mCurrentTp < 0) mCurrentTp = mTpList.size() - 1;
+                        mCurrentTp = getMinusStep(mCurrentTp, mTpList.size() - 1);
                         tpChange();
                         break;
                     case ITEM_SAT_LONGITUDE:
@@ -519,41 +515,39 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                         mTvLocalLatitude.setText(mLocalLatitudeModel.deleteNumber());
                         break;
                     case ITEM_POSITION:
-                        if (--mPositionStep < MIN_POSITION) mPositionStep = MAX_POSITION;
+                        mPositionStep = getMinusStep(mPositionStep, MAX_POSITION, MIN_POSITION);
                         positionChange();
                         break;
                     case ITEM_COMMAND:
-                        if (--mUsalsCommandStep < 0)
-                            mUsalsCommandStep = mUsalsCommandArray.length - 1;
+                        mUsalsCommandStep = getMinusStep(mUsalsCommandStep, mUsalsCommandArray.length - 1);
                         commandChange();
                         break;
                 }
-            } else if (mMotorType == MOROT_TYPE_DISEQC) {
+            } else if (mMotorType == Constants.MotorType.DISEQC) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
-                        if (--mMotorType < 0) mMotorType = mTypeListArray.length - 1;
+                        mMotorType = getMinusStep(mMotorType, mTypeListArray.length - 1);
                         motorTypeChange();
                         break;
                     case ITEM_TP:
-                        if (--mCurrentTp < 0) mCurrentTp = mTpList.size() - 1;
+                        mCurrentTp = getMinusStep(mCurrentTp, mTpList.size() - 1);
                         tpChange();
                         break;
                     case ITEM_MOVE_STEPS:
-                        if (--mMoveStep < 0) mMoveStep = mMoveStepArray.length - 1;
+                        mMoveStep = getMinusStep(mMoveStep, mMoveStepArray.length - 1);
                         moveStepChange();
                         moveStep();
                         break;
                     case ITEM_STEP_SIZE:
-                        if (--mStepSizeStep < 0) mStepSizeStep = mStepSizeArray.length - 1;
+                        mStepSizeStep = getMinusStep(mStepSizeStep, mStepSizeArray.length - 1);
                         stepSizeChange();
                         break;
                     case ITEM_POSITION_DIS:
-                        if (--mPositionStep < MIN_POSITION) mPositionStep = MAX_POSITION;
+                        mPositionStep = getMinusStep(mPositionStep, MAX_POSITION, MIN_POSITION);
                         positionChange();
                         break;
                     case ITEM_DISEQC_COMMAND:
-                        if (--mDISEqcCommandStep < 0)
-                            mDISEqcCommandStep = mDiSEqCCommandArray.length - 1;
+                        mDISEqcCommandStep = getMinusStep(mDISEqcCommandStep, mDiSEqCCommandArray.length - 1);
                         commandChange();
                         break;
                 }
@@ -561,27 +555,25 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         }
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
-            if (mMotorType == MOROT_TYPE_OFF) {
+            if (mMotorType == Constants.MotorType.OFF) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
-                        if (++mMotorType > mTypeListArray.length - 1)
-                            mMotorType = MOROT_TYPE_OFF;
+                        mMotorType = getPlusStep(mMotorType, mTypeListArray.length - 1);
                         motorTypeChange();
                         break;
                     case ITEM_TP:
-                        if (++mCurrentTp > mTpList.size() - 1) mCurrentTp = 0;
+                        mCurrentTp = getPlusStep(mCurrentTp, mTpList.size() - 1);
                         tpChange();
                         break;
                 }
-            } else if (mMotorType == MOROT_TYPE_USALS) {
+            } else if (mMotorType == Constants.MotorType.USALS) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
-                        if (++mMotorType > mTypeListArray.length - 1)
-                            mMotorType = MOROT_TYPE_OFF;
+                        mMotorType = getPlusStep(mMotorType, mTypeListArray.length - 1);
                         motorTypeChange();
                         break;
                     case ITEM_TP:
-                        if (++mCurrentTp > mTpList.size() - 1) mCurrentTp = 0;
+                        mCurrentTp = getPlusStep(mCurrentTp, mTpList.size() - 1);
                         tpChange();
                         break;
                     case ITEM_SAT_LONGITUDE:
@@ -597,42 +589,41 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
                         localLatitudeChange();
                         break;
                     case ITEM_POSITION:
-                        if (++mPositionStep > MAX_POSITION) mPositionStep = MIN_POSITION;
+                        mPositionStep = getPlusStep(mPositionStep, MAX_POSITION);
+                        if (mPositionStep <= 0) mPositionStep = MIN_POSITION;
                         positionChange();
                         break;
                     case ITEM_COMMAND:
-                        if (++mUsalsCommandStep > mUsalsCommandArray.length - 1)
-                            mUsalsCommandStep = 0;
+                        mUsalsCommandStep = getPlusStep(mUsalsCommandStep, mUsalsCommandArray.length - 1);
                         commandChange();
                         break;
                 }
-            } else if (mMotorType == MOROT_TYPE_DISEQC) {
+            } else if (mMotorType == Constants.MotorType.DISEQC) {
                 switch (position) {
                     case ITEM_MOTOR_TYPE:
-                        if (++mMotorType > mTypeListArray.length - 1)
-                            mMotorType = MOROT_TYPE_OFF;
+                        mMotorType = getPlusStep(mMotorType, mTypeListArray.length - 1);
                         motorTypeChange();
                         break;
                     case ITEM_TP:
-                        if (++mCurrentTp > mTpList.size() - 1) mCurrentTp = 0;
+                        mCurrentTp = getPlusStep(mCurrentTp, mTpList.size() - 1);
                         tpChange();
                         break;
                     case ITEM_MOVE_STEPS:
-                        if (++mMoveStep > mMoveStepArray.length - 1) mMoveStep = 0;
+                        mMoveStep = getPlusStep(mMoveStep, mMoveStepArray.length - 1);
                         moveStepChange();
                         moveStep();
                         break;
                     case ITEM_STEP_SIZE:
-                        if (++mStepSizeStep > mStepSizeArray.length - 1) mStepSizeStep = 0;
+                        mStepSizeStep = getPlusStep(mStepSizeStep, mStepSizeArray.length - 1);
                         stepSizeChange();
                         break;
                     case ITEM_POSITION_DIS:
-                        if (++mPositionStep > MAX_POSITION) mPositionStep = MIN_POSITION;
+                        mPositionStep = getPlusStep(mPositionStep, MAX_POSITION);
+                        if (mPositionStep <= 0) mPositionStep = MIN_POSITION;
                         positionChange();
                         break;
                     case ITEM_DISEQC_COMMAND:
-                        if (++mDISEqcCommandStep > mDiSEqCCommandArray.length - 1)
-                            mDISEqcCommandStep = 0;
+                        mDISEqcCommandStep = getPlusStep(mDISEqcCommandStep, mDiSEqCCommandArray.length - 1);
                         commandChange();
                         break;
                 }
@@ -706,14 +697,14 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
-            if ((mMotorType == MOROT_TYPE_DISEQC && position == ITEM_DISEQC_COMMAND) ||
-                    mMotorType == MOROT_TYPE_USALS && position == ITEM_COMMAND) {
+            if ((mMotorType == Constants.MotorType.DISEQC && position == ITEM_DISEQC_COMMAND) ||
+                    mMotorType == Constants.MotorType.USALS && position == ITEM_COMMAND) {
                 MotorCtrlModel motorCtrlModel = getMotorCtrlModelByCommand();
                 showCommandDialog(motorCtrlModel.title, new OnCommCallback() {
                     @Override
                     public void callback(Object object) {
                         if (TextUtils.equals(mTvCommand.getText().toString(), getString(R.string.motor_command_savepos))) {
-                            if (mMotorType == MOROT_TYPE_DISEQC && position == ITEM_DISEQC_COMMAND) {
+                            if (mMotorType == Constants.MotorType.DISEQC && position == ITEM_DISEQC_COMMAND) {
                                 saveMotorType();
                             }
                             savePosition();
@@ -751,22 +742,22 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
     }
 
     private void satLongitudeChange() {
-        mLocalLongitudeLayout.setVisibility(mMotorType == MOROT_TYPE_USALS ? View.VISIBLE : View.GONE);
+        mLocalLongitudeLayout.setVisibility(mMotorType == Constants.MotorType.USALS ? View.VISIBLE : View.GONE);
         mTvSatLongitude.setText(mSatLongitudeModel.getLatLngText());
     }
 
     private void localLongitudeChange() {
-        mLocalLongitudeLayout.setVisibility(mMotorType == MOROT_TYPE_USALS ? View.VISIBLE : View.GONE);
+        mLocalLongitudeLayout.setVisibility(mMotorType == Constants.MotorType.USALS ? View.VISIBLE : View.GONE);
         mTvLocalLongitude.setText(mLocalLongitudeModel.getLatLngText());
     }
 
     private void localLatitudeChange() {
-        mLocalLongitudeLayout.setVisibility(mMotorType == MOROT_TYPE_USALS ? View.VISIBLE : View.GONE);
+        mLocalLongitudeLayout.setVisibility(mMotorType == Constants.MotorType.USALS ? View.VISIBLE : View.GONE);
         mTvLocalLatitude.setText(mLocalLatitudeModel.getLatLngText());
     }
 
     private void moveStepChange() {
-        mItemMoveStep.setVisibility(mMotorType == MOROT_TYPE_DISEQC ? View.VISIBLE : View.GONE);
+        mItemMoveStep.setVisibility(mMotorType == Constants.MotorType.DISEQC ? View.VISIBLE : View.GONE);
         mTvMoveStep.setText(mMoveStepArray[mMoveStep]);
     }
 
@@ -780,21 +771,21 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
     }
 
     private void stepSizeChange() {
-        mItemStepSize.setVisibility(mMotorType == MOROT_TYPE_DISEQC ? View.VISIBLE : View.GONE);
-        mTvStepSize.setText(mMotorType == MOROT_TYPE_DISEQC ? getString(R.string.motor_continue) : "");
+        mItemStepSize.setVisibility(mMotorType == Constants.MotorType.DISEQC ? View.VISIBLE : View.GONE);
+        mTvStepSize.setText(mMotorType == Constants.MotorType.DISEQC ? getString(R.string.motor_continue) : "");
     }
 
     private void positionChange() {
-        mItemPosition.setVisibility(mMotorType != MOROT_TYPE_OFF ? View.VISIBLE : View.GONE);
+        mItemPosition.setVisibility(mMotorType != Constants.MotorType.OFF ? View.VISIBLE : View.GONE);
         mTvPosition.setText(MessageFormat.format(getString(R.string.motor_position_text), String.valueOf(mPositionStep)));
     }
 
     private void commandChange() {
-        mItemCommand.setVisibility(mMotorType != MOROT_TYPE_OFF ? View.VISIBLE : View.GONE);
-        mTvCommandTitle.setText(getString(mMotorType == MOROT_TYPE_DISEQC ? R.string.motor_diseqc_command_title : R.string.motor_usals_command_title));
-        if (mMotorType == MOROT_TYPE_USALS) {
+        mItemCommand.setVisibility(mMotorType != Constants.MotorType.OFF ? View.VISIBLE : View.GONE);
+        mTvCommandTitle.setText(getString(mMotorType == Constants.MotorType.DISEQC ? R.string.motor_diseqc_command_title : R.string.motor_usals_command_title));
+        if (mMotorType == Constants.MotorType.USALS) {
             mTvCommand.setText(mUsalsCommandArray[mUsalsCommandStep]);
-        } else if (mMotorType == MOROT_TYPE_DISEQC) {
+        } else if (mMotorType == Constants.MotorType.DISEQC) {
             mTvCommand.setText(mDiSEqCCommandArray[mDISEqcCommandStep]);
         }
     }
@@ -807,9 +798,9 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
         int[] data = new int[1];
 
         if (TextUtils.equals(mTvCommand.getText().toString(), getString(R.string.motor_command_savepos))) {
-            if (mMotorType == MOROT_TYPE_DISEQC && position == ITEM_DISEQC_COMMAND) {
+            if (mMotorType == Constants.MotorType.DISEQC && position == ITEM_DISEQC_COMMAND) {
                 title = getString(R.string.dialog_save_position);
-            } else if (mMotorType == MOROT_TYPE_USALS && position == ITEM_COMMAND) {
+            } else if (mMotorType == Constants.MotorType.USALS && position == ITEM_COMMAND) {
                 title = getString(R.string.dialog_save_pos);
             }
         } else if (TextUtils.equals(command, getString(R.string.motor_diseqc_command_recalculate))) {
@@ -825,9 +816,9 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
             title = getString(R.string.dialog_west_limit);
             ctrlCode = HTuner_Enum_MotorCtrlCode.WEST_LIMIT;
         } else if (TextUtils.equals(command, getString(R.string.motor_command_gotoref))) {
-            if (mMotorType == MOROT_TYPE_DISEQC && position == ITEM_DISEQC_COMMAND) {
+            if (mMotorType == Constants.MotorType.DISEQC && position == ITEM_DISEQC_COMMAND) {
                 title = getString(R.string.dialog_goto_ref);
-            } else if (mMotorType == MOROT_TYPE_USALS && position == ITEM_COMMAND) {
+            } else if (mMotorType == Constants.MotorType.USALS && position == ITEM_COMMAND) {
                 title = getString(R.string.dialog_command_goto_ref);
             }
             ctrlCode = HTuner_Enum_MotorCtrlCode.GO_REFERENCE;
@@ -964,7 +955,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
 
     private void positionItemFocusChange() {
         int selectItem = ITEM_POSITION;
-        if (mMotorType == MOROT_TYPE_DISEQC) {
+        if (mMotorType == Constants.MotorType.DISEQC) {
             selectItem = ITEM_POSITION_DIS;
         }
         itemChange(position, selectItem, mItemPosition, mIvPositionLeft, mIvPositionRight, mTvPosition);
@@ -972,7 +963,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
 
     private void commandItemFocusChange() {
         int selectItem = ITEM_COMMAND;
-        if (mMotorType == MOROT_TYPE_DISEQC) {
+        if (mMotorType == Constants.MotorType.DISEQC) {
             selectItem = ITEM_DISEQC_COMMAND;
         }
         itemChange(position, selectItem, mItemCommand, mIvDiSEqCCommandLeft, mIvCommandRight, mTvCommand);

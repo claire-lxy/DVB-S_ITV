@@ -216,7 +216,7 @@ public class Topmost extends BaseActivity {
     @OnClick(R.id.item_installation)
     void installation() {
         if (isShowInstallation()) {
-            showS2OrT2Dialog(Constants.DVB_SELECT_TYPE_INSTALLATION, true);
+            showS2OrT2Dialog(Constants.DVBSelectType.INSTALLATION, true);
         } else {
             toggleInstallationItem();
         }
@@ -523,7 +523,7 @@ public class Topmost extends BaseActivity {
     }
 
     private void registerMsgEvent() {
-        MsgEvent msgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.LOCK_CALLBACK_MSG_ID);
+        MsgEvent msgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.LOCK);
         msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
             @Override
             public void PLAYER_isLocked(int type, int progNo, int progIndex, int home) {
@@ -548,7 +548,7 @@ public class Topmost extends BaseActivity {
     }
 
     private void unregisterMsgEvent() {
-        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.LOCK_CALLBACK_MSG_ID);
+        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.LOCK);
     }
 
     @Override
@@ -1386,7 +1386,7 @@ public class Topmost extends BaseActivity {
 
                         @Override
                         public void onStartSearch() {
-                            showS2OrT2Dialog(Constants.DVB_SELECT_TYPE_SEARCH, false);
+                            showS2OrT2Dialog(Constants.DVBSelectType.SEARCH, false);
                         }
 
                         @Override
@@ -1406,7 +1406,7 @@ public class Topmost extends BaseActivity {
                     @Override
                     public void onPositiveListener() {
                         mItemInstallation.requestFocus();
-                        showS2OrT2Dialog(Constants.DVB_SELECT_TYPE_INSTALLATION, true);
+                        showS2OrT2Dialog(Constants.DVBSelectType.INSTALLATION, true);
                     }
                 }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
     }
@@ -1468,13 +1468,13 @@ public class Topmost extends BaseActivity {
                         .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
                             @Override
                             public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
-                                if (selectType == Constants.DVB_SELECT_TYPE_INSTALLATION) {
+                                if (selectType == Constants.DVBSelectType.INSTALLATION) {
                                     if (position == 0) {
                                         toggleInstallationItem();
                                     } else {
                                         startActivity(new Intent(Topmost.this, InstallationT2Activity.class));
                                     }
-                                } else if (selectType == Constants.DVB_SELECT_TYPE_SEARCH) {
+                                } else if (selectType == Constants.DVBSelectType.SEARCH) {
                                     if (position == 0) {
                                         startActivity(new Intent(Topmost.this, SatelliteActivity.class));
                                     } else {
@@ -1658,10 +1658,10 @@ public class Topmost extends BaseActivity {
                     public void callback(Object object) {
                         int minutes = (int) object;
                         switch (pvrType) {
-                            case Constants.PVR_TYPE_RECORD:
+                            case Constants.PVRType.RECORD:
                                 recordProg(minutes * 60);
                                 break;
-                            case Constants.PVR_TYPE_TIMESHIFT:
+                            case Constants.PVRType.TIMESHIFT:
                                 Intent intent = new Intent();
                                 intent.setClass(Topmost.this, RecordPlayer.class);
                                 intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, RecordPlayer.FROM_TOPMOST);
@@ -1913,7 +1913,7 @@ public class Topmost extends BaseActivity {
                 return true;
             }
 
-//            showInputPvrMinuteDialog(Constants.PVR_TYPE_TIMESHIFT);
+//            showInputPvrMinuteDialog(Constants.TIMESHIFT);
             Intent intent = new Intent();
             intent.setClass(Topmost.this, RecordPlayer.class);
             intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, RecordPlayer.FROM_TOPMOST);
@@ -1935,7 +1935,7 @@ public class Topmost extends BaseActivity {
                 return true;
             }
 
-//            showInputPvrMinuteDialog(Constants.PVR_TYPE_TIMESHIFT);
+//            showInputPvrMinuteDialog(Constants.TIMESHIFT);
             Intent intent = new Intent();
             intent.setClass(Topmost.this, RecordPlayer.class);
             intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, RecordPlayer.FROM_TOPMOST);
@@ -1977,7 +1977,7 @@ public class Topmost extends BaseActivity {
                 if (mProgListAdapter.getCount() > 0) {
                     int recordMinutes = DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.RecordMaxMin);
                     if (recordMinutes == 0) {
-                        showInputPvrMinuteDialog(Constants.PVR_TYPE_RECORD);
+                        showInputPvrMinuteDialog(Constants.PVRType.RECORD);
                     } else {
                         recordProg(recordMinutes >= Integer.MAX_VALUE ? Integer.MAX_VALUE : recordMinutes * 60);
                     }

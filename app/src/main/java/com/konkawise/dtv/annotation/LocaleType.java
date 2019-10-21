@@ -5,10 +5,10 @@ import android.support.annotation.IntDef;
 import com.konkawise.dtv.Constants;
 
 @IntDef(flag = true, value = {
-        Constants.LOCALE_TYPE_SYSTEM,
-        Constants.LOCALE_TYPE_ITALIAN,
-        Constants.LOCALE_TYPE_ENGLISH,
-        Constants.LOCALE_TYPE_CHINESE
+        Constants.LocaleType.SYSTEM,
+        Constants.LocaleType.ITALIAN,
+        Constants.LocaleType.ENGLISH,
+        Constants.LocaleType.CHINESE
 })
 public @interface LocaleType {
 }

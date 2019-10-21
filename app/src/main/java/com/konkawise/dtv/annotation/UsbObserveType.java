@@ -5,7 +5,7 @@ import android.support.annotation.IntDef;
 import com.konkawise.dtv.Constants;
 
 @IntDef(flag = true, value = {
-        Constants.USB_TYPE_ATTACH, Constants.USB_TYPE_DETACH
+        Constants.UsbType.ATTACH, Constants.UsbType.DETACH
 })
 public @interface UsbObserveType {
 }

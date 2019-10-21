@@ -47,10 +47,10 @@ public class DTVDVBManager {
     }
 
     public void releaseResource() {
-        unregisterMsgEvent(Constants.SCAN_CALLBACK_MSG_ID);
-        unregisterMsgEvent(Constants.LOCK_CALLBACK_MSG_ID);
-        unregisterMsgEvent(Constants.PVR_CALLBACK_MSG_ID);
-        unregisterMsgEvent(Constants.EPG_CALLBACK_MSG_ID);
+        unregisterMsgEvent(Constants.MsgCallbackId.SCAN);
+        unregisterMsgEvent(Constants.MsgCallbackId.LOCK);
+        unregisterMsgEvent(Constants.MsgCallbackId.PVR);
+        unregisterMsgEvent(Constants.MsgCallbackId.EPG);
         RealTimeManager.getInstance().stop();
         DTVManager.getInstance().destroy();
     }

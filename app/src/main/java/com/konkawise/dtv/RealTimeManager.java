@@ -23,7 +23,7 @@ public class RealTimeManager {
 
     public void start() {
         if (mMsgEvent == null) {
-            mMsgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.TIME_CALLBACK_MSG_ID);
+            mMsgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.TIME);
             mMsgEvent.registerCallbackListener(new CallbackListenerAdapter() {
                 @Override
                 public void TIME_onBroadcastDateTime(int date, int time, int param) {
@@ -51,7 +51,7 @@ public class RealTimeManager {
 
     public void stop() {
         if (mMsgEvent != null) {
-            DTVDVBManager.getInstance().unregisterMsgEvent(Constants.TIME_CALLBACK_MSG_ID);
+            DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.TIME);
             mMsgEvent = null;
         }
     }

@@ -27,7 +27,7 @@ public class ScreenManager {
         } else {
             isScreenOn = powerManager.isScreenOn();
         }
-        if (!isScreenOn && TextUtils.equals(PropertiesManager.getInstance().getProperty(Constants.STANDBY_PROPERTY), Constants.STANDBY_SMART_SUSPEND)) {
+        if (!isScreenOn && TextUtils.equals(PropertiesManager.getInstance().getProperty(Constants.STANDBY_PROPERTY), Constants.StandbyProperty.SMART_SUSPEND)) {
             @SuppressLint("InvalidWakeLockTag") PowerManager.WakeLock wakeLock = powerManager.newWakeLock(
                     PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "wakeupScreen");
             if (wakeLock != null) {

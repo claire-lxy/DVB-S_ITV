@@ -132,7 +132,7 @@ public class SatelliteActivity extends BaseActivity {
                         public void onClick(View v) {
                             Intent intent = new Intent(SatelliteActivity.this, ScanTVandRadioActivity.class);
                             intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mAdapter.getItem(mCurrPosition).SatIndex);
-                            intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.SEARCH_TYPE_SATELLITE);
+                            intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.IntentValue.SEARCH_TYPE_SATELLITE);
                             startActivity(intent);
                             finish();
                         }
@@ -222,7 +222,7 @@ public class SatelliteActivity extends BaseActivity {
                     public void run() {
                         context.mTvLnb.setText(Utils.getLnb(satInfo));
                         context.mTvLnbPower.setText(satInfo.LnbPower == 0 ?  R.string.off : R.string.on);
-                        context.mTvDiSEqC.setText(Utils.getDiSEqC(satInfo, context.getResources().getStringArray(R.array.DISEQC)));
+                        context.mTvDiSEqC.setText(Utils.getDiSEqC(context, satInfo));
                         context.mTvMotorType.setText(Utils.getMotorType(context, satInfo));
 
                         if (channelInfo != null && channelInfo.Freq > 0) {

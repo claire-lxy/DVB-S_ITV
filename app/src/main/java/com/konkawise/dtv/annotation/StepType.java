@@ -5,7 +5,9 @@ import android.annotation.IntDef;
 import com.konkawise.dtv.Constants;
 
 @IntDef(flag = true, value = {
-        Constants.TpType.ADD, Constants.TpType.EDIT
+        Constants.StepType.NONE,
+        Constants.StepType.PLUS,
+        Constants.StepType.MINUS
 })
-public @interface TpType {
+public @interface StepType {
 }

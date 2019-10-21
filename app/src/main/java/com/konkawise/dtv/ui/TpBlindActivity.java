@@ -138,7 +138,7 @@ public class TpBlindActivity extends BaseActivity {
     }
 
     private void registerMsgEvent() {
-        MsgEvent msgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.SCAN_CALLBACK_MSG_ID);
+        MsgEvent msgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.SCAN);
         msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
             @Override
             public void SEARCH_onOneTsFailed(int allNum, int currIndex, int sat, int freq, int symbol, int qam, int plp) {
@@ -275,7 +275,7 @@ public class TpBlindActivity extends BaseActivity {
     }
 
     private void unregisterMsgEvent() {
-        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.SCAN_CALLBACK_MSG_ID);
+        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.SCAN);
     }
 
     private void initRecyclerView() {

@@ -139,15 +139,15 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         mUsbInfos.addAll(UsbManager.getInstance().getUsbInfos(this));
 
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-            if (ActivityCompat.checkSelfPermission(this, Constants.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.checkSelfPermission(this, Constants.Permissions.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 new PermissionHelper(this)
-                        .permissions(new String[]{Constants.READ_EXTERNAL_STORAGE, Constants.WRITE_EXTERNAL_STORAGE})
+                        .permissions(new String[]{Constants.Permissions.READ_EXTERNAL_STORAGE, Constants.Permissions.WRITE_EXTERNAL_STORAGE})
                         .request()
                         .result(new OnRequestPermissionResultListener() {
                             @Override
                             public void onRequestResult(List<String> grantedPermissions, List<String> deniedPermissions) {
                                 for (int i = 0; i < grantedPermissions.size(); i++) {
-                                    if (grantedPermissions.get(i).equals(Constants.WRITE_EXTERNAL_STORAGE)) {
+                                    if (grantedPermissions.get(i).equals(Constants.Permissions.WRITE_EXTERNAL_STORAGE)) {
                                         updateDeviceGroup(mUsbInfos, 0, false, false);
                                         break;
                                     }

@@ -5,7 +5,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;
+import com.konkawise.dtv.annotation.StepType;
 
 public class ItemFocusChangeDelegate {
 
@@ -26,5 +28,50 @@ public class ItemFocusChangeDelegate {
         if (textView != null) {
             textView.setBackgroundResource(currSelectItem == selectItem ? R.drawable.btn_red_bg_shape : 0);
         }
+    }
+
+    public int getMinusStep(int currStep, int maxSize) {
+        return getMinusStep(currStep, maxSize, 0);
+    }
+
+    public int getPlusStep(int currStep, int maxSize) {
+        return getPlusStep(currStep, maxSize, maxSize);
+    }
+
+    public int getMinusStep(int currStep, int maxSize, int limit) {
+        return getSelectStep(Constants.StepType.MINUS, currStep, maxSize, limit);
+    }
+
+    public int getPlusStep(int currStep, int maxSize, int limit) {
+        return getSelectStep(Constants.StepType.PLUS, currStep, maxSize, limit);
+    }
+
+    private int getSelectStep(@StepType int stepType, int currStep, int maxSize, int limit) {
+        if (stepType == Constants.StepType.PLUS) {
+            currStep = plusStep(currStep);
+            if (currStep > limit) currStep = 0;
+            return currStep;
+        } else if (stepType == Constants.StepType.MINUS) {
+            currStep = minusStep(currStep);
+            if (currStep < limit) currStep = maxSize;
+            return currStep;
+        }
+        return currStep;
+    }
+
+    public int minusStep(int currStep) {
+        return minusStep(currStep, 1);
+    }
+
+    public int minusStep(int currStep, int step) {
+        return currStep - step;
+    }
+
+    public int plusStep(int currStep) {
+        return plusStep(currStep, 1);
+    }
+
+    public int plusStep(int currStep, int step) {
+        return currStep + step;
     }
 }

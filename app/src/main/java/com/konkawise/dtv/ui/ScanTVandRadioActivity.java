@@ -138,7 +138,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
     }
 
     private void registerMsgEvent() {
-        MsgEvent msgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.SCAN_CALLBACK_MSG_ID);
+        MsgEvent msgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.SCAN);
         msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
             private void onUpdateSearchProgress(int step, int max_step) {
                 if (step > 0 && max_step > 0) {
@@ -256,7 +256,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
     }
 
     private void unregisterMsgEvent() {
-        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.SCAN_CALLBACK_MSG_ID);
+        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.SCAN);
     }
 
     private void initIntent() {
@@ -311,23 +311,23 @@ public class ScanTVandRadioActivity extends BaseActivity {
     }
 
     private boolean isFromSatelliteActivity() {
-        return getIntent().getIntExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, -1) == Constants.SEARCH_TYPE_SATELLITE;
+        return getIntent().getIntExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, -1) == Constants.IntentValue.SEARCH_TYPE_SATELLITE;
     }
 
     private boolean isFromTpListingActivity() {
-        return getIntent().getIntExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, -1) == Constants.SEARCH_TYPE_TPLISTING;
+        return getIntent().getIntExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, -1) == Constants.IntentValue.SEARCH_TYPE_TPLISTING;
     }
 
     private boolean isFromEditManualActivity() {
-        return getIntent().getIntExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, -1) == Constants.SEARCH_TYPE_EDITMANUAL;
+        return getIntent().getIntExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, -1) == Constants.IntentValue.SEARCH_TYPE_EDITMANUAL;
     }
 
     private boolean isFromT2ManualSearchActivity() {
-        return getIntent().getIntExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, -1) == Constants.SEARCH_TYPE_T2MANUAL;
+        return getIntent().getIntExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, -1) == Constants.IntentValue.SEARCH_TYPE_T2MANUAL;
     }
 
     private boolean isFromT2AutoSearch() {
-        return getIntent().getIntExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, -1) == Constants.SEARCH_TYPE_T2AUTO;
+        return getIntent().getIntExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, -1) == Constants.IntentValue.SEARCH_TYPE_T2AUTO;
     }
 
     private int getFreq() {

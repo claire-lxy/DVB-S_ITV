@@ -454,4 +454,14 @@
     <string name="motor_command_gotoref">Goto Ref</string>
 
     <string name="empty_tp">No TP</string>
+
+    <string name="satellite_param_diseqc_mode_title">DiSEqC Mode:</string>
+    <string name="satellite_param_toneburst_title">ToneBurst:</string>
+    <string name="satellite_param_diseqc_title">DiSEqC:</string>
+    <string name="satellite_param_unicable_title">Unicable:</string>
+    <string name="satellite_param_position_title">Position:</string>
+    <string name="satellite_param_channel_title">Channel:</string>
+    <string name="satellite_param_frequency_title">Frequency:</string>
+
+    <string name="formater_satellite_param_channel_step">SCR {0}</string>
 </resources>

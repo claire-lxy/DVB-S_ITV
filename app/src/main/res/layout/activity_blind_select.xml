@@ -83,27 +83,6 @@
                 android:layout_toStartOf="@+id/iv_lnb_right"
                 android:layout_toLeftOf="@+id/iv_lnb_right" />
 
-            <EditText
-                android:id="@+id/et_lnb"
-                android:layout_width="130dp"
-                android:layout_height="18dp"
-                android:layout_centerVertical="true"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="12dp"
-                android:layout_marginRight="12dp"
-                android:layout_toStartOf="@+id/iv_lnb_right"
-                android:layout_toLeftOf="@+id/iv_lnb_right"
-                android:background="@drawable/btn_red_bg_shape"
-                android:digits="0123456789"
-                android:focusable="true"
-                android:gravity="center"
-                android:inputType="number"
-                android:maxLength="4"
-                android:textSize="13sp"
-                android:visibility="gone"
-                tools:ignore="Autofill,LabelFor"
-                tools:text="0" />
-
             <ImageView
                 android:id="@+id/iv_lnb_right"
                 style="@style/ItemArrowRightStyle"

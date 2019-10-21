@@ -8,8 +8,6 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="50dp"
-        android:layout_marginBottom="50dp"
         android:background="@mipmap/right_background"
         android:orientation="vertical">
 
@@ -115,27 +113,6 @@
                 android:layout_toStartOf="@+id/iv_lnb_right"
                 android:layout_toLeftOf="@+id/iv_lnb_right" />
 
-            <EditText
-                android:id="@+id/et_lnb"
-                android:layout_width="130dp"
-                android:layout_height="18dp"
-                android:layout_centerVertical="true"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="12dp"
-                android:layout_marginRight="12dp"
-                android:layout_toStartOf="@+id/iv_lnb_right"
-                android:layout_toLeftOf="@+id/iv_lnb_right"
-                android:background="@drawable/btn_red_bg_shape"
-                android:digits="0123456789"
-                android:focusable="true"
-                android:gravity="center"
-                android:inputType="number"
-                android:maxLength="4"
-                android:textSize="13sp"
-                android:visibility="gone"
-                tools:ignore="Autofill,LabelFor"
-                tools:text="0" />
-
             <ImageView
                 android:id="@+id/iv_lnb_right"
                 style="@style/ItemArrowRightStyle"
@@ -144,57 +121,17 @@
                 tools:ignore="ContentDescription" />
         </RelativeLayout>
 
-        <!-- DiSEqC -->
-        <RelativeLayout
-            android:id="@+id/item_diseqc"
-            style="@style/ItemGroupStyle"
-            android:layout_below="@id/item_lnb">
-
-            <TextView
-                style="@style/ItemTitleStyle"
-                android:text="@string/diseqc_1_x"
-                tools:ignore="RelativeOverlap" />
-
-            <ImageView
-                android:id="@+id/iv_diseqc_left"
-                style="@style/ItemArrowLeftStyle"
-                android:layout_toStartOf="@+id/tv_diseqc"
-                android:layout_toLeftOf="@+id/tv_diseqc"
-                android:visibility="invisible"
-                tools:ignore="ContentDescription" />
-
-            <TextView
-                android:id="@+id/tv_diseqc"
-                style="@style/ItemContentStyle"
-                android:layout_toStartOf="@+id/iv_diseqc_right"
-                android:layout_toLeftOf="@+id/iv_diseqc_right" />
-
-            <ImageView
-                android:id="@+id/iv_diseqc_right"
-                style="@style/ItemArrowRightStyle"
-                android:visibility="invisible"
-                tools:ignore="ContentDescription" />
-        </RelativeLayout>
-
         <!-- Longitude -->
         <RelativeLayout
             android:id="@+id/item_longitude"
             style="@style/ItemGroupStyle"
-            android:layout_below="@id/item_diseqc"
+            android:layout_below="@id/item_lnb"
             android:background="@color/dialog_bg">
 
             <TextView
                 style="@style/ItemTitleStyle"
                 android:text="@string/longitude"
                 tools:ignore="RelativeOverlap" />
-
-            <ImageView
-                android:id="@+id/iv_longitude_left"
-                style="@style/ItemArrowLeftStyle"
-                android:layout_toStartOf="@+id/tv_longitude"
-                android:layout_toLeftOf="@+id/tv_longitude"
-                android:visibility="invisible"
-                tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/tv_longitude"
@@ -274,11 +211,233 @@
                 tools:ignore="ContentDescription" />
         </RelativeLayout>
 
+        <!-- DiSEqC Mode-->
+        <RelativeLayout
+            android:id="@+id/item_diseqc_mode"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/item_lnb_power">
+
+            <TextView
+                style="@style/ItemTitleStyle"
+                android:text="@string/satellite_param_diseqc_mode_title"
+                tools:ignore="RelativeOverlap" />
+
+            <ImageView
+                android:id="@+id/iv_diseqc_mode_left"
+                style="@style/ItemArrowLeftStyle"
+                android:layout_toStartOf="@+id/tv_diseqc_mode"
+                android:layout_toLeftOf="@+id/tv_diseqc_mode"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_diseqc_mode"
+                style="@style/ItemContentStyle"
+                android:layout_toStartOf="@+id/iv_diseqc_mode_right"
+                android:layout_toLeftOf="@+id/iv_diseqc_mode_right" />
+
+            <ImageView
+                android:id="@+id/iv_diseqc_mode_right"
+                style="@style/ItemArrowRightStyle"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <!-- ToneBurst -->
+        <RelativeLayout
+            android:id="@+id/item_toneburst"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/item_diseqc_mode"
+            android:visibility="gone">
+
+            <TextView
+                style="@style/ItemTitleStyle"
+                android:text="@string/satellite_param_toneburst_title"
+                tools:ignore="RelativeOverlap" />
+
+            <ImageView
+                android:id="@+id/iv_toneburst_left"
+                style="@style/ItemArrowLeftStyle"
+                android:layout_toStartOf="@+id/tv_toneburst"
+                android:layout_toLeftOf="@+id/tv_toneburst"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_toneburst"
+                style="@style/ItemContentStyle"
+                android:layout_toStartOf="@+id/iv_toneburst_right"
+                android:layout_toLeftOf="@+id/iv_toneburst_right" />
+
+            <ImageView
+                android:id="@+id/iv_toneburst_right"
+                style="@style/ItemArrowRightStyle"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <!-- DiSEqC -->
+        <RelativeLayout
+            android:id="@+id/item_diseqc"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/item_diseqc_mode"
+            android:visibility="gone">
+
+            <TextView
+                style="@style/ItemTitleStyle"
+                android:text="@string/satellite_param_diseqc_title"
+                tools:ignore="RelativeOverlap" />
+
+            <ImageView
+                android:id="@+id/iv_diseqc_left"
+                style="@style/ItemArrowLeftStyle"
+                android:layout_toStartOf="@+id/tv_diseqc"
+                android:layout_toLeftOf="@+id/tv_diseqc"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_diseqc"
+                style="@style/ItemContentStyle"
+                android:layout_toStartOf="@+id/iv_diseqc_right"
+                android:layout_toLeftOf="@+id/iv_diseqc_right" />
+
+            <ImageView
+                android:id="@+id/iv_diseqc_right"
+                style="@style/ItemArrowRightStyle"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <!-- Unicable -->
+        <RelativeLayout
+            android:id="@+id/item_unicable"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/item_diseqc_mode"
+            android:visibility="gone">
+
+            <TextView
+                style="@style/ItemTitleStyle"
+                android:text="@string/satellite_param_unicable_title"
+                tools:ignore="RelativeOverlap" />
+
+            <ImageView
+                android:id="@+id/iv_unicable_left"
+                style="@style/ItemArrowLeftStyle"
+                android:layout_toStartOf="@+id/tv_unicable"
+                android:layout_toLeftOf="@+id/tv_unicable"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_unicable"
+                style="@style/ItemContentStyle"
+                android:layout_toStartOf="@+id/iv_unicable_right"
+                android:layout_toLeftOf="@+id/iv_unicable_right" />
+
+            <ImageView
+                android:id="@+id/iv_unicable_right"
+                style="@style/ItemArrowRightStyle"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <!-- Position -->
+        <RelativeLayout
+            android:id="@+id/item_position"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/item_unicable"
+            android:visibility="gone">
+
+            <TextView
+                style="@style/ItemTitleStyle"
+                android:text="@string/satellite_param_position_title"
+                tools:ignore="RelativeOverlap" />
+
+            <ImageView
+                android:id="@+id/iv_position_left"
+                style="@style/ItemArrowLeftStyle"
+                android:layout_toStartOf="@+id/tv_position"
+                android:layout_toLeftOf="@+id/tv_position"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_position"
+                style="@style/ItemContentStyle"
+                android:layout_toStartOf="@+id/iv_position_right"
+                android:layout_toLeftOf="@+id/iv_position_right" />
+
+            <ImageView
+                android:id="@+id/iv_position_right"
+                style="@style/ItemArrowRightStyle"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <!-- Channel -->
+        <RelativeLayout
+            android:id="@+id/item_channel"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/item_position"
+            android:visibility="gone">
+
+            <TextView
+                style="@style/ItemTitleStyle"
+                android:text="@string/satellite_param_channel_title"
+                tools:ignore="RelativeOverlap" />
+
+            <ImageView
+                android:id="@+id/iv_channel_left"
+                style="@style/ItemArrowLeftStyle"
+                android:layout_toStartOf="@+id/tv_channel"
+                android:layout_toLeftOf="@+id/tv_channel"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_channel"
+                style="@style/ItemContentStyle"
+                android:layout_toStartOf="@+id/iv_channel_right"
+                android:layout_toLeftOf="@+id/iv_channel_right" />
+
+            <ImageView
+                android:id="@+id/iv_channel_right"
+                style="@style/ItemArrowRightStyle"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <!-- Frequency -->
+        <RelativeLayout
+            android:id="@+id/item_frequency"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/item_channel"
+            android:visibility="gone">
+
+            <TextView
+                style="@style/ItemTitleStyle"
+                android:text="@string/satellite_param_frequency_title"
+                tools:ignore="RelativeOverlap" />
+
+            <TextView
+                android:id="@+id/tv_frequency"
+                style="@style/ItemContentStyle"
+                android:layout_toStartOf="@+id/iv_frequency_right"
+                android:layout_toLeftOf="@+id/iv_frequency_right" />
+
+            <ImageView
+                android:id="@+id/iv_frequency_right"
+                style="@style/ItemArrowRightStyle"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
         <RelativeLayout
             android:id="@+id/item_strength_progress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/item_lnb_power"
+            android:layout_above="@+id/rl_signal_quality"
             android:layout_marginLeft="244dp"
             android:layout_marginTop="10dp"
             android:layout_marginRight="244dp"
@@ -322,12 +481,14 @@
         </RelativeLayout>
 
         <RelativeLayout
+            android:id="@+id/rl_signal_quality"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/item_strength_progress"
+            android:layout_above="@+id/satellite_param_bottom_bar"
             android:layout_marginLeft="244dp"
             android:layout_marginTop="10dp"
-            android:layout_marginRight="244dp">
+            android:layout_marginRight="244dp"
+            android:layout_marginBottom="10dp">
 
             <TextView
                 android:id="@+id/tv_quality_title"
@@ -367,6 +528,7 @@
         </RelativeLayout>
 
         <include
+            android:id="@+id/satellite_param_bottom_bar"
             layout="@layout/bottom_bar_control_item"
             android:layout_width="match_parent"
             android:layout_height="55dp"

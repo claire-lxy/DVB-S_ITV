@@ -240,8 +240,8 @@ public class DTVProgramManager {
     /**
      * 设置排序方式
      *
-     * @param sortType sortType=1 A to Z
-     *                 sortType=2 Z to A
+     * @param sortType sortType=1 DISEQC_A to Z
+     *                 sortType=2 Z to DISEQC_A
      *                 sortType=3 CAS
      */
     public void setSortType(int sortType) {

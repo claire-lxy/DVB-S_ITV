@@ -330,17 +330,17 @@ public class ScanDialog extends BaseItemFocusChangeDialogFragment {
             if (mInstallationType == INSTALLATION_TYPE_S2_SEARCH) {
                 switch (mCurrSelectItem) {
                     case ITEM_SCAN_MODE:
-                        if (--mCurrScanMode < 0) mCurrScanMode = mScanModeArray.length - 1;
+                        mCurrScanMode = getMinusStep(mCurrScanMode, mScanModeArray.length - 1);
                         mTvScanMode.setText(mScanModeArray[mCurrScanMode]);
                         break;
 
                     case ITEM_NETWORK:
-                        if (--mCurrNetwork < 0) mCurrNetwork = mNetworkArray.length - 1;
+                        mCurrNetwork = getMinusStep(mCurrNetwork, mNetworkArray.length - 1);
                         mTvNetwork.setText(mNetworkArray[mCurrNetwork]);
                         break;
 
                     case ITEM_CAS_SYSTEM:
-                        if (--mCurrCAS < 0) mCurrCAS = mCasSystemArray.length - 1;
+                        mCurrCAS = getMinusStep(mCurrCAS, mCasSystemArray.length - 1);
                         mTvCasSystem.setText(mCasSystemArray[mCurrCAS]);
                         break;
                 }
@@ -349,12 +349,12 @@ public class ScanDialog extends BaseItemFocusChangeDialogFragment {
             if (mInstallationType == INSTALLATION_TYPE_AUTO_SEARCH) {
                 switch (mCurrSelectItem) {
                     case ITEM_SCAN_MODE:
-                        if (--mCurrScanMode < 0) mCurrScanMode = mScanModeArray.length - 1;
+                        mCurrScanMode = getMinusStep(mCurrScanMode, mScanModeArray.length - 1);
                         mTvScanMode.setText(mScanModeArray[mCurrScanMode]);
                         break;
 
                     case ITEM_CHANNEL_TYPE:
-                        if (--mCurrChannelType < 0) mCurrChannelType = mChannelTypeArray.length - 1;
+                        mCurrChannelType = getMinusStep(mCurrChannelType, mChannelTypeArray.length - 1);
                         mTvChannelType.setText(mChannelTypeArray[mCurrChannelType]);
                         break;
                 }
@@ -363,17 +363,17 @@ public class ScanDialog extends BaseItemFocusChangeDialogFragment {
             if (mInstallationType == INSTALLATION_TYPE_MANUAL_SEARCH) {
                 switch (mCurrSelectItem) {
                     case ITEM_SCAN_MODE:
-                        if (--mCurrScanMode < 0) mCurrScanMode = mScanModeArray.length - 1;
+                        mCurrScanMode = getMinusStep(mCurrScanMode, mScanModeArray.length - 1);
                         mTvScanMode.setText(mScanModeArray[mCurrScanMode]);
                         break;
 
                     case ITEM_CHANNEL_TYPE:
-                        if (--mCurrChannelType < 0) mCurrChannelType = mChannelTypeArray.length - 1;
+                        mCurrChannelType = getMinusStep(mCurrChannelType, mChannelTypeArray.length - 1);
                         mTvChannelType.setText(mChannelTypeArray[mCurrChannelType]);
                         break;
 
                     case ITEM_SCAN_TYPE:
-                        if (--mCurrScanType < 0) mCurrScanType = mScanTypeArray.length - 1;
+                        mCurrScanType = getMinusStep(mCurrScanType, mScanTypeArray.length - 1);
                         mTvScanType.setText(mScanTypeArray[mCurrScanType]);
                         break;
                 }
@@ -384,17 +384,17 @@ public class ScanDialog extends BaseItemFocusChangeDialogFragment {
             if (mInstallationType == INSTALLATION_TYPE_S2_SEARCH) {
                 switch (mCurrSelectItem) {
                     case ITEM_SCAN_MODE:
-                        if (++mCurrScanMode >= mScanModeArray.length) mCurrScanMode = 0;
+                        mCurrScanMode = getPlusStep(mCurrScanMode, mScanModeArray.length - 1);
                         mTvScanMode.setText(mScanModeArray[mCurrScanMode]);
                         break;
 
                     case ITEM_NETWORK:
-                        if (++mCurrNetwork >= mNetworkArray.length) mCurrNetwork = 0;
+                        mCurrNetwork = getPlusStep(mCurrNetwork, mNetworkArray.length - 1);
                         mTvNetwork.setText(mNetworkArray[mCurrNetwork]);
                         break;
 
                     case ITEM_CAS_SYSTEM:
-                        if (++mCurrCAS >= mCasSystemArray.length) mCurrCAS = 0;
+                        mCurrCAS = getPlusStep(mCurrCAS, mCasSystemArray.length - 1);
                         mTvCasSystem.setText(mCasSystemArray[mCurrCAS]);
                         break;
                 }
@@ -403,12 +403,12 @@ public class ScanDialog extends BaseItemFocusChangeDialogFragment {
             if (mInstallationType == INSTALLATION_TYPE_AUTO_SEARCH) {
                 switch (mCurrSelectItem) {
                     case ITEM_SCAN_MODE:
-                        if (++mCurrScanMode >= mScanModeArray.length) mCurrScanMode = 0;
+                        mCurrScanMode = getPlusStep(mCurrScanMode, mScanModeArray.length - 1);
                         mTvScanMode.setText(mScanModeArray[mCurrScanMode]);
                         break;
 
                     case ITEM_CHANNEL_TYPE:
-                        if (++mCurrChannelType >= mChannelTypeArray.length) mCurrChannelType = 0;
+                        mCurrChannelType = getPlusStep(mCurrChannelType, mChannelTypeArray.length - 1);
                         mTvChannelType.setText(mChannelTypeArray[mCurrChannelType]);
                         break;
                 }
@@ -417,17 +417,17 @@ public class ScanDialog extends BaseItemFocusChangeDialogFragment {
             if (mInstallationType == INSTALLATION_TYPE_MANUAL_SEARCH) {
                 switch (mCurrSelectItem) {
                     case ITEM_SCAN_MODE:
-                        if (++mCurrScanMode >= mScanModeArray.length) mCurrScanMode = 0;
+                        mCurrScanMode = getPlusStep(mCurrScanMode, mScanModeArray.length - 1);
                         mTvScanMode.setText(mScanModeArray[mCurrScanMode]);
                         break;
 
                     case ITEM_CHANNEL_TYPE:
-                        if (++mCurrChannelType >= mChannelTypeArray.length) mCurrChannelType = 0;
+                        mCurrChannelType = getPlusStep(mCurrChannelType, mChannelTypeArray.length - 1);
                         mTvChannelType.setText(mChannelTypeArray[mCurrChannelType]);
                         break;
 
                     case ITEM_SCAN_TYPE:
-                        if (++mCurrScanType >= mScanTypeArray.length) mCurrScanType = 0;
+                        mCurrScanType = getPlusStep(mCurrScanType, mScanTypeArray.length - 1);
                         mTvScanType.setText(mScanTypeArray[mCurrScanType]);
                         break;
                 }
