@@ -40,7 +40,6 @@ import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.UsbManager;
 import com.konkawise.dtv.adapter.TvListAdapter;
 import com.konkawise.dtv.annotation.DVBSelectType;
-import com.konkawise.dtv.annotation.PVRType;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.base.BaseDialogFragment;
 import com.konkawise.dtv.bean.HandlerMsgModel;
@@ -351,6 +350,8 @@ public class Topmost extends BaseActivity {
 
     private Timer mRecordingTimer;
     private RecordingTimerTask mRecordingTimerTask;
+    // 直接传递临时变量到startRecord回调内数值被更改，用成员变量记录录制时长
+    private int mRecordSeconds;
 
     private ProgHandler mProgHandler;
     private PlayHandler mPlayHandler;
@@ -585,19 +586,17 @@ public class Topmost extends BaseActivity {
             }
 
             if (serviceid != -1 && tsid != -1 && sat != -1 && recordSeconds != -1) {
+                mRecordSeconds = recordSeconds;
                 DTVPlayerManager.getInstance().forcePlayProgByServiceId(serviceid, tsid, sat);
-                startRecord(new OnCommCallback() {
-                    @Override
-                    public void callback(Object object) {
-                        int recordFlag = (int) object;
-                        if (recordFlag == 0) {
-                            startRecordingTimer(recordSeconds);
-                            DTVBookingManager.getInstance().setRecording(true);
-                            sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
-                            ToastUtils.showToast(R.string.toast_start_record);
-                        } else {
-                            ToastUtils.showToast(R.string.toast_start_record_failed);
-                        }
+                startRecord(object -> {
+                    int recordFlag = (int) object;
+                    if (recordFlag == 0) {
+                        startRecordingTimer(mRecordSeconds);
+                        DTVBookingManager.getInstance().setRecording(true);
+                        sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
+                        ToastUtils.showToast(R.string.toast_start_record);
+                    } else {
+                        ToastUtils.showToast(R.string.toast_start_record_failed);
                     }
                 });
                 return true;
@@ -652,31 +651,30 @@ public class Topmost extends BaseActivity {
 
     private void stopRecord() {
         if (isRecording()) {
-            DTVPVRManager.getInstance().stopRecord();
+            // 录制时长少了1到2秒左右，延后停止录制时间
+            mProgHandler.postDelayed(() -> DTVPVRManager.getInstance().stopRecord(), 1500);
 
             cancelRecordingTimer();
             setRecordFlagStop();
             mRecordingLayout.setVisibility(View.GONE);
             mTvRecordingTime.setText("00:00:00");
+            mRecordSeconds = 0;
             ToastUtils.showToast(R.string.toast_stop_record);
 
             showPfInfo();
         }
     }
 
-    private void recordProg(int recordSeconds) {
-        startRecord(new OnCommCallback() {
-            @Override
-            public void callback(Object object) {
-                int recordFlag = (int) object;
-                if (recordFlag == 0) {
-                    DTVPVRManager.getInstance().setRecording(true);
-                    startRecordingTimer(recordSeconds);
-                    sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
-                    ToastUtils.showToast(R.string.toast_start_record);
-                } else {
-                    ToastUtils.showToast(R.string.toast_start_record_failed);
-                }
+    private void recordProg() {
+        startRecord(object -> {
+            int recordFlag = (int) object;
+            if (recordFlag == 0) {
+                DTVPVRManager.getInstance().setRecording(true);
+                startRecordingTimer(mRecordSeconds);
+                sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
+                ToastUtils.showToast(R.string.toast_start_record);
+            } else {
+                ToastUtils.showToast(R.string.toast_start_record_failed);
             }
         });
     }
@@ -732,7 +730,7 @@ public class Topmost extends BaseActivity {
         cancelRecordingTimer();
         mRecordingTimer = new Timer();
         mRecordingTimerTask = new RecordingTimerTask(this, recordSeconds);
-        mRecordingTimer.schedule(mRecordingTimerTask, RECORDING_DELAY, RECORDING_PERIOD);
+        mRecordingTimer.schedule(mRecordingTimerTask, 0, RECORDING_PERIOD);
     }
 
     private void cancelRecordingTimer() {
@@ -763,14 +761,11 @@ public class Topmost extends BaseActivity {
         protected void runTimer() {
             Topmost context = mWeakReference.get();
 
-            context.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (--countDownSeconds <= 0) {
-                        context.stopRecord();
-                    } else {
-                        context.mTvRecordingTime.setText(TimeUtils.getDecimalFormatTime(++recordSeconds));
-                    }
+            context.runOnUiThread(() -> {
+                if (--countDownSeconds <= 0) {
+                    context.stopRecord();
+                } else {
+                    context.mTvRecordingTime.setText(TimeUtils.getDecimalFormatTime(++recordSeconds));
                 }
             });
         }
@@ -1679,24 +1674,14 @@ public class Topmost extends BaseActivity {
         mSettingPasswordDialog.show(getSupportFragmentManager(), InitPasswordDialog.TAG);
     }
 
-    private void showInputPvrMinuteDialog(@PVRType int pvrType) {
+    private void showInputPvrMinuteDialog() {
         new InputPvrMinuteDialog()
                 .setOnInputPVRContentCallback(new OnCommCallback() {
                     @Override
                     public void callback(Object object) {
                         int minutes = (int) object;
-                        switch (pvrType) {
-                            case Constants.PVRType.RECORD:
-                                recordProg(minutes * 60);
-                                break;
-                            case Constants.PVRType.TIMESHIFT:
-                                Intent intent = new Intent();
-                                intent.setClass(Topmost.this, RecordPlayer.class);
-                                intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, RecordPlayer.FROM_TOPMOST);
-                                intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_TIME, minutes);
-                                startActivity(intent);
-                                break;
-                        }
+                        mRecordSeconds = minutes * 60;
+                        recordProg();
                     }
                 }).show(getSupportFragmentManager(), InputPvrMinuteDialog.TAG);
     }
@@ -2005,9 +1990,10 @@ public class Topmost extends BaseActivity {
                 if (mProgListAdapter.getCount() > 0) {
                     int recordMinutes = DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.RecordMaxMin);
                     if (recordMinutes == 0) {
-                        showInputPvrMinuteDialog(Constants.PVRType.RECORD);
+                        showInputPvrMinuteDialog();
                     } else {
-                        recordProg(recordMinutes >= Integer.MAX_VALUE ? Integer.MAX_VALUE : recordMinutes * 60);
+                        mRecordSeconds = recordMinutes >= Integer.MAX_VALUE ? Integer.MAX_VALUE : recordMinutes * 60;
+                        recordProg();
                     }
                 }
             }
