@@ -14,7 +14,7 @@ import com.konkawise.dtv.base.BaseDialogFragment;
 import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.OnItemClick;
-import vendor.konka.hardware.dtvmanager.V1_0. HProg_Struct_ProgInfo;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
 
 public class FavoriteDialog extends BaseDialogFragment {
     public static final String TAG = "FavoriteDialog";
@@ -50,7 +50,7 @@ public class FavoriteDialog extends BaseDialogFragment {
     }
 
     private CheckGroupAdapter mAdapter;
-    private  HProg_Struct_ProgInfo mCurrChannelInfo;
+    private HProg_Struct_ProgInfo mCurrChannelInfo;
     private OnCheckGroupCallback mOnCheckGroupCallback;
     private String mTitle;
     private boolean mMulti;
@@ -77,12 +77,12 @@ public class FavoriteDialog extends BaseDialogFragment {
                         }
                     }
 
-                    if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-                        if (mListView.getSelectedItemPosition() == 0) {
-                            mListView.setSelection(mAdapter.getCount() - 1);
-                            return true;
-                        }
-                    }
+//                    if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+//                        if (mListView.getSelectedItemPosition() == 0) {
+//                            mListView.setSelection(mAdapter.getCount() - 1);
+//                            return true;
+//                        }
+//                    }
                 }
 
                 return false;
@@ -111,7 +111,7 @@ public class FavoriteDialog extends BaseDialogFragment {
         return this;
     }
 
-    public FavoriteDialog setData( HProg_Struct_ProgInfo channelInfo) {
+    public FavoriteDialog setData(HProg_Struct_ProgInfo channelInfo) {
         this.mCurrChannelInfo = channelInfo;
         return this;
     }

@@ -13,6 +13,7 @@ public class CheckSignalHelper {
     private Timer mCheckSignalTimer;
     private Handler mHandler;
     private OnCheckSignalListener mOnCheckSignalListener;
+    private boolean mSignalRandom = true;
 
     public CheckSignalHelper(WeakToolInterface context) {
         this.mContext = context;
@@ -44,15 +45,19 @@ public class CheckSignalHelper {
             int strength = getSignalStrength();
             int quality = getSignalQuality();
             // 实现进度条信号上下浮动效果
-            int randomStrength = (int) (getRandomMin(strength) + Math.random() * (getRandomMax(strength) - getRandomMin(strength) + 1));
-            int randomQuality = (int) (getRandomMax(quality) + Math.random() * (getRandomMax(quality) - getRandomMin(quality) + 1));
+            int randomStrength;
+            int randomQuality;
+            if (mSignalRandom) {
+                randomStrength = (int) (getRandomMin(strength) + Math.random() * (getRandomMax(strength) - getRandomMin(strength) + 1));
+                randomQuality = (int) (getRandomMax(quality) + Math.random() * (getRandomMax(quality) - getRandomMin(quality) + 1));
+            } else {
+                randomStrength = strength;
+                randomQuality = quality;
+            }
 
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (mOnCheckSignalListener != null) {
-                        mOnCheckSignalListener.signal(getValidValue(randomStrength), getValidValue(randomQuality));
-                    }
+            mHandler.post(() -> {
+                if (mOnCheckSignalListener != null) {
+                    mOnCheckSignalListener.signal(getValidValue(randomStrength), getValidValue(randomQuality));
                 }
             });
         }
@@ -86,6 +91,10 @@ public class CheckSignalHelper {
 
     public void setOnCheckSignalListener(OnCheckSignalListener listener) {
         this.mOnCheckSignalListener = listener;
+    }
+
+    public void setSignalRandom(boolean isSignalRandom) {
+        this.mSignalRandom = isSignalRandom;
     }
 
     public interface OnCheckSignalListener {
