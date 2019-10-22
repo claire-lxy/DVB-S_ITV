@@ -1687,7 +1687,7 @@ public class Topmost extends BaseActivity {
     }
 
     private void showQuitRecordDialog(KeyEvent event) {
-        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+        if (event.getAction() == KeyEvent.ACTION_UP) {
             new CommTipsDialog()
                     .content(getString(R.string.dialog_quit_record_content))
                     .negativeFocus(true)
@@ -1893,8 +1893,22 @@ public class Topmost extends BaseActivity {
         mItemDataReset.setVisibility(View.VISIBLE);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+        // 如果处于booking录制状态，拦截提示退出
+        // 从dispatchKeyEvent往上抛事件到onKeyUp拦截处理弹出对话框
+        // 防止快速点击导致的弹出对话框不响应任何焦点问题
+        if (isInterceptEventWhenRecord(event)) {
+            if (isPfBarShowing()) {
+                dismissPfBarScanDialog();
+            } else {
+                sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
+                showQuitRecordDialog(event);
+            }
+            return true;
+        }
+
         // EPG
         if (keyCode == KeyEvent.KEYCODE_F1) {
             gotoEpg();
@@ -1926,7 +1940,6 @@ public class Topmost extends BaseActivity {
                 return true;
             }
 
-//            showInputPvrMinuteDialog(Constants.TIMESHIFT);
             Intent intent = new Intent();
             intent.setClass(Topmost.this, RecordPlayer.class);
             intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, RecordPlayer.FROM_TOPMOST);
@@ -1948,7 +1961,6 @@ public class Topmost extends BaseActivity {
                 return true;
             }
 
-//            showInputPvrMinuteDialog(Constants.TIMESHIFT);
             Intent intent = new Intent();
             intent.setClass(Topmost.this, RecordPlayer.class);
             intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, RecordPlayer.FROM_TOPMOST);
@@ -2026,11 +2038,32 @@ public class Topmost extends BaseActivity {
             return true;
         }
 
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (mMenuShow) {
+                toggleMenu();
+            } else if (mProgListShow) {
+                toggleProgList();
+            } else if (isPfBarShowing()) {
+                mTvProgNum.setVisibility(View.INVISIBLE);
+                dismissPfBarScanDialog();
+            } else {
+                showExitDialog();
+            }
+            return true;
+        }
+
         return super.onKeyUp(keyCode, event);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // 如果处于booking录制状态，拦截提示退出
+        // 将事件抛到onKeyUp处理弹出对话框
+        if (isInterceptEventWhenRecord(event)) {
+            return super.onKeyDown(keyCode, event);
+        }
+
         if (keyCode == KeyEvent.KEYCODE_0) {
             recordJumpPlayProgNum(0);
             return true;
@@ -2081,24 +2114,6 @@ public class Topmost extends BaseActivity {
             return true;
         }
 
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (mMenuShow) {
-                toggleMenu();
-                return true;
-            }
-            if (mProgListShow) {
-                toggleProgList();
-                return true;
-            }
-            if (isPfBarShowing()) {
-                mTvProgNum.setVisibility(View.INVISIBLE);
-                dismissPfBarScanDialog();
-                return true;
-            } else {
-                showExitDialog();
-                return super.onKeyDown(keyCode, event);
-            }
-        }
         return super.onKeyDown(keyCode, event);
     }
 
@@ -2108,21 +2123,16 @@ public class Topmost extends BaseActivity {
     public boolean dispatchKeyEvent(KeyEvent event) {
         // 没有节目，不处理节目切换
         if (mProgListAdapter.getCount() <= 0 && !mMenuShow) {
-            if (unInterceptEventWhenProgEmpty(event)) {
+            if (isUnInterceptEventWhenProgEmpty(event)) {
                 return super.dispatchKeyEvent(event);
             }
             return true;
         }
 
         // 如果处于booking录制状态，拦截提示退出
-        if (interceptEventWhenRecord(event)) {
-            if (isPfBarShowing()) {
-                dismissPfBarScanDialog();
-            } else {
-                sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
-                showQuitRecordDialog(event);
-            }
-            return true;
+        // 将事件抛到onKeyUp处理弹出对话框
+        if (isInterceptEventWhenRecord(event)) {
+            return super.dispatchKeyEvent(event);
         }
 
         // 频道列表上下左右切换
@@ -2331,8 +2341,13 @@ public class Topmost extends BaseActivity {
         return super.dispatchKeyEvent(event);
     }
 
+    /**
+     * 在录制时是否拦截事件
+     *
+     * @return true 拦截处理 false 不拦截
+     */
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private boolean interceptEventWhenRecord(KeyEvent event) {
+    private boolean isInterceptEventWhenRecord(KeyEvent event) {
         int keyCode = event.getKeyCode();
         return isRecording() &&
                 keyCode != KeyEvent.KEYCODE_TV_TELETEXT &&
@@ -2354,7 +2369,12 @@ public class Topmost extends BaseActivity {
                 keyCode != KeyEvent.KEYCODE_FORWARD_DEL;
     }
 
-    private boolean unInterceptEventWhenProgEmpty(KeyEvent event) {
+    /**
+     * 频道为空时是否拦截事件
+     *
+     * @return true 不拦截事件 false 拦截事件
+     */
+    private boolean isUnInterceptEventWhenProgEmpty(KeyEvent event) {
         int keyCode = event.getKeyCode();
         return keyCode == KeyEvent.KEYCODE_BACK ||
                 keyCode == KeyEvent.KEYCODE_MENU ||
