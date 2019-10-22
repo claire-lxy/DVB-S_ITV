@@ -659,7 +659,6 @@ public class Topmost extends BaseActivity {
             mRecordingLayout.setVisibility(View.GONE);
             mTvRecordingTime.setText("00:00:00");
             mRecordSeconds = 0;
-            Log.d("stopRecord", "tvRecordTime:" + mTvRecordingTime.getText());
             ToastUtils.showToast(R.string.toast_stop_record);
 
             showPfInfo();
@@ -672,7 +671,6 @@ public class Topmost extends BaseActivity {
             if (recordFlag == 0) {
                 DTVPVRManager.getInstance().setRecording(true);
                 startRecordingTimer(mRecordSeconds);
-                Log.d("recordProg", "tvRecordTime:" + mTvRecordingTime);
                 sendHideRecordTimeMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_RECORD_TIME, RECORD_TIME_HIDE_DELAY));
                 ToastUtils.showToast(R.string.toast_start_record);
             } else {
@@ -2423,3 +2421,6 @@ public class Topmost extends BaseActivity {
         }
     }
 }
+
+
+
