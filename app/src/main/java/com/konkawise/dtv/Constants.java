@@ -43,11 +43,6 @@ public class Constants {
         int REFRESH_CHANNEL = 6; // 提示更新搜台消息回调id
     }
 
-    public interface PVRType {
-        int TIMESHIFT = 0;
-        int RECORD = 1;
-    }
-
     public interface DVBSelectType {
         int INSTALLATION = 0;
         int SEARCH = 1;

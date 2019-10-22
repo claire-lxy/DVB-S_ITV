@@ -42,7 +42,7 @@ public class SearchChannelDialog extends BaseDialogFragment {
 
     @Override
     protected boolean onKeyListener(DialogInterface dialog, int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
             if (mOnSearchListener != null) {
                 mOnSearchListener.onBackSearch();
             }
