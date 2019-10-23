@@ -2,7 +2,7 @@
 <resources>
 
     <!-- 编辑部分 -->
-    <string-array name="LNB">
+    <string-array name="lnb">
         <item>user0</item>  <!--用户自定义-->
 
         <!--单本证-->
@@ -139,14 +139,14 @@
         <item>B</item>
     </string-array>
 
-    <string-array name="frequency_4SCR">
+    <integer-array name="frequency_4SCR">
         <item>1210</item>
         <item>1420</item>
         <item>1680</item>
         <item>2040</item>
-    </string-array>
+    </integer-array>
 
-    <string-array name="frequency_8SCR">
+    <integer-array name="frequency_8SCR">
         <item>1284</item>
         <item>1400</item>
         <item>1516</item>
@@ -155,9 +155,9 @@
         <item>1864</item>
         <item>1980</item>
         <item>2096</item>
-    </string-array>
+    </integer-array>
 
-    <string-array name="frequency_DCSS">
+    <integer-array name="frequency_dCSS">
         <item>1210</item>
         <item>1420</item>
         <item>1680</item>
@@ -175,7 +175,7 @@
         <item>1875</item>
         <item>1940</item>
         <item>0</item>
-    </string-array>
+    </integer-array>
 
     <!-- sort排序方式 -->
     <string-array name="sort_content">
