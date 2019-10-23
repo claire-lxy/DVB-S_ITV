@@ -1803,7 +1803,8 @@ public class Topmost extends BaseActivity {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        if (mMenuShow) restoreMenuItem(); // menu隐藏动画执行结束，恢复menu的item显示
+                        if (mMenuShow || (!mMenuShow && !isShowChannelManageItem()))
+                            restoreMenuItem();// menu隐藏动画执行结束，恢复menu的item显示
                         mMenuShow = !mMenuShow;
 
                         if (!mMenuShow) {
@@ -2039,16 +2040,16 @@ public class Topmost extends BaseActivity {
         }
 
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (mMenuShow) {
+            if (mMenuShow && (mIvChannelManageBack.getVisibility() == View.VISIBLE)) {
+                //在channelManage界面按“Back”返回menu菜单
+                mMenuShow = false;
                 toggleMenu();
             } else if (mProgListShow) {
                 toggleProgList();
             } else if (isPfBarShowing()) {
                 mTvProgNum.setVisibility(View.INVISIBLE);
                 dismissPfBarScanDialog();
-            } else if (mIvChannelManageBack.getVisibility() == View.VISIBLE) {
-                //在channelManage界面按“Back”返回menu菜单
-                mMenuShow = false;
+            } else if (mMenuShow) {
                 toggleMenu();
             } else {
                 showExitDialog();
