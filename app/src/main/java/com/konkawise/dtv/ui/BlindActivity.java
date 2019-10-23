@@ -90,7 +90,7 @@ public class BlindActivity extends BaseItemFocusChangeActivity {
     @BindView(R.id.iv_lnb_power_right)
     ImageView mIvLnbPowerRight;
 
-    @BindArray(R.array.LNB)
+    @BindArray(R.array.lnb)
     String[] mLnbArray;
 
     @BindArray(R.array.DISEQC)

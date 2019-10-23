@@ -43,11 +43,6 @@ public class Constants {
         int REFRESH_CHANNEL = 6; // 提示更新搜台消息回调id
     }
 
-    public interface DVBSelectType {
-        int INSTALLATION = 0;
-        int SEARCH = 1;
-    }
-
     public interface StepType {
         int NONE = 0;
         int PLUS = 1;
@@ -77,17 +72,6 @@ public class Constants {
         int OFF = 0;
         int DISEQC = 1;
         int USALS = 2;
-    }
-
-    public interface DiSEqCPosValueRange {
-        // diseqc10_pos=0，OFF或ToneBurst
-        int OFF_OR_TONEBURST = 0;
-        // diseqc10_pos=1~4，DiSEqC DISEQC_A~D
-        int DISEQC_MIN_RANGE = 1;
-        int DISEQC_MAX_RANGE = 4;
-        // diseqc10_pos=5~16，LNB 1~16
-        int LNB_MIN_RANGE = 5;
-        int LNB_MAX_RANGE = 16;
     }
 
     public static final String SUBTITLE_NAME = "subtitleName";
@@ -143,5 +127,34 @@ public class Constants {
     public interface PrefsKey {
         String LOCALE_TYPE = "localeType";
         String SAVE_CHANNEL = "channel";
+    }
+
+    public interface SatInfoValue {
+        int UNICABLE_DISABLE = 0;
+        int UNICABLE_SCR_ENABLE = 1;
+        int UNICABLE_DCSS_ENABLE = 2;
+        int SINGLE_SAT_POSITION = 0;
+        int MULTI_SAT_POSITION_A = 1;
+        int MULTI_SAT_POSITION_B = 2;
+        int SCR_4 = 0;
+        int SCR_8 = 1;
+
+        // diseqc10_pos=0，OFF或ToneBurst
+        int OFF_OR_TONEBURST = 0;
+        // diseqc10_pos=1~4，DiSEqC DISEQC_A~D
+        int DISEQC_MIN_RANGE = 1;
+        int DISEQC_MAX_RANGE = 4;
+        // diseqc10_pos=5~20，LNB 1~16
+        int LNB_MIN_RANGE = 5;
+        int LNB_MAX_RANGE = 20;
+
+        int LNB_USER = 0;
+
+        int HZ22K_OFF = 0;
+        int HZ22K_ON = 1;
+        int HZ22K_AUTO = 2;
+
+        int LNB_POWER_OFF = 0;
+        int LNB_POWER_ON = 1;
     }
 }

@@ -1,7 +1,6 @@
 package com.konkawise.dtv.ui;
 
 import android.content.Intent;
-import android.os.Build;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -26,9 +25,7 @@ import com.konkawise.dtv.weaktool.CheckSignalHelper;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import butterknife.BindArray;
 import butterknife.BindView;
@@ -230,7 +227,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     @BindView(R.id.tv_bottom_bar_yellow)
     TextView mTvBottomBarYellow;
 
-    @BindArray(R.array.LNB)
+    @BindArray(R.array.lnb)
     String[] mLnbArray;
 
     @BindArray(R.array.DiSEqc_mode)
@@ -252,13 +249,13 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     String[] mPositionArray;
 
     @BindArray(R.array.frequency_4SCR)
-    String[] mFrequency4SCRArray;
+    int[] mFrequency4SCRArray;
 
     @BindArray(R.array.frequency_8SCR)
-    String[] mFrequency8SCRArray;
+    int[] mFrequency8SCRArray;
 
-    @BindArray(R.array.frequency_DCSS)
-    String[] mFrequencyDCSSArray;
+    @BindArray(R.array.frequency_dCSS)
+    int[] mFrequencyDCSSArray;
 
     private int mCurrentSelectItem = ITEM_SATELLITE;
     private int mCurrentSatellite;
@@ -272,6 +269,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     private int mCurrentPosition;
     private int mCurrentChannel;
 
+    private HProg_Struct_SatInfo mSatInfo;
     private List<HProg_Struct_SatInfo> mSatList;
     private List<HProg_Struct_TP> mTpList;
 
@@ -312,21 +310,18 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
 
     private void initCheckSignal() {
         mCheckSignalHelper = new CheckSignalHelper(this);
-        mCheckSignalHelper.setOnCheckSignalListener(new CheckSignalHelper.OnCheckSignalListener() {
-            @Override
-            public void signal(int strength, int quality) {
-                if (isTpEmpty()) {
-                    strength = 0;
-                    quality = 0;
-                }
-                String strengthPercent = strength + "%";
-                mTvStrengthProgress.setText(strengthPercent);
-                mPbStrength.setProgress(strength);
-
-                String qualityPercent = quality + "%";
-                mTvQualityProgress.setText(qualityPercent);
-                mPbQuality.setProgress(quality);
+        mCheckSignalHelper.setOnCheckSignalListener((strength, quality) -> {
+            if (isTpEmpty()) {
+                strength = 0;
+                quality = 0;
             }
+            String strengthPercent = strength + "%";
+            mTvStrengthProgress.setText(strengthPercent);
+            mPbStrength.setProgress(strength);
+
+            String qualityPercent = quality + "%";
+            mTvQualityProgress.setText(qualityPercent);
+            mPbQuality.setProgress(quality);
         });
     }
 
@@ -364,7 +359,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
                             || mCurrentDiSEqCMode == DISEQC_MODE_DISEQC10 || mCurrentDiSEqCMode == DISEQC_MODE_DISEQC11) {
                         mCurrentSelectItem = ITEM_SATELLITE;
                     } else if (mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE) {
-                        if (is8SCRUnicable()) {
+                        if (isMultiSat()) {
                             mCurrentSelectItem = ITEM_POSITION;
                         } else {
                             mCurrentSelectItem = ITEM_CHANNEL;
@@ -413,7 +408,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
 
                 case ITEM_CHANNEL:
                     if (mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE) {
-                        if (is8SCRUnicable()) {
+                        if (isMultiSat()) {
                             mCurrentSelectItem = ITEM_POSITION;
                         } else {
                             mCurrentSelectItem = ITEM_DISEQC_TYPE;
@@ -683,15 +678,12 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
 
     private void showScanDialog() {
         new ScanDialog()
-                .setOnScanSearchListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(EditManualActivity.this, ScanTVandRadioActivity.class);
-                        intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, getSatList().get(mCurrentSatellite).SatIndex);
-                        intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.IntentValue.SEARCH_TYPE_EDITMANUAL);
-                        startActivity(intent);
-                        finish();
-                    }
+                .setOnScanSearchListener(v -> {
+                    Intent intent = new Intent(EditManualActivity.this, ScanTVandRadioActivity.class);
+                    intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, getSatList().get(mCurrentSatellite).SatIndex);
+                    intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.IntentValue.SEARCH_TYPE_EDITMANUAL);
+                    startActivity(intent);
+                    finish();
                 }).show(getSupportFragmentManager(), ScanDialog.TAG);
     }
 
@@ -701,101 +693,173 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
                 .setProgNo(mCurrentSatellite + 1)
                 .setName(getSatList().get(mCurrentSatellite).sat_name)
                 .setMaxLength(18)
-                .setOnRenameEditListener(new RenameDialog.onRenameEditListener() {
-                    @Override
-                    public void onRenameEdit(String newName) {
-                        if (newName != null && newName.length() > 0) {
-                            mTvSatellite.setText(newName);
-                        }
+                .setOnRenameEditListener(newName -> {
+                    if (newName != null && newName.length() > 0) {
+                        mTvSatellite.setText(newName);
+                        saveSatName(newName);
                     }
                 }).show(getSupportFragmentManager(), RenameDialog.TAG);
     }
 
     private void showAutoDiSEqCDialog(List<HProg_Struct_SatInfo> satList, List<HProg_Struct_TP> tpList) {
-        if (mCurrentDiSEqCMode == DISEQC_MODE_DISEQC10) {
-            new AutoDiSEqCDialog()
-                    .satIndex(satList.get(mCurrentSatellite).SatIndex)
-                    .tpData(tpList.get(mCurrentTp))
-                    .setOnAutoDiSEqCResultListener(new AutoDiSEqCDialog.OnAutoDiSEqCResultListener() {
-                        @Override
-                        public void onAutoDiSEqCResult(int portIndex) {
-                            if (portIndex >= 0) {
-                                HProg_Struct_SatInfo satInfo = getSatList().get(mCurrentSatellite);
-                                satInfo.diseqc10_pos = portIndex;
-                                DTVProgramManager.getInstance().setSatInfo(satInfo.SatIndex, satInfo);
-
-                                mCurrentDiSEqC10 = portIndex; // mDiSEqC10Array位置约定
-                                diseqcChange();
-                            }
-                        }
-                    })
-                    .show(getSupportFragmentManager(), AutoDiSEqCDialog.TAG);
-        }
+        new AutoDiSEqCDialog()
+                .satIndex(satList.get(mCurrentSatellite).SatIndex)
+                .tpData(tpList.get(mCurrentTp))
+                .setOnAutoDiSEqCResultListener(portIndex -> {
+                    if (portIndex >= 0) {
+                        mCurrentDiSEqCMode = DISEQC_MODE_DISEQC10;
+                        mCurrentDiSEqC10 = portIndex; // mDiSEqC10Array位置约定
+                        diseqcModeChange();
+                    }
+                })
+                .show(getSupportFragmentManager(), AutoDiSEqCDialog.TAG);
     }
 
     /**
      * 保存设置的卫星信息
      */
     private void saveSatInfo() {
-        List<HProg_Struct_SatInfo> satList = DTVProgramManager.getInstance().getSatList(); // 这里要获取最新的数据，不拿缓存
-        if (satList == null || satList.isEmpty()) return;
+        saveLnbParam();
+        save22kHzParam();
+        saveLnbPowerParam();
+        saveDiSEqCParam();
+        saveUnicableParam();
+        DTVProgramManager.getInstance().setSatInfo(mSatInfo.SatIndex, mSatInfo);
 
-        HProg_Struct_SatInfo satInfo = satList.get(mCurrentSatellite);
+        mSatList = DTVProgramManager.getInstance().getSatList(); // 更新卫星列表
+    }
 
-        satInfo.sat_name = mTvSatellite.getText().toString();
-
-        String lnb = mTvLnb.getText().toString();
-        if (TextUtils.isEmpty(lnb)) lnb = "0";
-        satInfo.LnbType = Utils.getLnbType(mCurrentLnb);
-        satInfo.lnb_low = Utils.getLnbLow(mCurrentLnb, mCurrentLnb == 0 ? Integer.parseInt(lnb) : 0);
-        satInfo.lnb_high = Utils.getLnbHeight(mCurrentLnb);
-        if (mCurrentLnb == 0) {
-            PreferenceManager.getInstance().putString(String.valueOf(mCurrentSatellite), lnb);
+    private void saveSatName(String newName) {
+        if (mSatInfo != null) {
+            mSatInfo.sat_name = newName;
+            DTVProgramManager.getInstance().setSatInfo(mSatInfo.SatIndex, mSatInfo);
         }
+    }
 
-        if (TextUtils.equals(mTv22khz.getText().toString(), getString(R.string.off))) {
-            satInfo.switch_22k = 0;
-        } else if (TextUtils.equals(mTv22khz.getText().toString(), getString(R.string.on))) {
-            satInfo.switch_22k = 1;
-        } else {
-            satInfo.switch_22k = 2;
+    private void saveLnb() {
+        if (mSatInfo != null) {
+            saveLnbParam();
+            DTVProgramManager.getInstance().setSatInfo(mSatInfo.SatIndex, mSatInfo);
+            lockTp();
         }
-        satInfo.LnbPower = isLnbPowerOn() ? 1 : 0;
+    }
 
-        satInfo.diseqc10_pos = getSaveDiSEqCPos();
-        satInfo.diseqc10_tone = getSaveDiSEqCTone();
-        if (mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE) {
-            if (is4SCRUnicable()) {
-                satInfo.unicConfig.UnicEnable = 1;
-                satInfo.unicConfig.SCRType = 0;
-                satInfo.unicConfig.SCRNO = mCurrentChannel;
-                satInfo.unicConfig.SCR4UBand.addAll(getSaveFrequencyList());
-            } else if (is8SCRUnicable()) {
-                satInfo.unicConfig.UnicEnable = 1;
-                satInfo.unicConfig.SCRType = 1;
-                satInfo.unicConfig.SCRNO = mCurrentChannel;
-                satInfo.unicConfig.SatPosition = mCurrentPosition;
-                satInfo.unicConfig.SCR8UBand.addAll(getSaveFrequencyList());
-            } else if (mCurrentUnicable == UNICABLE_DCSS) {
-                satInfo.unicConfig.UnicEnable = 2;
-                satInfo.unicConfig.DCSSNO = mCurrentChannel;
-                satInfo.unicConfig.DcssUBand.addAll(getSaveFrequencyList());
+    private void saveLnbParam() {
+        if (mSatInfo != null) {
+            String lnb = mTvLnb.getText().toString();
+            if (TextUtils.isEmpty(lnb)) lnb = "0";
+            mSatInfo.LnbType = Utils.getLnbType(mCurrentLnb);
+            mSatInfo.lnb_low = Utils.getLnbLow(mCurrentLnb, mCurrentLnb == Constants.SatInfoValue.LNB_USER ? Integer.parseInt(lnb) : 0);
+            mSatInfo.lnb_high = Utils.getLnbHeight(mCurrentLnb);
+            if (mCurrentLnb == Constants.SatInfoValue.LNB_USER) {
+                PreferenceManager.getInstance().putString(String.valueOf(mCurrentSatellite), lnb);
             }
         }
+    }
 
-        DTVProgramManager.getInstance().setSatInfo(satInfo.SatIndex, satInfo);
-        mSatList = DTVProgramManager.getInstance().getSatList(); // 更新卫星列表
+    private void save22kHz() {
+        if (mSatInfo != null) {
+            save22kHzParam();
+            DTVProgramManager.getInstance().setSatInfo(mSatInfo.SatIndex, mSatInfo);
+            lockTp();
+        }
+    }
+
+    private void save22kHzParam() {
+        if (mSatInfo != null) {
+            if (TextUtils.equals(mTv22khz.getText().toString(), getString(R.string.off))) {
+                mSatInfo.switch_22k = Constants.SatInfoValue.HZ22K_OFF;
+            } else if (TextUtils.equals(mTv22khz.getText().toString(), getString(R.string.on))) {
+                mSatInfo.switch_22k = Constants.SatInfoValue.HZ22K_ON;
+            } else {
+                mSatInfo.switch_22k = Constants.SatInfoValue.HZ22K_AUTO;
+            }
+        }
+    }
+
+    private void saveLnbPower() {
+        if (mSatInfo != null) {
+            saveLnbPowerParam();
+            DTVProgramManager.getInstance().setSatInfo(mSatInfo.SatIndex, mSatInfo);
+            lockTp();
+        }
+    }
+
+    private void saveLnbPowerParam() {
+        if (mSatInfo != null) {
+            mSatInfo.LnbPower = isLnbPowerOn() ? Constants.SatInfoValue.LNB_POWER_ON : Constants.SatInfoValue.LNB_POWER_OFF;
+        }
+    }
+
+    private void saveDiSEqC() {
+        if (mSatInfo != null && mCurrentDiSEqCMode != DISEQC_MODE_UNICABLE) {
+            saveDiSEqCParam();
+            DTVProgramManager.getInstance().setSatInfo(mSatInfo.SatIndex, mSatInfo);
+            lockTp();
+        }
+    }
+
+    private void saveDiSEqCParam() {
+        if (mSatInfo != null && mCurrentDiSEqCMode != DISEQC_MODE_UNICABLE) {
+            mSatInfo.diseqc10_pos = getSaveDiSEqCPos();
+            mSatInfo.diseqc10_tone = getSaveDiSEqCTone();
+        }
+    }
+
+    private void saveUnicable() {
+        if (mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE) {
+            saveUnicableParam();
+            DTVProgramManager.getInstance().setSatInfo(mSatInfo.SatIndex, mSatInfo);
+            lockTp();
+        }
+    }
+
+    private void saveUnicableParam() {
+        if (mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE) {
+            if (is4SCRUnicable()) {
+                mSatInfo.unicConfig.UnicEnable = Constants.SatInfoValue.UNICABLE_SCR_ENABLE;
+                mSatInfo.unicConfig.SCRType = Constants.SatInfoValue.SCR_4;
+                mSatInfo.unicConfig.SCRNO = mCurrentChannel;
+                mSatInfo.unicConfig.SatPosition = !isMultiSat() ? Constants.SatInfoValue.SINGLE_SAT_POSITION :
+                        (mCurrentPosition == 0 ? Constants.SatInfoValue.MULTI_SAT_POSITION_A : Constants.SatInfoValue.MULTI_SAT_POSITION_B);
+                mSatInfo.unicConfig.SCR4UBand.clear();
+                mSatInfo.unicConfig.SCR4UBand.addAll(getSaveFrequencyList(mFrequency4SCRArray));
+            } else if (is8SCRUnicable()) {
+                mSatInfo.unicConfig.UnicEnable = Constants.SatInfoValue.UNICABLE_SCR_ENABLE;
+                mSatInfo.unicConfig.SCRType = Constants.SatInfoValue.SCR_8;
+                mSatInfo.unicConfig.SCRNO = mCurrentChannel;
+                mSatInfo.unicConfig.SatPosition = !isMultiSat() ? Constants.SatInfoValue.SINGLE_SAT_POSITION :
+                        (mCurrentPosition == 0 ? Constants.SatInfoValue.MULTI_SAT_POSITION_A : Constants.SatInfoValue.MULTI_SAT_POSITION_B);
+                mSatInfo.unicConfig.SCR8UBand.clear();
+                mSatInfo.unicConfig.SCR8UBand.addAll(getSaveFrequencyList(mFrequency8SCRArray));
+            } else if (mCurrentUnicable == UNICABLE_DCSS) {
+                mSatInfo.unicConfig.UnicEnable = Constants.SatInfoValue.UNICABLE_DCSS_ENABLE;
+                mSatInfo.unicConfig.dCSSNO = mCurrentChannel;
+                mSatInfo.unicConfig.SatPosition = Constants.SatInfoValue.SINGLE_SAT_POSITION;
+                mSatInfo.unicConfig.dCSSUBand.clear();
+                mSatInfo.unicConfig.dCSSUBand.addAll(getSaveFrequencyList(mFrequencyDCSSArray));
+            }
+        } else {
+            mSatInfo.unicConfig.UnicEnable = 0;
+            mSatInfo.unicConfig.SCRType = 0;
+            mSatInfo.unicConfig.SCRNO = 0;
+            mSatInfo.unicConfig.dCSSNO = 0;
+            mSatInfo.unicConfig.SatPosition = 0;
+            mSatInfo.unicConfig.SCR4UBand.clear();
+            mSatInfo.unicConfig.SCR8UBand.clear();
+            mSatInfo.unicConfig.dCSSUBand.clear();
+        }
     }
 
     private int getSaveDiSEqCPos() {
         if (mCurrentDiSEqCMode == DISEQC_MODE_OFF || mCurrentDiSEqCMode == DISEQC_MODE_TONE_BURST) {
             // diseqc10_tone=0, OFF or ToneBurst
-            return 0;
+            return Constants.SatInfoValue.OFF_OR_TONEBURST;
         } else if (mCurrentDiSEqCMode == DISEQC_MODE_DISEQC10) {
             // diseqc10_pos=1~4, DiSEqC DISEQC_A~D
             return mCurrentDiSEqC10 + 1; // mDiSEqC10Array位置约定
         } else if (mCurrentDiSEqCMode == DISEQC_MODE_DISEQC11) {
-            // diseqc10_pos=5~16, LNB 1~16
+            // diseqc10_pos=5~20, LNB 1~16
             return mCurrentDiSEqC11 + 5; // mDiSEqC11Array位置约定
         }
         return 0;
@@ -808,22 +872,17 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
         } else if (mCurrentDiSEqCMode == DISEQC_MODE_TONE_BURST) {
             // diseqc10_tone=1, ToneBurst DISEQC_A
             // diseqc10_tone=2, ToneBurst DISEQC_B
-            return mCurrentToneBurst; // mToneBurstArray位置约定
+            return mCurrentToneBurst + 1; // mToneBurstArray位置约定
         }
         return 0;
     }
 
-    private List<Integer> getSaveFrequencyList() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            if (is4SCRUnicable()) {
-                return Arrays.stream(mFrequency4SCRArray).map(Integer::valueOf).collect(Collectors.toList());
-            } else if (is8SCRUnicable()) {
-                return  Arrays.stream(mFrequency8SCRArray).map(Integer::valueOf).collect(Collectors.toList());
-            } else {
-                return Arrays.stream(mFrequencyDCSSArray).map(Integer::valueOf).collect(Collectors.toList());
-            }
+    private List<Integer> getSaveFrequencyList(int[] frequencyArray) {
+        List<Integer> values = new ArrayList<>(frequencyArray.length);
+        for (int value : frequencyArray) {
+            values.add(value);
         }
-        return new ArrayList<>();
+        return values;
     }
 
     /**
@@ -832,31 +891,58 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     public void satelliteChange() {
         List<HProg_Struct_SatInfo> satList = getSatList();
         if (satList == null || satList.isEmpty()) return;
-        HProg_Struct_SatInfo satInfo = satList.get(mCurrentSatellite);
+        mSatInfo = satList.get(mCurrentSatellite);
+        if (mSatInfo == null) return;
 
-        mTvSatellite.setText(satInfo.sat_name);
+        mTvSatellite.setText(mSatInfo.sat_name);
 
         mCurrentTp = 0;
         tpChange();
 
         mLnbArray[0] = getLnbO();
-        mCurrentLnb = getCurrLnb(satInfo);
-        mLastFocusable22KHz = getString(satInfo.switch_22k == 1 ? R.string.on : R.string.off);
-        mTvLnbPower.setText(satInfo.LnbPower == 1 ? getResources().getString(R.string.on) : getResources().getString(R.string.off));
+        mCurrentLnb = getCurrLnb(mSatInfo);
+        mLastFocusable22KHz = getString(mSatInfo.switch_22k == Constants.SatInfoValue.HZ22K_ON ? R.string.on : R.string.off);
         mTv22khz.setText(mLastFocusable22KHz);
-        lnbChange();
+        mTvLnbPower.setText(mSatInfo.LnbPower == Constants.SatInfoValue.LNB_POWER_ON ? getResources().getString(R.string.on) : getResources().getString(R.string.off));
+        lnbTextChange();
+        notify22kChange();
 
         LatLngModel latLngModel = new LatLngModel(LatLngModel.MODE_LONGITUDE, LatLngModel.LONGITUDE_THRESHOLD, satList.get(mCurrentSatellite).diseqc12_longitude);
         mTvLongitude.setText(latLngModel.getLatLngText());
 
-        mCurrentDiSEqCMode = getCurrDiSEqCMode(satInfo);
-        mCurrentToneBurst = getCurrToneBurst(satInfo);
-        mCurrentDiSEqC10 = getCurrDiSEqC10(satInfo);
-        mCurrentDiSEqC11 = getCurrDiSEqC11(satInfo);
-        mCurrentUnicable = getCurrUnicable(satInfo);
-        mCurrentPosition = getCurrPosition(satInfo);
-        mCurrentChannel = getCurrChannel(satInfo);
-        diseqcModeChange();
+        mFrequency4SCRArray = getValidArray(mFrequency4SCRArray, mSatInfo.unicConfig.SCR4UBand);
+        mFrequency8SCRArray = getValidArray(mFrequency8SCRArray, mSatInfo.unicConfig.SCR8UBand);
+        mFrequencyDCSSArray = getValidArray(mFrequencyDCSSArray, mSatInfo.unicConfig.dCSSUBand);
+
+        mCurrentDiSEqCMode = getCurrDiSEqCMode(mSatInfo);
+        mCurrentToneBurst = getCurrToneBurst(mSatInfo);
+        mCurrentDiSEqC10 = getCurrDiSEqC10(mSatInfo);
+        mCurrentDiSEqC11 = getCurrDiSEqC11(mSatInfo);
+        mCurrentUnicable = getCurrUnicable(mSatInfo);
+        mCurrentPosition = getCurrPosition(mSatInfo);
+        mCurrentChannel = getCurrChannel(mSatInfo);
+        diseqcModeTextChange();
+        notifyDiSEqCItemVisible();
+        toneBurstTextChange();
+        diseqcTextChange();
+        unicableTextChange();
+        notifyPositionItemVisible();
+        positionChange();
+        channelChange();
+    }
+
+    private int[] getValidArray(int[] defaultArray, List<Integer> dataArray) {
+        if (dataArray == null || dataArray.isEmpty()) return defaultArray;
+        boolean isValid = false;
+        int[] values = new int[dataArray.size()];
+        for (int i = 0; i < dataArray.size(); i++) {
+            Integer data = dataArray.get(i);
+            values[i] = data;
+            if (data > 0) {
+                isValid = true;
+            }
+        }
+        return isValid ? values : defaultArray;
     }
 
     /**
@@ -864,15 +950,19 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
      */
     private void tpChange() {
         getTpList();
-        if (isTpEmpty()) {
-            mTvTp.setText(getString(R.string.empty_tp));
-            return;
-        }
-        HProg_Struct_TP channel = getTpList().get(mCurrentTp);
-        String tpName = channel.Freq + Utils.getVorH(this, channel.Qam) + channel.Symbol;
-        mTvTp.setText(tpName);
+        lockTp();
+    }
 
-        DTVSearchManager.getInstance().tunerLockFreq(channel.SatIndex, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
+    private void lockTp() {
+        if (!isTpEmpty()) {
+            HProg_Struct_TP channel = getTpList().get(mCurrentTp);
+            String tpName = channel.Freq + Utils.getVorH(this, channel.Qam) + channel.Symbol;
+            mTvTp.setText(tpName);
+
+            DTVSearchManager.getInstance().tunerLockFreq(channel.SatIndex, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
+        } else {
+            mTvTp.setText(getString(R.string.empty_tp));
+        }
     }
 
     private boolean isTpEmpty() {
@@ -883,17 +973,23 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
      * Lnb参数修改
      */
     private void lnbChange() {
-        if (mCurrentLnb == 0) {
+        lnbTextChange();
+        saveLnb();
+
+        notify22kChange();
+        save22kHz();
+    }
+
+    private void lnbTextChange() {
+        if (mCurrentLnb == Constants.SatInfoValue.LNB_USER) {
             mTvLnb.setText(mLnbArray[0]);
         } else {
             mTvLnb.setText(mLnbArray[mCurrentLnb]);
         }
-
-        notify22kChange();
     }
 
     private void inputLnb(String inputNumber) {
-        if (mCurrentLnb == 0 && mCurrentSelectItem == ITEM_LNB) {
+        if (mCurrentLnb == Constants.SatInfoValue.LNB_USER && mCurrentSelectItem == ITEM_LNB) {
             if (mTvLnb.getText().toString().length() >= 4) {
                 mTvLnb.setText("");
             }
@@ -919,6 +1015,11 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
      * 22KHz参数修改
      */
     private void hz22KChange() {
+        hz22kTextChange();
+        save22kHz();
+    }
+
+    private void hz22kTextChange() {
         mTv22khz.setText(getResources().getString(is22kHzOn() ? R.string.off : R.string.on));
     }
 
@@ -941,6 +1042,11 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
      * LnbPower参数修改
      */
     private void lnbPowerChange() {
+        lnbPowerTextChange();
+        saveLnbPower();
+    }
+
+    private void lnbPowerTextChange() {
         mTvLnbPower.setText(getResources().getString(isLnbPowerOn() ? R.string.off : R.string.on));
     }
 
@@ -952,13 +1058,24 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
      * DiSEqC Mode参数修改
      */
     private void diseqcModeChange() {
-        mTvDiSEqCMode.setText(mDiSEqCModeArray[mCurrentDiSEqCMode]);
+        diseqcModeTextChange();
         notifyDiSEqCItemVisible();
 
-        toneBurstChange();
-        diseqcChange();
-        unicableChange();
+        toneBurstTextChange();
+        diseqcTextChange();
+        unicableTextChange();
+        saveDiSEqC();
+        saveUnicable();
+
+        notifyPositionItemVisible();
         positionChange();
+
+        mCurrentChannel = 0;
+        channelChange();
+    }
+
+    private void diseqcModeTextChange() {
+        mTvDiSEqCMode.setText(mDiSEqCModeArray[mCurrentDiSEqCMode]);
     }
 
     private void notifyDiSEqCItemVisible() {
@@ -974,6 +1091,11 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
      * ToneBurst参数修改
      */
     private void toneBurstChange() {
+        toneBurstTextChange();
+        saveDiSEqC();
+    }
+
+    private void toneBurstTextChange() {
         if (mCurrentDiSEqCMode == DISEQC_MODE_TONE_BURST) {
             mTvToneBurst.setText(mToneBurstArray[mCurrentToneBurst]);
         }
@@ -983,6 +1105,11 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
      * DiSEqC参数修改
      */
     private void diseqcChange() {
+        diseqcTextChange();
+        saveDiSEqC();
+    }
+
+    private void diseqcTextChange() {
         if (mCurrentDiSEqCMode == DISEQC_MODE_DISEQC10) {
             mTvDiSEqC.setText(mDiSEqC10Array[mCurrentDiSEqC10]);
         } else if (mCurrentDiSEqCMode == DISEQC_MODE_DISEQC11) {
@@ -994,28 +1121,34 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
      * Unicable参数修改
      */
     private void unicableChange() {
-        if (mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE) {
-            mTvUnicable.setText(mUnicableArray[mCurrentUnicable]);
-        }
+        unicableTextChange();
 
         notifyPositionItemVisible();
         positionChange();
 
         mCurrentChannel = 0;
         channelChange();
+
+        saveUnicable();
+    }
+
+    private void unicableTextChange() {
+        if (mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE) {
+            mTvUnicable.setText(mUnicableArray[mCurrentUnicable]);
+        }
     }
 
     /**
      * Position参数修改
      */
     private void positionChange() {
-        if (mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE && is8SCRUnicable()) {
+        if (mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE && isMultiSat()) {
             mTvPosition.setText(mPositionArray[mCurrentPosition]);
         }
     }
 
     private void notifyPositionItemVisible() {
-        mItemPosition.setVisibility(mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE && is8SCRUnicable() ? View.VISIBLE : View.GONE);
+        mItemPosition.setVisibility(mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE && isMultiSat() ? View.VISIBLE : View.GONE);
     }
 
     /**
@@ -1023,7 +1156,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
      */
     private void channelChange() {
         if (mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE) {
-            mTvChannel.setText(MessageFormat.format(getString(R.string.formater_satellite_param_channel_step), mCurrentChannel + 1));
+            mTvChannel.setText(MessageFormat.format(getString(R.string.formatter_satellite_param_channel_step), mCurrentChannel + 1));
             frequencyChange();
         }
     }
@@ -1032,15 +1165,17 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
      * Frequency参数修改
      */
     private void frequencyChange() {
-        if (is4SCRUnicable()) {
-            mTvFrequency.setText(mFrequency4SCRArray[mCurrentChannel]);
-        } else if (is8SCRUnicable()) {
-            mTvFrequency.setText(mFrequency8SCRArray[mCurrentChannel]);
-        } else if (mCurrentUnicable == UNICABLE_DCSS) {
-            if (mCurrentChannel >= DCSS_FREQUENCY_ZERO_MIN_RANGE && mCurrentChannel <= DCSS_FREQUENCY_ZERO_MAX_RANGE) {
-                mTvFrequency.setText("0");
-            } else {
-                mTvFrequency.setText(mFrequencyDCSSArray[mCurrentChannel]);
+        if (mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE) {
+            if (is4SCRUnicable()) {
+                mTvFrequency.setText(String.valueOf(mFrequency4SCRArray[mCurrentChannel]));
+            } else if (is8SCRUnicable()) {
+                mTvFrequency.setText(String.valueOf(mFrequency8SCRArray[mCurrentChannel]));
+            } else if (mCurrentUnicable == UNICABLE_DCSS) {
+                if (mCurrentChannel >= DCSS_FREQUENCY_ZERO_MIN_RANGE && mCurrentChannel <= DCSS_FREQUENCY_ZERO_MAX_RANGE) {
+                    mTvFrequency.setText("0");
+                } else {
+                    mTvFrequency.setText(String.valueOf(mFrequencyDCSSArray[mCurrentChannel]));
+                }
             }
         }
     }
@@ -1051,6 +1186,19 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
                 mTvFrequency.setText("");
             }
             mTvFrequency.append(inputNumber);
+
+            saveInputToArray();
+        }
+    }
+
+    private void saveInputToArray() {
+        int frequency = Integer.valueOf(mTvFrequency.getText().toString());
+        if (is4SCRUnicable()) {
+            mFrequency4SCRArray[mCurrentChannel] = frequency;
+        } else if (is8SCRUnicable()) {
+            mFrequency8SCRArray[mCurrentChannel] = frequency;
+        } else {
+            mFrequencyDCSSArray[mCurrentChannel] = frequency;
         }
     }
 
@@ -1086,9 +1234,9 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     }
 
     private int getCurrDiSEqCMode(HProg_Struct_SatInfo satInfo) {
-        if (satInfo.unicConfig.UnicEnable == 0) {
-            if (satInfo.diseqc10_pos == 0) {
-                if (satInfo.diseqc10_tone != 0) {
+        if (satInfo.unicConfig.UnicEnable <= Constants.SatInfoValue.UNICABLE_DISABLE) {
+            if (satInfo.diseqc10_pos == Constants.SatInfoValue.OFF_OR_TONEBURST) {
+                if (satInfo.diseqc10_tone != Constants.SatInfoValue.OFF_OR_TONEBURST) {
                     return DISEQC_MODE_TONE_BURST;
                 } else {
                     return DISEQC_MODE_OFF;
@@ -1098,14 +1246,15 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
             } else if (Utils.isDiSEqc11(satInfo.diseqc10_pos)) {
                 return DISEQC_MODE_DISEQC11;
             }
-        } else if (satInfo.unicConfig.UnicEnable > 0) {
+        } else {
             return DISEQC_MODE_UNICABLE;
         }
         return 0;
     }
 
     private int getCurrToneBurst(HProg_Struct_SatInfo satInfo) {
-        if (satInfo.unicConfig.UnicEnable == 0 && satInfo.diseqc10_pos == 0 && satInfo.diseqc10_tone != 0) {
+        if (satInfo.unicConfig.UnicEnable <= Constants.SatInfoValue.UNICABLE_DISABLE
+                && satInfo.diseqc10_pos == Constants.SatInfoValue.OFF_OR_TONEBURST && satInfo.diseqc10_tone != Constants.SatInfoValue.OFF_OR_TONEBURST) {
             // diseqc10_pos=0, OFF or ToneBurst
             // diseqc10_tone=0, OFF
             // diseqc10_tone=1, ToneBurst DISEQC_A
@@ -1116,7 +1265,8 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     }
 
     private int getCurrDiSEqC10(HProg_Struct_SatInfo satInfo) {
-        if (satInfo.unicConfig.UnicEnable == 0 && satInfo.diseqc10_pos != 0 && Utils.isDISEQC10(satInfo.diseqc10_pos)) {
+        if (satInfo.unicConfig.UnicEnable <= Constants.SatInfoValue.UNICABLE_DISABLE
+                && satInfo.diseqc10_pos != Constants.SatInfoValue.OFF_OR_TONEBURST && Utils.isDISEQC10(satInfo.diseqc10_pos)) {
             // diseqc10_pos=1~4, DiSEqC DISEQC_A~DISEQC_B
             return satInfo.diseqc10_pos - 1;
         }
@@ -1124,7 +1274,8 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     }
 
     private int getCurrDiSEqC11(HProg_Struct_SatInfo satInfo) {
-        if (satInfo.unicConfig.UnicEnable == 0 && satInfo.diseqc10_pos != 0 && Utils.isDiSEqc11(satInfo.diseqc10_pos)) {
+        if (satInfo.unicConfig.UnicEnable <= Constants.SatInfoValue.UNICABLE_DISABLE
+                && satInfo.diseqc10_pos != Constants.SatInfoValue.OFF_OR_TONEBURST && Utils.isDiSEqc11(satInfo.diseqc10_pos)) {
             // diseqc10_pos=5~16, LNB 1~16
             return satInfo.diseqc10_pos - 5;
         }
@@ -1132,35 +1283,35 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     }
 
     private int getCurrUnicable(HProg_Struct_SatInfo satInfo) {
-        if (satInfo.unicConfig.UnicEnable == 1) {
+        if (satInfo.unicConfig.UnicEnable == Constants.SatInfoValue.UNICABLE_SCR_ENABLE) {
             // SatPosition=0, SCRType=0, 1Sat4SCR
             // SatPosition=0, SCRType=1, 1Sat8SCR
-            // SatPosition=1, SCRType=0, 2Sat4SCR
-            // SatPosition=1, SCRType=1, 2Sat8SCR
-            if (satInfo.unicConfig.SatPosition == 0 && satInfo.unicConfig.SCRType == 0) {
+            // SatPosition>=1, SCRType=0, 2Sat4SCR
+            // SatPosition>=1, SCRType=1, 2Sat8SCR
+            if (satInfo.unicConfig.SatPosition == Constants.SatInfoValue.SINGLE_SAT_POSITION && satInfo.unicConfig.SCRType == Constants.SatInfoValue.SCR_4) {
                 return UNICABLE_1SAT4SCR;
-            } else if (satInfo.unicConfig.SatPosition == 0 && satInfo.unicConfig.SCRType == 1) {
+            } else if (satInfo.unicConfig.SatPosition == Constants.SatInfoValue.SINGLE_SAT_POSITION && satInfo.unicConfig.SCRType == Constants.SatInfoValue.SCR_8) {
                 return UNICABLE_1SAT8SCR;
-            } else if (satInfo.unicConfig.SatPosition == 1 && satInfo.unicConfig.SCRType == 0) {
+            } else if (satInfo.unicConfig.SatPosition >= Constants.SatInfoValue.MULTI_SAT_POSITION_A && satInfo.unicConfig.SCRType == Constants.SatInfoValue.SCR_4) {
                 return UNICABLE_2SAT4SCR;
-            } else if (satInfo.unicConfig.SatPosition == 1 && satInfo.unicConfig.SCRType == 1) {
+            } else if (satInfo.unicConfig.SatPosition >= Constants.SatInfoValue.MULTI_SAT_POSITION_A && satInfo.unicConfig.SCRType == Constants.SatInfoValue.SCR_8) {
                 return UNICABLE_2SAT8SCR;
             }
-        } else if (satInfo.unicConfig.UnicEnable == 2) {
+        } else if (satInfo.unicConfig.UnicEnable == Constants.SatInfoValue.UNICABLE_DCSS_ENABLE) {
             return UNICABLE_DCSS;
         }
         return 0;
     }
 
     private int getCurrPosition(HProg_Struct_SatInfo satInfo) {
-        if (satInfo.unicConfig.UnicEnable == 1 && satInfo.unicConfig.SCRType == 1) {
-            return satInfo.unicConfig.SatPosition;
+        if (satInfo.unicConfig.UnicEnable == Constants.SatInfoValue.UNICABLE_SCR_ENABLE && satInfo.unicConfig.SCRType == Constants.SatInfoValue.SCR_8) {
+            return mSatInfo.unicConfig.SatPosition == Constants.SatInfoValue.MULTI_SAT_POSITION_A ? 0 : 1;
         }
         return 0;
     }
 
     private int getCurrChannel(HProg_Struct_SatInfo satInfo) {
-        if (satInfo.unicConfig.UnicEnable > 0) {
+        if (satInfo.unicConfig.UnicEnable > Constants.SatInfoValue.UNICABLE_DISABLE) {
             return satInfo.unicConfig.SCRNO;
         }
         return 0;
@@ -1172,6 +1323,10 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
 
     private boolean is8SCRUnicable() {
         return mCurrentUnicable == UNICABLE_1SAT8SCR || mCurrentUnicable == UNICABLE_2SAT8SCR;
+    }
+
+    private boolean isMultiSat() {
+        return mCurrentUnicable == UNICABLE_2SAT4SCR || mCurrentUnicable == UNICABLE_2SAT8SCR;
     }
 
     private void itemFocusChange() {
@@ -1236,7 +1391,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     private void positionItemFocusChange() {
         if (mCurrentDiSEqCMode != DISEQC_MODE_OFF && mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE) {
             int selectItem = -1;
-            if (mCurrentSelectItem == ITEM_POSITION && is8SCRUnicable()) {
+            if (mCurrentSelectItem == ITEM_POSITION && isMultiSat()) {
                 selectItem = ITEM_POSITION;
             }
             itemChange(mCurrentSelectItem, selectItem, mItemPosition, mIvPositionLeft, mIvPositionRight, mTvPosition);

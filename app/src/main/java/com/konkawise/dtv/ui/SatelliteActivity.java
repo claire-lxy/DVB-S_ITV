@@ -2,7 +2,6 @@ package com.konkawise.dtv.ui;
 
 import android.content.Intent;
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
@@ -11,6 +10,7 @@ import com.konkawise.dtv.R;
 import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.adapter.SatelliteListAdapter;
 import com.konkawise.dtv.base.BaseActivity;
+import com.konkawise.dtv.dialog.ScanDialog;
 import com.konkawise.dtv.dialog.SearchProgramDialog;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.view.TVListView;
@@ -90,7 +90,7 @@ public class SatelliteActivity extends BaseActivity {
 
     @Override
     protected void setup() {
-        mTvBottomBarBlue.setVisibility(View.GONE);
+        mTvBottomBarBlue.setText(R.string.blind_scan);
 
         mAdapter = new SatelliteListAdapter(this, new ArrayList<>());
         mListView.setAdapter(mAdapter);
@@ -127,17 +127,23 @@ public class SatelliteActivity extends BaseActivity {
             new SearchProgramDialog()
                     .setMessage(getString(satList.size() > 1 ?
                             R.string.multi_satellite_search : R.string.single_satellite_search))
-                    .setBtnOnclickLisener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Intent intent = new Intent(SatelliteActivity.this, ScanTVandRadioActivity.class);
-                            intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mAdapter.getItem(mCurrPosition).SatIndex);
-                            intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.IntentValue.SEARCH_TYPE_SATELLITE);
-                            startActivity(intent);
-                            finish();
-                        }
+                    .setBtnOnclickLisener(v -> {
+                        Intent intent = new Intent(SatelliteActivity.this, ScanTVandRadioActivity.class);
+                        intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mAdapter.getItem(mCurrPosition).SatIndex);
+                        intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.IntentValue.SEARCH_TYPE_SATELLITE);
+                        startActivity(intent);
+                        finish();
                     }).show(getSupportFragmentManager(), SearchProgramDialog.TAG);
             return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_PROG_BLUE) {
+            new ScanDialog().setOnScanSearchListener(v -> {
+                Intent intent = new Intent(SatelliteActivity.this, TpBlindActivity.class);
+                intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, mAdapter.getItem(mCurrPosition).SatIndex);
+                startActivity(intent);
+                finish();
+            }).show(getSupportFragmentManager(), ScanDialog.TAG);
         }
 
         return super.onKeyUp(keyCode, event);
@@ -217,20 +223,17 @@ public class SatelliteActivity extends BaseActivity {
                 HProg_Struct_SatInfo satInfo = satList.get(context.mCurrPosition);
                 HProg_Struct_TP channelInfo = DTVProgramManager.getInstance().getTPInfoBySat(satInfo.SatIndex, 0);
 
-                context.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        context.mTvLnb.setText(Utils.getLnb(satInfo));
-                        context.mTvLnbPower.setText(satInfo.LnbPower == 0 ?  R.string.off : R.string.on);
-                        context.mTvDiSEqC.setText(Utils.getDiSEqC(context, satInfo));
-                        context.mTvMotorType.setText(Utils.getMotorType(context, satInfo));
+                context.runOnUiThread(() -> {
+                    context.mTvLnb.setText(Utils.getLnb(satInfo));
+                    context.mTvLnbPower.setText(satInfo.LnbPower == 0 ?  R.string.off : R.string.on);
+                    context.mTvDiSEqC.setText(Utils.getDiSEqC(context, satInfo));
+                    context.mTvMotorType.setText(Utils.getMotorType(context, satInfo));
 
-                        if (channelInfo != null && channelInfo.Freq > 0) {
-                            String tpName = channelInfo.Freq + Utils.getVorH(context, channelInfo.Qam) + channelInfo.Symbol;
-                            context.mTvFreq.setText(tpName);
-                        } else {
-                            context.mTvFreq.setText("");
-                        }
+                    if (channelInfo != null && channelInfo.Freq > 0) {
+                        String tpName = channelInfo.Freq + Utils.getVorH(context, channelInfo.Qam) + channelInfo.Symbol;
+                        context.mTvFreq.setText(tpName);
+                    } else {
+                        context.mTvFreq.setText("");
                     }
                 });
             }

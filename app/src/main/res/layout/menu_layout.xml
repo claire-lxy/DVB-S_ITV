@@ -21,58 +21,15 @@
         android:layout_marginTop="10dp"
         android:orientation="vertical">
 
-        <LinearLayout
+        <TextView
             android:id="@+id/item_installation"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:background="@drawable/dvb_btn_selector"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingLeft="40dp">
-
-            <ImageView
-                android:id="@+id/iv_installation_back"
-                android:layout_width="wrap_content"
-                android:layout_height="10dp"
-                android:src="@mipmap/back"
-                android:visibility="gone"
-                tools:ignore="ContentDescription" />
-
-            <TextView
-                android:id="@+id/tv_installation"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:background="@drawable/dvb_btn_selector"
-                android:focusable="true"
-                android:gravity="center_vertical"
-                android:text="@string/Installation"
-                android:textSize="15sp" />
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/item_manual_installation"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
+            android:layout_height="36dp"
             android:background="@drawable/dvb_btn_selector"
             android:focusable="true"
             android:gravity="center_vertical"
             android:paddingLeft="40dp"
-            android:text="@string/manual_installation"
-            android:textSize="15sp"
-            android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/item_blind_scan"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:background="@drawable/dvb_btn_selector"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:paddingLeft="40dp"
-            android:text="@string/blind_scan"
-            android:textSize="15sp"
-            android:visibility="gone" />
+            android:text="@string/Installation" />
 
         <TextView
             android:id="@+id/item_epg"

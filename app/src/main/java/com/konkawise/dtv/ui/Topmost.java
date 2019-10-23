@@ -39,7 +39,6 @@ import com.konkawise.dtv.DTVDVBManager;
 import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.UsbManager;
 import com.konkawise.dtv.adapter.TvListAdapter;
-import com.konkawise.dtv.annotation.DVBSelectType;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.base.BaseDialogFragment;
 import com.konkawise.dtv.bean.HandlerMsgModel;
@@ -52,7 +51,6 @@ import com.konkawise.dtv.dialog.FindChannelDialog;
 import com.konkawise.dtv.dialog.InitPasswordDialog;
 import com.konkawise.dtv.dialog.InputPvrMinuteDialog;
 import com.konkawise.dtv.dialog.OnCommCallback;
-import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.PasswordDialog;
 import com.konkawise.dtv.dialog.PfBarScanDialog;
 import com.konkawise.dtv.dialog.PfDetailDialog;
@@ -103,7 +101,6 @@ import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 
 public class Topmost extends BaseActivity {
     private static final String TAG = "Topmost";
-    private static final long RECORDING_DELAY = 1000;
     private static final long RECORDING_PERIOD = 1000;
     private static final long PLAY_PROG_DELAY = 1000;
     private static final long JUMP_PROG_DELAY = 2500;
@@ -142,19 +139,7 @@ public class Topmost extends BaseActivity {
     ViewGroup mMenu;
 
     @BindView(R.id.item_installation)
-    ViewGroup mItemInstallation;
-
-    @BindView(R.id.iv_installation_back)
-    ImageView mIvInstallationBack;
-
-    @BindView(R.id.tv_installation)
-    TextView mTvInstallation;
-
-    @BindView(R.id.item_manual_installation)
-    TextView mItemManualInstallation;
-
-    @BindView(R.id.item_blind_scan)
-    TextView mItemBlindScan;
+    TextView mItemInstallation;
 
     @BindView(R.id.item_epg)
     TextView mItemEpg;
@@ -215,21 +200,7 @@ public class Topmost extends BaseActivity {
 
     @OnClick(R.id.item_installation)
     void installation() {
-        if (isShowInstallation()) {
-            showS2OrT2Dialog(Constants.DVBSelectType.INSTALLATION, true);
-        } else {
-            toggleInstallationItem();
-        }
-    }
-
-    @OnClick(R.id.item_manual_installation)
-    void manualInstallation() {
-        startActivity(new Intent(this, SatelliteActivity.class));
-    }
-
-    @OnClick(R.id.item_blind_scan)
-    void blindScan() {
-        startActivity(new Intent(this, BlindActivity.class));
+        showS2OrT2Dialog(true);
     }
 
     @OnClick(R.id.item_epg)
@@ -261,13 +232,10 @@ public class Topmost extends BaseActivity {
     @OnClick(R.id.item_channel_edit)
     void channelEdit() {
         if (DTVSettingManager.getInstance().isOpenMenuLock() && !mPasswordEntered) {
-            showPasswordDialog(new PasswordDialog.OnPasswordInputListener() {
-                @Override
-                public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
-                    if (isValid) {
-                        mPasswordEntered = true;
-                        startActivity(new Intent(Topmost.this, ChannelEditActivity.class));
-                    }
+            showPasswordDialog((inputPassword, currentPassword, isValid) -> {
+                if (isValid) {
+                    mPasswordEntered = true;
+                    startActivity(new Intent(Topmost.this, ChannelEditActivity.class));
                 }
             });
         } else {
@@ -278,13 +246,10 @@ public class Topmost extends BaseActivity {
     @OnClick(R.id.item_channel_favorite)
     void channelFavorite() {
         if (DTVSettingManager.getInstance().isOpenMenuLock() && !mPasswordEntered) {
-            showPasswordDialog(new PasswordDialog.OnPasswordInputListener() {
-                @Override
-                public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
-                    if (isValid) {
-                        mPasswordEntered = true;
-                        startActivity(new Intent(Topmost.this, FavoriteActivity.class));
-                    }
+            showPasswordDialog((inputPassword, currentPassword, isValid) -> {
+                if (isValid) {
+                    mPasswordEntered = true;
+                    startActivity(new Intent(Topmost.this, FavoriteActivity.class));
                 }
             });
         } else {
@@ -295,13 +260,10 @@ public class Topmost extends BaseActivity {
     @OnClick(R.id.item_clear_channel)
     void clearChannel() {
         if (DTVSettingManager.getInstance().isOpenMenuLock() && !mPasswordEntered) {
-            showPasswordDialog(new PasswordDialog.OnPasswordInputListener() {
-                @Override
-                public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
-                    if (isValid) {
-                        mPasswordEntered = true;
-                        showClearChannelDialog();
-                    }
+            showPasswordDialog((inputPassword, currentPassword, isValid) -> {
+                if (isValid) {
+                    mPasswordEntered = true;
+                    showClearChannelDialog();
                 }
             });
         } else {
@@ -327,13 +289,10 @@ public class Topmost extends BaseActivity {
     @OnClick(R.id.item_data_reset)
     void factoryReset() {
         if (DTVSettingManager.getInstance().isOpenMenuLock() && !mPasswordEntered) {
-            showPasswordDialog(new PasswordDialog.OnPasswordInputListener() {
-                @Override
-                public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
-                    if (isValid) {
-                        mPasswordEntered = true;
-                        showDataResetDialog();
-                    }
+            showPasswordDialog((inputPassword, currentPassword, isValid) -> {
+                if (isValid) {
+                    mPasswordEntered = true;
+                    showDataResetDialog();
                 }
             });
         } else {
@@ -715,12 +674,9 @@ public class Topmost extends BaseActivity {
             }
 
             final int startRecordResult = result;
-            mWeakReference.get().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (callback != null) {
-                        callback.callback(startRecordResult);
-                    }
+            mWeakReference.get().runOnUiThread(() -> {
+                if (callback != null) {
+                    callback.callback(startRecordResult);
                 }
             });
         }
@@ -830,15 +786,12 @@ public class Topmost extends BaseActivity {
         mLoadProgRunnable = new LoadProgRunnable(this);
         mProgListAdapter = new TvListAdapter(this, new ArrayList<>());
         mProgListView.setAdapter(mProgListAdapter);
-        mProgListView.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (keyCode == KeyEvent.KEYCODE_PROG_YELLOW && event.getAction() == KeyEvent.ACTION_UP) {
-                    showFindProgChannelDialog();
-                    return true;
-                }
-                return false;
+        mProgListView.setOnKeyListener((v, keyCode, event) -> {
+            if (keyCode == KeyEvent.KEYCODE_PROG_YELLOW && event.getAction() == KeyEvent.ACTION_UP) {
+                showFindProgChannelDialog();
+                return true;
             }
+            return false;
         });
 
         updateProgList();
@@ -894,34 +847,29 @@ public class Topmost extends BaseActivity {
 
             final int preProgIndex = DTVProgramManager.getInstance().getCurrProgInfo().ProgIndex;
             List<HProg_Struct_ProgInfo> progList = context.getProgList();
-            context.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    context.mPbLoadingChannel.setVisibility(View.GONE);
-                    if (progList != null && !progList.isEmpty()) {
-                        // 可能切换了频道类型，需要和当前最新的频道做对比
-                        HProg_Struct_ProgInfo oldProgInfo = context.mProgListAdapter.getItem(context.mCurrSelectProgPosition);
+            context.runOnUiThread(() -> {
+                context.mPbLoadingChannel.setVisibility(View.GONE);
+                if (progList != null && !progList.isEmpty()) {
+                    // 可能切换了频道类型，需要和当前最新的频道做对比
+                    HProg_Struct_ProgInfo oldProgInfo = context.mProgListAdapter.getItem(context.mCurrSelectProgPosition);
 
-                        context.mProgListAdapter.updateData(progList);
+                    context.mProgListAdapter.updateData(progList);
 
-                        context.mCurrSelectProgPosition = context.getPositionByIndex(preProgIndex);
-                        HProg_Struct_ProgInfo progInfo = context.mProgListAdapter.getItem(context.mCurrSelectProgPosition);
-                        context.updateProgListSelectionByPosotion(context.mCurrSelectProgPosition);
-                        DTVProgramManager.getInstance().setCurrProgNo(progInfo.ProgNo);
+                    context.mCurrSelectProgPosition = context.getPositionByIndex(preProgIndex);
+                    HProg_Struct_ProgInfo progInfo = context.mProgListAdapter.getItem(context.mCurrSelectProgPosition);
+                    context.updateProgListSelectionByPosotion(context.mCurrSelectProgPosition);
+                    DTVProgramManager.getInstance().setCurrProgNo(progInfo.ProgNo);
 
-                        // 更新完成频道列表，如果播放的不是当前频道或者切换了频道类型则切换播放
-                        if (progInfo.ProgIndex != preProgIndex ||
-                                (oldProgInfo != null && oldProgInfo.ProgType != progInfo.ProgType)) {
-                            context.playProg(progInfo.ProgNo);
-                        }
-
-                    } else {
-                        context.mProgListAdapter.updateData(new ArrayList<>());
+                    // 更新完成频道列表，如果播放的不是当前频道或者切换了频道类型则切换播放
+                    if (progInfo.ProgIndex != preProgIndex ||
+                            (oldProgInfo != null && oldProgInfo.ProgType != progInfo.ProgType)) {
+                        context.playProg(progInfo.ProgNo);
                     }
+
+                } else {
+                    context.mProgListAdapter.updateData(new ArrayList<>());
                 }
             });
-
-//            context.preloadProgList();
         }
     }
 
@@ -997,12 +945,7 @@ public class Topmost extends BaseActivity {
                 }
                 Log.i(TAG, "mCurrSatPosition:" + context.mCurrSatPosition);
 
-                context.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        context.mTvSatelliteName.setText(context.mSatList.get(context.mCurrSatPosition).sat_name);
-                    }
-                });
+                context.runOnUiThread(() -> context.mTvSatelliteName.setText(context.mSatList.get(context.mCurrSatPosition).sat_name));
             } else {
                 context.mSatList = new ArrayList<>();
             }
@@ -1406,7 +1349,7 @@ public class Topmost extends BaseActivity {
 
                         @Override
                         public void onStartSearch() {
-                            showS2OrT2Dialog(Constants.DVBSelectType.SEARCH, false);
+                            showS2OrT2Dialog(false);
                         }
 
                         @Override
@@ -1422,12 +1365,9 @@ public class Topmost extends BaseActivity {
     private void showRemindSearchDialog() {
         new CommRemindDialog()
                 .content(getString(R.string.no_program))
-                .setOnPositiveListener("", new OnCommPositiveListener() {
-                    @Override
-                    public void onPositiveListener() {
-                        mItemInstallation.requestFocus();
-                        showS2OrT2Dialog(Constants.DVBSelectType.INSTALLATION, true);
-                    }
+                .setOnPositiveListener("", () -> {
+                    mItemInstallation.requestFocus();
+                    showS2OrT2Dialog(true);
                 }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
     }
 
@@ -1436,26 +1376,20 @@ public class Topmost extends BaseActivity {
             return;
 
         getContentResolver().update(Uri.parse("content://dvbchannellock/dvb_info/0"), null, null, null);
-        showPasswordDialog(new PasswordDialog.OnPasswordInputListener() {
-            @Override
-            public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
-                if (isValid) {
-                    Uri uri = Uri.parse("content://dvbchannellock/dvb_info/1");
-                    getContentResolver().update(uri, null, null, null);
-                    DTVPlayerManager.getInstance().startPlayProgNo(DTVProgramManager.getInstance().getCurrProgNo(), 0);
-                }
+        showPasswordDialog((inputPassword, currentPassword, isValid) -> {
+            if (isValid) {
+                Uri uri = Uri.parse("content://dvbchannellock/dvb_info/1");
+                getContentResolver().update(uri, null, null, null);
+                DTVPlayerManager.getInstance().startPlayProgNo(DTVProgramManager.getInstance().getCurrProgNo(), 0);
             }
-        }, new PasswordDialog.OnControlArrowKeyListener() {
-            @Override
-            public void onControlArrowKey(int playProgType) {
-                switch (playProgType) {
-                    case PasswordDialog.CONTROL_ARROW_LAST_PROG:
-                        lastProg();
-                        break;
-                    case PasswordDialog.CONTROL_ARROW_NEXT_PROG:
-                        nextProg();
-                        break;
-                }
+        }, playProgType -> {
+            switch (playProgType) {
+                case PasswordDialog.CONTROL_ARROW_LAST_PROG:
+                    lastProg();
+                    break;
+                case PasswordDialog.CONTROL_ARROW_NEXT_PROG:
+                    nextProg();
+                    break;
             }
         });
     }
@@ -1475,66 +1409,44 @@ public class Topmost extends BaseActivity {
         }
     }
 
-    private void showS2OrT2Dialog(@DVBSelectType int selectType, boolean agreeBack) {
+    private void showS2OrT2Dialog(boolean agreeBack) {
         List<String> content = new ArrayList<>();
         content.add(getString(R.string.installation_s2));
         content.add(getString(R.string.installation_t2));
 
-        mProgHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                new CommCheckItemDialog()
-                        .title(getString(R.string.dialog_title_tips))
-                        .content(content)
-                        .agreeBack(agreeBack)
-                        .position(0)
-                        .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
-                            @Override
-                            public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
-                                if (selectType == Constants.DVBSelectType.INSTALLATION) {
-                                    if (position == 0) {
-                                        toggleInstallationItem();
-                                    } else {
-                                        startActivity(new Intent(Topmost.this, InstallationT2Activity.class));
-                                    }
-                                } else if (selectType == Constants.DVBSelectType.SEARCH) {
-                                    if (position == 0) {
-                                        startActivity(new Intent(Topmost.this, SatelliteActivity.class));
-                                    } else {
-                                        startActivity(new Intent(Topmost.this, InstallationT2Activity.class));
-                                    }
-                                }
-                            }
-                        }).show(getSupportFragmentManager(), CommCheckItemDialog.TAG);
-            }
-        }, 100);
+        mProgHandler.postDelayed(() -> new CommCheckItemDialog()
+                .title(getString(R.string.dialog_title_tips))
+                .content(content)
+                .agreeBack(agreeBack)
+                .position(0)
+                .setOnDismissListener((dialog, position, checkContent) -> {
+                    if (position == 0) {
+                        startActivity(new Intent(Topmost.this, SatelliteActivity.class));
+                    } else {
+                        startActivity(new Intent(Topmost.this, InstallationT2Activity.class));
+                    }
+                }).show(getSupportFragmentManager(), CommCheckItemDialog.TAG), 100);
     }
 
     private void showClearChannelDialog() {
         new CommTipsDialog().title(getString(R.string.clear_channel)).content(getString(R.string.are_you_sure_clear_prog_data))
-                .setOnPositiveListener("", new OnCommPositiveListener() {
-                    @Override
-                    public void onPositiveListener() {
-                        DTVPlayerManager.getInstance().programReset();
-                        mCurrSatPosition = 0;
-                        mProgListAdapter.clearData(); // 同步清空频道列表
-                        mIvRadioBackground.setVisibility(View.GONE); // 隐藏音频背景
-                    }
+                .setOnPositiveListener("", () -> {
+                    DTVPlayerManager.getInstance().programReset();
+                    mCurrSatPosition = 0;
+                    mProgListAdapter.clearData(); // 同步清空频道列表
+                    mIvRadioBackground.setVisibility(View.GONE); // 隐藏音频背景
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
 
     private void showDataResetDialog() {
         new CommTipsDialog().title(getString(R.string.data_reset)).content(getString(R.string.factory_reset_content))
-                .setOnPositiveListener("", new OnCommPositiveListener() {
-                    @Override
-                    public void onPositiveListener() {
-                        PreferenceManager.getInstance().clear();
-                        DTVCommonManager.getInstance().factoryReset();
-                        mProgListAdapter.clearData(); // 同步清空频道列表
-                        toggleMenu(true);
-                        mIvRadioBackground.setVisibility(View.GONE); // 隐藏音频背景
-                        showSettingPasswordDialog();
-                    }
+                .setOnPositiveListener("", () -> {
+                    PreferenceManager.getInstance().clear();
+                    DTVCommonManager.getInstance().factoryReset();
+                    mProgListAdapter.clearData(); // 同步清空频道列表
+                    toggleMenu(true);
+                    mIvRadioBackground.setVisibility(View.GONE); // 隐藏音频背景
+                    showSettingPasswordDialog();
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
 
@@ -1543,15 +1455,12 @@ public class Topmost extends BaseActivity {
 
         new FindChannelDialog()
                 .channels(mProgListAdapter.getData())
-                .setOnFindChannelCallback(new FindChannelDialog.OnFindChannelCallback() {
-                    @Override
-                    public void onFindChannels(HProg_Struct_ProgInfo findChannel) {
-                        if (findChannel == null) return;
+                .setOnFindChannelCallback(findChannel -> {
+                    if (findChannel == null) return;
 
-                        if (findChannel.ProgNo != getCurrentProgNo()) playProg(findChannel.ProgNo);
-                        toggleProgList();
-                        updateProgListSelection(findChannel.ProgNo);
-                    }
+                    if (findChannel.ProgNo != getCurrentProgNo()) playProg(findChannel.ProgNo);
+                    toggleProgList();
+                    updateProgListSelection(findChannel.ProgNo);
                 }).show(getSupportFragmentManager(), FindChannelDialog.TAG);
     }
 
@@ -1560,13 +1469,10 @@ public class Topmost extends BaseActivity {
                 .title(getString(R.string.dialog_title_tips))
                 .content(getString(R.string.exit_app_content))
                 .negativeFocus(true)
-                .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
-                    @Override
-                    public void onPositiveListener() {
-                        dismissSettingPasswordDialog();
-                        hideSurface();
-                        finish();
-                    }
+                .setOnPositiveListener(getString(R.string.ok), () -> {
+                    dismissSettingPasswordDialog();
+                    hideSurface();
+                    finish();
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
 
@@ -1600,12 +1506,9 @@ public class Topmost extends BaseActivity {
                 .title(getString(R.string.subtitle))
                 .content(subtitles)
                 .position(currSubtitle)
-                .setOnDismissListener(new SubtitleDialog.OnDismissListener() {
-                    @Override
-                    public void onDismiss(SubtitleDialog dialog, int position, String checkContent) {
-                        if (position > 0)
-                            DTVPlayerManager.getInstance().openSubtitle(pids[position - 1]);
-                    }
+                .setOnDismissListener((dialog, position, checkContent) -> {
+                    if (position > 0)
+                        DTVPlayerManager.getInstance().openSubtitle(pids[position - 1]);
                 }).show(getSupportFragmentManager(), SubtitleDialog.TAG);
     }
 
@@ -1631,12 +1534,9 @@ public class Topmost extends BaseActivity {
                 .title(getString(R.string.teletext))
                 .content(Arrays.asList(teletextNames))
                 .position(currTeleText)
-                .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
-                    @Override
-                    public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
-                        if (position > 0)
-                            DTVPlayerManager.getInstance().openTeletext(pids[position - 1]);
-                    }
+                .setOnDismissListener((dialog, position, checkContent) -> {
+                    if (position > 0)
+                        DTVPlayerManager.getInstance().openTeletext(pids[position - 1]);
                 }).show(getSupportFragmentManager(), "teletext");
     }
 
@@ -1647,42 +1547,33 @@ public class Topmost extends BaseActivity {
     }
 
     private void showSettingPasswordDialog() {
-        mSettingPasswordDialog = new InitPasswordDialog().setOnSavePasswordListener(new InitPasswordDialog.OnSavePasswordListener() {
-            @Override
-            public void onSavePassword(String password) {
-                DTVSettingManager.getInstance().setPasswd(HSetting_Enum_Property.Password, password);
-                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.FirstOpen, 0);
+        mSettingPasswordDialog = new InitPasswordDialog().setOnSavePasswordListener(password -> {
+            DTVSettingManager.getInstance().setPasswd(HSetting_Enum_Property.Password, password);
+            DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.FirstOpen, 0);
 
-                dismissSettingPasswordDialog();
+            dismissSettingPasswordDialog();
 
-                if (!DTVProgramManager.getInstance().isProgCanPlay()) {
-                    showSearchChannelDialog();
-                } else {
-                    playProg();
-                }
+            if (!DTVProgramManager.getInstance().isProgCanPlay()) {
+                showSearchChannelDialog();
+            } else {
+                playProg();
             }
-        }).setOnKeyListener(new InitPasswordDialog.OnKeyListener() {
-            @Override
-            public boolean onKeyListener(InitPasswordDialog dialog, int keyCode, KeyEvent event) {
-                if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
-                    showExitDialog();
-                    return true;
-                }
-                return false;
+        }).setOnKeyListener((dialog, keyCode, event) -> {
+            if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
+                showExitDialog();
+                return true;
             }
+            return false;
         });
         mSettingPasswordDialog.show(getSupportFragmentManager(), InitPasswordDialog.TAG);
     }
 
     private void showInputPvrMinuteDialog() {
         new InputPvrMinuteDialog()
-                .setOnInputPVRContentCallback(new OnCommCallback() {
-                    @Override
-                    public void callback(Object object) {
-                        int minutes = (int) object;
-                        mRecordSeconds = minutes * 60;
-                        recordProg();
-                    }
+                .setOnInputPVRContentCallback(object -> {
+                    int minutes = (int) object;
+                    mRecordSeconds = minutes * 60;
+                    recordProg();
                 }).show(getSupportFragmentManager(), InputPvrMinuteDialog.TAG);
     }
 
@@ -1691,12 +1582,7 @@ public class Topmost extends BaseActivity {
             new CommTipsDialog()
                     .content(getString(R.string.dialog_quit_record_content))
                     .negativeFocus(true)
-                    .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
-                        @Override
-                        public void onPositiveListener() {
-                            stopRecord();
-                        }
-                    }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
+                    .setOnPositiveListener(getString(R.string.ok), this::stopRecord).show(getSupportFragmentManager(), CommTipsDialog.TAG);
         }
     }
 
@@ -1705,24 +1591,16 @@ public class Topmost extends BaseActivity {
         for (UsbInfo usbInfo : usbInfos) usbInfoNames.add(usbInfo.fsLabel);
 
         // 添加一个延时，防止无法弹出问题
-        mProgHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                new CommCheckItemDialog()
-                        .title(getString(R.string.dialog_usb_select_title))
-                        .content(usbInfoNames)
-                        .position(0)
-                        .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
-                            @Override
-                            public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
-                                UsbInfo usbInfo = usbInfos.get(position);
-                                if (usbInfo != null && !TextUtils.isEmpty(usbInfo.uuid)) {
-                                    executeRecord(usbInfos.get(position), callback);
-                                }
-                            }
-                        }).show(getSupportFragmentManager(), CommCheckItemDialog.TAG);
-            }
-        }, 200);
+        mProgHandler.postDelayed(() -> new CommCheckItemDialog()
+                .title(getString(R.string.dialog_usb_select_title))
+                .content(usbInfoNames)
+                .position(0)
+                .setOnDismissListener((dialog, position, checkContent) -> {
+                    UsbInfo usbInfo = usbInfos.get(position);
+                    if (usbInfo != null && !TextUtils.isEmpty(usbInfo.uuid)) {
+                        executeRecord(usbInfos.get(position), callback);
+                    }
+                }).show(getSupportFragmentManager(), CommCheckItemDialog.TAG), 200);
     }
 
     private boolean isPfBarShowing() {
@@ -1783,12 +1661,7 @@ public class Topmost extends BaseActivity {
                 mProgListShow ? 0f : -mProgListMenu.getLeft(), mProgListMenu, null);
         mProgListShow = !mProgListShow;
         if (!mProgListShow && isQuitShowPf) {
-            mProgHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    showPfInfo();
-                }
-            }, 300);
+            mProgHandler.postDelayed(this::showPfInfo, 300);
         }
     }
 
@@ -1839,17 +1712,6 @@ public class Topmost extends BaseActivity {
         }
     }
 
-    private void toggleInstallationItem() {
-        boolean isShowInstallation = isShowInstallation();
-        mIvInstallationBack.setVisibility(isShowInstallation ? View.VISIBLE : View.GONE);
-        mTvInstallation.setText(getString(isShowInstallation ? R.string.back : R.string.Installation));
-        mItemManualInstallation.setVisibility(isShowInstallation ? View.VISIBLE : View.GONE);
-        mItemBlindScan.setVisibility(isShowInstallation ? View.VISIBLE : View.GONE);
-        mItemEpg.setVisibility(isShowInstallation ? View.GONE : View.VISIBLE);
-        mItemChannelManage.setVisibility(isShowInstallation ? View.GONE : View.VISIBLE);
-        mItemDtvSetting.setVisibility(isShowInstallation ? View.GONE : View.VISIBLE);
-        mItemDataReset.setVisibility(isShowInstallation ? View.GONE : View.VISIBLE);
-    }
 
     private void toggleChannelManageItem() {
         boolean isShowChannelManage = isShowChannelManageItem();
@@ -1866,20 +1728,12 @@ public class Topmost extends BaseActivity {
         mItemDataReset.setVisibility(isShowChannelManage ? View.GONE : View.VISIBLE);
     }
 
-    private boolean isShowInstallation() {
-        return mIvInstallationBack.getVisibility() == View.GONE;
-    }
-
     private boolean isShowChannelManageItem() {
         return mIvChannelManageBack.getVisibility() == View.GONE;
     }
 
     private void restoreMenuItem() {
         mItemInstallation.setVisibility(View.VISIBLE);
-        mIvInstallationBack.setVisibility(View.GONE);
-        mTvInstallation.setText(getString(R.string.Installation));
-        mItemManualInstallation.setVisibility(View.GONE);
-        mItemBlindScan.setVisibility(View.GONE);
         mItemEpg.setVisibility(View.VISIBLE);
         mItemChannelManage.setVisibility(View.VISIBLE);
         mIvChannelManageBack.setVisibility(View.GONE);
@@ -2185,10 +2039,6 @@ public class Topmost extends BaseActivity {
                     mItemInstallation.requestFocus();
                     return true;
                 }
-                if (mItemBlindScan.isFocused()) {
-                    mItemInstallation.requestFocus();
-                    return true;
-                }
                 if (mItemBackupUserData.isFocused()) {
                     mItemChannelManage.requestFocus();
                     return true;
@@ -2200,12 +2050,8 @@ public class Topmost extends BaseActivity {
         // menu显示
         if (mMenuShow && event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP) {
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                if (mItemInstallation.isFocused() && mIvInstallationBack.getVisibility() == View.GONE) {
+                if (mItemInstallation.isFocused()) {
                     mItemDataReset.requestFocus();
-                    return true;
-                }
-                if (mItemInstallation.isFocused() && mIvInstallationBack.getVisibility() == View.VISIBLE) {
-                    mItemBlindScan.requestFocus();
                     return true;
                 }
                 if (mItemChannelManage.isFocused() && mIvChannelManageBack.getVisibility() == View.VISIBLE) {
