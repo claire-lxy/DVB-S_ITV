@@ -2046,6 +2046,10 @@ public class Topmost extends BaseActivity {
             } else if (isPfBarShowing()) {
                 mTvProgNum.setVisibility(View.INVISIBLE);
                 dismissPfBarScanDialog();
+            } else if (mIvChannelManageBack.getVisibility() == View.VISIBLE) {
+                //在channelManage界面按“Back”返回menu菜单
+                mMenuShow = false;
+                toggleMenu();
             } else {
                 showExitDialog();
             }
