@@ -1676,7 +1676,7 @@ public class Topmost extends BaseActivity {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        if (mMenuShow || (!mMenuShow && !isShowChannelManageItem()))
+                        if (mMenuShow)
                             restoreMenuItem();// menu隐藏动画执行结束，恢复menu的item显示
                         mMenuShow = !mMenuShow;
 
@@ -1896,8 +1896,7 @@ public class Topmost extends BaseActivity {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (mMenuShow && (mIvChannelManageBack.getVisibility() == View.VISIBLE)) {
                 //在channelManage界面按“Back”返回menu菜单
-                mMenuShow = false;
-                toggleMenu();
+                restoreMenuItem();
             } else if (mProgListShow) {
                 toggleProgList();
             } else if (isPfBarShowing()) {
