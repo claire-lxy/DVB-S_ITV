@@ -3,6 +3,7 @@ package com.konkawise.dtv.ui;
 import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -818,24 +819,26 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
         if (mCurrentDiSEqCMode == DISEQC_MODE_UNICABLE) {
             if (is4SCRUnicable()) {
                 mSatInfo.unicConfig.UnicEnable = Constants.SatInfoValue.UNICABLE_SCR_ENABLE;
-                mSatInfo.unicConfig.SCRType = Constants.SatInfoValue.SCR_4;
-                mSatInfo.unicConfig.SCRNO = mCurrentChannel;
                 mSatInfo.unicConfig.SatPosition = !isMultiSat() ? Constants.SatInfoValue.SINGLE_SAT_POSITION :
                         (mCurrentPosition == 0 ? Constants.SatInfoValue.MULTI_SAT_POSITION_A : Constants.SatInfoValue.MULTI_SAT_POSITION_B);
+                mSatInfo.unicConfig.SCRType = Constants.SatInfoValue.SCR_4;
+                mSatInfo.unicConfig.SCRNO = mCurrentChannel;
                 mSatInfo.unicConfig.SCR4UBand.clear();
                 mSatInfo.unicConfig.SCR4UBand.addAll(getSaveFrequencyList(mFrequency4SCRArray));
             } else if (is8SCRUnicable()) {
                 mSatInfo.unicConfig.UnicEnable = Constants.SatInfoValue.UNICABLE_SCR_ENABLE;
-                mSatInfo.unicConfig.SCRType = Constants.SatInfoValue.SCR_8;
-                mSatInfo.unicConfig.SCRNO = mCurrentChannel;
                 mSatInfo.unicConfig.SatPosition = !isMultiSat() ? Constants.SatInfoValue.SINGLE_SAT_POSITION :
                         (mCurrentPosition == 0 ? Constants.SatInfoValue.MULTI_SAT_POSITION_A : Constants.SatInfoValue.MULTI_SAT_POSITION_B);
+                mSatInfo.unicConfig.SCRType = Constants.SatInfoValue.SCR_8;
+                mSatInfo.unicConfig.SCRNO = mCurrentChannel;
                 mSatInfo.unicConfig.SCR8UBand.clear();
                 mSatInfo.unicConfig.SCR8UBand.addAll(getSaveFrequencyList(mFrequency8SCRArray));
             } else if (mCurrentUnicable == UNICABLE_DCSS) {
                 mSatInfo.unicConfig.UnicEnable = Constants.SatInfoValue.UNICABLE_DCSS_ENABLE;
-                mSatInfo.unicConfig.dCSSNO = mCurrentChannel;
                 mSatInfo.unicConfig.SatPosition = Constants.SatInfoValue.SINGLE_SAT_POSITION;
+                mSatInfo.unicConfig.SCRType = 0;
+                mSatInfo.unicConfig.SCRNO = 0;
+                mSatInfo.unicConfig.dCSSNO = mCurrentChannel;
                 mSatInfo.unicConfig.dCSSUBand.clear();
                 mSatInfo.unicConfig.dCSSUBand.addAll(getSaveFrequencyList(mFrequencyDCSSArray));
             }
@@ -1304,10 +1307,16 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     }
 
     private int getCurrPosition(HProg_Struct_SatInfo satInfo) {
-        if (satInfo.unicConfig.UnicEnable == Constants.SatInfoValue.UNICABLE_SCR_ENABLE && satInfo.unicConfig.SCRType == Constants.SatInfoValue.SCR_8) {
-            return mSatInfo.unicConfig.SatPosition == Constants.SatInfoValue.MULTI_SAT_POSITION_A ? 0 : 1;
+        if (satInfo.unicConfig.UnicEnable == Constants.SatInfoValue.UNICABLE_SCR_ENABLE) {
+            if (mSatInfo.unicConfig.SatPosition == Constants.SatInfoValue.SINGLE_SAT_POSITION) {
+                return Constants.SatInfoValue.SINGLE_SAT_POSITION;
+            } else if (mSatInfo.unicConfig.SatPosition == Constants.SatInfoValue.MULTI_SAT_POSITION_A) {
+                return Constants.SatInfoValue.MULTI_SAT_POSITION_A - 1; // position显示索引要与实际值-1
+            } else if (mSatInfo.unicConfig.SatPosition == Constants.SatInfoValue.MULTI_SAT_POSITION_B) {
+                return Constants.SatInfoValue.MULTI_SAT_POSITION_B - 1;
+            }
         }
-        return 0;
+        return Constants.SatInfoValue.SINGLE_SAT_POSITION;
     }
 
     private int getCurrChannel(HProg_Struct_SatInfo satInfo) {
