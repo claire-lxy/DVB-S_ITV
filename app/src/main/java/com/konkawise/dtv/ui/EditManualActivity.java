@@ -1307,7 +1307,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     }
 
     private int getCurrPosition(HProg_Struct_SatInfo satInfo) {
-        if (satInfo.unicConfig.UnicEnable == Constants.SatInfoValue.UNICABLE_SCR_ENABLE && satInfo.unicConfig.SCRType == Constants.SatInfoValue.SCR_8) {
+        if (satInfo.unicConfig.UnicEnable == Constants.SatInfoValue.UNICABLE_SCR_ENABLE) {
             if (mSatInfo.unicConfig.SatPosition == Constants.SatInfoValue.SINGLE_SAT_POSITION) {
                 return Constants.SatInfoValue.SINGLE_SAT_POSITION;
             } else if (mSatInfo.unicConfig.SatPosition == Constants.SatInfoValue.MULTI_SAT_POSITION_A) {
