@@ -87,7 +87,9 @@ public class Utils {
         // SatPosition>=1, SCRType=0, 2Sat4SCR
         // SatPosition>=1, SCRType=1, 2Sat8SCR
         String[] unicableArray = context.getResources().getStringArray(R.array.unicable);
-        if (satInfo.unicConfig.SatPosition == Constants.SatInfoValue.SINGLE_SAT_POSITION && satInfo.unicConfig.SCRType == Constants.SatInfoValue.SCR_4) {
+        if (satInfo.unicConfig.UnicEnable == Constants.SatInfoValue.UNICABLE_DCSS_ENABLE) {
+            return unicableArray[4];
+        } else if (satInfo.unicConfig.SatPosition == Constants.SatInfoValue.SINGLE_SAT_POSITION && satInfo.unicConfig.SCRType == Constants.SatInfoValue.SCR_4) {
             return unicableArray[0];
         } else if (satInfo.unicConfig.SatPosition == Constants.SatInfoValue.SINGLE_SAT_POSITION && satInfo.unicConfig.SCRType == Constants.SatInfoValue.SCR_8) {
             return unicableArray[1];
@@ -95,9 +97,8 @@ public class Utils {
             return unicableArray[2];
         } else if (satInfo.unicConfig.SatPosition >= Constants.SatInfoValue.MULTI_SAT_POSITION_A && satInfo.unicConfig.SCRType == Constants.SatInfoValue.SCR_8) {
             return unicableArray[3];
-        } else {
-            return unicableArray[4];
         }
+        return context.getString(R.string.off);
     }
 
     public static String getOFFOrToneBurst(Context context, HProg_Struct_SatInfo satInfo) {
