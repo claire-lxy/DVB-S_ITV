@@ -149,7 +149,7 @@
     <string name="restore_channel">Restore User Data</string>
     <string name="backup_channel">Backup User Data</string>
     <string name="data_reset">Data Reset</string>
-    <string name="Channel_management">Channel Manager</string>
+    <string name="Channel_management">Channel Management</string>
     <string name="dtv_setting">DTV Setting</string>
 
     <!--activity_blind_select.xml-->

@@ -153,6 +153,9 @@ public class Topmost extends BaseActivity {
     @BindView(R.id.tv_channel_manage)
     TextView mTvChannelManage;
 
+    @BindView(R.id.title_channel_manage)
+    TextView mTitleChannelManage;
+
     @BindView(R.id.item_channel_edit)
     TextView mItemChannelEdit;
 
@@ -169,13 +172,16 @@ public class Topmost extends BaseActivity {
     TextView mItemBackupUserData;
 
     @BindView(R.id.item_dtv_setting)
-    TextView mItemDtvSetting;
+    ViewGroup mItemDtvSetting;
 
     @BindView(R.id.iv_dtv_setting_back)
     ImageView mIvDTVSettingBack;
 
     @BindView(R.id.tv_dtv_setting)
     TextView mTvDTVSetting;
+
+    @BindView(R.id.title_dtv_setting)
+    TextView mTitleDTVSetting;
 
     @BindView(R.id.item_general_settings)
     TextView mItemGeneralSettings;
@@ -249,7 +255,11 @@ public class Topmost extends BaseActivity {
                 showRemindSearchDialog();
             }
         } else {
+            if (mTvChannelManage.getText().toString().equals("Back")) {
+                mItemChannelManage.requestFocus();
+            }
             toggleChannelManageItem();
+            mItemChannelEdit.requestFocus();
         }
     }
 
@@ -307,7 +317,11 @@ public class Topmost extends BaseActivity {
 
     @OnClick(R.id.item_dtv_setting)
     void dtvSetting() {
+        if (mTvDTVSetting.getText().toString().equals("Back")) {
+            mItemDtvSetting.requestFocus();
+        }
         toggleDTVSettingItem();
+        mItemGeneralSettings.requestFocus();
     }
 
     @OnClick(R.id.item_general_settings)
@@ -1792,6 +1806,8 @@ public class Topmost extends BaseActivity {
         boolean isShowChannelManage = isShowChannelManageItem();
         mItemInstallation.setVisibility(isShowChannelManage ? View.GONE : View.VISIBLE);
         mItemEpg.setVisibility(isShowChannelManage ? View.GONE : View.VISIBLE);
+        mItemDtvSetting.setVisibility(isShowChannelManage ? View.GONE : View.VISIBLE);
+        mItemDataReset.setVisibility(isShowChannelManage ? View.GONE : View.VISIBLE);
         mIvChannelManageBack.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
         mTvChannelManage.setText(getString(isShowChannelManage ? R.string.back : R.string.Channel_management));
         if (isShowChannelManage) mItemChannelEdit.requestFocus();
@@ -1800,8 +1816,7 @@ public class Topmost extends BaseActivity {
         mItemClearChannel.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
         mItemRestoreUserData.setVisibility(isShowChannelManage && DTVProgramManager.getInstance().isProgCanPlay() ? View.VISIBLE : View.GONE);
         mItemBackupUserData.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
-        mItemDtvSetting.setVisibility(isShowChannelManage ? View.GONE : View.VISIBLE);
-        mItemDataReset.setVisibility(isShowChannelManage ? View.GONE : View.VISIBLE);
+        mTitleChannelManage.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
     }
 
     private boolean isShowChannelManageItem() {
@@ -1813,6 +1828,7 @@ public class Topmost extends BaseActivity {
         mItemInstallation.setVisibility(isShowDTVSetting ? View.GONE : View.VISIBLE);
         mItemEpg.setVisibility(isShowDTVSetting ? View.GONE : View.VISIBLE);
         mItemChannelManage.setVisibility(isShowDTVSetting ? View.GONE : View.VISIBLE);
+        mItemDataReset.setVisibility(isShowDTVSetting ? View.GONE : View.VISIBLE);
         mIvDTVSettingBack.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
         mTvDTVSetting.setText(isShowDTVSetting ? R.string.back : R.string.dtv_setting);
         if (isShowDTVSetting) mItemGeneralSettings.requestFocus();
@@ -1822,6 +1838,7 @@ public class Topmost extends BaseActivity {
         mItemPVRSettings.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
         mItemBookList.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
         mItemRecordList.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
+        mTitleDTVSetting.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
     }
 
     private boolean isShowDTVSettingItem() {
@@ -1832,15 +1849,25 @@ public class Topmost extends BaseActivity {
         mItemInstallation.setVisibility(View.VISIBLE);
         mItemEpg.setVisibility(View.VISIBLE);
         mItemChannelManage.setVisibility(View.VISIBLE);
+        mItemDtvSetting.setVisibility(View.VISIBLE);
+        mItemDataReset.setVisibility(View.VISIBLE);
         mIvChannelManageBack.setVisibility(View.GONE);
         mTvChannelManage.setText(getString(R.string.Channel_management));
+        mTvDTVSetting.setText(getString(R.string.dtv_setting));
         mItemChannelEdit.setVisibility(View.GONE);
         mItemChannelFavorite.setVisibility(View.GONE);
         mItemClearChannel.setVisibility(View.GONE);
         mItemRestoreUserData.setVisibility(View.GONE);
         mItemBackupUserData.setVisibility(View.GONE);
-        mItemDtvSetting.setVisibility(View.VISIBLE);
-        mItemDataReset.setVisibility(View.VISIBLE);
+        mIvDTVSettingBack.setVisibility(View.GONE);
+        mItemGeneralSettings.setVisibility(View.GONE);
+        mItemT2Settings.setVisibility(View.GONE);
+        mItemParentalControl.setVisibility(View.GONE);
+        mItemPVRSettings.setVisibility(View.GONE);
+        mItemBookList.setVisibility(View.GONE);
+        mItemRecordList.setVisibility(View.GONE);
+        mTitleDTVSetting.setVisibility(View.GONE);
+        mTitleChannelManage.setVisibility(View.GONE);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -2150,8 +2177,12 @@ public class Topmost extends BaseActivity {
                     mItemInstallation.requestFocus();
                     return true;
                 }
-                if (mItemBackupUserData.isFocused()) {
-                    mItemChannelManage.requestFocus();
+                if (mItemChannelManage.isFocused() && mIvChannelManageBack.getVisibility() == View.VISIBLE) {
+                    mItemChannelEdit.requestFocus();
+                    return true;
+                }
+                if (mItemDtvSetting.isFocused() && mIvDTVSettingBack.getVisibility() == View.VISIBLE) {
+                    mItemGeneralSettings.requestFocus();
                     return true;
                 }
             }
@@ -2165,8 +2196,12 @@ public class Topmost extends BaseActivity {
                     mItemDataReset.requestFocus();
                     return true;
                 }
-                if (mItemChannelManage.isFocused() && mIvChannelManageBack.getVisibility() == View.VISIBLE) {
-                    mItemBackupUserData.requestFocus();
+                if (mItemChannelEdit.isFocused() && mIvChannelManageBack.getVisibility() == View.VISIBLE) {
+                    mItemChannelManage.requestFocus();
+                    return true;
+                }
+                if (mItemGeneralSettings.isFocused() && mIvDTVSettingBack.getVisibility() == View.VISIBLE) {
+                    mItemDtvSetting.requestFocus();
                     return true;
                 }
             }

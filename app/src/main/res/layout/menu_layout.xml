@@ -41,34 +41,16 @@
             android:paddingLeft="40dp"
             android:text="@string/epg" />
 
-        <LinearLayout
-            android:id="@+id/item_channel_manage"
+        <TextView
+            android:id="@+id/title_channel_manage"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
+            android:layout_height="36dp"
             android:background="@drawable/dvb_btn_selector"
-            android:focusable="true"
             android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingLeft="40dp">
-
-            <ImageView
-                android:id="@+id/iv_channel_manage_back"
-                android:layout_width="wrap_content"
-                android:layout_height="10dp"
-                android:src="@mipmap/back"
-                android:visibility="gone"
-                tools:ignore="ContentDescription" />
-
-            <TextView
-                android:id="@+id/tv_channel_manage"
-                android:layout_width="match_parent"
-                android:layout_height="36dp"
-                android:background="@drawable/dvb_btn_selector"
-                android:focusable="true"
-                android:gravity="center_vertical"
-                android:text="@string/Channel_management"
-                android:textSize="15sp" />
-        </LinearLayout>
+            android:paddingLeft="40dp"
+            android:text="@string/Channel_management"
+            android:textSize="15sp"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/item_channel_edit"
@@ -131,7 +113,7 @@
             android:visibility="gone" />
 
         <LinearLayout
-            android:id="@+id/item_dtv_setting"
+            android:id="@+id/item_channel_manage"
             android:layout_width="match_parent"
             android:layout_height="40dp"
             android:background="@drawable/dvb_btn_selector"
@@ -141,7 +123,7 @@
             android:paddingLeft="40dp">
 
             <ImageView
-                android:id="@+id/iv_dtv_setting_back"
+                android:id="@+id/iv_channel_manage_back"
                 android:layout_width="wrap_content"
                 android:layout_height="10dp"
                 android:src="@mipmap/back"
@@ -149,15 +131,26 @@
                 tools:ignore="ContentDescription" />
 
             <TextView
-                android:id="@+id/tv_dtv_setting"
+                android:id="@+id/tv_channel_manage"
                 android:layout_width="match_parent"
                 android:layout_height="36dp"
                 android:background="@drawable/dvb_btn_selector"
                 android:focusable="true"
                 android:gravity="center_vertical"
-                android:text="@string/dtv_setting"
+                android:text="@string/Channel_management"
                 android:textSize="15sp" />
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/title_dtv_setting"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:background="@drawable/dvb_btn_selector"
+            android:gravity="center_vertical"
+            android:paddingLeft="40dp"
+            android:text="@string/dtv_setting"
+            android:textSize="15sp"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/item_general_settings"
@@ -230,6 +223,35 @@
             android:text="@string/record_list"
             android:textSize="15sp"
             android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/item_dtv_setting"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@drawable/dvb_btn_selector"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingLeft="40dp">
+
+            <ImageView
+                android:id="@+id/iv_dtv_setting_back"
+                android:layout_width="wrap_content"
+                android:layout_height="10dp"
+                android:src="@mipmap/back"
+                android:visibility="gone"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_dtv_setting"
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:background="@drawable/dvb_btn_selector"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:text="@string/dtv_setting"
+                android:textSize="15sp" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/item_data_reset"
