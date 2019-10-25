@@ -836,21 +836,12 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
             } else if (mCurrentUnicable == UNICABLE_DCSS) {
                 mSatInfo.unicConfig.UnicEnable = Constants.SatInfoValue.UNICABLE_DCSS_ENABLE;
                 mSatInfo.unicConfig.SatPosition = Constants.SatInfoValue.SINGLE_SAT_POSITION;
-                mSatInfo.unicConfig.SCRType = 0;
-                mSatInfo.unicConfig.SCRNO = 0;
                 mSatInfo.unicConfig.dCSSNO = mCurrentChannel;
                 mSatInfo.unicConfig.dCSSUBand.clear();
                 mSatInfo.unicConfig.dCSSUBand.addAll(getSaveFrequencyList(mFrequencyDCSSArray));
             }
         } else {
             mSatInfo.unicConfig.UnicEnable = 0;
-            mSatInfo.unicConfig.SCRType = 0;
-            mSatInfo.unicConfig.SCRNO = 0;
-            mSatInfo.unicConfig.dCSSNO = 0;
-            mSatInfo.unicConfig.SatPosition = 0;
-            mSatInfo.unicConfig.SCR4UBand.clear();
-            mSatInfo.unicConfig.SCR8UBand.clear();
-            mSatInfo.unicConfig.dCSSUBand.clear();
         }
     }
 
