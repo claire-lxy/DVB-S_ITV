@@ -130,16 +130,106 @@
             android:textSize="15sp"
             android:visibility="gone" />
 
-        <TextView
+        <LinearLayout
             android:id="@+id/item_dtv_setting"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@drawable/dvb_btn_selector"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingLeft="40dp">
+
+            <ImageView
+                android:id="@+id/iv_dtv_setting_back"
+                android:layout_width="wrap_content"
+                android:layout_height="10dp"
+                android:src="@mipmap/back"
+                android:visibility="gone"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_dtv_setting"
+                android:layout_width="match_parent"
+                android:layout_height="36dp"
+                android:background="@drawable/dvb_btn_selector"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:text="@string/dtv_setting"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/item_general_settings"
             android:layout_width="match_parent"
             android:layout_height="36dp"
             android:background="@drawable/dvb_btn_selector"
             android:focusable="true"
             android:gravity="center_vertical"
             android:paddingLeft="40dp"
-            android:text="@string/dtv_setting"
-            android:textSize="15sp" />
+            android:text="@string/general_setting"
+            android:textSize="15sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/item_t2_settings"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:background="@drawable/dvb_btn_selector"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:paddingLeft="40dp"
+            android:text="@string/t2_setting"
+            android:textSize="15sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/item_parental_control"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:background="@drawable/dvb_btn_selector"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:paddingLeft="40dp"
+            android:text="@string/parental_control"
+            android:textSize="15sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/item_pvr_settings"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:background="@drawable/dvb_btn_selector"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:paddingLeft="40dp"
+            android:text="@string/pvr_settings"
+            android:textSize="15sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/item_book_list"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:background="@drawable/dvb_btn_selector"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:paddingLeft="40dp"
+            android:text="@string/book_list"
+            android:textSize="15sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/item_record_list"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:background="@drawable/dvb_btn_selector"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:paddingLeft="40dp"
+            android:text="@string/record_list"
+            android:textSize="15sp"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/item_data_reset"

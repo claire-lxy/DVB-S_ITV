@@ -171,6 +171,30 @@ public class Topmost extends BaseActivity {
     @BindView(R.id.item_dtv_setting)
     TextView mItemDtvSetting;
 
+    @BindView(R.id.iv_dtv_setting_back)
+    ImageView mIvDTVSettingBack;
+
+    @BindView(R.id.tv_dtv_setting)
+    TextView mTvDTVSetting;
+
+    @BindView(R.id.item_general_settings)
+    TextView mItemGeneralSettings;
+
+    @BindView(R.id.item_t2_settings)
+    TextView mItemT2Settings;
+
+    @BindView(R.id.item_parental_control)
+    TextView mItemParentalControl;
+
+    @BindView(R.id.item_pvr_settings)
+    TextView mItemPVRSettings;
+
+    @BindView(R.id.item_book_list)
+    TextView mItemBookList;
+
+    @BindView(R.id.item_record_list)
+    TextView mItemRecordList;
+
     @BindView(R.id.item_data_reset)
     TextView mItemDataReset;
 
@@ -283,7 +307,58 @@ public class Topmost extends BaseActivity {
 
     @OnClick(R.id.item_dtv_setting)
     void dtvSetting() {
-        startActivity(new Intent(this, DTVSettingActivity.class));
+        toggleDTVSettingItem();
+    }
+
+    @OnClick(R.id.item_general_settings)
+    void generalSettings() {
+        Intent intent = new Intent(this, GeneralSettingsActivity.class);
+        startActivity(intent);
+    }
+
+    @OnClick(R.id.item_t2_settings)
+    void t2Settings() {
+        startActivity(new Intent(this, T2SettingsActivity.class));
+    }
+
+    @OnClick(R.id.item_parental_control)
+    void parentalControl() {
+        showParentalControlPasswordDialog();
+    }
+
+    private void showParentalControlPasswordDialog() {
+        new PasswordDialog()
+                .setInvalidClose(true)
+                .setOnPasswordInputListener(new PasswordDialog.OnPasswordInputListener() {
+                    @Override
+                    public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
+                        if (isValid) {
+                            Intent intent = new Intent(Topmost.this, ParentalControlActivity.class);
+                            startActivity(intent);
+                        } else {
+                            ToastUtils.showToast(R.string.toast_invalid_password);
+                        }
+                    }
+                }).show(getSupportFragmentManager(), PasswordDialog.TAG);
+    }
+
+    @OnClick(R.id.item_pvr_settings)
+    void PVRSettings() {
+        startActivity(new Intent(this, PVRSettingActivity.class));
+    }
+
+    @OnClick(R.id.item_book_list)
+    void BookList() {
+        if (getProgList().isEmpty()) {
+            ToastUtils.showToast(R.string.dialog_no_search);
+            return;
+        }
+        startActivity(new Intent(this, BookListActivity.class));
+    }
+
+    @OnClick(R.id.item_record_list)
+    void recordList() {
+        startActivity(new Intent(this, RecordListActivity.class));
     }
 
     @OnClick(R.id.item_data_reset)
@@ -1676,8 +1751,7 @@ public class Topmost extends BaseActivity {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        if (mMenuShow)
-                            restoreMenuItem();// menu隐藏动画执行结束，恢复menu的item显示
+                        if (mMenuShow) restoreMenuItem();// menu隐藏动画执行结束，恢复menu的item显示
                         mMenuShow = !mMenuShow;
 
                         if (!mMenuShow) {
@@ -1720,6 +1794,7 @@ public class Topmost extends BaseActivity {
         mItemEpg.setVisibility(isShowChannelManage ? View.GONE : View.VISIBLE);
         mIvChannelManageBack.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
         mTvChannelManage.setText(getString(isShowChannelManage ? R.string.back : R.string.Channel_management));
+        if (isShowChannelManage) mItemChannelEdit.requestFocus();
         mItemChannelEdit.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
         mItemChannelFavorite.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
         mItemClearChannel.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
@@ -1731,6 +1806,26 @@ public class Topmost extends BaseActivity {
 
     private boolean isShowChannelManageItem() {
         return mIvChannelManageBack.getVisibility() == View.GONE;
+    }
+
+    private void toggleDTVSettingItem() {
+        boolean isShowDTVSetting = isShowDTVSettingItem();
+        mItemInstallation.setVisibility(isShowDTVSetting ? View.GONE : View.VISIBLE);
+        mItemEpg.setVisibility(isShowDTVSetting ? View.GONE : View.VISIBLE);
+        mItemChannelManage.setVisibility(isShowDTVSetting ? View.GONE : View.VISIBLE);
+        mIvDTVSettingBack.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
+        mTvDTVSetting.setText(isShowDTVSetting ? R.string.back : R.string.dtv_setting);
+        if (isShowDTVSetting) mItemGeneralSettings.requestFocus();
+        mItemGeneralSettings.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
+        mItemT2Settings.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
+        mItemParentalControl.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
+        mItemPVRSettings.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
+        mItemBookList.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
+        mItemRecordList.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
+    }
+
+    private boolean isShowDTVSettingItem() {
+        return mIvDTVSettingBack.getVisibility() == View.GONE;
     }
 
     private void restoreMenuItem() {
@@ -1895,8 +1990,13 @@ public class Topmost extends BaseActivity {
 
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (mMenuShow && (mIvChannelManageBack.getVisibility() == View.VISIBLE)) {
-                //在channelManage界面按“Back”返回menu菜单
+                //在channelManage界面按BACK返回menu菜单
                 restoreMenuItem();
+                mItemChannelManage.requestFocus();
+            } else if (mMenuShow && (mIvDTVSettingBack.getVisibility() == View.VISIBLE)) {
+                //在dtv setting界面按BACK返回menu菜单
+                restoreMenuItem();
+                mItemDtvSetting.requestFocus();
             } else if (mProgListShow) {
                 toggleProgList();
             } else if (isPfBarShowing()) {
