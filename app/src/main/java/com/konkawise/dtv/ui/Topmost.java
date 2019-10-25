@@ -1981,11 +1981,22 @@ public class Topmost extends BaseActivity {
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         // 没有节目，不处理节目切换
-        if (mProgListAdapter.getCount() <= 0 && !mMenuShow) {
+        if (mProgListAdapter.getCount() <= 0) {
             if (isUnInterceptEventWhenProgEmpty(event)) {
                 return super.dispatchKeyEvent(event);
             }
-            return true;
+            if (mMenuShow) {
+                int keyCode = event.getKeyCode();
+                if (keyCode != KeyEvent.KEYCODE_DPAD_UP &&
+                        keyCode != KeyEvent.KEYCODE_DPAD_DOWN &&
+                        keyCode != KeyEvent.KEYCODE_DPAD_LEFT &&
+                        keyCode != KeyEvent.KEYCODE_DPAD_RIGHT &&
+                        keyCode != KeyEvent.KEYCODE_DPAD_CENTER) {
+                    return true;
+                }
+            } else {
+                return true;
+            }
         }
 
         // 如果处于booking录制状态，拦截提示退出
