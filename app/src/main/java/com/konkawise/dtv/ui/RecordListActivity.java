@@ -540,6 +540,8 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     @Override
     public void onUsbReceive(int usbObserveType, Set<UsbInfo> usbInfos, UsbInfo currUsbInfo) {
         ltHpvrRecFileTS = DTVPVRManager.getInstance().getRecordFileList(0, -1);
+        if (usbObserveType == Constants.UsbType.DETACH)
+            fMaps.clear();
 
         UsbInfo selectInfo = null;
         if (mUsbInfos != null && mUsbInfos.size() > 0)
