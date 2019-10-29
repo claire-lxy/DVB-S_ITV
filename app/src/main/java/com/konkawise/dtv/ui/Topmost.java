@@ -255,7 +255,8 @@ public class Topmost extends BaseActivity {
                 showRemindSearchDialog();
             }
         } else {
-            if (mTvChannelManage.getText().toString().equals("Back")) {
+            if (!isShowChannelManageItem()) {
+                //从ChannelManagement菜单返回Menu，ChannelManagement获取焦点
                 mItemChannelManage.requestFocus();
             }
             toggleChannelManageItem();
