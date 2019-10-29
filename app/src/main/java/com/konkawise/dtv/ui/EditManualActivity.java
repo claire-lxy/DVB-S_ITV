@@ -802,6 +802,7 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
 
     private void saveDiSEqCParam() {
         if (mSatInfo != null && mCurrentDiSEqCMode != DISEQC_MODE_UNICABLE) {
+            mSatInfo.unicConfig.UnicEnable = 0;
             mSatInfo.diseqc10_pos = getSaveDiSEqCPos();
             mSatInfo.diseqc10_tone = getSaveDiSEqCTone();
         }
