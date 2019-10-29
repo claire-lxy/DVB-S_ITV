@@ -317,7 +317,8 @@ public class Topmost extends BaseActivity {
 
     @OnClick(R.id.item_dtv_setting)
     void dtvSetting() {
-        if (mTvDTVSetting.getText().toString().equals("Back")) {
+        if (!isShowDTVSettingItem()) {
+            //从DTVSetting菜单返回Menu，DTVSetting获取焦点
             mItemDtvSetting.requestFocus();
         }
         toggleDTVSettingItem();
@@ -2016,11 +2017,11 @@ public class Topmost extends BaseActivity {
         }
 
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (mMenuShow && (mIvChannelManageBack.getVisibility() == View.VISIBLE)) {
+            if (mMenuShow && (isShowChannelManageItem())) {
                 //在channelManage界面按BACK返回menu菜单
                 restoreMenuItem();
                 mItemChannelManage.requestFocus();
-            } else if (mMenuShow && (mIvDTVSettingBack.getVisibility() == View.VISIBLE)) {
+            } else if (mMenuShow && (!isShowDTVSettingItem())) {
                 //在dtv setting界面按BACK返回menu菜单
                 restoreMenuItem();
                 mItemDtvSetting.requestFocus();
@@ -2177,11 +2178,11 @@ public class Topmost extends BaseActivity {
                     mItemInstallation.requestFocus();
                     return true;
                 }
-                if (mItemChannelManage.isFocused() && mIvChannelManageBack.getVisibility() == View.VISIBLE) {
+                if (mItemChannelManage.isFocused() && (!isShowChannelManageItem())) {
                     mItemChannelEdit.requestFocus();
                     return true;
                 }
-                if (mItemDtvSetting.isFocused() && mIvDTVSettingBack.getVisibility() == View.VISIBLE) {
+                if (mItemDtvSetting.isFocused() && (!isShowDTVSettingItem())) {
                     mItemGeneralSettings.requestFocus();
                     return true;
                 }
@@ -2196,11 +2197,11 @@ public class Topmost extends BaseActivity {
                     mItemDataReset.requestFocus();
                     return true;
                 }
-                if (mItemChannelEdit.isFocused() && mIvChannelManageBack.getVisibility() == View.VISIBLE) {
+                if (mItemChannelEdit.isFocused() && (!isShowChannelManageItem())) {
                     mItemChannelManage.requestFocus();
                     return true;
                 }
-                if (mItemGeneralSettings.isFocused() && mIvDTVSettingBack.getVisibility() == View.VISIBLE) {
+                if (mItemGeneralSettings.isFocused() && (!isShowDTVSettingItem())) {
                     mItemDtvSetting.requestFocus();
                     return true;
                 }
