@@ -74,14 +74,19 @@ public class Constants {
         int USALS = 2;
     }
 
+    public interface SatIndex {
+        int S_START_INDEX = 0;
+        int T2 = -2;
+        int CABLE = -1;
+        int ALL_SAT_INDEX = -1000;
+    }
+
     public static final String SUBTITLE_NAME = "subtitleName";
     public static final String SUBTITLE_ORG_TYPE = "subtitleOrgType";
     public static final String SUBTITLE_TYPE = "subtitleType";
 
     public static final String RECORD_FILE_TYPE = "ts";
     public static final String RECORD_CONFIG_FILE_TYPE = ".idx";
-
-    public static final int T2_SATELLITE_INDEX = 0;
 
     public interface IntentKey {
         String INTENT_SATELLITE_INDEX = "satelliteIndex";

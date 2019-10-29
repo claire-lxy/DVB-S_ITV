@@ -34,18 +34,20 @@ public class DTVProgramManager {
     }
 
     /**
-     * 获取卫星列表，排除第一个T2的信号
+     * 获取卫星列表，只获取S2
      */
     public List<HProg_Struct_SatInfo> getSatList() {
         ArrayList<HProg_Struct_SatInfo> satelliteList = new ArrayList<>();
-        int satNum = DTVProg.getInstance().getSatNum(getCurrProgNo());
+        int satNum = DTVProg.getInstance().getSatNum(getCurrProgNo()) - 2; // 前两个卫星是T2和Cable，要排除
 
-        for (int i = 1; i < satNum; i++) {
-            satelliteList.add(getSatInfo(i));
+        for (int i = Constants.SatIndex.S_START_INDEX; i < satNum; i++) {
+            HProg_Struct_SatInfo satInfo = getSatInfo(i);
+            if (satInfo != null) {
+                satelliteList.add(satInfo);
+            }
         }
         return satelliteList;
     }
-
     /**
      * 根据卫星索引获取某个卫星的信息
      */
@@ -128,7 +130,7 @@ public class DTVProgramManager {
         if (ltTotalProgs == null || ltTotalProgs.size() == 0) {
             return ltSatProgs;
         }
-        if(satIndex == -1){
+        if(satIndex == Constants.SatIndex.ALL_SAT_INDEX){
             return ltTotalProgs;
         }
         for (HProg_Struct_ProgInfo progInfo : ltTotalProgs) {
@@ -350,7 +352,7 @@ public class DTVProgramManager {
         List<HProg_Struct_SatInfo> satList = getSatInfoList();
         if (satList != null) {
             HProg_Struct_SatInfo allSatInfo = new HProg_Struct_SatInfo();
-            allSatInfo.SatIndex = -1;
+            allSatInfo.SatIndex = Constants.SatIndex.ALL_SAT_INDEX;
             allSatInfo.sat_name = context.getString(R.string.all);
             satList.add(0, allSatInfo);
             return satList;
