@@ -1,9 +1,12 @@
 package com.konkawise.dtv.ui;
 
+import android.annotation.SuppressLint;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.support.annotation.RequiresApi;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -70,6 +73,8 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     private static final int SEEK_TYPE_LEFT = -1;
     private static final int SEEK_TYPE_NO = 0;
     private static final int SEEK_TYPE_RIGHT = 1;
+
+    private boolean mLongPress;
 
     @BindView(R.id.sv_record_player)
     SurfaceView svRecordPlayer;
@@ -201,6 +206,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
 
                 case MSG_STOP_PLAY:
                     DTVPVRManager.getInstance().stopPlay();
+                    Log.d(TAG,"dtv pvr stop play");
                     break;
 
                 case MSG_PLAY_SEEK:
@@ -241,7 +247,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     @Override
     protected void onPause() {
         super.onPause();
-        stop();
+        //stop();
         unregisterMsgEvent();
         if (playHandler != null) {
             removeUpgradeProgressMsg();
@@ -432,7 +438,8 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
                             .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
                                 @Override
                                 public void onPositiveListener() {
-
+                                    //先停止播放后再退出界面
+                                    stop();
                                     finish();
                                 }
                             }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
@@ -502,6 +509,72 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
                 return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+
+    //监听快进快退的长按键事件
+    @Override
+    public boolean onKeyLongPress(int keyCode, KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT || event.getKeyCode() == KeyEvent.KEYCODE_FORWARD ||
+                event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT || event.getKeyCode() == KeyEvent.KEYCODE_MEDIA_REWIND) {
+            mLongPress = true;
+            return true;
+        }
+        return super.onKeyLongPress(keyCode, event);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @SuppressLint("RestrictedApi")
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT || event.getKeyCode() == KeyEvent.KEYCODE_FORWARD) {
+            switch (event.getAction()) {
+                case KeyEvent.ACTION_DOWN:
+                    if (event.getRepeatCount() == 0) {
+                        mLongPress = false;
+                        event.startTracking();
+                    } else {
+                        mLongPress = true;
+                        recordSeekTypeNum(SEEK_TYPE_RIGHT);
+                        switchPlayTypeUI(TYPE_SEEK_FORWARD, seekNum);
+                        showControlUI(false);
+                    }
+                    break;
+                case KeyEvent.ACTION_UP:
+                    Message msg = pvrHandler.obtainMessage(PVRHandler.MSG_PLAY_SPEED);
+                    msg.arg1 = getSelectPosition(new int[]{1, 2, 4, 8, 16, 32, 64, 128}, seekNum) + 8;
+                    pvrHandler.sendMessage(msg);
+                    break;
+                default:
+                    break;
+            }
+            return true;
+        }
+
+        if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT || event.getKeyCode() == KeyEvent.KEYCODE_MEDIA_REWIND) {
+            switch (event.getAction()) {
+                case KeyEvent.ACTION_DOWN:
+                    if (event.getRepeatCount() == 0) {
+                        mLongPress = false;
+                        event.startTracking();
+                    } else {
+                        mLongPress = true;
+                        recordSeekTypeNum(SEEK_TYPE_LEFT);
+                        switchPlayTypeUI(TYPE_SEEK_BACK, seekNum);
+                        showControlUI(false);
+                    }
+                    break;
+                case KeyEvent.ACTION_UP:
+                    Message msg = pvrHandler.obtainMessage(PVRHandler.MSG_PLAY_SPEED);
+                    msg.arg1 = getSelectPosition(new int[]{1, 2, 4, 8, 16, 32, 64, 128}, seekNum);
+                    pvrHandler.sendMessage(msg);
+                    break;
+                default:
+                    break;
+            }
+            return true;
+        }
+        return super.superDispatchKeyEvent(event);
     }
 
     private void showAudioDialog() {
@@ -692,8 +765,9 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         }
         if (this.seekType == seekType) {
             if (this.seekNum == 32) {
-                this.seekType = SEEK_TYPE_NO;
-                this.seekNum = 1;
+                //快进倍数到达32时，保持此倍速
+//                this.seekType = SEEK_TYPE_NO;
+//                this.seekNum = 1;
                 return;
             }
             this.seekNum = this.seekNum * 2;
@@ -741,13 +815,13 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     }
 
     private void stop() {
-        Log.i(TAG, "stop");
         switchPlayTypeUI(TYPE_STOP, -1);
         showControlUI(false);
         if (from == FROM_TOPMOST)
             pvrHandler.sendEmptyMessage(PVRHandler.MSG_STOP_TIMESHIFT);
-        else
+        else {
             pvrHandler.sendEmptyMessage(PVRHandler.MSG_STOP_PLAY);
+        }
     }
 
     private void sendUpgradePrgressMsg(HandlerMsgModel progMsg) {

@@ -24,8 +24,11 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.konkawise.dtv.DTVCommonManager;
 import com.konkawise.dtv.Constants;
+import com.konkawise.dtv.DTVBookingManager;
+import com.konkawise.dtv.DTVCommonManager;
+import com.konkawise.dtv.DTVDVBManager;
+import com.konkawise.dtv.DTVPVRManager;
 import com.konkawise.dtv.DTVPlayerManager;
 import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.DTVSettingManager;
@@ -33,9 +36,6 @@ import com.konkawise.dtv.HandlerMsgManager;
 import com.konkawise.dtv.PreferenceManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.RealTimeManager;
-import com.konkawise.dtv.DTVBookingManager;
-import com.konkawise.dtv.DTVPVRManager;
-import com.konkawise.dtv.DTVDVBManager;
 import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.UsbManager;
 import com.konkawise.dtv.adapter.TvListAdapter;
@@ -90,14 +90,14 @@ import butterknife.OnClick;
 import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
-import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_TP;
-import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Group;
-import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Type;
-import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 import vendor.konka.hardware.dtvmanager.V1_0.HPlayer_Struct_Subtitle;
 import vendor.konka.hardware.dtvmanager.V1_0.HPlayer_Struct_Teletext;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Group;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Type;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_TP;
+import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 
 public class Topmost extends BaseActivity {
     private static final String TAG = "Topmost";
@@ -156,6 +156,9 @@ public class Topmost extends BaseActivity {
     @BindView(R.id.title_channel_manage)
     TextView mTitleChannelManage;
 
+    @BindView(R.id.channel_manage_title_divider)
+    View mChannelManageTitleDivider;
+
     @BindView(R.id.item_channel_edit)
     TextView mItemChannelEdit;
 
@@ -182,6 +185,9 @@ public class Topmost extends BaseActivity {
 
     @BindView(R.id.title_dtv_setting)
     TextView mTitleDTVSetting;
+
+    @BindView(R.id.dtv_setting_title_divider)
+    View mDtvSettingTitleDivider;
 
     @BindView(R.id.item_general_settings)
     TextView mItemGeneralSettings;
@@ -1819,6 +1825,7 @@ public class Topmost extends BaseActivity {
         mItemRestoreUserData.setVisibility(isShowChannelManage && DTVProgramManager.getInstance().isProgCanPlay() ? View.VISIBLE : View.GONE);
         mItemBackupUserData.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
         mTitleChannelManage.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
+        mChannelManageTitleDivider.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
     }
 
     private boolean isShowChannelManageItem() {
@@ -1841,6 +1848,7 @@ public class Topmost extends BaseActivity {
         mItemBookList.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
         mItemRecordList.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
         mTitleDTVSetting.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
+        mDtvSettingTitleDivider.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
     }
 
     private boolean isShowDTVSettingItem() {
