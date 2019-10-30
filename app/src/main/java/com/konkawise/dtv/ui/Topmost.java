@@ -212,11 +212,11 @@ public class Topmost extends BaseActivity {
     @OnItemClick(R.id.lv_prog_list)
     void onItemClick(int position) {
         toggleProgList();
-        if (mProgListAdapter.getItem(position).ProgNo == DTVProgramManager.getInstance().getCurrProgNo())
+        if (mProgListAdapter.getItem(position).ProgNo == getCurrProgNoLogic())
             return;
 
         DTVProgramManager.getInstance().setCurrProgType(DTVProgramManager.getInstance().getCurrProgType(), 0);
-        mProgListAdapter.setSelectPosition(position);
+        updateProgListSelectionByPosotion(position);
         playProg(mProgListAdapter.getItem(position).ProgNo);
     }
 
@@ -363,7 +363,8 @@ public class Topmost extends BaseActivity {
 
     @OnClick(R.id.item_book_list)
     void BookList() {
-        if (getProgList().isEmpty()) {
+        List<HProg_Struct_ProgInfo> progList = getProgList();
+        if (progList == null || progList.isEmpty()) {
             ToastUtils.showToast(R.string.dialog_no_search);
             return;
         }
@@ -956,7 +957,8 @@ public class Topmost extends BaseActivity {
                     }
 
                 } else {
-                    context.mProgListAdapter.updateData(new ArrayList<>());
+                    context.mProgListAdapter.clearData();
+//                    context.mProgListAdapter.updateData(new ArrayList<>());
                 }
             });
         }
@@ -1018,15 +1020,14 @@ public class Topmost extends BaseActivity {
             if (allSatList != null && !allSatList.isEmpty()) {
                 context.mSatList = new ArrayList<>(allSatList);
                 context.mCurrSatPosition = 0;
-                if (context.mCurrProgGroup == HProg_Enum_Group.WHOLE_GROUP) {
-                    context.mCurrSatPosition = 0;
-                } else {
-                    int i = 0;
-                    for (; i < allSatList.size(); i++) {
-                        if (context.mCurrProgGroup == HProg_Enum_Group.SAT_GROUP && context.mCurrProgGroupParams == allSatList.get(i).SatIndex) {
+                if (context.mCurrProgGroup != HProg_Enum_Group.WHOLE_GROUP) {
+                    for (int i = 0; i < allSatList.size(); i++) {
+                        if (context.mCurrProgGroup == HProg_Enum_Group.SAT_GROUP &&
+                                context.mCurrProgGroupParams == allSatList.get(i).SatIndex) {
                             context.mCurrSatPosition = i;
                             break;
-                        } else if (context.mCurrProgGroup == HProg_Enum_Group.FAV_GROUP && context.mCurrProgGroupParams == (allSatList.get(i).SatIndex - DTVProgramManager.RANGE_SAT_INDEX)) {
+                        } else if (context.mCurrProgGroup == HProg_Enum_Group.FAV_GROUP &&
+                                context.mCurrProgGroupParams == (allSatList.get(i).SatIndex - DTVProgramManager.RANGE_SAT_INDEX)) {
                             context.mCurrSatPosition = i;
                             break;
                         }
@@ -1053,8 +1054,9 @@ public class Topmost extends BaseActivity {
                     Log.i(TAG, "non handle book");
                     if (DTVProgramManager.getInstance().isProgCanPlay() && !DTVSettingManager.getInstance().isPasswordEmpty()) {
                         DTVProgramManager.getInstance().setCurrGroup(mCurrProgGroup, mCurrProgGroupParams);
-                        if (DTVProgramManager.getInstance().getCurrProgNo() >= 0)
-                            playProg(DTVProgramManager.getInstance().getCurrProgNo(), true);
+                        int progNo = getCurrProgNoLogic();
+                        if (progNo >= 0)
+                            playProg(progNo, true);
                     }
                 } else {
                     Log.i(TAG, "intent reset empty");
@@ -1113,10 +1115,9 @@ public class Topmost extends BaseActivity {
             int satIndex = satList.get(mCurrSatPosition).SatIndex;
             List<HProg_Struct_ProgInfo> progInfoList = mProgListMap.get(satIndex);
 
-            if (satIndex == -1) {
+            if (satIndex == Constants.SatIndex.ALL_SAT_INDEX) {
                 mCurrProgGroup = HProg_Enum_Group.WHOLE_GROUP;
                 mCurrProgGroupParams = 1;
-
             } else if (satIndex >= DTVProgramManager.RANGE_SAT_INDEX) {
                 mCurrProgGroup = HProg_Enum_Group.FAV_GROUP;
                 mCurrProgGroupParams = satIndex - DTVProgramManager.RANGE_SAT_INDEX;
@@ -1128,8 +1129,7 @@ public class Topmost extends BaseActivity {
             if (progInfoList != null && !progInfoList.isEmpty()) {
                 return progInfoList;
             }
-            int[] index = new int[1];
-            progInfoList = DTVProgramManager.getInstance().getCurrGroupProgInfoList(index);
+            progInfoList = DTVProgramManager.getInstance().getCurrGroupProgInfoList(new int[1]);
             mProgListMap.put(satIndex, progInfoList);
             return progInfoList;
         }
@@ -1175,6 +1175,13 @@ public class Topmost extends BaseActivity {
             currProgInfo.ProgNo = 0;
         }
         return currProgInfo.ProgNo;
+    }
+
+    /**
+     * 获取逻辑频道号，不区分频道分组
+     */
+    private int getCurrProgNoLogic() {
+        return DTVProgramManager.getInstance().getCurrProgNo();
     }
 
     /**
@@ -1469,7 +1476,7 @@ public class Topmost extends BaseActivity {
             if (isValid) {
                 Uri uri = Uri.parse("content://dvbchannellock/dvb_info/1");
                 getContentResolver().update(uri, null, null, null);
-                DTVPlayerManager.getInstance().startPlayProgNo(DTVProgramManager.getInstance().getCurrProgNo(), 0);
+                DTVPlayerManager.getInstance().startPlayProgNo(getCurrProgNoLogic(), 0);
             }
         }, playProgType -> {
             switch (playProgType) {
@@ -2136,14 +2143,14 @@ public class Topmost extends BaseActivity {
             if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN
                     && event.getAction() == KeyEvent.ACTION_DOWN
                     && ++mCurrSelectProgPosition >= mProgListAdapter.getCount()) {
-                mProgListView.setSelection(0);
+                updateProgListSelectionByPosotion(0);
                 return true;
             }
 
             if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP
                     && event.getAction() == KeyEvent.ACTION_DOWN
                     && --mCurrSelectProgPosition <= -1) {
-                mProgListView.setSelection(mProgListAdapter.getCount() - 1);
+                updateProgListSelectionByPosotion(mProgListAdapter.getCount() - 1);
                 return true;
             }
 
@@ -2232,7 +2239,7 @@ public class Topmost extends BaseActivity {
                     // 频道列表有数据时才弹出
                     if (!mProgListShow && mProgListAdapter.getCount() > 0) {
                         mProgListView.requestFocus();
-                        updateProgListSelectionByPosotion(mCurrSelectProgPosition);
+                        updateProgListSelectionByPosotion(getPositionByProgNum(getCurrProgNoLogic()));
                         toggleProgList();
                     } else {
                         return super.dispatchKeyEvent(event);
@@ -2268,7 +2275,7 @@ public class Topmost extends BaseActivity {
                     if (mProgListShow) {
                         return super.dispatchKeyEvent(event);
                     } else {
-                        if (mNewProgNum != DTVProgramManager.getInstance().getCurrProgNo()) {
+                        if (mNewProgNum != getCurrProgNoLogic()) {
                             if (mLongPressed) {
                                 mLongPressed = false;
                                 int position = getPositionByProgNum(mNewProgNum);
@@ -2314,7 +2321,7 @@ public class Topmost extends BaseActivity {
                     if (mProgListShow) {
                         return super.dispatchKeyEvent(event);
                     } else {
-                        if (mNewProgNum != DTVProgramManager.getInstance().getCurrProgNo()) {
+                        if (mNewProgNum != getCurrProgNoLogic()) {
                             if (mLongPressed) {
                                 mLongPressed = false;
                                 int position = getPositionByProgNum(mNewProgNum);

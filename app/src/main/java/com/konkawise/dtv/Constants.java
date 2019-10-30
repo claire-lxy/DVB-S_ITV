@@ -75,7 +75,9 @@ public class Constants {
     }
 
     public interface SatIndex {
-        int S_START_INDEX = 0;
+        int S_START_INDEX = 0; // 获取S卫星列表时的开始循环索引
+        int ALL_START_INDEX = -2; // 获取所有卫星列表时的开始循环索引
+        int EXCLUDE_SAT_NUM = -2; // 排除S后的其他卫星数量，目前只有T和C
         int T2 = -2;
         int CABLE = -1;
         int ALL_SAT_INDEX = -1000;
@@ -132,6 +134,7 @@ public class Constants {
     public interface PrefsKey {
         String LOCALE_TYPE = "localeType";
         String SAVE_CHANNEL = "channel";
+        String LOAD_SAT_TYPE = "loadSatType";
     }
 
     public interface SatInfoValue {

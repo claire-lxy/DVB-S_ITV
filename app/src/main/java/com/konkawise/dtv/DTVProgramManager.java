@@ -37,10 +37,14 @@ public class DTVProgramManager {
      * 获取卫星列表，只获取S2
      */
     public List<HProg_Struct_SatInfo> getSatList() {
-        ArrayList<HProg_Struct_SatInfo> satelliteList = new ArrayList<>();
-        int satNum = DTVProg.getInstance().getSatNum(getCurrProgNo()) - 2; // 前两个卫星是T2和Cable，要排除
+        return getSatList(true);
+    }
 
-        for (int i = Constants.SatIndex.S_START_INDEX; i < satNum; i++) {
+    public List<HProg_Struct_SatInfo> getSatList(boolean onlyS) {
+        ArrayList<HProg_Struct_SatInfo> satelliteList = new ArrayList<>();
+        int satNum = DTVProg.getInstance().getSatNum(getCurrProgNo()) + Constants.SatIndex.EXCLUDE_SAT_NUM;
+        int startIndex = onlyS ? Constants.SatIndex.S_START_INDEX : Constants.SatIndex.ALL_START_INDEX;
+        for (int i = startIndex; i < satNum; i++) {
             HProg_Struct_SatInfo satInfo = getSatInfo(i);
             if (satInfo != null) {
                 satelliteList.add(satInfo);
@@ -48,6 +52,7 @@ public class DTVProgramManager {
         }
         return satelliteList;
     }
+
     /**
      * 根据卫星索引获取某个卫星的信息
      */
@@ -56,7 +61,7 @@ public class DTVProgramManager {
     }
 
     /**
-     * 获取卫星列表，包含T2信号
+     * 获取所有卫星列表，T、C、S全部获取
      */
     public List<HProg_Struct_SatInfo> getSatInfoList() {
         return DTVProg.getInstance().getSatInfoList();
