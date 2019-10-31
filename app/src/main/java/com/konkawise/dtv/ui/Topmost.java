@@ -250,12 +250,12 @@ public class Topmost extends BaseActivity {
 
     @OnClick(R.id.item_channel_manage)
     void channelManage() {
-        if (DTVProgramManager.getInstance().getProgNumOfGroup(HProg_Enum_Group.TOTAL_GROUP, 0) <= 0 && isShowChannelManageItem()) {
+        if (DTVProgramManager.getInstance().getProgNumOfGroup(HProg_Enum_Group.TOTAL_GROUP, 0) <= 0 && !isShowingSecondChannelManageItem()) {
             if (mMenuShow) {
                 showRemindSearchDialog();
             }
         } else {
-            if (!isShowChannelManageItem()) {
+            if (isShowingSecondChannelManageItem()) {
                 //从ChannelManagement菜单返回Menu，ChannelManagement获取焦点
                 mItemChannelManage.requestFocus();
             }
@@ -318,7 +318,7 @@ public class Topmost extends BaseActivity {
 
     @OnClick(R.id.item_dtv_setting)
     void dtvSetting() {
-        if (!isShowDTVSettingItem()) {
+        if (isShowingSecondDTVSettingItem()) {
             //从DTVSetting菜单返回Menu，DTVSetting获取焦点
             mItemDtvSetting.requestFocus();
         }
@@ -1812,46 +1812,52 @@ public class Topmost extends BaseActivity {
 
 
     private void toggleChannelManageItem() {
-        boolean isShowChannelManage = isShowChannelManageItem();
-        mItemInstallation.setVisibility(isShowChannelManage ? View.GONE : View.VISIBLE);
-        mItemEpg.setVisibility(isShowChannelManage ? View.GONE : View.VISIBLE);
-        mItemDtvSetting.setVisibility(isShowChannelManage ? View.GONE : View.VISIBLE);
-        mItemDataReset.setVisibility(isShowChannelManage ? View.GONE : View.VISIBLE);
-        mIvChannelManageBack.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
-        mTvChannelManage.setText(getString(isShowChannelManage ? R.string.back : R.string.Channel_management));
-        if (isShowChannelManage) mItemChannelEdit.requestFocus();
-        mItemChannelEdit.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
-        mItemChannelFavorite.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
-        mItemClearChannel.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
-        mItemRestoreUserData.setVisibility(isShowChannelManage && DTVProgramManager.getInstance().isProgCanPlay() ? View.VISIBLE : View.GONE);
-        mItemBackupUserData.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
-        mTitleChannelManage.setVisibility(isShowChannelManage ? View.VISIBLE : View.GONE);
+        boolean isShowingSecondChannelManageItem = isShowingSecondChannelManageItem();
+        mItemInstallation.setVisibility(isShowingSecondChannelManageItem ? View.VISIBLE : View.GONE);
+        mItemEpg.setVisibility(isShowingSecondChannelManageItem ? View.VISIBLE : View.GONE);
+        mItemDtvSetting.setVisibility(isShowingSecondChannelManageItem ? View.VISIBLE : View.GONE);
+        mItemDataReset.setVisibility(isShowingSecondChannelManageItem ? View.VISIBLE : View.GONE);
+        mIvChannelManageBack.setVisibility(isShowingSecondChannelManageItem ? View.GONE : View.VISIBLE);
+        mTvChannelManage.setText(getString(isShowingSecondChannelManageItem ? R.string.Channel_management : R.string.back));
+        if (!isShowingSecondChannelManageItem) mItemChannelEdit.requestFocus();
+        mItemChannelEdit.setVisibility(isShowingSecondChannelManageItem ? View.GONE : View.VISIBLE);
+        mItemChannelFavorite.setVisibility(isShowingSecondChannelManageItem ? View.GONE : View.VISIBLE);
+        mItemClearChannel.setVisibility(isShowingSecondChannelManageItem ? View.GONE : View.VISIBLE);
+        mItemRestoreUserData.setVisibility(!isShowingSecondChannelManageItem && DTVProgramManager.getInstance().isProgCanPlay() ? View.VISIBLE : View.GONE);
+        mItemBackupUserData.setVisibility(isShowingSecondChannelManageItem ? View.GONE : View.VISIBLE);
+        mTitleChannelManage.setVisibility(isShowingSecondChannelManageItem ? View.GONE : View.VISIBLE);
     }
 
-    private boolean isShowChannelManageItem() {
-        return mIvChannelManageBack.getVisibility() == View.GONE;
+    /**
+     * 是否正在显示ChannelManage二级菜单
+     */
+    private boolean isShowingSecondChannelManageItem() {
+        return mIvChannelManageBack.getVisibility() == View.VISIBLE;
     }
 
     private void toggleDTVSettingItem() {
-        boolean isShowDTVSetting = isShowDTVSettingItem();
-        mItemInstallation.setVisibility(isShowDTVSetting ? View.GONE : View.VISIBLE);
-        mItemEpg.setVisibility(isShowDTVSetting ? View.GONE : View.VISIBLE);
-        mItemChannelManage.setVisibility(isShowDTVSetting ? View.GONE : View.VISIBLE);
-        mItemDataReset.setVisibility(isShowDTVSetting ? View.GONE : View.VISIBLE);
-        mIvDTVSettingBack.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
-        mTvDTVSetting.setText(isShowDTVSetting ? R.string.back : R.string.dtv_setting);
-        if (isShowDTVSetting) mItemGeneralSettings.requestFocus();
-        mItemGeneralSettings.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
-        mItemT2Settings.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
-        mItemParentalControl.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
-        mItemPVRSettings.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
-        mItemBookList.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
-        mItemRecordList.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
-        mTitleDTVSetting.setVisibility(isShowDTVSetting ? View.VISIBLE : View.GONE);
+        boolean isShowingSecondDTVSettingItem = isShowingSecondDTVSettingItem();
+        mItemInstallation.setVisibility(isShowingSecondDTVSettingItem ? View.VISIBLE : View.GONE);
+        mItemEpg.setVisibility(isShowingSecondDTVSettingItem ? View.VISIBLE : View.GONE);
+        mItemChannelManage.setVisibility(isShowingSecondDTVSettingItem ? View.VISIBLE : View.GONE);
+        mItemDataReset.setVisibility(isShowingSecondDTVSettingItem ? View.VISIBLE : View.GONE);
+        mIvDTVSettingBack.setVisibility(isShowingSecondDTVSettingItem ? View.GONE : View.VISIBLE);
+        mTvDTVSetting.setText(isShowingSecondDTVSettingItem ? R.string.dtv_setting : R.string.back);
+        if (!isShowingSecondDTVSettingItem) mItemGeneralSettings.requestFocus();
+        mItemGeneralSettings.setVisibility(isShowingSecondDTVSettingItem ? View.GONE : View.VISIBLE);
+        mItemT2Settings.setVisibility(isShowingSecondDTVSettingItem ? View.GONE : View.VISIBLE);
+        mItemParentalControl.setVisibility(isShowingSecondDTVSettingItem ? View.GONE : View.VISIBLE);
+        mItemPVRSettings.setVisibility(isShowingSecondDTVSettingItem ? View.GONE : View.VISIBLE);
+        mItemBookList.setVisibility(isShowingSecondDTVSettingItem ? View.GONE : View.VISIBLE);
+        mItemRecordList.setVisibility(isShowingSecondDTVSettingItem ? View.GONE : View.VISIBLE);
+        mTitleDTVSetting.setVisibility(isShowingSecondDTVSettingItem ? View.GONE : View.VISIBLE);
     }
 
-    private boolean isShowDTVSettingItem() {
-        return mIvDTVSettingBack.getVisibility() == View.GONE;
+    /**
+     * 是否正在显示DTVSetting二级菜单
+     */
+    private boolean isShowingSecondDTVSettingItem() {
+        return mIvDTVSettingBack.getVisibility() == View.VISIBLE;
     }
 
     private void restoreMenuItem() {
@@ -2025,13 +2031,13 @@ public class Topmost extends BaseActivity {
         }
 
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (mMenuShow && (isShowChannelManageItem())) {
+            if (mMenuShow && isShowingSecondChannelManageItem()) {
                 //在channelManage界面按BACK返回menu菜单
-                restoreMenuItem();
+                toggleChannelManageItem();
                 mItemChannelManage.requestFocus();
-            } else if (mMenuShow && (!isShowDTVSettingItem())) {
+            } else if (mMenuShow && isShowingSecondDTVSettingItem()) {
                 //在dtv setting界面按BACK返回menu菜单
-                restoreMenuItem();
+                toggleDTVSettingItem();
                 mItemDtvSetting.requestFocus();
             } else if (mProgListShow) {
                 toggleProgList();
@@ -2186,11 +2192,11 @@ public class Topmost extends BaseActivity {
                     mItemInstallation.requestFocus();
                     return true;
                 }
-                if (mItemChannelManage.isFocused() && (!isShowChannelManageItem())) {
+                if (mItemChannelManage.isFocused() && isShowingSecondChannelManageItem()) {
                     mItemChannelEdit.requestFocus();
                     return true;
                 }
-                if (mItemDtvSetting.isFocused() && (!isShowDTVSettingItem())) {
+                if (mItemDtvSetting.isFocused() && isShowingSecondDTVSettingItem()) {
                     mItemGeneralSettings.requestFocus();
                     return true;
                 }
@@ -2205,11 +2211,11 @@ public class Topmost extends BaseActivity {
                     mItemDataReset.requestFocus();
                     return true;
                 }
-                if (mItemChannelEdit.isFocused() && (!isShowChannelManageItem())) {
+                if (mItemChannelEdit.isFocused() && isShowingSecondChannelManageItem()) {
                     mItemChannelManage.requestFocus();
                     return true;
                 }
-                if (mItemGeneralSettings.isFocused() && (!isShowDTVSettingItem())) {
+                if (mItemGeneralSettings.isFocused() && isShowingSecondDTVSettingItem()) {
                     mItemDtvSetting.requestFocus();
                     return true;
                 }
