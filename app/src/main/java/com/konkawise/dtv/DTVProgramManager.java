@@ -34,14 +34,21 @@ public class DTVProgramManager {
     }
 
     /**
-     * 获取卫星列表，排除第一个T2的信号
+     * 获取卫星列表，只获取S2
      */
     public List<HProg_Struct_SatInfo> getSatList() {
-        ArrayList<HProg_Struct_SatInfo> satelliteList = new ArrayList<>();
-        int satNum = DTVProg.getInstance().getSatNum(getCurrProgNo());
+        return getSatList(true);
+    }
 
-        for (int i = 1; i < satNum; i++) {
-            satelliteList.add(getSatInfo(i));
+    public List<HProg_Struct_SatInfo> getSatList(boolean onlyS) {
+        ArrayList<HProg_Struct_SatInfo> satelliteList = new ArrayList<>();
+        int satNum = DTVProg.getInstance().getSatNum(getCurrProgNo()) + Constants.SatIndex.EXCLUDE_SAT_NUM;
+        int startIndex = onlyS ? Constants.SatIndex.S_START_INDEX : Constants.SatIndex.ALL_START_INDEX;
+        for (int i = startIndex; i < satNum; i++) {
+            HProg_Struct_SatInfo satInfo = getSatInfo(i);
+            if (satInfo != null) {
+                satelliteList.add(satInfo);
+            }
         }
         return satelliteList;
     }
@@ -54,7 +61,7 @@ public class DTVProgramManager {
     }
 
     /**
-     * 获取卫星列表，包含T2信号
+     * 获取所有卫星列表，T、C、S全部获取
      */
     public List<HProg_Struct_SatInfo> getSatInfoList() {
         return DTVProg.getInstance().getSatInfoList();
@@ -128,7 +135,7 @@ public class DTVProgramManager {
         if (ltTotalProgs == null || ltTotalProgs.size() == 0) {
             return ltSatProgs;
         }
-        if(satIndex == -1){
+        if(satIndex == Constants.SatIndex.ALL_SAT_INDEX){
             return ltTotalProgs;
         }
         for (HProg_Struct_ProgInfo progInfo : ltTotalProgs) {
@@ -350,7 +357,7 @@ public class DTVProgramManager {
         List<HProg_Struct_SatInfo> satList = getSatInfoList();
         if (satList != null) {
             HProg_Struct_SatInfo allSatInfo = new HProg_Struct_SatInfo();
-            allSatInfo.SatIndex = -1;
+            allSatInfo.SatIndex = Constants.SatIndex.ALL_SAT_INDEX;
             allSatInfo.sat_name = context.getString(R.string.all);
             satList.add(0, allSatInfo);
             return satList;
