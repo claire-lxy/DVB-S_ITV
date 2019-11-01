@@ -108,6 +108,10 @@ public class Topmost extends BaseActivity {
 
     private static final int KEYCODE_TV_SUBTITLE = 293;
 
+    private boolean isBackFromChannelManage;
+
+    private boolean isBackFromDTVSetting;
+
     @BindView(R.id.sv_topmost)
     SurfaceView mSurfaceView;
 
@@ -267,6 +271,7 @@ public class Topmost extends BaseActivity {
             }
             toggleChannelManageItem();
             mItemChannelEdit.requestFocus();
+            isBackFromChannelManage = true;
         }
     }
 
@@ -330,6 +335,7 @@ public class Topmost extends BaseActivity {
         }
         toggleDTVSettingItem();
         mItemGeneralSettings.requestFocus();
+        isBackFromDTVSetting = true;
     }
 
     @OnClick(R.id.item_general_settings)
@@ -1878,6 +1884,8 @@ public class Topmost extends BaseActivity {
         mItemRecordList.setVisibility(View.GONE);
         mTitleDTVSetting.setVisibility(View.GONE);
         mTitleChannelManage.setVisibility(View.GONE);
+        mDtvSettingTitleDivider.setVisibility(View.GONE);
+        mChannelManageTitleDivider.setVisibility(View.GONE);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -1976,8 +1984,8 @@ public class Topmost extends BaseActivity {
             return true;
         }
 
-        // RECORD
-        if (keyCode == KeyEvent.KEYCODE_MEDIA_RECORD) {
+        // RECORD,在菜单弹出时不响应录制视频按键事件
+        if (keyCode == KeyEvent.KEYCODE_MEDIA_RECORD && (!mMenuShow)) {
             if (isUsbNotExit()) {
                 ToastUtils.showToast(R.string.toast_no_storage_device);
                 return true;
@@ -2026,14 +2034,16 @@ public class Topmost extends BaseActivity {
         }
 
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (mMenuShow && (isShowChannelManageItem())) {
-                //在channelManage界面按BACK返回menu菜单
+            if (mMenuShow && isBackFromChannelManage) {
+                //在channelManage界面按BACK返回menu菜单，使用isBackFrom
                 restoreMenuItem();
                 mItemChannelManage.requestFocus();
-            } else if (mMenuShow && (!isShowDTVSettingItem())) {
+                isBackFromChannelManage = false;
+            } else if (mMenuShow && isBackFromDTVSetting) {
                 //在dtv setting界面按BACK返回menu菜单
                 restoreMenuItem();
                 mItemDtvSetting.requestFocus();
+                isBackFromDTVSetting = false;
             } else if (mProgListShow) {
                 toggleProgList();
             } else if (isPfBarShowing()) {
