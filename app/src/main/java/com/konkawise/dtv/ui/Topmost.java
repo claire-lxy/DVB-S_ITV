@@ -62,6 +62,7 @@ import com.konkawise.dtv.event.RecordStateChangeEvent;
 import com.konkawise.dtv.event.ReloadSatEvent;
 import com.konkawise.dtv.service.BookService;
 import com.konkawise.dtv.service.PowerService;
+import com.konkawise.dtv.service.RefreshChannelService;
 import com.konkawise.dtv.utils.TimeUtils;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.utils.Utils;
@@ -542,6 +543,7 @@ public class Topmost extends BaseActivity {
         updatePfBarInfo();
         restoreMenuItem(); // 恢复menu初始item显示
         mCheckSignalHelper.startCheckSignal();
+        bootRefreshChannelService();
 
         checkLaunchSettingPassword();
         if (!DTVSettingManager.getInstance().isPasswordEmpty() && !DTVProgramManager.getInstance().isProgCanPlay()) {
@@ -579,6 +581,7 @@ public class Topmost extends BaseActivity {
         super.onDestroy();
         dismissAllDialog();
         unregisterListener();
+        pauseRefreshChannelService();
     }
 
     private void registerMsgEvent() {
@@ -822,6 +825,14 @@ public class Topmost extends BaseActivity {
     private void bootService() {
         BookService.bootService(new Intent(this, BookService.class));
         PowerService.bootService(new Intent(this, PowerService.class));
+    }
+
+    private void bootRefreshChannelService() {
+        RefreshChannelService.bootService(new Intent(this, RefreshChannelService.class));
+    }
+
+    private void pauseRefreshChannelService() {
+        RefreshChannelService.pauseService(new Intent(this, RefreshChannelService.class));
     }
 
     private void registerListener() {

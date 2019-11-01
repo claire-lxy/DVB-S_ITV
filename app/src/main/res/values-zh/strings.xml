@@ -465,4 +465,6 @@
     <string name="satellite_param_frequency_title">Frequency:</string>
 
     <string name="formatter_satellite_param_channel_step">SCR {0}</string>
+
+    <string name="dialog_refresh_nit">NIT can be updated, do you want to update the program ?</string>
 </resources>
