@@ -74,8 +74,6 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     private static final int SEEK_TYPE_NO = 0;
     private static final int SEEK_TYPE_RIGHT = 1;
 
-    private boolean mLongPress;
-
     @BindView(R.id.sv_record_player)
     SurfaceView svRecordPlayer;
 
@@ -108,6 +106,8 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     private int from;
 
     private int currType;
+
+    private boolean mLongPress;
 
     private int totalDuration;
     private boolean initUIContextFlg = false;
@@ -246,7 +246,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     @Override
     protected void onPause() {
         super.onPause();
-        //stop();
+        stop();
         unregisterMsgEvent();
         if (playHandler != null) {
             removeUpgradeProgressMsg();
@@ -437,8 +437,6 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
                             .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
                                 @Override
                                 public void onPositiveListener() {
-                                    //先停止播放后再退出界面
-                                    stop();
                                     finish();
                                 }
                             }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
@@ -535,22 +533,18 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
                         recordSeekTypeNum(SEEK_TYPE_LEFT);
                         switchPlayTypeUI(TYPE_SEEK_BACK, seekNum);
                         showControlUI(false);
+                        return true;
                     }
                     break;
                 case KeyEvent.ACTION_UP:
                     if (mLongPress) {
                         mLongPress = false;
-                        Message msg = pvrHandler.obtainMessage(PVRHandler.MSG_PLAY_SPEED);
-                        msg.arg1 = getSelectPosition(new int[]{1, 2, 4, 8, 16, 32, 64, 128}, seekNum);
-                        pvrHandler.sendMessage(msg);
+                        sendSeekMsg(TYPE_SEEK_BACK);
+                        return true;
                     }
-                    else{
-                        return super.dispatchKeyEvent(event);
-                    }
-                    break;
-                default:
                     break;
             }
+            return super.dispatchKeyEvent(event);
         }
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_FORWARD || event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
@@ -564,24 +558,32 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
                         recordSeekTypeNum(SEEK_TYPE_RIGHT);
                         switchPlayTypeUI(TYPE_SEEK_FORWARD, seekNum);
                         showControlUI(false);
+                        return true;
                     }
                     break;
                 case KeyEvent.ACTION_UP:
                     if (mLongPress) {
                         mLongPress = false;
-                        Message msg = pvrHandler.obtainMessage(PVRHandler.MSG_PLAY_SPEED);
-                        msg.arg1 = getSelectPosition(new int[]{1, 2, 4, 8, 16, 32, 64, 128}, seekNum) + 8;
-                        pvrHandler.sendMessage(msg);
+                        sendSeekMsg(TYPE_SEEK_FORWARD);
+                        return true;
                     }
-                    else{
-                        return super.dispatchKeyEvent(event);
-                    }
-                    break;
-                default:
                     break;
             }
+            return super.dispatchKeyEvent(event);
         }
+
         return super.dispatchKeyEvent(event);
+    }
+
+    private void sendSeekMsg(int seekType) {
+        Message msg = pvrHandler.obtainMessage(PVRHandler.MSG_PLAY_SPEED);
+        if (seekType == TYPE_SEEK_BACK) {
+            msg.arg1 = getSelectPosition(new int[]{1, 2, 4, 8, 16, 32, 64, 128}, seekNum);
+            pvrHandler.sendMessage(msg);
+        } else if (seekType == TYPE_SEEK_FORWARD) {
+            msg.arg1 = getSelectPosition(new int[]{1, 2, 4, 8, 16, 32, 64, 128}, seekNum) + 8;
+            pvrHandler.sendMessage(msg);
+        }
     }
 
     private void showAudioDialog() {
