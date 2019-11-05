@@ -1,5 +1,8 @@
 package com.konkawise.dtv.ui;
 
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.OnLifecycleEvent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -23,10 +26,8 @@ import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.bean.RecordInfo;
 import com.konkawise.dtv.bean.UsbInfo;
 import com.konkawise.dtv.dialog.CommTipsDialog;
-import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.PasswordDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
-import com.konkawise.dtv.permission.OnRequestPermissionResultListener;
 import com.konkawise.dtv.permission.PermissionHelper;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.weaktool.WeakRunnable;
@@ -44,7 +45,7 @@ import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
 import vendor.konka.hardware.dtvmanager.V1_0.HPVR_Struct_RecFile;
 
-public class RecordListActivity extends BaseActivity implements UsbManager.OnUsbReceiveListener {
+public class RecordListActivity extends BaseActivity implements LifecycleObserver, UsbManager.OnUsbReceiveListener {
     private static final String TAG = "RecordListActivity";
 
     private static final int TYPE_PASSWORD_PLAY = 0;
@@ -111,6 +112,21 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         }
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    private void registerUsbReceive() {
+        UsbManager.getInstance().registerUsbReceiveListener(this);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    private void unregisterUsbReceive() {
+        UsbManager.getInstance().unregisterUsbReceiveListener(this);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    private void clearFMap() {
+        fMaps.clear();
+    }
+
     private String RECORD_LIST_PATH;
     private int mCurrDevicePostion;
     private int mCurrRecordPosition;
@@ -128,7 +144,6 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
 
     @Override
     protected void setup() {
-        UsbManager.getInstance().registerUsbReceiveListener(this);
         ltHpvrRecFileTS = DTVPVRManager.getInstance().getRecordFileList(0, -1);
         RECORD_LIST_PATH = DTVPVRManager.getInstance().getRecordDirName() + "/";
 
@@ -143,14 +158,11 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
                 new PermissionHelper(this)
                         .permissions(new String[]{Constants.Permissions.READ_EXTERNAL_STORAGE, Constants.Permissions.WRITE_EXTERNAL_STORAGE})
                         .request()
-                        .result(new OnRequestPermissionResultListener() {
-                            @Override
-                            public void onRequestResult(List<String> grantedPermissions, List<String> deniedPermissions) {
-                                for (int i = 0; i < grantedPermissions.size(); i++) {
-                                    if (grantedPermissions.get(i).equals(Constants.Permissions.WRITE_EXTERNAL_STORAGE)) {
-                                        updateDeviceGroup(mUsbInfos, 0, false, false);
-                                        break;
-                                    }
+                        .result((grantedPermissions, deniedPermissions) -> {
+                            for (int i = 0; i < grantedPermissions.size(); i++) {
+                                if (grantedPermissions.get(i).equals(Constants.Permissions.WRITE_EXTERNAL_STORAGE)) {
+                                    updateDeviceGroup(mUsbInfos, 0, false, false);
+                                    break;
                                 }
                             }
                         });
@@ -163,10 +175,8 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        fMaps.clear();
-        UsbManager.getInstance().unregisterUsbReceiveListener(this);
+    protected LifecycleObserver provideLifecycleObserver() {
+        return this;
     }
 
     private void updateDeviceGroup(List<UsbInfo> tUsbInfos, int selectDevicePosition, boolean darked, boolean needRefresh) {
@@ -223,19 +233,16 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         protected void loadBackground() {
             RecordListActivity context = mWeakReference.get();
             List<RecordInfo> ltRecordFiles = context.queryRecordFiles(context.mUsbInfos.get(context.mCurrDevicePostion).path + "/" + context.RECORD_LIST_PATH);
-            context.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (selectRecordPosition >= ltRecordFiles.size())
-                        selectRecordPosition = 0;
-                    context.mCurrRecordPosition = selectRecordPosition;
-                    context.mAdapter.setDarked(darked);
-                    context.mAdapter.clearSelect();
-                    context.mAdapter.setSelectPosition(selectRecordPosition);
-                    context.mAdapter.updateData(ltRecordFiles);
-                    context.mListView.setSelection(selectRecordPosition);
+            context.runOnUiThread(() -> {
+                if (selectRecordPosition >= ltRecordFiles.size())
+                    selectRecordPosition = 0;
+                context.mCurrRecordPosition = selectRecordPosition;
+                context.mAdapter.setDarked(darked);
+                context.mAdapter.clearSelect();
+                context.mAdapter.setSelectPosition(selectRecordPosition);
+                context.mAdapter.updateData(ltRecordFiles);
+                context.mListView.setSelection(selectRecordPosition);
 
-                }
             });
         }
     }
@@ -332,20 +339,17 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
 
     private void showPasswordDialog(int type) {
         new PasswordDialog()
-                .setOnPasswordInputListener(new PasswordDialog.OnPasswordInputListener() {
-                    @Override
-                    public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
-                        if (type == TYPE_PASSWORD_PLAY) {
-                            Intent intent = new Intent();
-                            intent.setClass(RecordListActivity.this, RecordPlayer.class);
-                            intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, RecordPlayer.FROM_RECORD_LIST);
-                            intent.putExtra(Constants.IntentKey.INTENT_RECORD_POSITION, mCurrRecordPosition);
-                            startActivity(intent);
-                        } else {
-                            lockChannels(0);
-                        }
-
+                .setOnPasswordInputListener((inputPassword, currentPassword, isValid) -> {
+                    if (type == TYPE_PASSWORD_PLAY) {
+                        Intent intent = new Intent();
+                        intent.setClass(RecordListActivity.this, RecordPlayer.class);
+                        intent.putExtra(Constants.IntentKey.INTENT_TIMESHIFT_RECORD_FROM, RecordPlayer.FROM_RECORD_LIST);
+                        intent.putExtra(Constants.IntentKey.INTENT_RECORD_POSITION, mCurrRecordPosition);
+                        startActivity(intent);
+                    } else {
+                        lockChannels(0);
                     }
+
                 }).show(getSupportFragmentManager(), PasswordDialog.TAG);
     }
 
@@ -356,15 +360,12 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
                 .setProgNo(mCurrRecordPosition + 1)
                 .setName(oldName.substring(0, oldName.length() - 3))
                 .setNameHint(oldName.substring(0, oldName.length() - 3))
-                .setOnRenameEditListener(new RenameDialog.onRenameEditListener() {
-                    @Override
-                    public void onRenameEdit(String newName) {
-                        if (TextUtils.isEmpty(newName)) return;
-                        if (!newName.substring(newName.length() - 3, newName.length()).equals(".ts")) {
-                            newName = newName + "." + Constants.RECORD_FILE_TYPE;
-                        }
-                        renameChannel(oldName, newName, true);
+                .setOnRenameEditListener(newName -> {
+                    if (TextUtils.isEmpty(newName)) return;
+                    if (!newName.substring(newName.length() - 3, newName.length()).equals(".ts")) {
+                        newName = newName + "." + Constants.RECORD_FILE_TYPE;
                     }
+                    renameChannel(oldName, newName, true);
                 }).show(getSupportFragmentManager(), RenameDialog.TAG);
     }
 
@@ -372,12 +373,7 @@ public class RecordListActivity extends BaseActivity implements UsbManager.OnUsb
         new CommTipsDialog()
                 .title(getString(R.string.delete))
                 .content(getString(R.string.dialog_delete_channel_content))
-                .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
-                    @Override
-                    public void onPositiveListener() {
-                        deleteChannels();
-                    }
-                }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
+                .setOnPositiveListener(getString(R.string.ok), () -> deleteChannels()).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
 
     private boolean isMulti() {

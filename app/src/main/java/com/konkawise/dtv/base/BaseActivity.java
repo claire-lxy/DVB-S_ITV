@@ -1,5 +1,6 @@
 package com.konkawise.dtv.base;
 
+import android.arch.lifecycle.LifecycleObserver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -22,6 +23,8 @@ public abstract class BaseActivity extends FragmentActivity
 
     private Unbinder mUnBinder;
 
+    private LifecycleObserver mLifecycleObserver;
+
     // 标志位主要处理界面跳转到当前界面，当前界面会响应到onKeyUp同样按键事件
     protected boolean mDispatchKeyUpReady;
 
@@ -39,6 +42,10 @@ public abstract class BaseActivity extends FragmentActivity
         super.onCreate(savedInstanceState);
         setContentView(getLayoutId());
         mUnBinder = ButterKnife.bind(this);
+
+        mLifecycleObserver = provideLifecycleObserver();
+        registerLifecycleObserver(mLifecycleObserver);
+
         setup();
     }
 
@@ -46,12 +53,7 @@ public abstract class BaseActivity extends FragmentActivity
     protected void onResume() {
         super.onResume();
         registerHomeReceiver();
-        getWindow().getDecorView().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mDispatchKeyUpReady = true;
-            }
-        }, 300);
+        getWindow().getDecorView().postDelayed(() -> mDispatchKeyUpReady = true, 300);
     }
 
     @Override
@@ -90,7 +92,24 @@ public abstract class BaseActivity extends FragmentActivity
     protected void onDestroy() {
         WeakToolManager.getInstance().removeWeakTool(this);
         if (mUnBinder != null) mUnBinder.unbind();
+        unregisterLifecycleObserver(mLifecycleObserver);
         super.onDestroy();
+    }
+
+    public void registerLifecycleObserver(LifecycleObserver observer) {
+        if (observer != null) {
+            getLifecycle().addObserver(observer);
+        }
+    }
+
+    public void unregisterLifecycleObserver(LifecycleObserver observer) {
+        if (observer != null) {
+            getLifecycle().removeObserver(observer);
+        }
+    }
+
+    protected LifecycleObserver provideLifecycleObserver() {
+        return null;
     }
 
     @Override

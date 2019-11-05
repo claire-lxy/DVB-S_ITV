@@ -434,7 +434,6 @@
         </RelativeLayout>
 
         <RelativeLayout
-            android:id="@+id/item_strength_progress"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_above="@+id/rl_signal_quality"

@@ -1,5 +1,6 @@
 package com.konkawise.dtv.base;
 
+import android.arch.lifecycle.LifecycleObserver;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -19,6 +20,7 @@ public abstract class BaseFragment extends Fragment implements WeakToolInterface
     private BaseActivity mActivity;
 
     private Unbinder mUnBinder;
+    private LifecycleObserver mLifecycleObserver;
 
     @Override
     public void onAttach(Context context) {
@@ -35,6 +37,8 @@ public abstract class BaseFragment extends Fragment implements WeakToolInterface
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(getLayoutId(), container, false);
         mUnBinder = ButterKnife.bind(this, rootView);
+
+        mActivity.registerLifecycleObserver(mLifecycleObserver);
         return rootView;
     }
 
@@ -48,6 +52,7 @@ public abstract class BaseFragment extends Fragment implements WeakToolInterface
     public void onDestroyView() {
         WeakToolManager.getInstance().removeWeakTool(this);
         if (mUnBinder != null) mUnBinder.unbind();
+        mActivity.unregisterLifecycleObserver(mLifecycleObserver);
         super.onDestroyView();
     }
 

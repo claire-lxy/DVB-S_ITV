@@ -4,6 +4,9 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.OnLifecycleEvent;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -100,7 +103,7 @@ import vendor.konka.hardware.dtvmanager.V1_0.HPlayer_Struct_Teletext;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 
-public class Topmost extends BaseActivity {
+public class Topmost extends BaseActivity implements LifecycleObserver {
     private static final String TAG = "Topmost";
     private static final long RECORDING_PERIOD = 1000;
     private static final long PLAY_PROG_DELAY = 1000;
@@ -346,15 +349,12 @@ public class Topmost extends BaseActivity {
     private void showParentalControlPasswordDialog() {
         new PasswordDialog()
                 .setInvalidClose(true)
-                .setOnPasswordInputListener(new PasswordDialog.OnPasswordInputListener() {
-                    @Override
-                    public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
-                        if (isValid) {
-                            Intent intent = new Intent(Topmost.this, ParentalControlActivity.class);
-                            startActivity(intent);
-                        } else {
-                            ToastUtils.showToast(R.string.toast_invalid_password);
-                        }
+                .setOnPasswordInputListener((inputPassword, currentPassword, isValid) -> {
+                    if (isValid) {
+                        Intent intent = new Intent(Topmost.this, ParentalControlActivity.class);
+                        startActivity(intent);
+                    } else {
+                        ToastUtils.showToast(R.string.toast_invalid_password);
                     }
                 }).show(getSupportFragmentManager(), PasswordDialog.TAG);
     }
@@ -391,6 +391,159 @@ public class Topmost extends BaseActivity {
         } else {
             showDataResetDialog();
         }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    private void bootService() {
+        BookService.bootService(new Intent(this, BookService.class));
+        PowerService.bootService(new Intent(this, PowerService.class));
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void bootRefreshChannelService() {
+        RefreshChannelService.bootService(new Intent(this, RefreshChannelService.class));
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    private void pauseRefreshChannelService() {
+        RefreshChannelService.pauseService(new Intent(this, RefreshChannelService.class));
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    private void registerReceiveEventUpdate() {
+        EventBus.getDefault().register(this);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    private void unregisterReceiveEventUpdate() {
+        EventBus.getDefault().unregister(this);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void startReceiveRealTimeMsg() {
+        RealTimeManager.getInstance().start();
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    private void stopReceiveRealTimeMsg() {
+        RealTimeManager.getInstance().stop();
+        DTVDVBManager.getInstance().releaseResource();
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    private void initCheckSignal() {
+        mCheckSignalHelper = new CheckSignalHelper(this);
+        mCheckSignalHelper.setSignalRandom(false);
+        mCheckSignalHelper.setOnCheckSignalListener((strength, quality) -> {
+            if (strength <= 0 && quality <= 0) {
+                if (mProgListAdapter != null && mProgListAdapter.getCount() > 0 && mSignalOk) {
+                    mSignalOk = false;
+                    mSurfaceView.setVisibility(View.GONE);
+                }
+            } else {
+                if (!mSignalOk) {
+                    mSignalOk = true;
+                    mSurfaceView.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void startCheckSignal() {
+        mCheckSignalHelper.startCheckSignal();
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void stopCheckSignal() {
+        mCheckSignalHelper.stopCheckSignal();
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void registerReceiveProgramLockMsg() {
+        MsgEvent msgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.LOCK);
+        msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
+            @Override
+            public void PLAYER_isLocked(int type, int progNo, int progIndex, int home) {
+                showPasswordDialog();
+            }
+
+            @Override
+            public void PLAYER_onUSBCompleted() {
+                Log.i(TAG, "usb attach");
+                mUsbAttach = true;
+                ToastUtils.showToast(R.string.toast_storage_inserted);
+            }
+
+            @Override
+            public void PLAYER_onUSBRemoved() {
+                Log.i(TAG, "usb detach");
+                mUsbAttach = false;
+                ToastUtils.showToast(R.string.toast_storage_out);
+                stopRecord();
+            }
+        });
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void unregisterReceiveProgramLockMsg() {
+        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.LOCK);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void showSurface() {
+        if (mSurfaceView.getVisibility() != View.VISIBLE) {
+            mSurfaceView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void hideSurface() {
+        if (mSurfaceView.getVisibility() != View.GONE) {
+            mSurfaceView.setVisibility(View.GONE);
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    private void progToggle() {
+        if (mProgListShow) {
+            toggleProgList();
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    private void menuToggle() {
+        if (mMenuShow) {
+            toggleMenu(true);
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    private void dismissAllDialog() {
+        dismissPfBarScanDialog();
+
+        List<Fragment> fragments = getSupportFragmentManager().getFragments();
+        if (!fragments.isEmpty()) {
+            for (Fragment fragment : fragments) {
+                if (fragment instanceof BaseDialogFragment) {
+                    ((BaseDialogFragment) fragment).dismiss();
+                }
+            }
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void checkPasswordAndSearch() {
+        checkLaunchSettingPassword();
+        if (!DTVSettingManager.getInstance().isPasswordEmpty() && !DTVProgramManager.getInstance().isProgCanPlay()) {
+            showSearchChannelDialog();
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void saveStopPlayProperty() {
+        // 跳转或销毁界面要停止播放
+        DTVPlayerManager.getInstance().stopPlay(DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.PD_SwitchMode));
     }
 
     private int mCurrProgGroup;
@@ -524,93 +677,16 @@ public class Topmost extends BaseActivity {
         mCurrProgGroup = DTVProgramManager.getInstance().getCurrGroup();
         mCurrProgGroupParams = DTVProgramManager.getInstance().getCurrGroupParam();
 
-        bootService();
-        registerListener();
         initHandler();
         initSatList();
         initProgList();
         initSurfaceView();
-        initCheckSignal();
         showRadioBackground();
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        RealTimeManager.getInstance().start();
-        registerMsgEvent();
-        showSurface();
-        updatePfBarInfo();
-        restoreMenuItem(); // 恢复menu初始item显示
-        mCheckSignalHelper.startCheckSignal();
-        bootRefreshChannelService();
-
-        checkLaunchSettingPassword();
-        if (!DTVSettingManager.getInstance().isPasswordEmpty() && !DTVProgramManager.getInstance().isProgCanPlay()) {
-            showSearchChannelDialog();
-        }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        hideSurface();
-        DTVPlayerManager.getInstance().stopPlay(DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.PD_SwitchMode));
-        unregisterMsgEvent();
-        stopRecord();
-        mCheckSignalHelper.stopCheckSignal();
-        if (isFinishing()) {
-            RealTimeManager.getInstance().stop();
-            DTVDVBManager.getInstance().releaseResource();
-        }
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (mProgListShow) {
-            toggleProgList();
-        }
-        if (mMenuShow) {
-            toggleMenu(true);
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        dismissAllDialog();
-        unregisterListener();
-        pauseRefreshChannelService();
-    }
-
-    private void registerMsgEvent() {
-        MsgEvent msgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.LOCK);
-        msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
-            @Override
-            public void PLAYER_isLocked(int type, int progNo, int progIndex, int home) {
-                showPasswordDialog();
-            }
-
-            @Override
-            public void PLAYER_onUSBCompleted() {
-                Log.i(TAG, "usb attach");
-                mUsbAttach = true;
-                ToastUtils.showToast(R.string.toast_storage_inserted);
-            }
-
-            @Override
-            public void PLAYER_onUSBRemoved() {
-                Log.i(TAG, "usb detach");
-                mUsbAttach = false;
-                ToastUtils.showToast(R.string.toast_storage_out);
-                stopRecord();
-            }
-        });
-    }
-
-    private void unregisterMsgEvent() {
-        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.LOCK);
+    protected LifecycleObserver provideLifecycleObserver() {
+        return this;
     }
 
     @Override
@@ -703,6 +779,7 @@ public class Topmost extends BaseActivity {
         ThreadPoolManager.getInstance().execute(mWaitingStartRecordRunnable);
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     private void stopRecord() {
         if (isRecording()) {
             // 录制时长少了1到2秒左右，延后停止录制时间
@@ -820,27 +897,6 @@ public class Topmost extends BaseActivity {
                 }
             });
         }
-    }
-
-    private void bootService() {
-        BookService.bootService(new Intent(this, BookService.class));
-        PowerService.bootService(new Intent(this, PowerService.class));
-    }
-
-    private void bootRefreshChannelService() {
-        RefreshChannelService.bootService(new Intent(this, RefreshChannelService.class));
-    }
-
-    private void pauseRefreshChannelService() {
-        RefreshChannelService.pauseService(new Intent(this, RefreshChannelService.class));
-    }
-
-    private void registerListener() {
-        EventBus.getDefault().register(this);
-    }
-
-    private void unregisterListener() {
-        EventBus.getDefault().unregister(this);
     }
 
     private void initHandler() {
@@ -1085,36 +1141,6 @@ public class Topmost extends BaseActivity {
             @Override
             public void surfaceDestroyed(SurfaceHolder holder) {
                 Log.i(TAG, "topmost surface destroy");
-            }
-        });
-    }
-
-    private void showSurface() {
-        if (mSurfaceView.getVisibility() != View.VISIBLE) {
-            mSurfaceView.setVisibility(View.VISIBLE);
-        }
-    }
-
-    private void hideSurface() {
-        if (mSurfaceView.getVisibility() != View.GONE) {
-            mSurfaceView.setVisibility(View.GONE);
-        }
-    }
-
-    private void initCheckSignal() {
-        mCheckSignalHelper = new CheckSignalHelper(this);
-        mCheckSignalHelper.setSignalRandom(false);
-        mCheckSignalHelper.setOnCheckSignalListener((strength, quality) -> {
-            if (strength <= 0 && quality <= 0) {
-                if (mProgListAdapter != null && mProgListAdapter.getCount() > 0 && mSignalOk) {
-                    mSignalOk = false;
-                    mSurfaceView.setVisibility(View.GONE);
-                }
-            } else {
-                if (!mSignalOk) {
-                    mSignalOk = true;
-                    mSurfaceView.setVisibility(View.VISIBLE);
-                }
             }
         });
     }
@@ -1440,6 +1466,7 @@ public class Topmost extends BaseActivity {
         }
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     private void updatePfBarInfo() {
         if (mPfBarScanDialog != null) {
             mPfBarScanDialog.updatePfInformation();
@@ -1720,19 +1747,6 @@ public class Topmost extends BaseActivity {
         return mPfDetailDialog != null && mPfDetailDialog.getDialog() != null;
     }
 
-    private void dismissAllDialog() {
-        dismissPfBarScanDialog();
-
-        List<Fragment> fragments = getSupportFragmentManager().getFragments();
-        if (!fragments.isEmpty()) {
-            for (Fragment fragment : fragments) {
-                if (fragment instanceof BaseDialogFragment) {
-                    ((BaseDialogFragment) fragment).dismiss();
-                }
-            }
-        }
-    }
-
     private void dismissPfBarScanDialog() {
         if (isPfBarShowing()) {
             mPfBarScanDialog.dismiss();
@@ -1871,6 +1885,7 @@ public class Topmost extends BaseActivity {
         return mIvDTVSettingBack.getVisibility() == View.VISIBLE;
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     private void restoreMenuItem() {
         mItemInstallation.setVisibility(View.VISIBLE);
         mItemEpg.setVisibility(View.VISIBLE);

@@ -374,7 +374,6 @@
                 tools:ignore="RelativeOverlap" />
 
             <ImageView
-                android:id="@+id/iv_channel_scan_time_left"
                 style="@style/ItemArrowLeftStyle"
                 android:layout_toLeftOf="@+id/tv_channel_scan_time"
                 android:layout_toStartOf="@+id/tv_channel_scan_time"

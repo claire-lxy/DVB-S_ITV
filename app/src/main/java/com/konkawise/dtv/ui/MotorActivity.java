@@ -1,5 +1,8 @@
 package com.konkawise.dtv.ui;
 
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.OnLifecycleEvent;
 import android.content.Intent;
 import android.os.Message;
 import android.text.TextUtils;
@@ -21,7 +24,6 @@ import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.bean.LatLngModel;
 import com.konkawise.dtv.dialog.CommRemindDialog;
 import com.konkawise.dtv.dialog.OnCommCallback;
-import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
 import com.konkawise.dtv.weaktool.WeakHandler;
@@ -38,7 +40,7 @@ import vendor.konka.hardware.dtvmanager.V1_0.HTuner_Enum_MotorCtrlCode;
 import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 
-public class MotorActivity extends BaseItemFocusChangeActivity {
+public class MotorActivity extends BaseItemFocusChangeActivity implements LifecycleObserver {
     private static final String TAG = "MotorActivity";
     private static final int ITEM_MOTOR_TYPE = 1;
     private static final int ITEM_TP = 2;
@@ -215,6 +217,58 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
     @BindArray(R.array.stop_move_time)
     int[] mStopMoveTimeArray;
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    private void initCheckSignal() {
+        mCheckSignalHelper = new CheckSignalHelper(this);
+        mCheckSignalHelper.setOnCheckSignalListener((strength, quality) -> {
+            if (isTpEmpty()) {
+                strength = 0;
+                quality = 0;
+            }
+            String strengthPercent = strength + "%";
+            mTvProgressStrength.setText(strengthPercent);
+            mPbStrength.setProgress(strength);
+
+            String qualityPercent = quality + "%";
+            mTvProgressQuality.setText(qualityPercent);
+            mPbQuality.setProgress(quality);
+        });
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void startCheckSignal() {
+        mCheckSignalHelper.startCheckSignal();
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void stopCheckSignal() {
+        mCheckSignalHelper.stopCheckSignal();
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    private void saveSatLongitude() {
+        if (mSatInfo != null) {
+            mSatInfo.diseqc12_longitude = mSatLongitudeModel.getValueForStorage();
+            DTVProgramManager.getInstance().setSatInfo(mSatelliteIndex, mSatInfo);
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    private void saveLocalLatLng() {
+        DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.SAT_Longitude, mLocalLongitudeModel.getValueForStorage());
+        DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.SAT_Latitude, mLocalLatitudeModel.getValueForStorage());
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    private void stopMotorCtrl() {
+        ThreadPoolManager.getInstance().remove(mMotorRunnable);
+        mMotorRunnable.ctrlCode = HTuner_Enum_MotorCtrlCode.STOP;
+        mMotorRunnable.data = new int[]{0};
+        ThreadPoolManager.getInstance().execute(mMotorRunnable);
+
+        sendStopMessage(0);
+    }
+
     private int position = 1;
 
     private int mCurrentTp;
@@ -243,7 +297,6 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
 
     @Override
     protected void setup() {
-        initCheckSignal();
         initIntent();
         initMotorUi();
         tryLockTp();
@@ -251,53 +304,8 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        mCheckSignalHelper.startCheckSignal();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        mCheckSignalHelper.stopCheckSignal();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        stopMotorCtrl();
-        if (mSatInfo != null) saveLongitude();
-        DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.SAT_Longitude, mLocalLongitudeModel.getValueForStorage());
-        DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.SAT_Latitude, mLocalLatitudeModel.getValueForStorage());
-    }
-
-    private void stopMotorCtrl() {
-        ThreadPoolManager.getInstance().remove(mMotorRunnable);
-        mMotorRunnable.ctrlCode = HTuner_Enum_MotorCtrlCode.STOP;
-        mMotorRunnable.data = new int[]{0};
-        ThreadPoolManager.getInstance().execute(mMotorRunnable);
-
-        sendStopMessage(0);
-    }
-
-    private void initCheckSignal() {
-        mCheckSignalHelper = new CheckSignalHelper(this);
-        mCheckSignalHelper.setOnCheckSignalListener(new CheckSignalHelper.OnCheckSignalListener() {
-            @Override
-            public void signal(int strength, int quality) {
-                if (isTpEmpty()) {
-                    strength = 0;
-                    quality = 0;
-                }
-                String strengthPercent = strength + "%";
-                mTvProgressStrength.setText(strengthPercent);
-                mPbStrength.setProgress(strength);
-
-                String qualityPercent = quality + "%";
-                mTvProgressQuality.setText(qualityPercent);
-                mPbQuality.setProgress(quality);
-            }
-        });
+    protected LifecycleObserver provideLifecycleObserver() {
+        return this;
     }
 
     private void initIntent() {
@@ -700,21 +708,18 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
             if ((mMotorType == Constants.MotorType.DISEQC && position == ITEM_DISEQC_COMMAND) ||
                     mMotorType == Constants.MotorType.USALS && position == ITEM_COMMAND) {
                 MotorCtrlModel motorCtrlModel = getMotorCtrlModelByCommand();
-                showCommandDialog(motorCtrlModel.title, new OnCommCallback() {
-                    @Override
-                    public void callback(Object object) {
-                        if (TextUtils.equals(mTvCommand.getText().toString(), getString(R.string.motor_command_savepos))) {
-                            if (mMotorType == Constants.MotorType.DISEQC && position == ITEM_DISEQC_COMMAND) {
-                                saveMotorType();
-                            }
-                            savePosition();
-                        } else {
-                            ThreadPoolManager.getInstance().remove(mMotorRunnable);
-                            mMotorRunnable.ctrlCode = motorCtrlModel.ctrlCode;
-                            mMotorRunnable.repeat = motorCtrlModel.repeat;
-                            mMotorRunnable.data = motorCtrlModel.data;
-                            ThreadPoolManager.getInstance().execute(mMotorRunnable);
+                showCommandDialog(motorCtrlModel.title, object -> {
+                    if (TextUtils.equals(mTvCommand.getText().toString(), getString(R.string.motor_command_savepos))) {
+                        if (mMotorType == Constants.MotorType.DISEQC && position == ITEM_DISEQC_COMMAND) {
+                            saveMotorType();
                         }
+                        savePosition();
+                    } else {
+                        ThreadPoolManager.getInstance().remove(mMotorRunnable);
+                        mMotorRunnable.ctrlCode = motorCtrlModel.ctrlCode;
+                        mMotorRunnable.repeat = motorCtrlModel.repeat;
+                        mMotorRunnable.data = motorCtrlModel.data;
+                        ThreadPoolManager.getInstance().execute(mMotorRunnable);
                     }
                 });
                 return true;
@@ -863,12 +868,9 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
     private void showCommandDialog(String content, OnCommCallback callback) {
         new CommRemindDialog()
                 .content(content)
-                .setOnPositiveListener("", new OnCommPositiveListener() {
-                    @Override
-                    public void onPositiveListener() {
-                        if (callback != null) {
-                            callback.callback(null);
-                        }
+                .setOnPositiveListener("", () -> {
+                    if (callback != null) {
+                        callback.callback(null);
                     }
                 }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
     }
@@ -912,13 +914,6 @@ public class MotorActivity extends BaseItemFocusChangeActivity {
     private void savePosition() {
         if (mSatInfo != null) {
             mSatInfo.diseqc12_pos = mPositionStep;
-            DTVProgramManager.getInstance().setSatInfo(mSatelliteIndex, mSatInfo);
-        }
-    }
-
-    private void saveLongitude() {
-        if (mSatInfo != null) {
-            mSatInfo.diseqc12_longitude = mSatLongitudeModel.getValueForStorage();
             DTVProgramManager.getInstance().setSatInfo(mSatelliteIndex, mSatInfo);
         }
     }

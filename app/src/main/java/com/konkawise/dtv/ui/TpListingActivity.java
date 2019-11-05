@@ -1,9 +1,11 @@
 package com.konkawise.dtv.ui;
 
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.OnLifecycleEvent;
 import android.content.Intent;
 import android.text.TextUtils;
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -17,7 +19,6 @@ import com.konkawise.dtv.adapter.TpListingAdapter;
 import com.konkawise.dtv.annotation.TpType;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.CommRemindDialog;
-import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.TpParamDialog;
 import com.konkawise.dtv.dialog.ScanDialog;
 import com.konkawise.dtv.utils.ToastUtils;
@@ -33,7 +34,7 @@ import butterknife.OnItemSelected;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_TP;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 
-public class TpListingActivity extends BaseActivity {
+public class TpListingActivity extends BaseActivity implements LifecycleObserver {
     private static final String TAG = "TpListingActivity";
     private static final int FREQ_SYMBOL_MAX_LIMIT = 65535;
 
@@ -88,6 +89,34 @@ public class TpListingActivity extends BaseActivity {
         DTVSearchManager.getInstance().tunerLockFreq(getIndex(), getFreq(), getSymbol(), getQam(), 1, 0);
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    private void initCheckSignal() {
+        mCheckSignalHelper = new CheckSignalHelper(this);
+        mCheckSignalHelper.setOnCheckSignalListener((strength, quality) -> {
+            if (mAdapter.getCount() <= 0) {
+                strength = 0;
+                quality = 0;
+            }
+            String strengthPercent = strength + "%";
+            mTvStrengthProgress.setText(strengthPercent);
+            mPbStrength.setProgress(strength);
+
+            String qualityPercent = quality + "%";
+            mTvQualityProgress.setText(qualityPercent);
+            mPbQuality.setProgress(quality);
+        });
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void startCheckSignal() {
+        mCheckSignalHelper.startCheckSignal();
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void stopCheckSignal() {
+        mCheckSignalHelper.stopCheckSignal();
+    }
+
     private TpListingAdapter mAdapter;
     private int mSelectPosition;
 
@@ -102,7 +131,6 @@ public class TpListingActivity extends BaseActivity {
     @Override
     protected void setup() {
         initBottomBar();
-        initCheckSignal();
         initTpList();
 
         mTvLnb.setText(getLnb());
@@ -111,41 +139,14 @@ public class TpListingActivity extends BaseActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        mCheckSignalHelper.startCheckSignal();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        mCheckSignalHelper.stopCheckSignal();
+    protected LifecycleObserver provideLifecycleObserver() {
+        return this;
     }
 
     private void initBottomBar() {
         mTvBottomBarGreen.setText(getString(R.string.add));
         mTvBottomBarYellow.setText(getString(R.string.edit));
         mTvBottomBarBlue.setText(getString(R.string.delete));
-    }
-
-    private void initCheckSignal() {
-        mCheckSignalHelper = new CheckSignalHelper(this);
-        mCheckSignalHelper.setOnCheckSignalListener(new CheckSignalHelper.OnCheckSignalListener() {
-            @Override
-            public void signal(int strength, int quality) {
-                if (mAdapter.getCount() <= 0) {
-                    strength = 0;
-                    quality = 0;
-                }
-                String strengthPercent = strength + "%";
-                mTvStrengthProgress.setText(strengthPercent);
-                mPbStrength.setProgress(strength);
-
-                String qualityPercent = quality + "%";
-                mTvQualityProgress.setText(qualityPercent);
-                mPbQuality.setProgress(quality);
-            }
-        });
     }
 
     private void initTpList() {
@@ -179,17 +180,14 @@ public class TpListingActivity extends BaseActivity {
             TpListingActivity context = mWeakReference.get();
             List<HProg_Struct_TP> satChannelInfoList = DTVProgramManager.getInstance().getSatTPInfo(context.getIndex());
 
-            context.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (satChannelInfoList != null && !satChannelInfoList.isEmpty()) {
-                        context.mAdapter.updateData(satChannelInfoList);
-                        context.mListView.setSelection(position);
+            context.runOnUiThread(() -> {
+                if (satChannelInfoList != null && !satChannelInfoList.isEmpty()) {
+                    context.mAdapter.updateData(satChannelInfoList);
+                    context.mListView.setSelection(position);
 
-                        HProg_Struct_TP channel = context.mAdapter.getItem(position);
-                        if (channel != null) {
-                            DTVSearchManager.getInstance().tunerLockFreq(context.getIndex(), channel.Freq, channel.Symbol, channel.Qam, 1, 0);
-                        }
+                    HProg_Struct_TP channel = context.mAdapter.getItem(position);
+                    if (channel != null) {
+                        DTVSearchManager.getInstance().tunerLockFreq(context.getIndex(), channel.Freq, channel.Symbol, channel.Qam, 1, 0);
                     }
                 }
             });
@@ -243,17 +241,14 @@ public class TpListingActivity extends BaseActivity {
 
     private void showScanDialog() {
         new ScanDialog()
-                .setOnScanSearchListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(TpListingActivity.this, ScanTVandRadioActivity.class);
-                        intent.putExtra(Constants.IntentKey.INTENT_FREQ, getFreq());
-                        intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, getIndex());
-                        intent.putExtra(Constants.IntentKey.INTENT_SYMBOL, getSymbol());
-                        intent.putExtra(Constants.IntentKey.INTENT_QAM, getQam());
-                        intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.IntentValue.SEARCH_TYPE_TPLISTING);
-                        startActivity(intent);
-                    }
+                .setOnScanSearchListener(v -> {
+                    Intent intent = new Intent(TpListingActivity.this, ScanTVandRadioActivity.class);
+                    intent.putExtra(Constants.IntentKey.INTENT_FREQ, getFreq());
+                    intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, getIndex());
+                    intent.putExtra(Constants.IntentKey.INTENT_SYMBOL, getSymbol());
+                    intent.putExtra(Constants.IntentKey.INTENT_QAM, getQam());
+                    intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.IntentValue.SEARCH_TYPE_TPLISTING);
+                    startActivity(intent);
                 }).show(getSupportFragmentManager(), ScanDialog.TAG);
     }
 
@@ -269,14 +264,11 @@ public class TpListingActivity extends BaseActivity {
                 .symbol(symbol)
                 .qam(qam)
                 .tpType(tpType)
-                .setOnTpParamListener(new TpParamDialog.OnTpParamListener() {
-                    @Override
-                    public void onEditTp(String freq, String symbol, String qam) {
-                        if (tpType == Constants.TpType.ADD) {
-                            newTp(freq, symbol, qam);
-                        } else {
-                            editTp(freq, symbol, qam);
-                        }
+                .setOnTpParamListener((freq1, symbol1, qam1) -> {
+                    if (tpType == Constants.TpType.ADD) {
+                        newTp(freq1, symbol1, qam1);
+                    } else {
+                        editTp(freq1, symbol1, qam1);
                     }
                 }).show(getSupportFragmentManager(), TpParamDialog.TAG);
     }
@@ -286,12 +278,7 @@ public class TpListingActivity extends BaseActivity {
 
         new CommRemindDialog()
                 .content(getString(R.string.delete_selected_transponder))
-                .setOnPositiveListener("", new OnCommPositiveListener() {
-                    @Override
-                    public void onPositiveListener() {
-                        deleteTp();
-                    }
-                })
+                .setOnPositiveListener("", this::deleteTp)
                 .show(getSupportFragmentManager(), CommRemindDialog.TAG);
     }
 

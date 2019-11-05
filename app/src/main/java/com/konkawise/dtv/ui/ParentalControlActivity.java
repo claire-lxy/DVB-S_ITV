@@ -126,28 +126,25 @@ public class ParentalControlActivity extends BaseItemFocusChangeActivity {
                 .title(title)
                 .content(content)
                 .position(selectPosition)
-                .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
-                    @Override
-                    public void onDismiss(CommCheckItemDialog dialog, int p, String checkContent) {
-                        switch (position) {
-                            case ITEM_MENU_LOCK:
-                                mTvMenuLock.setText(checkContent);
-                                menuLockPosition = Arrays.asList(mGeneralSwitch).indexOf(checkContent);
-                                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.cMenuLock, menuLockPosition);
-                                break;
-                            case ITEM_CHANNEL_LOCK:
-                                mTvChannelLock.setText(checkContent);
-                                channelLockPosition = Arrays.asList(mGeneralSwitch).indexOf(checkContent);
-                                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.cParentLock, channelLockPosition);
-                                break;
-                            case ITEM_CONTROL_AGE:
-                                mTvControlAge.setText(checkContent);
-                                controlAgePosition = Arrays.asList(mControlAge).indexOf(checkContent);
-                                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.PC_AGE, controlAgePosition);
-                                break;
-                            default:
-                                break;
-                        }
+                .setOnDismissListener((dialog, p, checkContent) -> {
+                    switch (position) {
+                        case ITEM_MENU_LOCK:
+                            mTvMenuLock.setText(checkContent);
+                            menuLockPosition = Arrays.asList(mGeneralSwitch).indexOf(checkContent);
+                            DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.cMenuLock, menuLockPosition);
+                            break;
+                        case ITEM_CHANNEL_LOCK:
+                            mTvChannelLock.setText(checkContent);
+                            channelLockPosition = Arrays.asList(mGeneralSwitch).indexOf(checkContent);
+                            DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.cParentLock, channelLockPosition);
+                            break;
+                        case ITEM_CONTROL_AGE:
+                            mTvControlAge.setText(checkContent);
+                            controlAgePosition = Arrays.asList(mControlAge).indexOf(checkContent);
+                            DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.PC_AGE, controlAgePosition);
+                            break;
+                        default:
+                            break;
                     }
                 }).show(getSupportFragmentManager(), CommCheckItemDialog.TAG);
     }

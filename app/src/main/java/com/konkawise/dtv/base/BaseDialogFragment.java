@@ -1,6 +1,7 @@
 package com.konkawise.dtv.base;
 
 import android.app.Dialog;
+import android.arch.lifecycle.LifecycleObserver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ public abstract class BaseDialogFragment extends DialogFragment {
 
     private Unbinder mUnBinder;
     private View mRootView;
+    private LifecycleObserver mLifecycleObserver;
 
     protected String getStrings(@StringRes int resId) {
         if (getContext() != null) {
@@ -52,6 +54,9 @@ public abstract class BaseDialogFragment extends DialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         mRootView = inflater.inflate(getLayoutId(), container, false);
         mUnBinder = ButterKnife.bind(this, mRootView);
+
+        mLifecycleObserver = provideLifecycleObserver();
+        mActivity.registerLifecycleObserver(mLifecycleObserver);
         return mRootView;
     }
 
@@ -64,12 +69,7 @@ public abstract class BaseDialogFragment extends DialogFragment {
                 ViewGroup.LayoutParams.WRAP_CONTENT));
         Dialog dialog = new Dialog(getContext());
         dialog.setCancelable(true);
-        dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
-            @Override
-            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                return onKeyListener(dialog, keyCode, event);
-            }
-        });
+        dialog.setOnKeyListener(this::onKeyListener);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(root);
         dialog.getWindow().setLayout(resizeDialogWidth(), ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -97,18 +97,25 @@ public abstract class BaseDialogFragment extends DialogFragment {
     @Override
     public void onDestroyView() {
         if (mUnBinder != null) mUnBinder.unbind();
+        mActivity.unregisterLifecycleObserver(mLifecycleObserver);
         super.onDestroyView();
     }
 
     @Override
     public void onDetach() {
-        if (mActivity != null) mActivity.onFragmentDetach(getTag());
+        if (mActivity != null) {
+            mActivity.onFragmentDetach(getTag());
+        }
         mActivity = null;
         super.onDetach();
     }
 
     protected int resizeDialogWidth() {
         return (int) (getResources().getDisplayMetrics().widthPixels * 0.5);
+    }
+
+    protected LifecycleObserver provideLifecycleObserver() {
+        return null;
     }
 
     /**

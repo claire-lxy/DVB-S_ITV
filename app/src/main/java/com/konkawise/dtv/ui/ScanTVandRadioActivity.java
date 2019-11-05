@@ -1,10 +1,12 @@
 package com.konkawise.dtv.ui;
 
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.OnLifecycleEvent;
 import android.content.Intent;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -17,7 +19,6 @@ import com.konkawise.dtv.DTVSearchManager;
 import com.konkawise.dtv.adapter.TvAndRadioRecycleViewAdapter;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.CommRemindDialog;
-import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.SearchResultDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
 import com.konkawise.dtv.utils.Utils;
@@ -37,7 +38,7 @@ import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgBasicInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 
-public class ScanTVandRadioActivity extends BaseActivity {
+public class ScanTVandRadioActivity extends BaseActivity implements LifecycleObserver {
     private final static String TAG = ScanTVandRadioActivity.class.getSimpleName();
 
     @BindView(R.id.rv_tv_list)
@@ -76,60 +77,41 @@ public class ScanTVandRadioActivity extends BaseActivity {
     @BindView(R.id.pb_scan_quality)
     ProgressBar mPbScanQuality;
 
-    private TvAndRadioRecycleViewAdapter mTvAdapter;
-    private TvAndRadioRecycleViewAdapter mRadioAdapter;
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    private void initCheckSignal() {
+        mCheckSignalHelper = new CheckSignalHelper(this);
+        mCheckSignalHelper.setOnCheckSignalListener((strength, quality) -> {
+            String strengthPercent = strength + "%";
+            mTvScanStrengthProgress.setText(strengthPercent);
+            mPbScanStrength.setProgress(strength);
 
-    private List<HProg_Struct_SatInfo> mSatList;
-
-    private int mutiSateIndex = -1;
-
-    private CheckSignalHelper mCheckSignalHelper;
-
-    private int mScanMode;
-    private int mNitOpen;
-    private int mCaFilter;
-    private int mLcn;
-
-    @Override
-    public int getLayoutId() {
-        return R.layout.activity_scan_tv_and_radio;
+            String qualityPercent = quality + "%";
+            mTvScanQualityProgress.setText(qualityPercent);
+            mPbScanQuality.setProgress(quality);
+        });
     }
 
-    @Override
-    protected void setup() {
-        mScanMode = DTVSettingManager.getInstance().getCurrScanMode();
-        mNitOpen = DTVSettingManager.getInstance().getCurrNetwork();
-        mCaFilter = DTVSettingManager.getInstance().getCurrCAS();
-        mLcn = DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.ShowNoType);
-
-        registerMsgEvent();
-
-        initIntent();
-        initCheckSignal();
-        initRecyclerView();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void startCheckSignal() {
         mCheckSignalHelper.startCheckSignal();
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void stopCheckSignal() {
         mCheckSignalHelper.stopCheckSignal();
-        stopSearch(false, mLcn);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void quitBeforeStopSearch() {
+        stopSearch(false);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void clearSelectSatelliteList() {
         SatelliteActivity.satList.clear();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregisterMsgEvent();
-    }
-
-    private void stopSearch(boolean storeProgram, int nit) {
+    private void stopSearch(boolean storeProgram) {
         if (mLcn == 0) {
             DTVSearchManager.getInstance().searchStop(storeProgram, HSearch_Enum_StoreType.BY_SERVID);
         } else {
@@ -137,7 +119,8 @@ public class ScanTVandRadioActivity extends BaseActivity {
         }
     }
 
-    private void registerMsgEvent() {
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    private void registerReceiveScanTVAndRadioMsg() {
         MsgEvent msgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.SCAN);
         msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
             private void onUpdateSearchProgress(int step, int max_step) {
@@ -231,13 +214,13 @@ public class ScanTVandRadioActivity extends BaseActivity {
             public void SEARCH_onSearchFinish(int allNum, int currIndex, int plp) {
                 if (mutiSateIndex != -1 && mutiSateIndex < mSatList.size() - 1) {
                     mutiSateIndex++;
-                    stopSearch(true, mLcn);
+                    stopSearch(true);
                     searchMultiSatellite();
                     return;
                 }
                 SatelliteActivity.satList.clear();
                 DTVProgramManager.getInstance().setCurrProgType(DTVSettingManager.getInstance().getCurrScanMode() == 2 ? HProg_Enum_Type.GBPROG : HProg_Enum_Type.TVPROG, 0);
-                stopSearch(true, mLcn);
+                stopSearch(true);
                 showSearchResultDialog();
             }
 
@@ -255,8 +238,46 @@ public class ScanTVandRadioActivity extends BaseActivity {
         });
     }
 
-    private void unregisterMsgEvent() {
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    private void unregisterReceiveScanTVAndRadioMsg() {
         DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.SCAN);
+    }
+
+    private TvAndRadioRecycleViewAdapter mTvAdapter;
+    private TvAndRadioRecycleViewAdapter mRadioAdapter;
+
+    private List<HProg_Struct_SatInfo> mSatList;
+
+    private int mutiSateIndex = -1;
+
+    private CheckSignalHelper mCheckSignalHelper;
+
+    private int mScanMode;
+    private int mNitOpen;
+    private int mCaFilter;
+    private int mLcn;
+
+    @Override
+    public int getLayoutId() {
+        return R.layout.activity_scan_tv_and_radio;
+    }
+
+    @Override
+    protected void setup() {
+        mScanMode = DTVSettingManager.getInstance().getCurrScanMode();
+        mNitOpen = DTVSettingManager.getInstance().getCurrNetwork();
+        mCaFilter = DTVSettingManager.getInstance().getCurrCAS();
+        mLcn = DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.ShowNoType);
+
+        registerReceiveScanTVAndRadioMsg();
+
+        initIntent();
+        initRecyclerView();
+    }
+
+    @Override
+    protected LifecycleObserver provideLifecycleObserver() {
+        return this;
     }
 
     private void initIntent() {
@@ -346,22 +367,6 @@ public class ScanTVandRadioActivity extends BaseActivity {
         return getIntent().getIntExtra(Constants.IntentKey.INTENT_QAM, -1);
     }
 
-    private void initCheckSignal() {
-        mCheckSignalHelper = new CheckSignalHelper(this);
-        mCheckSignalHelper.setOnCheckSignalListener(new CheckSignalHelper.OnCheckSignalListener() {
-            @Override
-            public void signal(int strength, int quality) {
-                String strengthPercent = strength + "%";
-                mTvScanStrengthProgress.setText(strengthPercent);
-                mPbScanStrength.setProgress(strength);
-
-                String qualityPercent = quality + "%";
-                mTvScanQualityProgress.setText(qualityPercent);
-                mPbScanQuality.setProgress(quality);
-            }
-        });
-    }
-
     private void initRecyclerView() {
         mRvTv.setHasFixedSize(true);
         mRvTv.setLayoutManager(new LinearLayoutManager(this));
@@ -404,12 +409,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             new CommRemindDialog()
                     .content(getString(R.string.back_infomation))
-                    .setOnPositiveListener("", new OnCommPositiveListener() {
-                        @Override
-                        public void onPositiveListener() {
-                            finish();
-                        }
-                    }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
+                    .setOnPositiveListener("", this::finish).show(getSupportFragmentManager(), CommRemindDialog.TAG);
             return true;
         }
 
@@ -424,12 +424,7 @@ public class ScanTVandRadioActivity extends BaseActivity {
         new SearchResultDialog()
                 .tvSize(tvSize)
                 .radioSize(radioSize)
-                .setOnConfirmResultListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        startPlayTV();
-                    }
-                }).show(getSupportFragmentManager(), SearchResultDialog.TAG);
+                .setOnConfirmResultListener(v -> startPlayTV()).show(getSupportFragmentManager(), SearchResultDialog.TAG);
     }
 
     /**

@@ -1,5 +1,8 @@
 package com.konkawise.dtv.ui;
 
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.OnLifecycleEvent;
 import android.content.Intent;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -42,7 +45,7 @@ import vendor.konka.hardware.dtvmanager.V1_0.HSearch_Struct_TP;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.HSearch_Struct_Progress;
 
-public class TpBlindActivity extends BaseActivity {
+public class TpBlindActivity extends BaseActivity implements LifecycleObserver {
     public static String TAG = TpBlindActivity.class.getSimpleName();
 
     @BindView(R.id.tv_blind_title)
@@ -81,63 +84,26 @@ public class TpBlindActivity extends BaseActivity {
     @BindView(R.id.pb_blind)
     ProgressBar mPbBlind;
 
-    private BlindTpAdapter mBlindTpAdapter;
-    private BlindTpAdapter mBlindTvAdapter;
-    private BlindTpAdapter mBlindRadioAdapter;
-
-    private Timer mBlindScanProgressTimer;
-    private BlindScanProgressTimerTask mBlindScanProgressTimerTask;
-
-    private int mScanMode;
-    private int mNitOpen;
-    private int mCaFilter;
-
-    @Override
-    public int getLayoutId() {
-        return R.layout.activity_tp_blind;
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    private void startBlindScanProgressTimer() {
+        mBlindScanProgressTimer = new Timer();
+        mBlindScanProgressTimerTask = new BlindScanProgressTimerTask(this);
+        mBlindScanProgressTimer.schedule(mBlindScanProgressTimerTask, 0, 1000);
     }
 
-    @Override
-    protected void setup() {
-        mTvTpNum.setText("0");
-        mTvRadioNum.setText("0");
-        mTvBlindProgress.setText("0%");
-
-        initRecyclerView();
-        setupBlindSatInfo();
-
-        mScanMode = DTVSettingManager.getInstance().getCurrScanMode();
-        mNitOpen = DTVSettingManager.getInstance().getCurrNetwork();
-        mCaFilter = DTVSettingManager.getInstance().getCurrCAS();
-        DTVSearchManager.getInstance().blindScanStart(getSatelliteIndex());
-
-        startBlindScanProgressTimer();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        registerMsgEvent();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        unregisterMsgEvent();
-        stopSearch(false, mNitOpen);
-        stopBlindScanProgressTimer();
-        stopBlindScan();
-    }
-
-    private void stopSearch(boolean storeProgram, int nit) {
-        if (nit == 0) {
-            DTVSearchManager.getInstance().searchStop(storeProgram, HSearch_Enum_StoreType.BY_SERVID);
-        } else {
-            DTVSearchManager.getInstance().searchStop(storeProgram, HSearch_Enum_StoreType.BY_LOGIC_NUM);
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void stopBlindScanProgressTimer() {
+        if (mBlindScanProgressTimer != null) {
+            mBlindScanProgressTimer.cancel();
+            mBlindScanProgressTimer.purge();
+            mBlindScanProgressTimerTask.release();
+            mBlindScanProgressTimer = null;
+            mBlindScanProgressTimerTask = null;
         }
     }
 
-    private void registerMsgEvent() {
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void registerReceiveBlindScanMsg() {
         MsgEvent msgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.SCAN);
         msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
             @Override
@@ -274,8 +240,59 @@ public class TpBlindActivity extends BaseActivity {
         });
     }
 
-    private void unregisterMsgEvent() {
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void unregisterReceiveBlindScanMsg() {
         DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.SCAN);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void stopBlind() {
+        stopSearch(false, mNitOpen);
+        stopBlindScan();
+    }
+
+    private BlindTpAdapter mBlindTpAdapter;
+    private BlindTpAdapter mBlindTvAdapter;
+    private BlindTpAdapter mBlindRadioAdapter;
+
+    private Timer mBlindScanProgressTimer;
+    private BlindScanProgressTimerTask mBlindScanProgressTimerTask;
+
+    private int mScanMode;
+    private int mNitOpen;
+    private int mCaFilter;
+
+    @Override
+    public int getLayoutId() {
+        return R.layout.activity_tp_blind;
+    }
+
+    @Override
+    protected void setup() {
+        mTvTpNum.setText("0");
+        mTvRadioNum.setText("0");
+        mTvBlindProgress.setText("0%");
+
+        initRecyclerView();
+        setupBlindSatInfo();
+
+        mScanMode = DTVSettingManager.getInstance().getCurrScanMode();
+        mNitOpen = DTVSettingManager.getInstance().getCurrNetwork();
+        mCaFilter = DTVSettingManager.getInstance().getCurrCAS();
+        DTVSearchManager.getInstance().blindScanStart(getSatelliteIndex());
+    }
+
+    @Override
+    protected LifecycleObserver provideLifecycleObserver() {
+        return this;
+    }
+
+    private void stopSearch(boolean storeProgram, int nit) {
+        if (nit == 0) {
+            DTVSearchManager.getInstance().searchStop(storeProgram, HSearch_Enum_StoreType.BY_SERVID);
+        } else {
+            DTVSearchManager.getInstance().searchStop(storeProgram, HSearch_Enum_StoreType.BY_LOGIC_NUM);
+        }
     }
 
     private void initRecyclerView() {
@@ -310,22 +327,6 @@ public class TpBlindActivity extends BaseActivity {
 
     private int getSatelliteIndex() {
         return getIntent().getIntExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, -1);
-    }
-
-    private void startBlindScanProgressTimer() {
-        mBlindScanProgressTimer = new Timer();
-        mBlindScanProgressTimerTask = new BlindScanProgressTimerTask(this);
-        mBlindScanProgressTimer.schedule(mBlindScanProgressTimerTask, 0, 1000);
-    }
-
-    private void stopBlindScanProgressTimer() {
-        if (mBlindScanProgressTimer != null) {
-            mBlindScanProgressTimer.cancel();
-            mBlindScanProgressTimer.purge();
-            mBlindScanProgressTimerTask.release();
-            mBlindScanProgressTimer = null;
-            mBlindScanProgressTimerTask = null;
-        }
     }
 
     private static class BlindScanProgressTimerTask extends WeakTimerTask<TpBlindActivity> {

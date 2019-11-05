@@ -1,8 +1,10 @@
 package com.konkawise.dtv.ui;
 
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.OnLifecycleEvent;
 import android.content.Intent;
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -23,7 +25,7 @@ import java.util.List;
 import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_TP;
 
-public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
+public class T2ManualSearchActivity extends BaseItemFocusChangeActivity implements LifecycleObserver {
     private static final int ITEM_TRANSPONDER = 1;
     private static final int ITEM_FREQUENCY = 2;
     private static final int ITEM_BANDWIDTH = 3;
@@ -78,6 +80,21 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
     @BindView(R.id.pb_quality)
     ProgressBar mPbQuality;
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void startCheckSignal() {
+        mCheckSignalHelper.startCheckSignal();
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void stopCheckSignal() {
+        mCheckSignalHelper.stopCheckSignal();
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void saveCurrentChannel() {
+        PreferenceManager.getInstance().putInt(Constants.PrefsKey.SAVE_CHANNEL, mCurrntChannel);
+    }
+
     private int mCurrSelectItem = ITEM_TRANSPONDER;
 
     private List<HProg_Struct_TP> satChannelInfoList;
@@ -95,7 +112,11 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
     protected void setup() {
         initT2Data();
         initT2Ui();
-        initCheckSignal();
+    }
+
+    @Override
+    protected LifecycleObserver provideLifecycleObserver() {
+        return this;
     }
 
     private void initT2Data() {
@@ -117,33 +138,18 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
         }
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     private void initCheckSignal() {
         mCheckSignalHelper = new CheckSignalHelper(this);
-        mCheckSignalHelper.setOnCheckSignalListener(new CheckSignalHelper.OnCheckSignalListener() {
-            @Override
-            public void signal(int strength, int quality) {
-                String strengthPercent = strength + "%";
-                mTvStrengthProgress.setText(strengthPercent);
-                mPbStrength.setProgress(strength);
+        mCheckSignalHelper.setOnCheckSignalListener((strength, quality) -> {
+            String strengthPercent = strength + "%";
+            mTvStrengthProgress.setText(strengthPercent);
+            mPbStrength.setProgress(strength);
 
-                String qualityPercent = quality + "%";
-                mTvQualityProgress.setText(qualityPercent);
-                mPbQuality.setProgress(quality);
-            }
+            String qualityPercent = quality + "%";
+            mTvQualityProgress.setText(qualityPercent);
+            mPbQuality.setProgress(quality);
         });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mCheckSignalHelper.startCheckSignal();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        mCheckSignalHelper.stopCheckSignal();
-        PreferenceManager.getInstance().putInt(Constants.PrefsKey.SAVE_CHANNEL, mCurrntChannel);
     }
 
     @Override
@@ -207,17 +213,14 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
     private void showScanDialog() {
         new ScanDialog()
                 .installationType(ScanDialog.INSTALLATION_TYPE_S2_SEARCH)
-                .setOnScanSearchListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(T2ManualSearchActivity.this, ScanTVandRadioActivity.class);
-                        intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, Constants.SatIndex.T2);
-                        intent.putExtra(Constants.IntentKey.INTENT_FREQ, channel.Freq);
-                        intent.putExtra(Constants.IntentKey.INTENT_SYMBOL, channel.Symbol);
-                        intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.IntentValue.SEARCH_TYPE_T2MANUAL);
-                        startActivity(intent);
-                        finish();
-                    }
+                .setOnScanSearchListener(v -> {
+                    Intent intent = new Intent(T2ManualSearchActivity.this, ScanTVandRadioActivity.class);
+                    intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, Constants.SatIndex.T2);
+                    intent.putExtra(Constants.IntentKey.INTENT_FREQ, channel.Freq);
+                    intent.putExtra(Constants.IntentKey.INTENT_SYMBOL, channel.Symbol);
+                    intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.IntentValue.SEARCH_TYPE_T2MANUAL);
+                    startActivity(intent);
+                    finish();
                 }).show(getSupportFragmentManager(), ScanDialog.TAG);
     }
 

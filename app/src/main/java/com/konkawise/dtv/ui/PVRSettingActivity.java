@@ -1,5 +1,8 @@
 package com.konkawise.dtv.ui;
 
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.OnLifecycleEvent;
 import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
@@ -17,8 +20,6 @@ import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.bean.UsbInfo;
 import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
-import com.konkawise.dtv.dialog.OnCommNegativeListener;
-import com.konkawise.dtv.dialog.OnCommPositiveListener;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 
-public class PVRSettingActivity extends BaseItemFocusChangeActivity implements UsbManager.OnUsbReceiveListener {
+public class PVRSettingActivity extends BaseItemFocusChangeActivity implements LifecycleObserver, UsbManager.OnUsbReceiveListener {
     private static final String TAG = "PVRSettingActivity";
 
     private static final int ITEM_TIME_SHIFT_LENGTH = 1;
@@ -148,20 +149,22 @@ public class PVRSettingActivity extends BaseItemFocusChangeActivity implements U
         mCommTipsDialog = new CommTipsDialog()
                 .title(getString(R.string.device_format))
                 .content(getString(R.string.device_format_dialog_content))
-                .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
-                    @Override
-                    public void onPositiveListener() {
-                        mCommTipsDialog = null;
-                        sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED)); // 发送广播重新获取usb信息
-                    }
+                .setOnPositiveListener(getString(R.string.ok), () -> {
+                    mCommTipsDialog = null;
+                    sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED)); // 发送广播重新获取usb信息
                 })
-                .setOnNegativeListener(getString(R.string.cancel), new OnCommNegativeListener() {
-                    @Override
-                    public void onNegativeListener() {
-                        mCommTipsDialog = null;
-                    }
-                });
+                .setOnNegativeListener(getString(R.string.cancel), () -> mCommTipsDialog = null);
         mCommTipsDialog.show(getSupportFragmentManager(), CommTipsDialog.TAG);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    private void registerUsbReceive() {
+        UsbManager.getInstance().registerUsbReceiveListener(this);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    private void unregisterUsbReceive() {
+        UsbManager.getInstance().unregisterUsbReceiveListener(this);
     }
 
     private int mCurrSelectItem = ITEM_RECORD_LENGTH;
@@ -187,16 +190,14 @@ public class PVRSettingActivity extends BaseItemFocusChangeActivity implements U
 
     @Override
     protected void setup() {
-        UsbManager.getInstance().registerUsbReceiveListener(this);
         mUsbInfos.addAll(UsbManager.getInstance().getUsbInfos(this));
         Log.i(TAG, "mUsbInfos size:" + mUsbInfos.size());
         initData();
     }
 
     @Override
-    protected void onDestroy() {
-        UsbManager.getInstance().unregisterUsbReceiveListener(this);
-        super.onDestroy();
+    protected LifecycleObserver provideLifecycleObserver() {
+        return this;
     }
 
     private void initData() {
@@ -297,43 +298,40 @@ public class PVRSettingActivity extends BaseItemFocusChangeActivity implements U
                 .title(title)
                 .content(content)
                 .position(selectPosition)
-                .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
-                    @Override
-                    public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
-                        mCommCheckItemDialog = null;
+                .setOnDismissListener((dialog, position, checkContent) -> {
+                    mCommCheckItemDialog = null;
 
-                        switch (mCurrSelectItem) {
-                            /*case ITEM_TIME_SHIFT_LENGTH:
-                                mTvTimeShiftLength.setText(checkContent);
-                                mTimeShiftLengthPosition = Arrays.asList(mTimeShiftLengthArray).indexOf(checkContent);
-                                DTVPlayerManager.getInstance().setDTVProperty(SWFta.E_E2PP.E2P_TimeshiftMaxMin.ordinal(), arrayTimeShift[mTimeShiftLengthPosition]);
-                                break; */
+                    switch (mCurrSelectItem) {
+                        /*case ITEM_TIME_SHIFT_LENGTH:
+                            mTvTimeShiftLength.setText(checkContent);
+                            mTimeShiftLengthPosition = Arrays.asList(mTimeShiftLengthArray).indexOf(checkContent);
+                            DTVPlayerManager.getInstance().setDTVProperty(SWFta.E_E2PP.E2P_TimeshiftMaxMin.ordinal(), arrayTimeShift[mTimeShiftLengthPosition]);
+                            break; */
 
-                            case ITEM_RECORD_LENGTH:
-                                mTvRecordLength.setText(checkContent);
-                                mRecordLengthPosition = Arrays.asList(mRecordLengthArray).indexOf(checkContent);
-                                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.RecordMaxMin, arrayRecordLength[mRecordLengthPosition]);
-                                break;
+                        case ITEM_RECORD_LENGTH:
+                            mTvRecordLength.setText(checkContent);
+                            mRecordLengthPosition = Arrays.asList(mRecordLengthArray).indexOf(checkContent);
+                            DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.RecordMaxMin, arrayRecordLength[mRecordLengthPosition]);
+                            break;
 
-                            /*case ITEM_RECORD_TYPE:
-                                mTvRecordType.setText(checkContent);
-                                mRecordTypePosition = Arrays.asList(mRecordTypeArray).indexOf(checkContent);
-                                DTVPlayerManager.getInstance().setDTVProperty(SWFta.E_E2PP.E2P_RecordType.ordinal(), arrayRecordType[mRecordTypePosition]);
-                                break; */
+                        /*case ITEM_RECORD_TYPE:
+                            mTvRecordType.setText(checkContent);
+                            mRecordTypePosition = Arrays.asList(mRecordTypeArray).indexOf(checkContent);
+                            DTVPlayerManager.getInstance().setDTVProperty(SWFta.E_E2PP.E2P_RecordType.ordinal(), arrayRecordType[mRecordTypePosition]);
+                            break; */
 
-                            case ITEM_DEVICE_NAME:
-                                mTvDeviceName.setText(checkContent);
-                                if (!mUsbInfos.isEmpty()) {
-                                    for (int i = 0; i < mUsbInfos.size(); i++) {
-                                        if (TextUtils.equals(mUsbInfos.get(i).fsLabel, checkContent)) {
-                                            mDeviceNamePosition = i;
-                                            break;
-                                        }
+                        case ITEM_DEVICE_NAME:
+                            mTvDeviceName.setText(checkContent);
+                            if (!mUsbInfos.isEmpty()) {
+                                for (int i = 0; i < mUsbInfos.size(); i++) {
+                                    if (TextUtils.equals(mUsbInfos.get(i).fsLabel, checkContent)) {
+                                        mDeviceNamePosition = i;
+                                        break;
                                     }
-                                    updateDeviceInfo(mDeviceNamePosition);
                                 }
-                                break;
-                        }
+                                updateDeviceInfo(mDeviceNamePosition);
+                            }
+                            break;
                     }
                 });
         mCommCheckItemDialog.show(getSupportFragmentManager(), CommCheckItemDialog.TAG);
