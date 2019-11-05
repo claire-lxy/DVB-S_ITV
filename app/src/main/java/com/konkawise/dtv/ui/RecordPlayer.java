@@ -1,9 +1,15 @@
 package com.konkawise.dtv.ui;
 
+import android.annotation.SuppressLint;
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.OnLifecycleEvent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
+import android.support.annotation.RequiresApi;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -17,22 +23,20 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
-import com.konkawise.dtv.HandlerMsgManager;
+import com.konkawise.dtv.DTVDVBManager;
+import com.konkawise.dtv.DTVPVRManager;
 import com.konkawise.dtv.DTVPlayerManager;
 import com.konkawise.dtv.DTVProgramManager;
+import com.konkawise.dtv.HandlerMsgManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.DTVPVRManager;
-import com.konkawise.dtv.DTVDVBManager;
 import com.konkawise.dtv.UsbManager;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.bean.HandlerMsgModel;
 import com.konkawise.dtv.bean.RecordInfo;
 import com.konkawise.dtv.bean.UsbInfo;
 import com.konkawise.dtv.dialog.AudioDialog;
-import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.EditTimeDialog;
-import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.SubtitleDialog;
 import com.konkawise.dtv.dialog.TeletextDialog;
 import com.konkawise.dtv.weaktool.WeakHandler;
@@ -51,7 +55,7 @@ import vendor.konka.hardware.dtvmanager.V1_0.HPVR_Struct_Progress;
 import vendor.konka.hardware.dtvmanager.V1_0.HPlayer_Struct_Subtitle;
 import vendor.konka.hardware.dtvmanager.V1_0.HPlayer_Struct_Teletext;
 
-public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiveListener {
+public class RecordPlayer extends BaseActivity implements LifecycleObserver, UsbManager.OnUsbReceiveListener {
     private static final String TAG = "RecordPlayer";
 
     private static final String HANDLER_THREAD_NAME = "pvr_thread";
@@ -98,14 +102,75 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     @BindView(R.id.sb_progress)
     SeekBar sbProgress;
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void registerReceivePVRMsg() {
+        MsgEvent msgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.PVR);
+        msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
+            @Override
+            public void PVR_onPvrPlayModule(int p0, int p1, int p2, int p3, int p4) {
+                Log.i(TAG, "PVRPlay_MODULE---p0:" + p0 + " p1:" + p1 + " p2:" + p2 + " p3:" + p3 + " p4:" + p4);
+                if (from == FROM_TOPMOST) {
+                    if (p3 == 2) {
+                        resumeFromSeek();
+                    }
+                } else {
+                    if (p3 == 1) {
+                        if (LOOPER) {
+                            playNextRecord();
+                        } else {
+                            finish();
+                        }
+                    } else if (p3 == 2) {
+                        resumeFromSeek();
+                    }
+
+                }
+            }
+
+            @Override
+            public void PVRPLAY_onPlaybackFailed(int p0, int p1, int p2, int p3, int p4) {
+                Log.i(TAG, "PVRPlay_PlaybackFailed---p0:" + p0 + " p1:" + p1 + " p2:" + p2 + " p3:" + p3 + " p4:" + p4);
+                if (from == FROM_RECORD_LIST && LOOPER) {
+                    playNextRecord();
+                } else {
+                    finish();
+                }
+            }
+        });
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void unregisterReceivePVRMsg() {
+        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.PVR);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void removeAllHandleMessages() {
+        if (playHandler != null) {
+            removeUpgradeProgressMsg();
+            removeDissControlUIMsg();
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    private void registerUsbReceive() {
+        UsbManager.getInstance().registerUsbReceiveListener(this);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    private void unregisterUsbReceive() {
+        UsbManager.getInstance().unregisterUsbReceiveListener(this);
+    }
+
     PlayHandler playHandler;
 
     private int from;
 
     private int currType;
 
+    private boolean mLongPress;
+
     private int totalDuration;
-    private boolean initUIContextFlg = false;
 
     private int seekNum = 1;
     private int seekType = SEEK_TYPE_NO;
@@ -114,7 +179,6 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     private int currRecordPosition;
     private List<RecordInfo> recordList = new ArrayList<>();
 
-    private HandlerThread pvrThread;
     private PVRHandler pvrHandler;
 
     private static class PlayHandler extends WeakHandler<RecordPlayer> {
@@ -122,7 +186,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         static final int MSG_UPGRADE_PROGRESS = 0;
         static final int MSG_DISMISS_CONTROL_UI = 1;
 
-        public PlayHandler(RecordPlayer view) {
+        PlayHandler(RecordPlayer view) {
             super(view);
         }
 
@@ -172,7 +236,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         static final String KEY_FNAME = "fname";
         static final String KEY_LOOP = "loop";
 
-        public PVRHandler(RecordPlayer view, Looper looper) {
+        PVRHandler(RecordPlayer view, Looper looper) {
             super(view, looper);
         }
 
@@ -225,73 +289,18 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     @Override
     protected void setup() {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-        UsbManager.getInstance().registerUsbReceiveListener(this);
 
         init();
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        initUIContextFlg = false;
-        registerMsgEvent();
-//        play();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        stop();
-        unregisterMsgEvent();
-        if (playHandler != null) {
-            removeUpgradeProgressMsg();
-            removeDissControlUIMsg();
-        }
-    }
-
-    private void registerMsgEvent() {
-        MsgEvent msgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.PVR);
-        msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
-            @Override
-            public void PVR_onPvrPlayModule(int p0, int p1, int p2, int p3, int p4) {
-                Log.i(TAG, "PVRPlay_MODULE---p0:" + p0 + " p1:" + p1 + " p2:" + p2 + " p3:" + p3 + " p4:" + p4);
-                if (from == FROM_TOPMOST) {
-                    if (p3 == 2) {
-                        resumeFromSeek();
-                    }
-                } else {
-                    if (p3 == 1) {
-                        if (LOOPER) {
-                            playNextRecord();
-                        } else {
-                            finish();
-                        }
-                    } else if (p3 == 2) {
-                        resumeFromSeek();
-                    }
-
-                }
-            }
-
-            @Override
-            public void PVRPLAY_onPlaybackFailed(int p0, int p1, int p2, int p3, int p4) {
-                Log.i(TAG, "PVRPlay_PlaybackFailed---p0:" + p0 + " p1:" + p1 + " p2:" + p2 + " p3:" + p3 + " p4:" + p4);
-                if (from == FROM_RECORD_LIST && LOOPER) {
-                    playNextRecord();
-                } else {
-                    finish();
-                }
-            }
-        });
-    }
-
-    private void unregisterMsgEvent() {
-        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.PVR);
+    protected LifecycleObserver provideLifecycleObserver() {
+        return this;
     }
 
     private void init() {
         playHandler = new PlayHandler(this);
-        pvrThread = new HandlerThread(HANDLER_THREAD_NAME);
+        HandlerThread pvrThread = new HandlerThread(HANDLER_THREAD_NAME);
         pvrThread.start();
         pvrHandler = new PVRHandler(this, pvrThread.getLooper());
 
@@ -394,12 +403,6 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        UsbManager.getInstance().unregisterUsbReceiveListener(this);
-    }
-
-    @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         switch (keyCode) {
             case KeyEvent.KEYCODE_DPAD_CENTER:
@@ -409,13 +412,10 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
                     new EditTimeDialog()
                             .setCurrTime(DTVPVRManager.getInstance().getPlayProgress().currentMs > 0 ? DTVPVRManager.getInstance().getPlayProgress().currentMs : 0)
                             .setTimeLimit(DTVPVRManager.getInstance().getPlayProgress().endMs > 0 ? DTVPVRManager.getInstance().getPlayProgress().endMs : 0)
-                            .setTimeListener(new EditTimeDialog.OnTimeListener() {
-                                @Override
-                                public void time(int hour, int minute, int second) {
-                                    Log.i(TAG, "---jump---time:" + hour + ":" + minute + ":" + second);
-                                    int currTime = (hour * 60 * 60 + minute * 60 + second) * 1000;
-                                    jump(currTime);
-                                }
+                            .setTimeListener((hour, minute, second) -> {
+                                Log.i(TAG, "---jump---time:" + hour + ":" + minute + ":" + second);
+                                int currTime = (hour * 60 * 60 + minute * 60 + second) * 1000;
+                                jump(currTime);
                             })
                             .show(getSupportFragmentManager(), EditTimeDialog.TAG);
                     return true;
@@ -429,13 +429,7 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
                             .title(getString(R.string.dialog_exit_pvr_tips))
                             .content(getString(from == FROM_TOPMOST ? R.string.dialog_exit_timeshift_content : R.string.dialog_exit_playback_content))
                             .negativeFocus(true)
-                            .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
-                                @Override
-                                public void onPositiveListener() {
-
-                                    finish();
-                                }
-                            }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
+                            .setOnPositiveListener(getString(R.string.ok), this::finish).show(getSupportFragmentManager(), CommTipsDialog.TAG);
                     return true;
                 }
                 break;
@@ -504,6 +498,84 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         return super.onKeyDown(keyCode, event);
     }
 
+    @Override
+    public boolean onKeyLongPress(int keyCode, KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_MEDIA_REWIND || event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT ||
+                event.getKeyCode() == KeyEvent.KEYCODE_FORWARD || event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
+            mLongPress = true;
+            return true;
+        }
+        return super.onKeyLongPress(keyCode, event);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @SuppressLint("RestrictedApi")
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_MEDIA_REWIND || event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
+            switch (event.getAction()) {
+                case KeyEvent.ACTION_DOWN:
+                    if (event.getRepeatCount() == 0) {
+                        mLongPress = false;
+                        event.startTracking();
+                    } else {
+                        mLongPress = true;
+                        recordSeekTypeNum(SEEK_TYPE_LEFT);
+                        switchPlayTypeUI(TYPE_SEEK_BACK, seekNum);
+                        showControlUI(false);
+                        return true;
+                    }
+                    break;
+                case KeyEvent.ACTION_UP:
+                    if (mLongPress) {
+                        mLongPress = false;
+                        sendSeekMsg(TYPE_SEEK_BACK);
+                        return true;
+                    }
+                    break;
+            }
+            return super.dispatchKeyEvent(event);
+        }
+
+        if (event.getKeyCode() == KeyEvent.KEYCODE_FORWARD || event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
+            switch (event.getAction()) {
+                case KeyEvent.ACTION_DOWN:
+                    if (event.getRepeatCount() == 0) {
+                        mLongPress = false;
+                        event.startTracking();
+                    } else {
+                        mLongPress = true;
+                        recordSeekTypeNum(SEEK_TYPE_RIGHT);
+                        switchPlayTypeUI(TYPE_SEEK_FORWARD, seekNum);
+                        showControlUI(false);
+                        return true;
+                    }
+                    break;
+                case KeyEvent.ACTION_UP:
+                    if (mLongPress) {
+                        mLongPress = false;
+                        sendSeekMsg(TYPE_SEEK_FORWARD);
+                        return true;
+                    }
+                    break;
+            }
+            return super.dispatchKeyEvent(event);
+        }
+
+        return super.dispatchKeyEvent(event);
+    }
+
+    private void sendSeekMsg(int seekType) {
+        Message msg = pvrHandler.obtainMessage(PVRHandler.MSG_PLAY_SPEED);
+        if (seekType == TYPE_SEEK_BACK) {
+            msg.arg1 = getSelectPosition(new int[]{1, 2, 4, 8, 16, 32, 64, 128}, seekNum);
+            pvrHandler.sendMessage(msg);
+        } else if (seekType == TYPE_SEEK_FORWARD) {
+            msg.arg1 = getSelectPosition(new int[]{1, 2, 4, 8, 16, 32, 64, 128}, seekNum) + 8;
+            pvrHandler.sendMessage(msg);
+        }
+    }
+
     private void showAudioDialog() {
         new AudioDialog().title(getString(R.string.audio)).where(AudioDialog.WHERE_RECORDPLAYER).show(getSupportFragmentManager(), AudioDialog.TAG);
     }
@@ -542,12 +614,9 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
                 .title(getString(R.string.subtitle))
                 .content(subtitles)
                 .position(currSubtitle)
-                .setOnDismissListener(new SubtitleDialog.OnDismissListener() {
-                    @Override
-                    public void onDismiss(SubtitleDialog dialog, int position, String checkContent) {
-                        if (position > 0)
-                            DTVPlayerManager.getInstance().openSubtitle(pids[position - 1]);
-                    }
+                .setOnDismissListener((dialog, position, checkContent) -> {
+                    if (position > 0)
+                        DTVPlayerManager.getInstance().openSubtitle(pids[position - 1]);
                 }).show(getSupportFragmentManager(), SubtitleDialog.TAG);
     }
 
@@ -576,12 +645,9 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
                 .title(getString(R.string.teletext))
                 .content(Arrays.asList(teletextNames))
                 .position(currTeleText)
-                .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
-                    @Override
-                    public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
-                        if (position > 0)
-                            DTVPlayerManager.getInstance().openTeletext(pids[position - 1]);
-                    }
+                .setOnDismissListener((dialog, position, checkContent) -> {
+                    if (position > 0)
+                        DTVPlayerManager.getInstance().openTeletext(pids[position - 1]);
                 }).show(getSupportFragmentManager(), "teletext");
     }
 
@@ -692,8 +758,9 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         }
         if (this.seekType == seekType) {
             if (this.seekNum == 32) {
-                this.seekType = SEEK_TYPE_NO;
-                this.seekNum = 1;
+                //快进倍数到达32时，保持此倍速
+//                this.seekType = SEEK_TYPE_NO;
+//                this.seekNum = 1;
                 return;
             }
             this.seekNum = this.seekNum * 2;
@@ -740,14 +807,15 @@ public class RecordPlayer extends BaseActivity implements UsbManager.OnUsbReceiv
         return 0;
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     private void stop() {
-        Log.i(TAG, "stop");
         switchPlayTypeUI(TYPE_STOP, -1);
         showControlUI(false);
         if (from == FROM_TOPMOST)
             pvrHandler.sendEmptyMessage(PVRHandler.MSG_STOP_TIMESHIFT);
-        else
+        else {
             pvrHandler.sendEmptyMessage(PVRHandler.MSG_STOP_PLAY);
+        }
     }
 
     private void sendUpgradePrgressMsg(HandlerMsgModel progMsg) {

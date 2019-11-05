@@ -49,8 +49,14 @@
             android:gravity="center_vertical"
             android:paddingLeft="40dp"
             android:text="@string/Channel_management"
-            android:textSize="15sp"
+            style="@style/TitleStyle"
             android:visibility="gone" />
+
+        <View
+            android:id="@+id/channel_manage_title_divider"
+            style="@style/TitleDividerStyle"
+            android:layout_below="@id/title_channel_manage"
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/item_channel_edit"
@@ -149,8 +155,14 @@
             android:gravity="center_vertical"
             android:paddingLeft="40dp"
             android:text="@string/dtv_setting"
-            android:textSize="15sp"
+            style="@style/TitleStyle"
             android:visibility="gone" />
+
+        <View
+            android:id="@+id/dtv_setting_title_divider"
+            style="@style/TitleDividerStyle"
+            android:layout_below="@id/title_dtv_setting"
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/item_general_settings"
