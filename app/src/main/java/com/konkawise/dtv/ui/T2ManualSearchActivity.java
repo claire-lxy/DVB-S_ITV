@@ -99,20 +99,22 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
     }
 
     private void initT2Data() {
-        satChannelInfoList = DTVProgramManager.getInstance().getSatTPInfo(Constants.T2_SATELLITE_INDEX);
+        satChannelInfoList = DTVProgramManager.getInstance().getSatTPInfo(Constants.SatIndex.T2);
         if (satChannelInfoList != null) {
             channel = satChannelInfoList.get(mCurrntChannel);
             mCurrntChannel = PreferenceManager.getInstance().getInt(Constants.PrefsKey.SAVE_CHANNEL);
-            DTVSearchManager.getInstance().tunerLockFreq(Constants.T2_SATELLITE_INDEX, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
+            DTVSearchManager.getInstance().tunerLockFreq(Constants.SatIndex.T2, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
         }
     }
 
     private void initT2Ui() {
         mTvTransponder.setText(String.valueOf(mCurrntChannel));
-        channel = satChannelInfoList.get(mCurrntChannel);
-        mTvFrequency.setText(MessageFormat.format(getString(R.string.frequency_text), (channel.Freq / 10) + "." + (channel.Freq % 10)));
-        mTvBandWidth.setText(MessageFormat.format(getString(R.string.bandwidth_text), channel.Symbol));
-        DTVSearchManager.getInstance().tunerLockFreq(Constants.T2_SATELLITE_INDEX, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
+        if (satChannelInfoList != null && mCurrntChannel < satChannelInfoList.size()) {
+            channel = satChannelInfoList.get(mCurrntChannel);
+            mTvFrequency.setText(MessageFormat.format(getString(R.string.frequency_text), (channel.Freq / 10) + "." + (channel.Freq % 10)));
+            mTvBandWidth.setText(MessageFormat.format(getString(R.string.bandwidth_text), channel.Symbol));
+            DTVSearchManager.getInstance().tunerLockFreq(Constants.SatIndex.T2, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
+        }
     }
 
     private void initCheckSignal() {
@@ -209,7 +211,7 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity {
                     @Override
                     public void onClick(View v) {
                         Intent intent = new Intent(T2ManualSearchActivity.this, ScanTVandRadioActivity.class);
-                        intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, Constants.T2_SATELLITE_INDEX);//mCurrentSatellite == 0
+                        intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, Constants.SatIndex.T2);
                         intent.putExtra(Constants.IntentKey.INTENT_FREQ, channel.Freq);
                         intent.putExtra(Constants.IntentKey.INTENT_SYMBOL, channel.Symbol);
                         intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.IntentValue.SEARCH_TYPE_T2MANUAL);
