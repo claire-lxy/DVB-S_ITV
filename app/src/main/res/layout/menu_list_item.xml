@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingLeft="40dp"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <ImageView
+        android:id="@+id/iv_channel_manage_back"
+        android:layout_width="wrap_content"
+        android:layout_height="10dp"
+        android:src="@mipmap/back"
+        android:visibility="gone"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/tv_channel_manage"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:background="@drawable/dvb_btn_selector"
+        android:gravity="center_vertical"
+        android:text="@string/Channel_management"
+        android:textSize="15sp" />
+
+</LinearLayout>

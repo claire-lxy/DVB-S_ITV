@@ -41,8 +41,18 @@
             android:configChanges="keyboardHidden" />
         <activity android:name="com.konkawise.dtv.ui.EditManualActivity" />
         <activity android:name="com.konkawise.dtv.ui.ScanTVandRadioActivity" />
-        <activity android:name="com.konkawise.dtv.ui.FavoriteActivity" />
-        <activity android:name="com.konkawise.dtv.ui.BookListActivity" />
+        <activity android:name="com.konkawise.dtv.ui.FavoriteActivity">
+            <intent-filter>
+                <action android:name="com.konkawise.dtv.ui.favorite" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name="com.konkawise.dtv.ui.BookListActivity">
+            <intent-filter>
+                <action android:name="com.konkawise.dtv.ui.booklist" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
         <receiver android:name="com.konkawise.dtv.receiver.UsbReceiver">
             <intent-filter>
@@ -58,19 +68,49 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name="com.konkawise.dtv.ui.GeneralSettingsActivity" />
+        <activity android:name="com.konkawise.dtv.ui.GeneralSettingsActivity">
+            <intent-filter>
+                <action android:name="com.konkawise.dtv.ui.generalsettings" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <activity android:name="com.konkawise.dtv.ui.ParentalControlActivity" />
-        <activity android:name="com.konkawise.dtv.ui.EpgActivity" />
-        <activity android:name="com.konkawise.dtv.ui.ChannelEditActivity" />
+        <activity android:name="com.konkawise.dtv.ui.EpgActivity">
+            <intent-filter>
+                <action android:name="com.konkawise.dtv.ui.epg" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name="com.konkawise.dtv.ui.ChannelEditActivity">
+            <intent-filter>
+                <action android:name="com.konkawise.dtv.ui.channeledit" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <activity android:name="com.konkawise.dtv.ui.InstallationT2Activity" />
         <activity android:name="com.konkawise.dtv.ui.T2ManualSearchActivity" />
-        <activity android:name="com.konkawise.dtv.ui.PVRSettingActivity" />
-        <activity android:name="com.konkawise.dtv.ui.RecordListActivity" />
+        <activity android:name="com.konkawise.dtv.ui.PVRSettingActivity">
+            <intent-filter>
+                <action android:name="com.konkawise.dtv.ui.pvrsetting" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name="com.konkawise.dtv.ui.RecordListActivity">
+            <intent-filter>
+                <action android:name="com.konkawise.dtv.ui.recordlist" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
         <activity
             android:name="com.konkawise.dtv.ui.RecordPlayer"
             android:configChanges="orientation|keyboardHidden"
             android:windowSoftInputMode="adjustUnspecified|stateHidden" />
-        <activity android:name="com.konkawise.dtv.ui.T2SettingsActivity" />
+        <activity android:name="com.konkawise.dtv.ui.T2SettingsActivity">
+            <intent-filter>
+                <action android:name="com.konkawise.dtv.ui.t2settings" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
         <provider
             android:name="com.konkawise.dtv.utils.ChannelLockProvider"
