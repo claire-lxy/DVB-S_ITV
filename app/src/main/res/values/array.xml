@@ -103,7 +103,7 @@
         <item>1 Sat 8*SCR</item>
         <item>2 Sat 4*SCR</item>
         <item>2 Sat 8*SCR</item>
-        <item>DCSS</item>
+        <item>dCSS</item>
     </string-array>
 
     <string-array name="position">

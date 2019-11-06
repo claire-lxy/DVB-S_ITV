@@ -696,9 +696,7 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
                 })
                 .compose(RxTransformer.threadTransformer())
                 .subscribe(result -> {
-                    if (result == -3) {
-                        mWaitingStartRecordDisposable.dispose();
-                    } else if (result != -4) {
+                    if (result != -4) {
                         mWaitingStartRecordDisposable.dispose();
                         callback.callback(result);
                     }
