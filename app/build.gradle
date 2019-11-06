@@ -56,15 +56,12 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-
     // support
     implementation "com.android.support:appcompat-v7:$rootProject.supportVersion"
     implementation "com.android.support:recyclerview-v7:$rootProject.supportVersion"
-
     // butterknife
     implementation "com.jakewharton:butterknife:$rootProject.butterKnifeVersion"
     annotationProcessor "com.jakewharton:butterknife-compiler:$rootProject.butterKnifeVersion"
-
     // eventbus
     implementation "org.greenrobot:eventbus:$rootProject.eventBusVersion"
     implementation files('libs/swdvb.jar')
