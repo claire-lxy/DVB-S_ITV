@@ -82,6 +82,14 @@ public class DTVProgramManager {
         return 0;
     }
 
+    public boolean isSatGroup(int currGroup, int currGroupParam, HProg_Struct_SatInfo satInfo) {
+        return currGroup == HProg_Enum_Group.SAT_GROUP && currGroupParam == satInfo.SatIndex;
+    }
+
+    public boolean isFavGroup(int currGroup, int currGroupParam, HProg_Struct_SatInfo satInfo) {
+        return currGroup == HProg_Enum_Group.FAV_GROUP && currGroupParam == (satInfo.SatIndex - RANGE_SAT_INDEX);
+    }
+
     /**
      * 根据卫星索引获取卫星频道列表
      */

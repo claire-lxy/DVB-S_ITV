@@ -82,12 +82,27 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity implemen
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     private void startCheckSignal() {
+        stopCheckSignal();
+
+        mCheckSignalHelper = new CheckSignalHelper();
+        mCheckSignalHelper.setOnCheckSignalListener((strength, quality) -> {
+            String strengthPercent = strength + "%";
+            mTvStrengthProgress.setText(strengthPercent);
+            mPbStrength.setProgress(strength);
+
+            String qualityPercent = quality + "%";
+            mTvQualityProgress.setText(qualityPercent);
+            mPbQuality.setProgress(quality);
+        });
         mCheckSignalHelper.startCheckSignal();
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     private void stopCheckSignal() {
-        mCheckSignalHelper.stopCheckSignal();
+        if (mCheckSignalHelper != null) {
+            mCheckSignalHelper.stopCheckSignal();
+            mCheckSignalHelper = null;
+        }
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
@@ -136,20 +151,6 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity implemen
             mTvBandWidth.setText(MessageFormat.format(getString(R.string.bandwidth_text), channel.Symbol));
             DTVSearchManager.getInstance().tunerLockFreq(Constants.SatIndex.T2, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
         }
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-    private void initCheckSignal() {
-        mCheckSignalHelper = new CheckSignalHelper(this);
-        mCheckSignalHelper.setOnCheckSignalListener((strength, quality) -> {
-            String strengthPercent = strength + "%";
-            mTvStrengthProgress.setText(strengthPercent);
-            mPbStrength.setProgress(strength);
-
-            String qualityPercent = quality + "%";
-            mTvQualityProgress.setText(qualityPercent);
-            mPbQuality.setProgress(quality);
-        });
     }
 
     @Override

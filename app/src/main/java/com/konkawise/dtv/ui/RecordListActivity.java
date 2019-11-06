@@ -18,7 +18,6 @@ import android.widget.TextView;
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.DTVPVRManager;
-import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.UsbManager;
 import com.konkawise.dtv.adapter.DeviceGroupAdapter;
 import com.konkawise.dtv.adapter.RecordListAdapter;
@@ -29,8 +28,8 @@ import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.PasswordDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.permission.PermissionHelper;
+import com.konkawise.dtv.rx.RxTransformer;
 import com.konkawise.dtv.utils.ToastUtils;
-import com.konkawise.dtv.weaktool.WeakRunnable;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -43,6 +42,7 @@ import butterknife.BindView;
 import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
+import io.reactivex.Observable;
 import vendor.konka.hardware.dtvmanager.V1_0.HPVR_Struct_RecFile;
 
 public class RecordListActivity extends BaseActivity implements LifecycleObserver, UsbManager.OnUsbReceiveListener {
@@ -135,7 +135,6 @@ public class RecordListActivity extends BaseActivity implements LifecycleObserve
     List<HPVR_Struct_RecFile> ltHpvrRecFileTS = new ArrayList<>();
     private DeviceGroupAdapter deviceGroupAdapter;
     public static RecordListAdapter mAdapter;
-    private LoadRecordListRunnable loadRecordListRunnable;
 
     @Override
     protected int getLayoutId() {
@@ -205,46 +204,25 @@ public class RecordListActivity extends BaseActivity implements LifecycleObserve
         deviceGroupAdapter.notifyDataSetChanged();
     }
 
-    private void updateRecordGroupData(int selectRecordPosition, boolean darked) {
-        if (loadRecordListRunnable == null) {
-            loadRecordListRunnable = new LoadRecordListRunnable(this);
-        }
-        loadRecordListRunnable.selectRecordPosition = selectRecordPosition;
-        loadRecordListRunnable.darked = darked;
-        ThreadPoolManager.getInstance().remove(loadRecordListRunnable);
-        ThreadPoolManager.getInstance().execute(loadRecordListRunnable);
+    private void updateRecordGroupData(final int selectRecordPosition, boolean darked) {
+        addObservable(Observable.just(queryRecordFiles(mUsbInfos.get(mCurrDevicePostion).path + "/" + RECORD_LIST_PATH))
+                .compose(RxTransformer.threadTransformer())
+                .subscribe(recordInfos -> {
+                    int selectPosition = selectRecordPosition;
+                    if (selectRecordPosition >= recordInfos.size()) selectPosition = 0;
+                    mCurrRecordPosition = selectPosition;
+                    mAdapter.setDarked(darked);
+                    mAdapter.clearSelect();
+                    mAdapter.setSelectPosition(selectPosition);
+                    mAdapter.updateData(recordInfos);
+                    mListView.setSelection(selectPosition);
+                }));
     }
 
     private void updateRecordGroup(int selectRecordPosition, boolean darked) {
         mAdapter.setDarked(darked);
         mAdapter.setSelectPosition(selectRecordPosition);
         mAdapter.notifyDataSetChanged();
-    }
-
-    private static class LoadRecordListRunnable extends WeakRunnable<RecordListActivity> {
-        int selectRecordPosition;
-        boolean darked;
-
-        public LoadRecordListRunnable(RecordListActivity view) {
-            super(view);
-        }
-
-        @Override
-        protected void loadBackground() {
-            RecordListActivity context = mWeakReference.get();
-            List<RecordInfo> ltRecordFiles = context.queryRecordFiles(context.mUsbInfos.get(context.mCurrDevicePostion).path + "/" + context.RECORD_LIST_PATH);
-            context.runOnUiThread(() -> {
-                if (selectRecordPosition >= ltRecordFiles.size())
-                    selectRecordPosition = 0;
-                context.mCurrRecordPosition = selectRecordPosition;
-                context.mAdapter.setDarked(darked);
-                context.mAdapter.clearSelect();
-                context.mAdapter.setSelectPosition(selectRecordPosition);
-                context.mAdapter.updateData(ltRecordFiles);
-                context.mListView.setSelection(selectRecordPosition);
-
-            });
-        }
     }
 
     private List<String> transUsbInfoToString(List<UsbInfo> tUsbInfos) {

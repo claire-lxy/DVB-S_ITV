@@ -225,7 +225,7 @@ public class TimeUtils {
      *
      * @return 00:00:00
      */
-    public static String getDecimalFormatTime(int seconds) {
+    public static String getDecimalFormatTime(long seconds) {
         if (seconds <= 0) {
             return "00:00:00";
         }

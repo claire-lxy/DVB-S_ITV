@@ -21,6 +21,7 @@ import android.widget.RelativeLayout;
 
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import io.reactivex.disposables.Disposable;
 
 /**
  * 跟随Activity生命周期消失的dialog
@@ -112,6 +113,18 @@ public abstract class BaseDialogFragment extends DialogFragment {
 
     protected int resizeDialogWidth() {
         return (int) (getResources().getDisplayMetrics().widthPixels * 0.5);
+    }
+
+    protected void addObservable(Disposable disposable) {
+        if (mActivity != null) {
+            mActivity.addObservable(disposable);
+        }
+    }
+
+    protected void removeObservable(Disposable disposable) {
+        if (mActivity != null) {
+            mActivity.removeObservable(disposable);
+        }
     }
 
     protected LifecycleObserver provideLifecycleObserver() {

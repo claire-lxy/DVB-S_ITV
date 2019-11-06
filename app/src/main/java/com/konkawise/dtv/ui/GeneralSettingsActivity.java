@@ -509,6 +509,7 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
 
                 case ITEM_PFBAR_TIMEOUT:
                     pfTimeoutPosition = getPlusStep(pfTimeoutPosition, mPfTimeoutArray.length - 1);
+                    mTvPfTimeout.setText(mPfTimeoutArray[pfTimeoutPosition]);
                     DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.PD_dispalytime, arrayPfBarTime[pfTimeoutPosition]);
                     break;
 

@@ -3,7 +3,6 @@ package com.konkawise.dtv.ui;
 import android.arch.lifecycle.Lifecycle;
 import android.arch.lifecycle.LifecycleObserver;
 import android.arch.lifecycle.OnLifecycleEvent;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.View;
@@ -12,7 +11,6 @@ import android.widget.ProgressBar;
 
 import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.adapter.FavoriteChannelAdapter;
 import com.konkawise.dtv.adapter.FavoriteGroupAdapter;
 import com.konkawise.dtv.base.BaseActivity;
@@ -20,7 +18,6 @@ import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.event.ReloadSatEvent;
 import com.konkawise.dtv.view.TVListView;
-import com.konkawise.dtv.weaktool.WeakRunnable;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -31,6 +28,9 @@ import butterknife.BindView;
 import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Group;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
 
@@ -62,7 +62,6 @@ public class FavoriteActivity extends BaseActivity implements LifecycleObserver 
 
     @OnFocusChange(R.id.lv_favorite_channel)
     void favoriteChannelFocusChange(boolean isFocus) {
-        Log.i(TAG, "channel focus change = " + isFocus);
         mFavoriteChannelFocus = isFocus;
 
         //设置左侧分组焦点失去时背景色
@@ -103,7 +102,6 @@ public class FavoriteActivity extends BaseActivity implements LifecycleObserver 
     private SparseArray<List<HProg_Struct_ProgInfo>> mFavoriteChannelsMap = new SparseArray<>();
     private FavoriteGroupAdapter mFavoriteGroupAdapter;
     private FavoriteChannelAdapter mFavoriteChannelAdapter;
-    private LoadFavoriteRunnable mLoadFavoriteRunnable;
 
     // 注意索引是+1的，获取item信息要-1处理
     private int mFavoriteGroupIndex;
@@ -143,43 +141,31 @@ public class FavoriteActivity extends BaseActivity implements LifecycleObserver 
     }
 
     private void loadFavoriteChannels(int favIndex) {
-        if (mLoadFavoriteRunnable == null) {
-            mLoadFavoriteRunnable = new LoadFavoriteRunnable(this);
+        if (mFavoriteChannelsMap == null || mFavoriteChannelsMap.size() == 0) {
+            addObservable(Observable.just(DTVProgramManager.getInstance().getCurrGroupProgInfoList(new int[1]))
+                    .subscribeOn(Schedulers.io())
+                    .map(channels -> DTVProgramManager.getInstance().getFavChannelMap(channels))
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnNext(listSparseArray -> mPbLoadingFaovrite.setVisibility(View.VISIBLE))
+                    .subscribe(map -> {
+                        mPbLoadingFaovrite.setVisibility(View.GONE);
+                        mFavoriteChannelsMap = map;
+                        refreshFavoriteAdapter(favIndex);
+                    }));
+        } else {
+            refreshFavoriteAdapter(favIndex);
         }
-        mPbLoadingFaovrite.setVisibility(View.VISIBLE);
-        ThreadPoolManager.getInstance().remove(mLoadFavoriteRunnable);
-        mLoadFavoriteRunnable.favIndex = favIndex;
-        ThreadPoolManager.getInstance().execute(mLoadFavoriteRunnable);
     }
 
-    private static class LoadFavoriteRunnable extends WeakRunnable<FavoriteActivity> {
-        int favIndex;
-
-        LoadFavoriteRunnable(FavoriteActivity view) {
-            super(view);
-        }
-
-        @Override
-        protected void loadBackground() {
-            FavoriteActivity context = mWeakReference.get();
-
-            if (context.mFavoriteChannelsMap == null || context.mFavoriteChannelsMap.size() == 0) {
-                List<HProg_Struct_ProgInfo> ltChannels = DTVProgramManager.getInstance().getCurrGroupProgInfoList(new int[1]);
-                context.mFavoriteChannelsMap = DTVProgramManager.getInstance().getFavChannelMap(ltChannels);
+    private void refreshFavoriteAdapter(int favIndex) {
+        List<HProg_Struct_ProgInfo> showProgList = new ArrayList<>();
+        for (HProg_Struct_ProgInfo pdpMInfo_t : mFavoriteChannelsMap.get(favIndex)) {
+            if (pdpMInfo_t.HideFlag == 0) {
+                showProgList.add(pdpMInfo_t);
             }
-
-            context.runOnUiThread(() -> {
-                context.mPbLoadingFaovrite.setVisibility(View.GONE);
-                List<HProg_Struct_ProgInfo> showProgList = new ArrayList<>();
-                for (HProg_Struct_ProgInfo pdpMInfo_t : context.mFavoriteChannelsMap.get(favIndex)) {
-                    if (pdpMInfo_t.HideFlag == 0) {
-                        showProgList.add(pdpMInfo_t);
-                    }
-                }
-                context.mFavoriteChannelAdapter.updateData(showProgList);
-                context.mFavoriteGroupAdapter.setSelectPosition(0);
-            });
         }
+        mFavoriteChannelAdapter.updateData(showProgList);
+        mFavoriteGroupAdapter.setSelectPosition(0);
     }
 
     private boolean isMulti() {

@@ -260,9 +260,11 @@ public class EditManualActivity extends BaseItemFocusChangeActivity implements L
     @BindArray(R.array.frequency_dCSS)
     int[] mFrequencyDCSSArray;
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-    private void initCheckSignal() {
-        mCheckSignalHelper = new CheckSignalHelper(this);
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void startCheckSignal() {
+        stopCheckSignal();
+
+        mCheckSignalHelper = new CheckSignalHelper();
         mCheckSignalHelper.setOnCheckSignalListener((strength, quality) -> {
             if (isTpEmpty()) {
                 strength = 0;
@@ -276,16 +278,15 @@ public class EditManualActivity extends BaseItemFocusChangeActivity implements L
             mTvQualityProgress.setText(qualityPercent);
             mPbQuality.setProgress(quality);
         });
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    private void startCheckSignal() {
         mCheckSignalHelper.startCheckSignal();
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     private void stopCheckSignal() {
-        mCheckSignalHelper.stopCheckSignal();
+        if (mCheckSignalHelper != null) {
+            mCheckSignalHelper.stopCheckSignal();
+            mCheckSignalHelper = null;
+        }
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)

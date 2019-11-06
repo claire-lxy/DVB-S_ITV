@@ -23,9 +23,9 @@ import com.konkawise.dtv.bean.BookingModel;
 import com.konkawise.dtv.dialog.BookDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.event.BookUpdateEvent;
+import com.konkawise.dtv.rx.RxTransformer;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.view.TVListView;
-import com.konkawise.dtv.weaktool.WeakAsyncTask;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -37,6 +37,8 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnItemSelected;
+import io.reactivex.Observable;
+import io.reactivex.schedulers.Schedulers;
 import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Enum_Repeat;
 import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Struct_Timer;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgBasicInfo;
@@ -90,7 +92,8 @@ public class BookListActivity extends BaseActivity implements LifecycleObserver,
         mAdapter = new BookListAdapter(this, new ArrayList<>());
         mLvBookList.setAdapter(mAdapter);
 
-        new LoadBookingTask(this).execute();
+        loadBookList();
+        preloadProgList();
     }
 
     @Override
@@ -105,28 +108,31 @@ public class BookListActivity extends BaseActivity implements LifecycleObserver,
         }
     }
 
-    private static class LoadBookingTask extends WeakAsyncTask<BookListActivity, Void, List<BookingModel>> {
+    private void loadBookList() {
+        addObservable(Observable.just(DTVBookingManager.getInstance().getBookingModelList())
+                .compose(RxTransformer.threadTransformer())
+                .subscribe(bookingModels -> {
+                    if (bookingModels != null && !bookingModels.isEmpty()) {
+                        mAdapter.addData(bookingModels);
+                    }
+                }));
+    }
 
-        LoadBookingTask(BookListActivity view) {
-            super(view);
-        }
+    private void preloadProgList() {
+        loadCurrTypeProgList();
+        loadAnotherTypeProgList();
+    }
 
-        @Override
-        protected List<BookingModel> backgroundExecute(Void... param) {
-            BookListActivity context = mWeakReference.get();
+    private void loadCurrTypeProgList() {
+        addObservable(Observable.just(DTVProgramManager.getInstance().getCurrGroupProgInfoList())
+                .subscribeOn(Schedulers.io())
+                .subscribe(progInfoList -> mCurrTypeProgList = progInfoList));
+    }
 
-            context.mCurrTypeProgList = DTVProgramManager.getInstance().getCurrGroupProgInfoList();
-            context.mAnotherTypeProgList = DTVProgramManager.getInstance().getAnotherTypeProgInfoList();
-
-            return DTVBookingManager.getInstance().getBookingModelList();
-        }
-
-        @Override
-        protected void postExecute(List<BookingModel> bookingModels) {
-            if (bookingModels != null && !bookingModels.isEmpty()) {
-                mWeakReference.get().mAdapter.addData(bookingModels);
-            }
-        }
+    private void loadAnotherTypeProgList() {
+        addObservable(Observable.just(DTVProgramManager.getInstance().getAnotherTypeProgInfoList())
+                .subscribeOn(Schedulers.io())
+                .subscribe(progInfoList -> mAnotherTypeProgList = progInfoList));
     }
 
     private void showPowerSavingOffDialog(String bookTitle, int bookingType) {
@@ -341,7 +347,7 @@ public class BookListActivity extends BaseActivity implements LifecycleObserver,
     public void onBookUpdate(BookUpdateEvent event) {
         if (event.bookInfo != null) {
             int position = findConflictBookProgPosition(event.bookInfo);
-            if (event.bookInfo.repeatway == HBooking_Enum_Repeat.ONCE && position > 0) {
+            if (event.bookInfo.repeatway == HBooking_Enum_Repeat.ONCE && position >= 0) {
                 mAdapter.removeData(position);
             }
         }

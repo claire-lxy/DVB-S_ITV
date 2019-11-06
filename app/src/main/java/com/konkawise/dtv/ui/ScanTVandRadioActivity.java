@@ -77,9 +77,11 @@ public class ScanTVandRadioActivity extends BaseActivity implements LifecycleObs
     @BindView(R.id.pb_scan_quality)
     ProgressBar mPbScanQuality;
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-    private void initCheckSignal() {
-        mCheckSignalHelper = new CheckSignalHelper(this);
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void startCheckSignal() {
+        stopCheckSignal();
+
+        mCheckSignalHelper = new CheckSignalHelper();
         mCheckSignalHelper.setOnCheckSignalListener((strength, quality) -> {
             String strengthPercent = strength + "%";
             mTvScanStrengthProgress.setText(strengthPercent);
@@ -89,16 +91,15 @@ public class ScanTVandRadioActivity extends BaseActivity implements LifecycleObs
             mTvScanQualityProgress.setText(qualityPercent);
             mPbScanQuality.setProgress(quality);
         });
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    private void startCheckSignal() {
         mCheckSignalHelper.startCheckSignal();
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     private void stopCheckSignal() {
-        mCheckSignalHelper.stopCheckSignal();
+        if (mCheckSignalHelper != null) {
+            mCheckSignalHelper.stopCheckSignal();
+            mCheckSignalHelper = null;
+        }
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)

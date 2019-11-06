@@ -19,15 +19,14 @@ import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.DTVSearchManager;
 import com.konkawise.dtv.DTVSettingManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.bean.LatLngModel;
 import com.konkawise.dtv.dialog.CommRemindDialog;
 import com.konkawise.dtv.dialog.OnCommCallback;
+import com.konkawise.dtv.rx.RxTransformer;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
 import com.konkawise.dtv.weaktool.WeakHandler;
-import com.konkawise.dtv.weaktool.WeakRunnable;
 
 import java.text.MessageFormat;
 import java.util.Collections;
@@ -35,6 +34,7 @@ import java.util.List;
 
 import butterknife.BindArray;
 import butterknife.BindView;
+import io.reactivex.Observable;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_TP;
 import vendor.konka.hardware.dtvmanager.V1_0.HTuner_Enum_MotorCtrlCode;
 import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
@@ -217,9 +217,11 @@ public class MotorActivity extends BaseItemFocusChangeActivity implements Lifecy
     @BindArray(R.array.stop_move_time)
     int[] mStopMoveTimeArray;
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-    private void initCheckSignal() {
-        mCheckSignalHelper = new CheckSignalHelper(this);
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void startCheckSignal() {
+        stopCheckSignal();
+
+        mCheckSignalHelper = new CheckSignalHelper();
         mCheckSignalHelper.setOnCheckSignalListener((strength, quality) -> {
             if (isTpEmpty()) {
                 strength = 0;
@@ -233,16 +235,15 @@ public class MotorActivity extends BaseItemFocusChangeActivity implements Lifecy
             mTvProgressQuality.setText(qualityPercent);
             mPbQuality.setProgress(quality);
         });
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    private void startCheckSignal() {
         mCheckSignalHelper.startCheckSignal();
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     private void stopCheckSignal() {
-        mCheckSignalHelper.stopCheckSignal();
+        if (mCheckSignalHelper != null) {
+            mCheckSignalHelper.stopCheckSignal();
+            mCheckSignalHelper = null;
+        }
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
@@ -261,10 +262,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity implements Lifecy
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private void stopMotorCtrl() {
-        ThreadPoolManager.getInstance().remove(mMotorRunnable);
-        mMotorRunnable.ctrlCode = HTuner_Enum_MotorCtrlCode.STOP;
-        mMotorRunnable.data = new int[]{0};
-        ThreadPoolManager.getInstance().execute(mMotorRunnable);
+        ctrlMotor(new MotorCtrlModel(HTuner_Enum_MotorCtrlCode.STOP, 0, new int[]{0}));
 
         sendStopMessage(0);
     }
@@ -283,7 +281,6 @@ public class MotorActivity extends BaseItemFocusChangeActivity implements Lifecy
     private int mDISEqcCommandStep;
     private CheckSignalHelper mCheckSignalHelper;
     private MotorHandler mMotorHandler;
-    private MotorCtrlRunnable mMotorRunnable;
     private HProg_Struct_SatInfo mSatInfo;
 
     private LatLngModel mSatLongitudeModel = new LatLngModel();
@@ -300,7 +297,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity implements Lifecy
         initIntent();
         initMotorUi();
         tryLockTp();
-        motorCtrlReady();
+        mMotorHandler = new MotorHandler(this);
     }
 
     @Override
@@ -347,11 +344,6 @@ public class MotorActivity extends BaseItemFocusChangeActivity implements Lifecy
         }
     }
 
-    private void motorCtrlReady() {
-        mMotorHandler = new MotorHandler(this);
-        mMotorRunnable = new MotorCtrlRunnable(this);
-    }
-
     private static class MotorHandler extends WeakHandler<MotorActivity> {
         static final int MSG_STOP_MOVE = 0;
 
@@ -369,28 +361,18 @@ public class MotorActivity extends BaseItemFocusChangeActivity implements Lifecy
         }
     }
 
-    private static class MotorCtrlRunnable extends WeakRunnable<MotorActivity> {
-        int ctrlCode;
-        int repeat;
-        int[] data;
-
-        MotorCtrlRunnable(MotorActivity view) {
-            super(view);
-        }
-
-        @Override
-        protected void loadBackground() {
-            MotorActivity context = mWeakReference.get();
-
-            DTVSearchManager.getInstance().tunerMotorControl(ctrlCode, repeat, data);
-            String moveStep = context.mMoveStepArray[context.mMoveStep];
-            if (TextUtils.equals(moveStep, context.getResources().getString(R.string.motor_move_step_west)) ||
-                    TextUtils.equals(moveStep, context.getResources().getString(R.string.motor_move_step_east))) {
-                if (data[0] != 0) {
-                    context.sendStopMessage(data[0]);
-                }
-            }
-        }
+    private void ctrlMotor(MotorCtrlModel motorCtrlModel) {
+        addObservable(Observable.just(DTVSearchManager.getInstance().tunerMotorControl(motorCtrlModel.ctrlCode, motorCtrlModel.repeat, motorCtrlModel.data))
+                .compose(RxTransformer.threadTransformer())
+                .subscribe(integer -> {
+                    String moveStep = mMoveStepArray[mMoveStep];
+                    if (TextUtils.equals(moveStep, getResources().getString(R.string.motor_move_step_west)) ||
+                            TextUtils.equals(moveStep, getResources().getString(R.string.motor_move_step_east))) {
+                        if (motorCtrlModel.data[0] != 0) {
+                            sendStopMessage(motorCtrlModel.data[0]);
+                        }
+                    }
+                }));
     }
 
     @Override
@@ -715,11 +697,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity implements Lifecy
                         }
                         savePosition();
                     } else {
-                        ThreadPoolManager.getInstance().remove(mMotorRunnable);
-                        mMotorRunnable.ctrlCode = motorCtrlModel.ctrlCode;
-                        mMotorRunnable.repeat = motorCtrlModel.repeat;
-                        mMotorRunnable.data = motorCtrlModel.data;
-                        ThreadPoolManager.getInstance().execute(mMotorRunnable);
+                        ctrlMotor(motorCtrlModel);
                     }
                 });
                 return true;
@@ -767,12 +745,7 @@ public class MotorActivity extends BaseItemFocusChangeActivity implements Lifecy
     }
 
     private void moveStep() {
-        MotorCtrlModel motorCtrlModel = getMotorCtrlModelByMoveStep();
-        ThreadPoolManager.getInstance().remove(mMotorRunnable);
-        mMotorRunnable.ctrlCode = motorCtrlModel.ctrlCode;
-        mMotorRunnable.repeat = motorCtrlModel.repeat;
-        mMotorRunnable.data = motorCtrlModel.data;
-        ThreadPoolManager.getInstance().execute(mMotorRunnable);
+        ctrlMotor(getMotorCtrlModelByMoveStep());
     }
 
     private void stepSizeChange() {

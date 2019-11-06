@@ -16,14 +16,14 @@ import com.konkawise.dtv.weaktool.WeakToolInterface;
 
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import io.reactivex.disposables.Disposable;
 
 public abstract class BaseActivity extends FragmentActivity
         implements WeakToolInterface, BaseFragment.FragmentCallback, HomeReceiver.OnReceiveHomeHandleListener {
     private HomeReceiver mHomeReceiver;
-
     private Unbinder mUnBinder;
-
     private LifecycleObserver mLifecycleObserver;
+    private DisposableDelegate mDisposableDelegate = new DisposableDelegate();
 
     // 标志位主要处理界面跳转到当前界面，当前界面会响应到onKeyUp同样按键事件
     protected boolean mDispatchKeyUpReady;
@@ -92,6 +92,7 @@ public abstract class BaseActivity extends FragmentActivity
     protected void onDestroy() {
         WeakToolManager.getInstance().removeWeakTool(this);
         if (mUnBinder != null) mUnBinder.unbind();
+        mDisposableDelegate.clearObservables();
         unregisterLifecycleObserver(mLifecycleObserver);
         super.onDestroy();
     }
@@ -106,6 +107,14 @@ public abstract class BaseActivity extends FragmentActivity
         if (observer != null) {
             getLifecycle().removeObserver(observer);
         }
+    }
+
+    protected void addObservable(Disposable disposable) {
+        mDisposableDelegate.addObservable(disposable);
+    }
+
+    protected void removeObservable(Disposable disposable) {
+        mDisposableDelegate.removeObservable(disposable);
     }
 
     protected LifecycleObserver provideLifecycleObserver() {

@@ -33,21 +33,11 @@ android {
 
     //自动生成指定名称的release发布版的 apk文件
     android.applicationVariants.all { variant ->
-        def appName
-        if (project.hasProperty("applicationName")) {
-            appName = applicationName
-        } else {
-            appName = parent.name
-        }
         variant.outputs.all { output ->
-            outputFileName = "iTV.apk";
+            outputFileName = "iTV.apk"
         }
     }
 
-}
-
-def releaseTime() {
-    return new Date().format("yyyy-MM-dd", TimeZone.getTimeZone("GMT+08:00"))
 }
 
 dependencies {
@@ -65,5 +55,8 @@ dependencies {
     implementation "org.greenrobot:eventbus:$rootProject.eventBusVersion"
     //gson
     implementation "com.google.code.gson:gson:$rootProject.gsonVersion"
+    // rx
+    implementation "io.reactivex.rxjava2:rxjava:$rootProject.rxJavaVersion"
+    implementation "io.reactivex.rxjava2:rxandroid:$rootProject.rxAndroidVersion"
     implementation files('libs/swdvb.jar')
 }

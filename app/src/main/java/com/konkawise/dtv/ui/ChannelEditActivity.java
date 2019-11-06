@@ -16,7 +16,6 @@ import android.widget.TextView;
 
 import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.adapter.ChannelEditAdapter;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.CommCheckItemDialog;
@@ -26,7 +25,7 @@ import com.konkawise.dtv.dialog.OnCheckGroupCallback;
 import com.konkawise.dtv.dialog.PIDDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
-import com.konkawise.dtv.weaktool.WeakRunnable;
+import com.konkawise.dtv.rx.RxTransformer;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -38,6 +37,9 @@ import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Group;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgEditInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
@@ -131,7 +133,6 @@ public class ChannelEditActivity extends BaseActivity implements LifecycleObserv
 
     private ChannelEditAdapter mAdapter;
     private int mCurrSelectPosition;
-    private LoadChannelRunnable mLoadChannelRunnable;
 
     private boolean mSaveFavorite;
     private boolean mSaveEditChannel;
@@ -163,34 +164,10 @@ public class ChannelEditActivity extends BaseActivity implements LifecycleObserv
         mAdapter = new ChannelEditAdapter(this, new ArrayList<>());
         mLvChannelList.setAdapter(mAdapter);
 
-        updateChannelList();
-    }
-
-    private static class LoadChannelRunnable extends WeakRunnable<ChannelEditActivity> {
-        int scrollToProgIndex;
-
-        LoadChannelRunnable(ChannelEditActivity view) {
-            super(view);
-        }
-
-        @Override
-        protected void loadBackground() {
-            ChannelEditActivity context = mWeakReference.get();
-            List<HProg_Struct_ProgInfo> channelList = context.getChannelList();
-            context.runOnUiThread(() -> {
-                context.mPbLoadingChannel.setVisibility(View.GONE);
-                if (channelList != null && !channelList.isEmpty()) {
-                    context.mAdapter.updateData(channelList);
-                    context.mLvChannelList.setSelection(context.scrollToPosition(scrollToProgIndex));
-                } else {
-                    context.mAdapter.updateData(new ArrayList<>());
-                }
-            });
-            if (context.analyFavFlag) {
-                context.mFavChannelsMap = DTVProgramManager.getInstance().getFavChannelMap(context.ltTotalProgList);
-                context.mEditFavChannelsMap = mWeakReference.get().mFavChannelsMap.clone();
-            }
-        }
+        int scrollToProgIndex = 0;
+        HProg_Struct_ProgInfo currProgInfo = DTVProgramManager.getInstance().getCurrProgInfo();
+        if (currProgInfo != null) scrollToProgIndex = currProgInfo.ProgIndex;
+        loadChannelList(scrollToProgIndex);
     }
 
     private int scrollToPosition(int targetProgIndex) {
@@ -205,22 +182,36 @@ public class ChannelEditActivity extends BaseActivity implements LifecycleObserv
     }
 
     private void updateChannelList() {
-        if (mLoadChannelRunnable == null) {
-            mLoadChannelRunnable = new LoadChannelRunnable(this);
-            HProg_Struct_ProgInfo currProgInfo = DTVProgramManager.getInstance().getCurrProgInfo();
-            if (currProgInfo != null) {
-                mLoadChannelRunnable.scrollToProgIndex = currProgInfo.ProgIndex;
-            }
-        } else {
-            if (mAdapter.getCount() > 0) {
-                if (mCurrSelectPosition > mAdapter.getData().size() - 1)
-                    mCurrSelectPosition = 0;
-                mLoadChannelRunnable.scrollToProgIndex = mAdapter.getItem(mCurrSelectPosition).ProgIndex;
-            }
+        int scrollToProgIndex = 0;
+        if (mAdapter.getCount() > 0) {
+            if (mCurrSelectPosition > mAdapter.getData().size() - 1) mCurrSelectPosition = 0;
+            scrollToProgIndex = mAdapter.getItem(mCurrSelectPosition).ProgIndex;
         }
-        mPbLoadingChannel.setVisibility(View.VISIBLE);
-        ThreadPoolManager.getInstance().remove(mLoadChannelRunnable);
-        ThreadPoolManager.getInstance().execute(mLoadChannelRunnable);
+        loadChannelList(scrollToProgIndex);
+    }
+
+    private void loadChannelList(int scrollToProgIndex) {
+        addObservable(Observable.just(getChannelList())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnNext(channelList -> mPbLoadingChannel.setVisibility(View.VISIBLE))
+                .observeOn(Schedulers.io())
+                .doOnNext(channelList -> {
+                    if (analyFavFlag) {
+                        mFavChannelsMap = DTVProgramManager.getInstance().getFavChannelMap(ltTotalProgList);
+                        mEditFavChannelsMap = mFavChannelsMap.clone();
+                    }
+                })
+                .compose(RxTransformer.threadTransformer())
+                .subscribe(channelList -> {
+                    mPbLoadingChannel.setVisibility(View.GONE);
+
+                    if (channelList != null && !channelList.isEmpty()) {
+                        mAdapter.updateData(channelList);
+                        mLvChannelList.setSelection(scrollToPosition(scrollToProgIndex));
+                    } else {
+                        mAdapter.updateData(new ArrayList<>());
+                    }
+                }));
     }
 
     private List<HProg_Struct_SatInfo> getSateList() {

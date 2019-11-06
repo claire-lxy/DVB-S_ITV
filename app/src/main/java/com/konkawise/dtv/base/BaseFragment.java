@@ -15,6 +15,7 @@ import com.konkawise.dtv.weaktool.WeakToolInterface;
 
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import io.reactivex.disposables.Disposable;
 
 public abstract class BaseFragment extends Fragment implements WeakToolInterface {
     private BaseActivity mActivity;
@@ -38,6 +39,7 @@ public abstract class BaseFragment extends Fragment implements WeakToolInterface
         View rootView = inflater.inflate(getLayoutId(), container, false);
         mUnBinder = ButterKnife.bind(this, rootView);
 
+        mLifecycleObserver = provideLifecycleObserver();
         mActivity.registerLifecycleObserver(mLifecycleObserver);
         return rootView;
     }
@@ -61,6 +63,22 @@ public abstract class BaseFragment extends Fragment implements WeakToolInterface
         if (mActivity != null) mActivity.onFragmentDetach(getTag());
         mActivity = null;
         super.onDetach();
+    }
+
+    protected void addObservable(Disposable disposable) {
+        if (mActivity != null) {
+            mActivity.addObservable(disposable);
+        }
+    }
+
+    protected void removeObservable(Disposable disposable) {
+        if (mActivity != null) {
+            mActivity.removeObservable(disposable);
+        }
+    }
+
+    protected LifecycleObserver provideLifecycleObserver() {
+        return null;
     }
 
     protected abstract int getLayoutId();

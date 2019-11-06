@@ -42,4 +42,8 @@ ext {
 
     // leakcanary
     leakCanaryVersion = '1.6.3'
+
+    // rx
+    rxJavaVersion = '2.2.7'
+    rxAndroidVersion = '2.1.1'
 }

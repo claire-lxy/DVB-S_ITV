@@ -14,7 +14,6 @@ import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.DTVSearchManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.adapter.TpListingAdapter;
 import com.konkawise.dtv.annotation.TpType;
 import com.konkawise.dtv.base.BaseActivity;
@@ -24,13 +23,14 @@ import com.konkawise.dtv.dialog.ScanDialog;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
-import com.konkawise.dtv.weaktool.WeakRunnable;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnItemSelected;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_TP;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 
@@ -89,9 +89,11 @@ public class TpListingActivity extends BaseActivity implements LifecycleObserver
         DTVSearchManager.getInstance().tunerLockFreq(getIndex(), getFreq(), getSymbol(), getQam(), 1, 0);
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-    private void initCheckSignal() {
-        mCheckSignalHelper = new CheckSignalHelper(this);
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void startCheckSignal() {
+        stopCheckSignal();
+
+        mCheckSignalHelper = new CheckSignalHelper();
         mCheckSignalHelper.setOnCheckSignalListener((strength, quality) -> {
             if (mAdapter.getCount() <= 0) {
                 strength = 0;
@@ -105,23 +107,21 @@ public class TpListingActivity extends BaseActivity implements LifecycleObserver
             mTvQualityProgress.setText(qualityPercent);
             mPbQuality.setProgress(quality);
         });
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    private void startCheckSignal() {
         mCheckSignalHelper.startCheckSignal();
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     private void stopCheckSignal() {
-        mCheckSignalHelper.stopCheckSignal();
+        if (mCheckSignalHelper != null) {
+            mCheckSignalHelper.stopCheckSignal();
+            mCheckSignalHelper = null;
+        }
     }
 
     private TpListingAdapter mAdapter;
     private int mSelectPosition;
 
     private CheckSignalHelper mCheckSignalHelper;
-    private LoadTpRunnable mLoadTpRunnable;
 
     @Override
     public int getLayoutId() {
@@ -160,38 +160,20 @@ public class TpListingActivity extends BaseActivity implements LifecycleObserver
     }
 
     private void loadTp(int position) {
-        if (mLoadTpRunnable == null) {
-            mLoadTpRunnable = new LoadTpRunnable(this);
-        }
-        ThreadPoolManager.getInstance().remove(mLoadTpRunnable);
-        mLoadTpRunnable.position = position;
-        ThreadPoolManager.getInstance().execute(mLoadTpRunnable);
-    }
+        addObservable(Observable.just(DTVProgramManager.getInstance().getSatTPInfo(getIndex()))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(satChannelInfoList -> {
+                    if (satChannelInfoList != null && !satChannelInfoList.isEmpty()) {
+                        mAdapter.updateData(satChannelInfoList);
+                        mListView.setSelection(position);
 
-    private static class LoadTpRunnable extends WeakRunnable<TpListingActivity> {
-        int position;
-
-        LoadTpRunnable(TpListingActivity view) {
-            super(view);
-        }
-
-        @Override
-        protected void loadBackground() {
-            TpListingActivity context = mWeakReference.get();
-            List<HProg_Struct_TP> satChannelInfoList = DTVProgramManager.getInstance().getSatTPInfo(context.getIndex());
-
-            context.runOnUiThread(() -> {
-                if (satChannelInfoList != null && !satChannelInfoList.isEmpty()) {
-                    context.mAdapter.updateData(satChannelInfoList);
-                    context.mListView.setSelection(position);
-
-                    HProg_Struct_TP channel = context.mAdapter.getItem(position);
-                    if (channel != null) {
-                        DTVSearchManager.getInstance().tunerLockFreq(context.getIndex(), channel.Freq, channel.Symbol, channel.Qam, 1, 0);
+                        HProg_Struct_TP channel = mAdapter.getItem(position);
+                        if (channel != null) {
+                            DTVSearchManager.getInstance().tunerLockFreq(getIndex(), channel.Freq, channel.Symbol, channel.Qam, 1, 0);
+                        }
                     }
-                }
-            });
-        }
+                }));
     }
 
     private int getIndex() {

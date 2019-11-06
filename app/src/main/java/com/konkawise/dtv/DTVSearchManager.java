@@ -109,8 +109,9 @@ public class DTVSearchManager {
     /**
      * 停止盲扫
      */
-    public void blindScanStop() {
+    public int blindScanStop() {
         DTVSearch.getInstance().blindScanStoped();
+        return 0;
     }
 
     /**
@@ -141,8 +142,8 @@ public class DTVSearchManager {
         return DTVSearch.getInstance().blindScanProgress();
     }
 
-    public void tunerMotorControl(int ctrlCode, int repeat, int[] data) {
-        DTVSearch.getInstance().tunerMotorControl(ctrlCode, repeat, data);
+    public int tunerMotorControl(int ctrlCode, int repeat, int[] data) {
+        return DTVSearch.getInstance().tunerMotorControl(ctrlCode, repeat, data);
     }
 
 }

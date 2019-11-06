@@ -40,7 +40,6 @@ import com.konkawise.dtv.HandlerMsgManager;
 import com.konkawise.dtv.PreferenceManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.RealTimeManager;
-import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.UsbManager;
 import com.konkawise.dtv.adapter.MenuListAdapter;
 import com.konkawise.dtv.adapter.TvListAdapter;
@@ -67,6 +66,7 @@ import com.konkawise.dtv.dialog.TeletextDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
 import com.konkawise.dtv.event.RecordStateChangeEvent;
 import com.konkawise.dtv.event.ReloadSatEvent;
+import com.konkawise.dtv.rx.RxTransformer;
 import com.konkawise.dtv.service.BookService;
 import com.konkawise.dtv.service.PowerService;
 import com.konkawise.dtv.service.RefreshChannelService;
@@ -75,9 +75,6 @@ import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
 import com.konkawise.dtv.weaktool.WeakHandler;
-import com.konkawise.dtv.weaktool.WeakRunnable;
-import com.konkawise.dtv.weaktool.WeakTimerTask;
-import com.sw.dvblib.DTVManager;
 import com.sw.dvblib.msg.MsgEvent;
 import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
 
@@ -93,12 +90,17 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
+import io.reactivex.Observable;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import vendor.konka.hardware.dtvmanager.V1_0.HPlayer_Struct_Subtitle;
 import vendor.konka.hardware.dtvmanager.V1_0.HPlayer_Struct_Teletext;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Group;
@@ -110,7 +112,6 @@ import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 
 public class Topmost extends BaseActivity implements LifecycleObserver {
     private static final String TAG = "Topmost";
-    private static final long RECORDING_PERIOD = 1000;
     private static final long PLAY_PROG_DELAY = 1000;
     private static final long JUMP_PROG_DELAY = 2500;
     private static final long RECORD_TIME_HIDE_DELAY = 10 * 1000;
@@ -311,9 +312,11 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
         DTVDVBManager.getInstance().releaseResource();
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-    private void initCheckSignal() {
-        mCheckSignalHelper = new CheckSignalHelper(this);
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void startCheckSignal() {
+        stopCheckSignal();
+
+        mCheckSignalHelper = new CheckSignalHelper();
         mCheckSignalHelper.setSignalRandom(false);
         mCheckSignalHelper.setOnCheckSignalListener((strength, quality) -> {
             if (strength <= 0 && quality <= 0) {
@@ -328,16 +331,15 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
                 }
             }
         });
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    private void startCheckSignal() {
         mCheckSignalHelper.startCheckSignal();
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     private void stopCheckSignal() {
-        mCheckSignalHelper.stopCheckSignal();
+        if (mCheckSignalHelper != null) {
+            mCheckSignalHelper.stopCheckSignal();
+            mCheckSignalHelper = null;
+        }
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
@@ -441,8 +443,6 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
     private boolean mLongPressed;
     private long mLongPressDelayTime;
 
-    private Timer mRecordingTimer;
-    private RecordingTimerTask mRecordingTimerTask;
     // 直接传递临时变量到startRecord回调内数值被更改，用成员变量记录录制时长
     private int mRecordSeconds;
 
@@ -468,10 +468,9 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
     private List<HProg_Struct_SatInfo> mSatList;
     // key:satIndex，fav分组的key从satIndex+DTVProgramManager.RANGE_SAT_INDEX开始，获取喜爱分组列表时要-DTVProgramManager.RANGE_SAT_INDEX
     private SparseArray<List<HProg_Struct_ProgInfo>> mProgListMap = new SparseArray<>();
-    private LoadProgRunnable mLoadProgRunnable;
-    private LoadSatRunnable mLoadSatRunnable;
 
-    private WaitingStartRecordRunnable mWaitingStartRecordRunnable;
+    private int mRecordDelay;
+    private long mTryStartRecordTime;
 
     private boolean mUsbAttach;
 
@@ -481,6 +480,11 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
     private MainMenuInfo mainMenuInfo = null;
     private MenuListAdapter menuListAdapter = null;
     private List<Integer> menuStack = new ArrayList<>();
+
+    private Disposable mRecordTimerDisposable;
+    private Disposable mLoadProgDisposable;
+    private Disposable mLoadSatDisposable;
+    private Disposable mWaitingStartRecordDisposable;
 
     private static class PlayHandler extends WeakHandler<Topmost> {
         static final int MSG_PLAY_PROG = 0;
@@ -566,7 +570,6 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
 
     @Override
     protected void setup() {
-        DTVManager.getInstance(); // 必须先初始化库，否则使用库会出现空指针异常
         mCurrProgGroup = DTVProgramManager.getInstance().getCurrGroup();
         mCurrProgGroupParams = DTVProgramManager.getInstance().getCurrGroupParam();
 
@@ -663,14 +666,43 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
     }
 
     private void executeRecord(UsbInfo usbInfo, OnCommCallback callback) {
-        if (mWaitingStartRecordRunnable == null) {
-            mWaitingStartRecordRunnable = new WaitingStartRecordRunnable(this, callback);
-        } else {
-            ThreadPoolManager.getInstance().remove(mWaitingStartRecordRunnable);
+        if (usbInfo == null || TextUtils.isEmpty(usbInfo.path)) {
+            callback.callback(UsbManager.USB_NOT_FOUND);
+            return;
         }
-        mWaitingStartRecordRunnable.usbInfo = usbInfo;
-        if (usbInfo != null) DTVSettingManager.getInstance().setDiskUUID(usbInfo.uuid);
-        ThreadPoolManager.getInstance().execute(mWaitingStartRecordRunnable);
+
+        DTVSettingManager.getInstance().setDiskUUID(usbInfo.uuid);
+        if (mWaitingStartRecordDisposable != null) {
+            mWaitingStartRecordDisposable.dispose();
+        }
+
+        mRecordDelay = 0; // 首次设置delay为0
+        mTryStartRecordTime = 0;
+        mWaitingStartRecordDisposable = Observable.interval(0, 100L, TimeUnit.MILLISECONDS)
+                .map(aLong -> {
+                    int result = DTVPVRManager.getInstance().startRecord(mRecordDelay, usbInfo.path);
+                    // success
+                    if (result != -4) {
+                        return result;
+                    }
+
+                    // timeout
+                    if (mTryStartRecordTime >= 5000) {
+                        return -3;
+                    }
+                    mRecordDelay = 1; // 启动录制失败设置为1
+                    mTryStartRecordTime += 100;
+                    return -4;
+                })
+                .compose(RxTransformer.threadTransformer())
+                .subscribe(result -> {
+                    if (result == -3) {
+                        mWaitingStartRecordDisposable.dispose();
+                    } else if (result != -4) {
+                        mWaitingStartRecordDisposable.dispose();
+                        callback.callback(result);
+                    }
+                });
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
@@ -704,93 +736,35 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
         });
     }
 
-    private static class WaitingStartRecordRunnable extends WeakRunnable<Topmost> {
-        private static final long MAX_TRY_RECORD_TIME = 5000;
-        private OnCommCallback callback;
-        private UsbInfo usbInfo;
-
-        WaitingStartRecordRunnable(Topmost view, OnCommCallback callback) {
-            super(view);
-            this.callback = callback;
-        }
-
-        @Override
-        protected void loadBackground() {
-            int recordDelay = 0; // 首次设置delay为0
-            int result;
-            long tryStartRecordTime = 0;
-            while (true) {
-                if (usbInfo == null || TextUtils.isEmpty(usbInfo.path)) {
-                    result = UsbManager.USB_NOT_FOUND;
-                    break;
-                }
-
-                result = DTVPVRManager.getInstance().startRecord(recordDelay, usbInfo.path);
-
-                if (result != -4) break;
-                if (tryStartRecordTime >= MAX_TRY_RECORD_TIME) break;
-                recordDelay = 1; // 启动录制失败设置为1
-
-                try {
-                    Thread.sleep(100);
-                    tryStartRecordTime += 100;
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            final int startRecordResult = result;
-            mWeakReference.get().runOnUiThread(() -> {
-                if (callback != null) {
-                    callback.callback(startRecordResult);
-                }
-            });
-        }
-    }
-
-    private void startRecordingTimer(int recordSeconds) {
+    private void startRecordingTimer(final int recordSeconds) {
         cancelRecordingTimer();
-        mRecordingTimer = new Timer();
-        mRecordingTimerTask = new RecordingTimerTask(this, recordSeconds);
-        mRecordingTimer.schedule(mRecordingTimerTask, 0, RECORDING_PERIOD);
+
+        mRecordTimerDisposable = Observable.interval(0, 1L, TimeUnit.SECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .map(currSecond -> {
+                    mTvRecordingTime.setText(TimeUtils.getDecimalFormatTime(currSecond));
+                    return currSecond;
+                })
+                .observeOn(Schedulers.io())
+                .map(currSecond -> recordSeconds - currSecond)
+                .compose(RxTransformer.threadTransformer())
+                .subscribe(countDownSecond -> {
+                    if (countDownSecond <= 0) {
+                        stopRecord();
+                    }
+                });
     }
 
     private void cancelRecordingTimer() {
-        if (mRecordingTimer != null) {
-            mRecordingTimer.cancel();
-            mRecordingTimer.purge();
-            mRecordingTimerTask.release();
-            mRecordingTimer = null;
-            mRecordingTimerTask = null;
+        if (mRecordTimerDisposable != null) {
+            mRecordTimerDisposable.dispose();
+            mRecordTimerDisposable = null;
         }
     }
 
     private void setRecordFlagStop() {
         DTVBookingManager.getInstance().setRecording(false);
         DTVPVRManager.getInstance().setRecording(false);
-    }
-
-    private static class RecordingTimerTask extends WeakTimerTask<Topmost> {
-        private int countDownSeconds;
-        private int recordSeconds;
-
-        RecordingTimerTask(Topmost view, int countDownSeconds) {
-            super(view);
-            this.countDownSeconds = countDownSeconds;
-        }
-
-        @Override
-        protected void runTimer() {
-            Topmost context = mWeakReference.get();
-
-            context.runOnUiThread(() -> {
-                if (--countDownSeconds <= 0) {
-                    context.stopRecord();
-                } else {
-                    context.mTvRecordingTime.setText(TimeUtils.getDecimalFormatTime(++recordSeconds));
-                }
-            });
-        }
     }
 
     private void initHandler() {
@@ -847,19 +821,17 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
     }
 
     private void initSatList() {
-        mLoadSatRunnable = new LoadSatRunnable(this);
-        ThreadPoolManager.getInstance().execute(mLoadSatRunnable);
+        updateSatList();
     }
 
     /**
      * 频道列表
      */
     private void initProgList() {
-        mLoadProgRunnable = new LoadProgRunnable(this);
         mProgListAdapter = new TvListAdapter(this, new ArrayList<>());
         mProgListView.setAdapter(mProgListAdapter);
         mProgListView.setOnKeyListener((v, keyCode, event) -> {
-            if (keyCode == KeyEvent.KEYCODE_PROG_YELLOW && event.getAction() == KeyEvent.ACTION_UP) {
+            if (mProgListShow && keyCode == KeyEvent.KEYCODE_PROG_YELLOW && event.getAction() == KeyEvent.ACTION_UP) {
                 showFindProgChannelDialog();
                 return true;
             }
@@ -873,11 +845,49 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
      * 更新频道列表
      */
     private void updateProgList() {
-        if (mLoadProgRunnable != null) {
-            mPbLoadingChannel.setVisibility(View.VISIBLE);
-            ThreadPoolManager.getInstance().remove(mLoadProgRunnable);
-            ThreadPoolManager.getInstance().execute(mLoadProgRunnable);
+        if (DTVProgramManager.getInstance().getCurrProgInfo() == null) return;
+
+        if (mLoadProgDisposable != null) {
+            mLoadProgDisposable.dispose();
+            removeObservable(mLoadProgDisposable);
         }
+
+        mLoadProgDisposable = Observable.create((ObservableOnSubscribe<List<HProg_Struct_ProgInfo>>) emitter -> {
+            while (mSatList == null) {
+                Log.i(TAG, "waiting load satellite");
+                Thread.sleep(100);
+            }
+            emitter.onNext(getProgList());
+            emitter.onComplete();
+        }).observeOn(AndroidSchedulers.mainThread())
+                .doOnNext(progList -> mPbLoadingChannel.setVisibility(View.VISIBLE))
+                .compose(RxTransformer.threadTransformer())
+                .subscribe(progList -> {
+                    mPbLoadingChannel.setVisibility(View.GONE);
+
+                    if (progList != null && !progList.isEmpty()) {
+                        int preProgIndex = DTVProgramManager.getInstance().getCurrProgInfo().ProgIndex;
+
+                        // 可能切换了频道类型，需要和当前最新的频道做对比
+                        HProg_Struct_ProgInfo oldProgInfo = mProgListAdapter.getItem(mCurrSelectProgPosition);
+
+                        mProgListAdapter.updateData(progList);
+
+                        mCurrSelectProgPosition = getPositionByIndex(preProgIndex);
+                        HProg_Struct_ProgInfo progInfo = mProgListAdapter.getItem(mCurrSelectProgPosition);
+                        updateProgListSelectionByPosotion(mCurrSelectProgPosition);
+                        DTVProgramManager.getInstance().setCurrProgNo(progInfo.ProgNo);
+
+                        // 更新完成频道列表，如果播放的不是当前频道或者切换了频道类型则切换播放
+                        if (progInfo.ProgIndex != preProgIndex ||
+                                (oldProgInfo != null && oldProgInfo.ProgType != progInfo.ProgType)) {
+                            playProg(progInfo.ProgNo);
+                        }
+                    } else {
+                        mProgListAdapter.clearData();
+                    }
+                });
+        addObservable(mLoadProgDisposable);
     }
 
     private void updateProgListSelection(int progNum) {
@@ -892,57 +902,6 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
         if (mProgListAdapter.getCount() > 0) {
             mProgListView.setSelection(scrollToPosition);
             mProgListAdapter.setSelectPosition(scrollToPosition);
-        }
-    }
-
-    private static class LoadProgRunnable extends WeakRunnable<Topmost> {
-
-        LoadProgRunnable(Topmost view) {
-            super(view);
-        }
-
-        @Override
-        protected void loadBackground() {
-            Topmost context = mWeakReference.get();
-            // 等待卫星列表获取完再获取频道列表
-            while (context.mSatList == null) {
-                Log.i(TAG, "waiting load satellite");
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            HProg_Struct_ProgInfo currProgInfo = DTVProgramManager.getInstance().getCurrProgInfo();
-            if (currProgInfo == null) return;
-
-            final int preProgIndex = DTVProgramManager.getInstance().getCurrProgInfo().ProgIndex;
-            List<HProg_Struct_ProgInfo> progList = context.getProgList();
-            context.runOnUiThread(() -> {
-                context.mPbLoadingChannel.setVisibility(View.GONE);
-                if (progList != null && !progList.isEmpty()) {
-                    // 可能切换了频道类型，需要和当前最新的频道做对比
-                    HProg_Struct_ProgInfo oldProgInfo = context.mProgListAdapter.getItem(context.mCurrSelectProgPosition);
-
-                    context.mProgListAdapter.updateData(progList);
-
-                    context.mCurrSelectProgPosition = context.getPositionByIndex(preProgIndex);
-                    HProg_Struct_ProgInfo progInfo = context.mProgListAdapter.getItem(context.mCurrSelectProgPosition);
-                    context.updateProgListSelectionByPosotion(context.mCurrSelectProgPosition);
-                    DTVProgramManager.getInstance().setCurrProgNo(progInfo.ProgNo);
-
-                    // 更新完成频道列表，如果播放的不是当前频道或者切换了频道类型则切换播放
-                    if (progInfo.ProgIndex != preProgIndex ||
-                            (oldProgInfo != null && oldProgInfo.ProgType != progInfo.ProgType)) {
-                        context.playProg(progInfo.ProgNo);
-                    }
-
-                } else {
-                    context.mProgListAdapter.clearData();
-//                    context.mProgListAdapter.updateData(new ArrayList<>());
-                }
-            });
         }
     }
 
@@ -982,46 +941,43 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
      * 更新卫星列表
      */
     private void updateSatList() {
-        if (mLoadSatRunnable != null) {
-            ThreadPoolManager.getInstance().remove(mLoadSatRunnable);
-            ThreadPoolManager.getInstance().execute(mLoadSatRunnable);
-        }
-    }
-
-    private static class LoadSatRunnable extends WeakRunnable<Topmost> {
-
-        LoadSatRunnable(Topmost view) {
-            super(view);
+        if (mLoadSatDisposable != null) {
+            mLoadSatDisposable.dispose();
+            removeObservable(mLoadSatDisposable);
         }
 
-        @Override
-        protected void loadBackground() {
-            Topmost context = mWeakReference.get();
-
-            List<HProg_Struct_SatInfo> allSatList = DTVProgramManager.getInstance().getAllSatListContainFav(context);
-            if (allSatList != null && !allSatList.isEmpty()) {
-                context.mSatList = new ArrayList<>(allSatList);
-                context.mCurrSatPosition = 0;
-                if (context.mCurrProgGroup != HProg_Enum_Group.WHOLE_GROUP) {
-                    for (int i = 0; i < allSatList.size(); i++) {
-                        if (context.mCurrProgGroup == HProg_Enum_Group.SAT_GROUP &&
-                                context.mCurrProgGroupParams == allSatList.get(i).SatIndex) {
-                            context.mCurrSatPosition = i;
-                            break;
-                        } else if (context.mCurrProgGroup == HProg_Enum_Group.FAV_GROUP &&
-                                context.mCurrProgGroupParams == (allSatList.get(i).SatIndex - DTVProgramManager.RANGE_SAT_INDEX)) {
-                            context.mCurrSatPosition = i;
-                            break;
+        mLoadSatDisposable = Observable.just(DTVProgramManager.getInstance().getAllSatListContainFav(this))
+                .doOnNext(allSatList -> {
+                    if (allSatList != null && !allSatList.isEmpty()) {
+                        mSatList = new ArrayList<>(allSatList);
+                        mCurrSatPosition = 0;
+                        if (mCurrProgGroup != HProg_Enum_Group.WHOLE_GROUP) {
+                            mCurrSatPosition = findCurrSatPosition(allSatList);
                         }
                     }
-                }
-                Log.i(TAG, "mCurrSatPosition:" + context.mCurrSatPosition);
+                })
+                .compose(RxTransformer.threadTransformer())
+                .subscribe(allSatList -> {
+                    if (allSatList != null && !allSatList.isEmpty()) {
+                        mTvSatelliteName.setText(mSatList.get(mCurrSatPosition).sat_name);
+                    } else {
+                        mSatList = new ArrayList<>();
+                    }
+                });
+        addObservable(mLoadSatDisposable);
+    }
 
-                context.runOnUiThread(() -> context.mTvSatelliteName.setText(context.mSatList.get(context.mCurrSatPosition).sat_name));
-            } else {
-                context.mSatList = new ArrayList<>();
+    private int findCurrSatPosition(List<HProg_Struct_SatInfo> allSatList) {
+        for (int i = 0; i < allSatList.size(); i++) {
+            HProg_Struct_SatInfo satInfo = allSatList.get(i);
+            if (satInfo != null) {
+                if (DTVProgramManager.getInstance().isSatGroup(mCurrProgGroup, mCurrProgGroupParams, satInfo)
+                        || DTVProgramManager.getInstance().isFavGroup(mCurrProgGroup, mCurrProgGroupParams, satInfo)) {
+                    return i;
+                }
             }
         }
+        return 0;
     }
 
     private void initSurfaceView() {

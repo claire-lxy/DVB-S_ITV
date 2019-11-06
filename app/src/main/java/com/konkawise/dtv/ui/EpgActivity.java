@@ -28,7 +28,6 @@ import com.konkawise.dtv.RealTimeManager;
 import com.konkawise.dtv.DTVBookingManager;
 import com.konkawise.dtv.DTVDVBManager;
 import com.konkawise.dtv.DTVEpgManager;
-import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.adapter.EpgChannelListAdapter;
 import com.konkawise.dtv.adapter.EpgProgListAdapter;
 import com.konkawise.dtv.annotation.BookConflictType;
@@ -40,12 +39,11 @@ import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.PasswordDialog;
 import com.konkawise.dtv.event.BookUpdateEvent;
+import com.konkawise.dtv.rx.RxTransformer;
 import com.konkawise.dtv.utils.TimeUtils;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.view.TVListView;
 import com.konkawise.dtv.weaktool.WeakHandler;
-import com.konkawise.dtv.weaktool.WeakRunnable;
-import com.konkawise.dtv.weaktool.WeakTimerTask;
 import com.sw.dvblib.DTVCommon;
 import com.sw.dvblib.msg.MsgEvent;
 import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
@@ -58,13 +56,17 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Enum_From;
 import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Enum_Task;
 import vendor.konka.hardware.dtvmanager.V1_0.HEPG_Struct_Event;
@@ -75,7 +77,6 @@ import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
 
 public class EpgActivity extends BaseActivity implements LifecycleObserver, RealTimeManager.OnReceiveTimeListener {
     private static final String TAG = "EpgActivity";
-    private static final long RELOAD_CHANNEL_PERIOD = 60 * 1000;
     private static final long PLAY_PROG_DELAY = 1000;
     private static final int[] mDateIds = {R.id.btn_date_0, R.id.btn_date_1, R.id.btn_date_2,
             R.id.btn_date_3, R.id.btn_date_4, R.id.btn_date_5, R.id.btn_date_6};
@@ -231,23 +232,17 @@ public class EpgActivity extends BaseActivity implements LifecycleObserver, Real
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     private void initUpdateEpgChannelTimer() {
-        mUpdateChannelTimer = new Timer();
-        mUpdateChannelTimer.schedule(new UpdateEpgChannelTimerTask(this), 0, RELOAD_CHANNEL_PERIOD);
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    private void cancelUpdateEpgChannelTimer() {
-        if (mUpdateChannelTimer != null) {
-            mUpdateChannelTimer.cancel();
-            mUpdateChannelTimer.purge();
-            mUpdateChannelTimer = null;
-        }
+        addObservable(Observable.interval(0, 60L, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.io())
+                .subscribe(aLong -> {
+                    notifyEpgChange(DTVProgramManager.getInstance().getCurrProgInfo());
+                    notifyUpdateDate();
+                }));
     }
 
     private EpgProgListAdapter mProgAdapter;
     private EpgChannelListAdapter mEpgChannelAdapter;
     private EpgMsgHandler mEpgMsgHandler;
-    private Timer mUpdateChannelTimer;
 
     private boolean mPasswordEntered = false;
     private boolean mPasswordDialogShowing;
@@ -259,7 +254,7 @@ public class EpgActivity extends BaseActivity implements LifecycleObserver, Real
     private int mCurrentFocusDateIndex;
     private boolean mDateButtonFocus;
 
-    private LoadEpgChannelRunnable mLoadEpgChannelRunnable;
+    private Disposable mLoadEpgChannelDisposable;
 
     @Override
     public void onReceiveTimeCallback(String time) {
@@ -300,20 +295,6 @@ public class EpgActivity extends BaseActivity implements LifecycleObserver, Real
                     context.initEpgChannelDate();
                     break;
             }
-        }
-    }
-
-    private static class UpdateEpgChannelTimerTask extends WeakTimerTask<EpgActivity> {
-
-        UpdateEpgChannelTimerTask(EpgActivity view) {
-            super(view);
-        }
-
-        @Override
-        protected void runTimer() {
-            final EpgActivity context = mWeakReference.get();
-            context.notifyEpgChange(DTVProgramManager.getInstance().getCurrProgInfo());
-            context.notifyUpdateDate();
         }
     }
 
@@ -409,23 +390,18 @@ public class EpgActivity extends BaseActivity implements LifecycleObserver, Real
 
             return false;
         });
-        ThreadPoolManager.getInstance().execute(new WeakRunnable<EpgActivity>(this) {
-            @Override
-            protected void loadBackground() {
-                int[] currentSelectPosition = new int[1];
-                List<HProg_Struct_ProgInfo> progList = DTVProgramManager.getInstance().getWholeGroupProgInfoList(currentSelectPosition);
-                runOnUiThread(() -> {
+
+        int[] currentSelectPosition = new int[1];
+        addObservable(Observable.just(DTVProgramManager.getInstance().getWholeGroupProgInfoList(currentSelectPosition))
+                .compose(RxTransformer.threadTransformer())
+                .subscribe(progInfoList -> {
                     mCurrProgSelectPosition = currentSelectPosition[0];
-                    mProgAdapter.updateData(progList);
+                    mProgAdapter.updateData(progInfoList);
                     mLvProgList.setSelection(mCurrProgSelectPosition);
-                });
-            }
-        });
+                }));
     }
 
     private void initEpgChannelList() {
-        mLoadEpgChannelRunnable = new LoadEpgChannelRunnable(this);
-
         mEpgChannelAdapter = new EpgChannelListAdapter(this, new ArrayList<>());
         mLvEpgChannel.setAdapter(mEpgChannelAdapter);
 
@@ -724,36 +700,29 @@ public class EpgActivity extends BaseActivity implements LifecycleObserver, Real
     private void updateEpgChannel() {
         clearDateFocus();
 
-        if (mLoadEpgChannelRunnable != null && mProgAdapter.isPositionValid(mLvProgList)) {
-            ThreadPoolManager.getInstance().remove(mLoadEpgChannelRunnable);
-            ThreadPoolManager.getInstance().execute(mLoadEpgChannelRunnable);
-        }
-    }
+        if (mProgAdapter.isPositionValid(mLvProgList)) {
+            if (mLoadEpgChannelDisposable != null && !mLoadEpgChannelDisposable.isDisposed()) {
+                mLoadEpgChannelDisposable.dispose(); // 切断重新加载
+                removeObservable(mLoadEpgChannelDisposable);
+            }
+            mLoadEpgChannelDisposable = Observable.just(DTVEpgManager.getInstance().getCurrProgSchInfo(mCurrentFocusDateIndex))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(epgChannelList -> {
+                        hideLoadingEpg();
 
-    private static class LoadEpgChannelRunnable extends WeakRunnable<EpgActivity> {
+                        if (mEpgChannelAdapter == null) {
+                            mEpgChannelAdapter = new EpgChannelListAdapter(this, new ArrayList<>());
+                            mLvEpgChannel.setAdapter(mEpgChannelAdapter);
+                        }
 
-        LoadEpgChannelRunnable(EpgActivity view) {
-            super(view);
-        }
-
-        @Override
-        protected void loadBackground() {
-            EpgActivity context = mWeakReference.get();
-
-            final List<HEPG_Struct_Event> epgChannelList = DTVEpgManager.getInstance().getCurrProgSchInfo(context.mCurrentFocusDateIndex);
-            context.runOnUiThread(() -> {
-                context.hideLoadingEpg();
-                if (context.mEpgChannelAdapter == null) {
-                    context.mEpgChannelAdapter = new EpgChannelListAdapter(context, new ArrayList<>());
-                    context.mLvEpgChannel.setAdapter(context.mEpgChannelAdapter);
-                }
-
-                if (epgChannelList != null && !epgChannelList.isEmpty()) {
-                    context.mEpgChannelAdapter.updateData(epgChannelList);
-                } else {
-                    context.mEpgChannelAdapter.updateData(new ArrayList<>());
-                }
-            });
+                        if (epgChannelList != null && !epgChannelList.isEmpty()) {
+                            mEpgChannelAdapter.updateData(epgChannelList);
+                        } else {
+                            mEpgChannelAdapter.updateData(new ArrayList<>());
+                        }
+                    });
+            addObservable(mLoadEpgChannelDisposable);
         }
     }
 
