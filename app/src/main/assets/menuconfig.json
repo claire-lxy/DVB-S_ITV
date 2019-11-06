@@ -1,0 +1,134 @@
+{
+  "ltItems": [
+    {
+      "callback": "Installation",
+      "checkPassword": false,
+      "checkProg": false,
+      "page": "",
+      "text": "Installation"
+    },
+    {
+      "callback": "",
+      "checkPassword": false,
+      "checkProg": true,
+      "page": "com.konkawise.dtv.ui.epg",
+      "text": "EPG"
+    },
+    {
+      "callback": "",
+      "checkPassword": false,
+      "checkProg": true,
+      "page": "",
+      "subItems": [
+        {
+          "callback": "",
+          "checkPassword": true,
+          "checkProg": false,
+          "page": "com.konkawise.dtv.ui.channeledit",
+          "text": "Channel Edit"
+        },
+        {
+          "callback": "",
+          "checkPassword": true,
+          "checkProg": false,
+          "page": "com.konkawise.dtv.ui.favorite",
+          "text": "Channel Favorite List"
+        },
+        {
+          "callback": "ClearChannel",
+          "checkPassword": true,
+          "checkProg": false,
+          "page": "",
+          "text": "Clear Channel"
+        },
+        {
+          "callback": "RestoreUserData",
+          "checkPassword": false,
+          "checkProg": false,
+          "page": "",
+          "text": "Restore User Data"
+        },
+        {
+          "callback": "Backup",
+          "checkPassword": false,
+          "checkProg": false,
+          "page": "",
+          "text": "Backup User Data"
+        },
+        {
+          "callback": "Back",
+          "checkPassword": false,
+          "checkProg": false,
+          "page": "",
+          "text": "Back"
+        }
+      ],
+      "text": "Channel Manager"
+    },
+    {
+      "callback": "",
+      "checkPassword": false,
+      "checkProg": false,
+      "page": "",
+      "subItems": [
+        {
+          "callback": "",
+          "checkPassword": false,
+          "checkProg": false,
+          "page": "com.konkawise.dtv.ui.generalsettings",
+          "text": "General Settings"
+        },
+        {
+          "callback": "",
+          "checkPassword": false,
+          "checkProg": false,
+          "page": "com.konkawise.dtv.ui.t2settings",
+          "text": "T/T2 Settings"
+        },
+        {
+          "callback": "ParentalControl",
+          "checkPassword": false,
+          "checkProg": false,
+          "page": "",
+          "text": "Parental Control"
+        },
+        {
+          "callback": "",
+          "checkPassword": false,
+          "checkProg": false,
+          "page": "com.konkawise.dtv.ui.pvrsetting",
+          "text": "PVR Settings"
+        },
+        {
+          "callback": "",
+          "checkPassword": false,
+          "checkProg": false,
+          "page": "com.konkawise.dtv.ui.booklist",
+          "text": "Book List"
+        },
+        {
+          "callback": "",
+          "checkPassword": false,
+          "checkProg": false,
+          "page": "com.konkawise.dtv.ui.recordlist",
+          "text": "Record List"
+        },
+        {
+          "callback": "Back",
+          "checkPassword": false,
+          "checkProg": false,
+          "page": "",
+          "text": "Back"
+        }
+      ],
+      "text": "DTV Setting"
+    },
+    {
+      "callback": "DataReset",
+      "checkPassword": true,
+      "checkProg": false,
+      "page": "",
+      "text": "Data Reset"
+    }
+  ]
+}

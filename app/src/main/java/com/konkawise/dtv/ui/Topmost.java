@@ -27,8 +27,12 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.konkawise.dtv.DTVCommonManager;
+import com.google.gson.Gson;
 import com.konkawise.dtv.Constants;
+import com.konkawise.dtv.DTVBookingManager;
+import com.konkawise.dtv.DTVCommonManager;
+import com.konkawise.dtv.DTVDVBManager;
+import com.konkawise.dtv.DTVPVRManager;
 import com.konkawise.dtv.DTVPlayerManager;
 import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.DTVSettingManager;
@@ -36,15 +40,15 @@ import com.konkawise.dtv.HandlerMsgManager;
 import com.konkawise.dtv.PreferenceManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.RealTimeManager;
-import com.konkawise.dtv.DTVBookingManager;
-import com.konkawise.dtv.DTVPVRManager;
-import com.konkawise.dtv.DTVDVBManager;
 import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.UsbManager;
+import com.konkawise.dtv.adapter.MenuListAdapter;
 import com.konkawise.dtv.adapter.TvListAdapter;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.base.BaseDialogFragment;
 import com.konkawise.dtv.bean.HandlerMsgModel;
+import com.konkawise.dtv.bean.MainMenuInfo;
+import com.konkawise.dtv.bean.MenuItemInfo;
 import com.konkawise.dtv.bean.UsbInfo;
 import com.konkawise.dtv.dialog.AudioDialog;
 import com.konkawise.dtv.dialog.CommCheckItemDialog;
@@ -81,6 +85,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -90,18 +96,17 @@ import java.util.Set;
 import java.util.Timer;
 
 import butterknife.BindView;
-import butterknife.OnClick;
 import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
-import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_TP;
-import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Group;
-import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Type;
-import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 import vendor.konka.hardware.dtvmanager.V1_0.HPlayer_Struct_Subtitle;
 import vendor.konka.hardware.dtvmanager.V1_0.HPlayer_Struct_Teletext;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Group;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Type;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_TP;
+import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 
 public class Topmost extends BaseActivity implements LifecycleObserver {
     private static final String TAG = "Topmost";
@@ -133,6 +138,9 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
     @BindView(R.id.lv_prog_list)
     ListView mProgListView;
 
+    @BindView(R.id.lv_menu)
+    ListView mMenuListView;
+
     @BindView(R.id.pb_loading_channel)
     ProgressBar mPbLoadingChannel;
 
@@ -142,71 +150,82 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
     @BindView(R.id.ll_menu)
     ViewGroup mMenu;
 
-    @BindView(R.id.item_installation)
-    TextView mItemInstallation;
+    @OnItemSelected(R.id.lv_menu)
+    void onMenuSelected(int position) {
+        mCurrSelectMenuPosition = position;
+    }
 
-    @BindView(R.id.item_epg)
-    TextView mItemEpg;
+    @OnItemClick(R.id.lv_menu)
+    void onMenuClick(int position) {
+        MenuItemInfo clickItem = menuListAdapter.getData().get(position);
+        if (clickItem.isCheckProg()) {
+            if (DTVProgramManager.getInstance().getProgNumOfGroup(HProg_Enum_Group.TOTAL_GROUP, 0) <= 0) {
+                showRemindSearchDialog();
+                return;
+            }
+        } else if (clickItem.isCheckPassword()) {
+            if (DTVSettingManager.getInstance().isOpenMenuLock() && !mPasswordEntered) {
+                showPasswordDialog((inputPassword, currentPassword, isValid) -> {
+                    if (isValid) {
+                        mPasswordEntered = true;
+                        handlerMenuEvent(clickItem, position);
+                    }
+                });
+                return;
+            }
+        }
+        handlerMenuEvent(clickItem, position);
 
-    @BindView(R.id.item_channel_manage)
-    ViewGroup mItemChannelManage;
+    }
 
-    @BindView(R.id.iv_channel_manage_back)
-    ImageView mIvChannelManageBack;
+    private void handlerMenuEvent(MenuItemInfo clickItem, int position) {
+        if (!clickItem.getPage().isEmpty()) {
+            Intent intent = new Intent();
+            intent.setAction(clickItem.getPage());
+            startActivity(intent);
+        } else if (clickItem.getSubItems() != null) {
+            menuListAdapter.updateData(clickItem.getSubItems());
+            mMenuListView.setSelection(0);
+            menuStack.add(position);
+        } else {
+            switch (clickItem.getCallback()) {
+                case Constants.TopmostMenuEvent.INSTALLATION:
+                    showS2OrT2Dialog(true);
+                    break;
+                case Constants.TopmostMenuEvent.BACK:
+                    MenuItemInfo tempItem = null;
+                    List<MenuItemInfo> tempItems = new ArrayList<>();
+                    for (int i = 0; i < menuStack.size(); i++) {
+                        if (i == 0) {
+                            tempItems = mainMenuInfo.getLtItems();
+                            tempItem = tempItems.get(menuStack.get(i));
+                        } else {
+                            tempItems = tempItem.getSubItems();
+                            tempItem = tempItems.get(menuStack.get(i));
+                        }
+                    }
+                    menuListAdapter.updateData(tempItems);
+                    mMenuListView.setSelection(menuStack.get(menuStack.size() - 1));
+                    menuStack.remove(menuStack.size() - 1);
+                    break;
+                case Constants.TopmostMenuEvent.CLEARCHANNEL:
+                    showClearChannelDialog();
+                    break;
+                case Constants.TopmostMenuEvent.RESTOREUSERDATA:
 
-    @BindView(R.id.tv_channel_manage)
-    TextView mTvChannelManage;
+                    break;
+                case Constants.TopmostMenuEvent.BACKUP:
 
-    @BindView(R.id.title_channel_manage)
-    TextView mTitleChannelManage;
-
-    @BindView(R.id.item_channel_edit)
-    TextView mItemChannelEdit;
-
-    @BindView(R.id.item_channel_favorite)
-    TextView mItemChannelFavorite;
-
-    @BindView(R.id.item_clear_channel)
-    TextView mItemClearChannel;
-
-    @BindView(R.id.item_restore_user_data)
-    TextView mItemRestoreUserData;
-
-    @BindView(R.id.item_backup_user_data)
-    TextView mItemBackupUserData;
-
-    @BindView(R.id.item_dtv_setting)
-    ViewGroup mItemDtvSetting;
-
-    @BindView(R.id.iv_dtv_setting_back)
-    ImageView mIvDTVSettingBack;
-
-    @BindView(R.id.tv_dtv_setting)
-    TextView mTvDTVSetting;
-
-    @BindView(R.id.title_dtv_setting)
-    TextView mTitleDTVSetting;
-
-    @BindView(R.id.item_general_settings)
-    TextView mItemGeneralSettings;
-
-    @BindView(R.id.item_t2_settings)
-    TextView mItemT2Settings;
-
-    @BindView(R.id.item_parental_control)
-    TextView mItemParentalControl;
-
-    @BindView(R.id.item_pvr_settings)
-    TextView mItemPVRSettings;
-
-    @BindView(R.id.item_book_list)
-    TextView mItemBookList;
-
-    @BindView(R.id.item_record_list)
-    TextView mItemRecordList;
-
-    @BindView(R.id.item_data_reset)
-    TextView mItemDataReset;
+                    break;
+                case Constants.TopmostMenuEvent.PARENTALCONTAOL:
+                    showParentalControlPasswordDialog();
+                    break;
+                case Constants.TopmostMenuEvent.DATARESET:
+                    showDataResetDialog();
+                    break;
+            }
+        }
+    }
 
     @OnItemSelected(R.id.lv_prog_list)
     void onItemSelect(int position) {
@@ -232,120 +251,6 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
         }
     }
 
-    @OnClick(R.id.item_installation)
-    void installation() {
-        showS2OrT2Dialog(true);
-    }
-
-    @OnClick(R.id.item_epg)
-    void epg() {
-        gotoEpg();
-    }
-
-    private void gotoEpg() {
-        if (mProgListAdapter.getCount() <= 0) {
-            if (mMenuShow) {
-                showRemindSearchDialog();
-            }
-        } else {
-            startActivity(new Intent(this, EpgActivity.class));
-        }
-    }
-
-    @OnClick(R.id.item_channel_manage)
-    void channelManage() {
-        if (DTVProgramManager.getInstance().getProgNumOfGroup(HProg_Enum_Group.TOTAL_GROUP, 0) <= 0 && !isShowingSecondChannelManageItem()) {
-            if (mMenuShow) {
-                showRemindSearchDialog();
-            }
-        } else {
-            if (isShowingSecondChannelManageItem()) {
-                //从ChannelManagement菜单返回Menu，ChannelManagement获取焦点
-                mItemChannelManage.requestFocus();
-            }
-            toggleChannelManageItem();
-            mItemChannelEdit.requestFocus();
-        }
-    }
-
-    @OnClick(R.id.item_channel_edit)
-    void channelEdit() {
-        if (DTVSettingManager.getInstance().isOpenMenuLock() && !mPasswordEntered) {
-            showPasswordDialog((inputPassword, currentPassword, isValid) -> {
-                if (isValid) {
-                    mPasswordEntered = true;
-                    startActivity(new Intent(Topmost.this, ChannelEditActivity.class));
-                }
-            });
-        } else {
-            startActivity(new Intent(this, ChannelEditActivity.class));
-        }
-    }
-
-    @OnClick(R.id.item_channel_favorite)
-    void channelFavorite() {
-        if (DTVSettingManager.getInstance().isOpenMenuLock() && !mPasswordEntered) {
-            showPasswordDialog((inputPassword, currentPassword, isValid) -> {
-                if (isValid) {
-                    mPasswordEntered = true;
-                    startActivity(new Intent(Topmost.this, FavoriteActivity.class));
-                }
-            });
-        } else {
-            startActivity(new Intent(this, FavoriteActivity.class));
-        }
-    }
-
-    @OnClick(R.id.item_clear_channel)
-    void clearChannel() {
-        if (DTVSettingManager.getInstance().isOpenMenuLock() && !mPasswordEntered) {
-            showPasswordDialog((inputPassword, currentPassword, isValid) -> {
-                if (isValid) {
-                    mPasswordEntered = true;
-                    showClearChannelDialog();
-                }
-            });
-        } else {
-            showClearChannelDialog();
-        }
-    }
-
-    @OnClick(R.id.item_restore_user_data)
-    void restoreUserData() {
-
-    }
-
-    @OnClick(R.id.item_backup_user_data)
-    void backupUserData() {
-
-    }
-
-    @OnClick(R.id.item_dtv_setting)
-    void dtvSetting() {
-        if (isShowingSecondDTVSettingItem()) {
-            //从DTVSetting菜单返回Menu，DTVSetting获取焦点
-            mItemDtvSetting.requestFocus();
-        }
-        toggleDTVSettingItem();
-        mItemGeneralSettings.requestFocus();
-    }
-
-    @OnClick(R.id.item_general_settings)
-    void generalSettings() {
-        Intent intent = new Intent(this, GeneralSettingsActivity.class);
-        startActivity(intent);
-    }
-
-    @OnClick(R.id.item_t2_settings)
-    void t2Settings() {
-        startActivity(new Intent(this, T2SettingsActivity.class));
-    }
-
-    @OnClick(R.id.item_parental_control)
-    void parentalControl() {
-        showParentalControlPasswordDialog();
-    }
-
     private void showParentalControlPasswordDialog() {
         new PasswordDialog()
                 .setInvalidClose(true)
@@ -359,37 +264,13 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
                 }).show(getSupportFragmentManager(), PasswordDialog.TAG);
     }
 
-    @OnClick(R.id.item_pvr_settings)
-    void PVRSettings() {
-        startActivity(new Intent(this, PVRSettingActivity.class));
-    }
-
-    @OnClick(R.id.item_book_list)
-    void BookList() {
-        List<HProg_Struct_ProgInfo> progList = getProgList();
-        if (progList == null || progList.isEmpty()) {
-            ToastUtils.showToast(R.string.dialog_no_search);
-            return;
-        }
-        startActivity(new Intent(this, BookListActivity.class));
-    }
-
-    @OnClick(R.id.item_record_list)
-    void recordList() {
-        startActivity(new Intent(this, RecordListActivity.class));
-    }
-
-    @OnClick(R.id.item_data_reset)
-    void factoryReset() {
-        if (DTVSettingManager.getInstance().isOpenMenuLock() && !mPasswordEntered) {
-            showPasswordDialog((inputPassword, currentPassword, isValid) -> {
-                if (isValid) {
-                    mPasswordEntered = true;
-                    showDataResetDialog();
-                }
-            });
+    private void gotoEpg() {
+        if (mProgListAdapter.getCount() <= 0) {
+            if (mMenuShow) {
+                showRemindSearchDialog();
+            }
         } else {
-            showDataResetDialog();
+            startActivity(new Intent(this, EpgActivity.class));
         }
     }
 
@@ -546,6 +427,13 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
         DTVPlayerManager.getInstance().stopPlay(DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.PD_SwitchMode));
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void resetMenu() {
+        if (mainMenuInfo != null) {
+            setupMenuList(mainMenuInfo.getLtItems());
+        }
+    }
+
     private int mCurrProgGroup;
     private int mCurrProgGroupParams;
 
@@ -575,6 +463,7 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
 
     private TvListAdapter mProgListAdapter;
     private int mCurrSelectProgPosition;
+    private int mCurrSelectMenuPosition;
     private int mCurrSatPosition;
     private List<HProg_Struct_SatInfo> mSatList;
     // key:satIndex，fav分组的key从satIndex+DTVProgramManager.RANGE_SAT_INDEX开始，获取喜爱分组列表时要-DTVProgramManager.RANGE_SAT_INDEX
@@ -588,6 +477,10 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
 
     private CheckSignalHelper mCheckSignalHelper;
     private boolean mSignalOk = true;
+
+    private MainMenuInfo mainMenuInfo = null;
+    private MenuListAdapter menuListAdapter = null;
+    private List<Integer> menuStack = new ArrayList<>();
 
     private static class PlayHandler extends WeakHandler<Topmost> {
         static final int MSG_PLAY_PROG = 0;
@@ -678,6 +571,7 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
         mCurrProgGroupParams = DTVProgramManager.getInstance().getCurrGroupParam();
 
         initHandler();
+        initMenuData();
         initSatList();
         initProgList();
         initSurfaceView();
@@ -931,6 +825,25 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
      */
     private void hideProgNum() {
         sendProgMsg(new HandlerMsgModel(ProgHandler.MSG_HIDE_PROG_NUM));
+    }
+
+    private void initMenuData() {
+        try {
+            InputStreamReader reader = new InputStreamReader(getResources().getAssets().open(Constants.TopmostMenuEvent.MENU_CONFIG_NAME));
+            BufferedReader bufferedReader = new BufferedReader(reader);
+            String line = "";
+            String result = "";
+            while ((line = bufferedReader.readLine()) != null) {
+                result += line;
+            }
+            Gson gson = new Gson();
+            mainMenuInfo = gson.fromJson(result, MainMenuInfo.class);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            mainMenuInfo = null;
+        }
+        menuListAdapter = new MenuListAdapter(this, new ArrayList<>());
+        mMenuListView.setAdapter(menuListAdapter);
     }
 
     private void initSatList() {
@@ -1479,7 +1392,6 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
                     .setOnSearchChannelListener(new SearchChannelDialog.OnSearchListener() {
                         @Override
                         public void onBackSearch() {
-                            mItemInstallation.requestFocus();
                             toggleMenu(true);
                         }
 
@@ -1501,10 +1413,7 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
     private void showRemindSearchDialog() {
         new CommRemindDialog()
                 .content(getString(R.string.no_program))
-                .setOnPositiveListener("", () -> {
-                    mItemInstallation.requestFocus();
-                    showS2OrT2Dialog(true);
-                }).show(getSupportFragmentManager(), CommRemindDialog.TAG);
+                .setOnPositiveListener("", () -> showS2OrT2Dialog(true)).show(getSupportFragmentManager(), CommRemindDialog.TAG);
     }
 
     private void showPasswordDialog() {
@@ -1799,7 +1708,6 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        if (mMenuShow) restoreMenuItem();// menu隐藏动画执行结束，恢复menu的item显示
                         mMenuShow = !mMenuShow;
 
                         if (!mMenuShow) {
@@ -1808,6 +1716,8 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
                             } else {
                                 if (!isStop) showSearchChannelDialog();
                             }
+                        } else {
+                            mMenuListView.requestFocus();
                         }
                     }
                 });
@@ -1835,80 +1745,13 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
         }
     }
 
+    private void setupMenuList(List<MenuItemInfo> itemInfos) {
+        if (itemInfos == null || itemInfos.size() == 0)
+            return;
 
-    private void toggleChannelManageItem() {
-        boolean isShowingSecondChannelManageItem = isShowingSecondChannelManageItem();
-        mItemInstallation.setVisibility(isShowingSecondChannelManageItem ? View.VISIBLE : View.GONE);
-        mItemEpg.setVisibility(isShowingSecondChannelManageItem ? View.VISIBLE : View.GONE);
-        mItemDtvSetting.setVisibility(isShowingSecondChannelManageItem ? View.VISIBLE : View.GONE);
-        mItemDataReset.setVisibility(isShowingSecondChannelManageItem ? View.VISIBLE : View.GONE);
-        mIvChannelManageBack.setVisibility(isShowingSecondChannelManageItem ? View.GONE : View.VISIBLE);
-        mTvChannelManage.setText(getString(isShowingSecondChannelManageItem ? R.string.Channel_management : R.string.back));
-        if (!isShowingSecondChannelManageItem) mItemChannelEdit.requestFocus();
-        mItemChannelEdit.setVisibility(isShowingSecondChannelManageItem ? View.GONE : View.VISIBLE);
-        mItemChannelFavorite.setVisibility(isShowingSecondChannelManageItem ? View.GONE : View.VISIBLE);
-        mItemClearChannel.setVisibility(isShowingSecondChannelManageItem ? View.GONE : View.VISIBLE);
-        mItemRestoreUserData.setVisibility(!isShowingSecondChannelManageItem && DTVProgramManager.getInstance().isProgCanPlay() ? View.VISIBLE : View.GONE);
-        mItemBackupUserData.setVisibility(isShowingSecondChannelManageItem ? View.GONE : View.VISIBLE);
-        mTitleChannelManage.setVisibility(isShowingSecondChannelManageItem ? View.GONE : View.VISIBLE);
-    }
-
-    /**
-     * 是否正在显示ChannelManage二级菜单
-     */
-    private boolean isShowingSecondChannelManageItem() {
-        return mIvChannelManageBack.getVisibility() == View.VISIBLE;
-    }
-
-    private void toggleDTVSettingItem() {
-        boolean isShowingSecondDTVSettingItem = isShowingSecondDTVSettingItem();
-        mItemInstallation.setVisibility(isShowingSecondDTVSettingItem ? View.VISIBLE : View.GONE);
-        mItemEpg.setVisibility(isShowingSecondDTVSettingItem ? View.VISIBLE : View.GONE);
-        mItemChannelManage.setVisibility(isShowingSecondDTVSettingItem ? View.VISIBLE : View.GONE);
-        mItemDataReset.setVisibility(isShowingSecondDTVSettingItem ? View.VISIBLE : View.GONE);
-        mIvDTVSettingBack.setVisibility(isShowingSecondDTVSettingItem ? View.GONE : View.VISIBLE);
-        mTvDTVSetting.setText(isShowingSecondDTVSettingItem ? R.string.dtv_setting : R.string.back);
-        if (!isShowingSecondDTVSettingItem) mItemGeneralSettings.requestFocus();
-        mItemGeneralSettings.setVisibility(isShowingSecondDTVSettingItem ? View.GONE : View.VISIBLE);
-        mItemT2Settings.setVisibility(isShowingSecondDTVSettingItem ? View.GONE : View.VISIBLE);
-        mItemParentalControl.setVisibility(isShowingSecondDTVSettingItem ? View.GONE : View.VISIBLE);
-        mItemPVRSettings.setVisibility(isShowingSecondDTVSettingItem ? View.GONE : View.VISIBLE);
-        mItemBookList.setVisibility(isShowingSecondDTVSettingItem ? View.GONE : View.VISIBLE);
-        mItemRecordList.setVisibility(isShowingSecondDTVSettingItem ? View.GONE : View.VISIBLE);
-        mTitleDTVSetting.setVisibility(isShowingSecondDTVSettingItem ? View.GONE : View.VISIBLE);
-    }
-
-    /**
-     * 是否正在显示DTVSetting二级菜单
-     */
-    private boolean isShowingSecondDTVSettingItem() {
-        return mIvDTVSettingBack.getVisibility() == View.VISIBLE;
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-    private void restoreMenuItem() {
-        mItemInstallation.setVisibility(View.VISIBLE);
-        mItemEpg.setVisibility(View.VISIBLE);
-        mItemChannelManage.setVisibility(View.VISIBLE);
-        mItemDtvSetting.setVisibility(View.VISIBLE);
-        mItemDataReset.setVisibility(View.VISIBLE);
-        mIvChannelManageBack.setVisibility(View.GONE);
-        mTvChannelManage.setText(getString(R.string.Channel_management));
-        mTvDTVSetting.setText(getString(R.string.dtv_setting));
-        mItemChannelEdit.setVisibility(View.GONE);
-        mItemChannelFavorite.setVisibility(View.GONE);
-        mItemClearChannel.setVisibility(View.GONE);
-        mItemRestoreUserData.setVisibility(View.GONE);
-        mItemBackupUserData.setVisibility(View.GONE);
-        mIvDTVSettingBack.setVisibility(View.GONE);
-        mItemGeneralSettings.setVisibility(View.GONE);
-        mItemT2Settings.setVisibility(View.GONE);
-        mItemParentalControl.setVisibility(View.GONE);
-        mItemPVRSettings.setVisibility(View.GONE);
-        mItemBookList.setVisibility(View.GONE);
-        mItemRecordList.setVisibility(View.GONE);
-        mTitleDTVSetting.setVisibility(View.GONE);
-        mTitleChannelManage.setVisibility(View.GONE);
+        menuListAdapter.updateData(itemInfos);
+        mMenuListView.setSelection(0);
+        menuStack.clear();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -2007,8 +1850,8 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
             return true;
         }
 
-        // RECORD
-        if (keyCode == KeyEvent.KEYCODE_MEDIA_RECORD) {
+        // RECORD,在菜单弹出时不响应录制视频按键事件
+        if (keyCode == KeyEvent.KEYCODE_MEDIA_RECORD && (!mMenuShow)) {
             if (isUsbNotExit()) {
                 ToastUtils.showToast(R.string.toast_no_storage_device);
                 return true;
@@ -2050,28 +1893,36 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
             dismissPfBarScanDialog();
             if (!mMenuShow) {
                 if (mProgListShow) toggleProgList(false); // 隐藏正在显示的频道列表
-                mItemInstallation.requestFocus();
                 toggleMenu();
             }
             return true;
         }
 
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (mMenuShow && isShowingSecondChannelManageItem()) {
-                //在channelManage界面按BACK返回menu菜单
-                toggleChannelManageItem();
-                mItemChannelManage.requestFocus();
-            } else if (mMenuShow && isShowingSecondDTVSettingItem()) {
-                //在dtv setting界面按BACK返回menu菜单
-                toggleDTVSettingItem();
-                mItemDtvSetting.requestFocus();
+            if (mMenuShow) {
+                if (menuStack.size() == 0) {
+                    toggleMenu();
+                } else {
+                    MenuItemInfo tempItem = null;
+                    List<MenuItemInfo> tempItems = new ArrayList<>();
+                    for (int i = 0; i < menuStack.size(); i++) {
+                        if (i == 0) {
+                            tempItems = mainMenuInfo.getLtItems();
+                            tempItem = tempItems.get(menuStack.get(i));
+                        } else {
+                            tempItems = tempItem.getSubItems();
+                            tempItem = tempItems.get(menuStack.get(i));
+                        }
+                    }
+                    menuListAdapter.updateData(tempItems);
+                    mMenuListView.setSelection(menuStack.get(menuStack.size() - 1));
+                    menuStack.remove(menuStack.size() - 1);
+                }
             } else if (mProgListShow) {
                 toggleProgList();
             } else if (isPfBarShowing()) {
                 mTvProgNum.setVisibility(View.INVISIBLE);
                 dismissPfBarScanDialog();
-            } else if (mMenuShow) {
-                toggleMenu();
             } else {
                 showExitDialog();
             }
@@ -2213,38 +2064,18 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
 
         // menu显示
         if (mMenuShow && event.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN) {
-            if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                if (mItemDataReset.isFocused()) {
-                    mItemInstallation.requestFocus();
-                    return true;
-                }
-                if (mItemChannelManage.isFocused() && isShowingSecondChannelManageItem()) {
-                    mItemChannelEdit.requestFocus();
-                    return true;
-                }
-                if (mItemDtvSetting.isFocused() && isShowingSecondDTVSettingItem()) {
-                    mItemGeneralSettings.requestFocus();
-                    return true;
-                }
+            if (event.getAction() == KeyEvent.ACTION_DOWN && mCurrSelectMenuPosition >= menuListAdapter.getCount() - 1) {
+                mMenuListView.setSelection(0);
+                return true;
             }
             return super.dispatchKeyEvent(event);
         }
 
         // menu显示
         if (mMenuShow && event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP) {
-            if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                if (mItemInstallation.isFocused()) {
-                    mItemDataReset.requestFocus();
-                    return true;
-                }
-                if (mItemChannelEdit.isFocused() && isShowingSecondChannelManageItem()) {
-                    mItemChannelManage.requestFocus();
-                    return true;
-                }
-                if (mItemGeneralSettings.isFocused() && isShowingSecondDTVSettingItem()) {
-                    mItemDtvSetting.requestFocus();
-                    return true;
-                }
+            if (event.getAction() == KeyEvent.ACTION_DOWN && mCurrSelectMenuPosition == 0) {
+                mMenuListView.setSelection(menuListAdapter.getCount() - 1);
+                return true;
             }
             return super.dispatchKeyEvent(event);
         }
