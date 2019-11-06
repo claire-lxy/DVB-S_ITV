@@ -78,15 +78,16 @@ public class BookService extends BaseService implements WeakToolInterface {
     public void onDestroy() {
         Log.i(TAG, "book service destroy");
         EventBus.getDefault().unregister(this);
-//        WeakToolManager.getInstance().removeWeakTool(this);
-//        if (mDTVListener != null) {
-//            DTVDVBManager.getInstance().unregisterDTVListener(mDTVListener);
-//            mDTVListener = null;
-//        }
-//        if (mMsgEvent != null) {
-//            DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.BOOK);
-//            mMsgEvent = null;
-//        }
+        WeakToolManager.getInstance().removeWeakTool(this);
+        if (mDTVListener != null) {
+            DTVDVBManager.getInstance().unregisterDTVListener(mDTVListener);
+            mDTVListener = null;
+        }
+        if (mMsgEvent != null) {
+            DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.BOOK);
+            mMsgEvent = null;
+        }
+        DTVDVBManager.getInstance().releaseResource();
         super.onDestroy();
     }
 
