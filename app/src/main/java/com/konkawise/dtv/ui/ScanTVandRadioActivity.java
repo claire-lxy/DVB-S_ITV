@@ -47,12 +47,6 @@ public class ScanTVandRadioActivity extends BaseActivity implements LifecycleObs
     @BindView(R.id.rv_radio_list)
     RecyclerView mRvRadio;
 
-    @BindView(R.id.tv_tv_and_radio_progress)
-    TextView mTvTvAndRadioProgress;
-
-    @BindView(R.id.pb_tv_and_radio)
-    ProgressBar mPbTvAndRadio;
-
     @BindView(R.id.tv_satellite_name)
     TextView mTvSatelliteName;
 
@@ -124,27 +118,6 @@ public class ScanTVandRadioActivity extends BaseActivity implements LifecycleObs
     private void registerReceiveScanTVAndRadioMsg() {
         MsgEvent msgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.SCAN);
         msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
-            private void onUpdateSearchProgress(int step, int max_step) {
-                if (step > 0 && max_step > 0) {
-                    int bf = step * 100 / max_step;
-                    if (bf < 0) {
-                        bf = 0;
-                    }
-                    if (bf > 100) {
-                        bf = 100;
-                    }
-                    String percent = bf + "%";
-                    mTvTvAndRadioProgress.setText(percent);
-                    mPbTvAndRadio.setMax(max_step);
-                    mPbTvAndRadio.setProgress(step);
-                }
-            }
-
-            @Override
-            public void SEARCH_onNITDataOk(int allNum, int currIndex) {
-                onUpdateSearchProgress(allNum, currIndex);
-            }
-
             /**
              * 搜索 TS Fail  搜索节目失败
              */
@@ -162,8 +135,6 @@ public class ScanTVandRadioActivity extends BaseActivity implements LifecycleObs
              */
             @Override
             public void SEARCH_onOneTSOk(int allNum, int currIndex, int sat, int freq, int symbol, int qam, int plp) {
-                onUpdateSearchProgress(allNum, currIndex);
-
                 ArrayList<HProg_Struct_ProgBasicInfo> pdpInfo_ts = DTVSearchManager.getInstance().getTsSearchResInfo(sat, freq, symbol, qam, plp);
                 if (pdpInfo_ts == null) return;
 
@@ -234,7 +205,6 @@ public class ScanTVandRadioActivity extends BaseActivity implements LifecycleObs
                 }
                 String tp = tpName + "(" + index + "/" + num + ")";
                 mTvScanTp.setText(tp);
-                onUpdateSearchProgress(num, index);
             }
         });
     }

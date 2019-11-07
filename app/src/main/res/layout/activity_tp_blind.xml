@@ -7,7 +7,6 @@
     android:gravity="center_horizontal"
     android:orientation="vertical">
 
-    <!--中间-->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="368dp"
@@ -131,7 +130,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
                     android:layout_marginLeft="10dp"
-                    android:text="0"/>
+                    android:text="0" />
 
                 <TextView
                     android:id="@+id/tv_radio_title"
@@ -148,8 +147,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
                     android:layout_marginLeft="10dp"
-                    android:visibility="invisible"
-                    android:text="0"/>
+                    android:text="0"
+                    android:visibility="invisible" />
             </LinearLayout>
 
             <LinearLayout
@@ -187,66 +186,6 @@
                     android:max="100" />
             </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
-
-    <!--底部select-->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_alignParentBottom="true"
-        android:background="@mipmap/right_bottom_background"
-        android:gravity="center"
-        android:orientation="horizontal">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/btn_translate_bg_shape"
-            android:gravity="center"
-            android:paddingLeft="10dp"
-            android:paddingTop="5dp"
-            android:paddingRight="10dp"
-            android:paddingBottom="5dp">
-
-            <ImageView
-                android:layout_width="13dp"
-                android:layout_height="13dp"
-                android:src="@drawable/triangle_up"
-                tools:ignore="ContentDescription" />
-
-            <ImageView
-                android:layout_width="13dp"
-                android:layout_height="13dp"
-                android:src="@drawable/triangle_down"
-                tools:ignore="ContentDescription" />
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginLeft="10dp"
-            android:text="@string/change_item" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="40dp"
-            android:layout_marginLeft="40dp"
-            android:background="@drawable/btn_translate_bg_shape"
-            android:gravity="center"
-            android:paddingLeft="10dp"
-            android:paddingTop="5dp"
-            android:paddingRight="10dp"
-            android:paddingBottom="5dp"
-            android:text="@string/back" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginLeft="10dp"
-            android:text="@string/back" />
     </LinearLayout>
 </RelativeLayout>
 

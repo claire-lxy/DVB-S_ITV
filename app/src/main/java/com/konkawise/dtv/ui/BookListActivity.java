@@ -8,6 +8,8 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.KeyEvent;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
@@ -50,6 +52,21 @@ public class BookListActivity extends BaseActivity implements LifecycleObserver,
     @BindView(R.id.lv_book_list)
     TVListView mLvBookList;
 
+    @BindView(R.id.ll_bottom_bar_ok)
+    ViewGroup mBottomBarOk;
+
+    @BindView(R.id.ll_bottom_bar_blue)
+    ViewGroup mBottomBarBlue;
+
+    @BindView(R.id.tv_bottom_bar_red)
+    TextView mTvBottomBarAddBook;
+
+    @BindView(R.id.tv_bottom_bar_green)
+    TextView mTvBottomBarEditBook;
+
+    @BindView(R.id.tv_bottom_bar_yellow)
+    TextView mTvBottomBarDeleteBook;
+
     @OnItemSelected(R.id.lv_book_list)
     void onItemSelect(int position) {
         mCurrSelectPosition = position;
@@ -89,6 +106,12 @@ public class BookListActivity extends BaseActivity implements LifecycleObserver,
 
     @Override
     protected void setup() {
+        mBottomBarOk.setVisibility(View.GONE);
+        mBottomBarBlue.setVisibility(View.GONE);
+        mTvBottomBarAddBook.setText(R.string.add);
+        mTvBottomBarEditBook.setText(R.string.edit);
+        mTvBottomBarDeleteBook.setText(R.string.delete);
+
         mAdapter = new BookListAdapter(this, new ArrayList<>());
         mLvBookList.setAdapter(mAdapter);
 

@@ -173,47 +173,12 @@
                     android:listSelector="@drawable/dvb_btn_selector"
                     android:scrollbars="none" />
 
-                <LinearLayout
+                <include
                     android:id="@+id/epg_book_bottom_bar"
+                    layout="@layout/include_bottom_bar_edit"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:background="@mipmap/right_bottom_background"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@mipmap/channel_edit_gray_bg"
-                        android:gravity="center"
-                        android:text="@string/ok"
-                        android:textSize="11sp"
-                        tools:ignore="SmallSp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:layout_marginLeft="10dp"
-                        android:text="@string/book" />
-
-                    <ImageView
-                        android:layout_width="26dp"
-                        android:layout_height="10dp"
-                        android:layout_marginStart="46dp"
-                        android:layout_marginLeft="46dp"
-                        android:background="@mipmap/channel_edite_blue_bg"
-                        android:gravity="center"
-                        tools:ignore="ContentDescription" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:layout_marginLeft="10dp"
-                        android:text="@string/booklist" />
-                </LinearLayout>
+                    android:layout_height="50dp"
+                    android:layout_alignParentBottom="true" />
 
                 <ProgressBar
                     android:id="@+id/pb_loading_epg"

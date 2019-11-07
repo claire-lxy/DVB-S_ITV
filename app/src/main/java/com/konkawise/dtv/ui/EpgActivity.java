@@ -13,6 +13,7 @@ import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -98,6 +99,21 @@ public class EpgActivity extends BaseActivity implements LifecycleObserver, Real
 
     @BindView(R.id.pb_loading_epg)
     ProgressBar mPbLoadingEpg;
+
+    @BindView(R.id.ll_bottom_bar_red)
+    ViewGroup mBottomBarRed;
+
+    @BindView(R.id.ll_bottom_bar_green)
+    ViewGroup mBottomBarGreen;
+
+    @BindView(R.id.ll_bottom_bar_yellow)
+    ViewGroup mBottomBarYellow;
+
+    @BindView(R.id.tv_bottom_bar_ok)
+    TextView mTvBottomBarOk;
+
+    @BindView(R.id.tv_bottom_bar_blue)
+    TextView mTvBottomBarBookList;
 
     @BindArray(R.array.dateTexts)
     String[] mDateTexts;
@@ -305,6 +321,12 @@ public class EpgActivity extends BaseActivity implements LifecycleObserver, Real
 
     @Override
     protected void setup() {
+        mBottomBarRed.setVisibility(View.GONE);
+        mBottomBarGreen.setVisibility(View.GONE);
+        mBottomBarYellow.setVisibility(View.GONE);
+        mTvBottomBarOk.setText(R.string.ok);
+        mTvBottomBarBookList.setText(R.string.booklist);
+
         DTVProgramManager.getInstance().setCurrProgType(HProg_Enum_Type.TVPROG, 0);
         mEpgMsgHandler = new EpgMsgHandler(this);
 

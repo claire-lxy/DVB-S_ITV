@@ -84,7 +84,7 @@ public class RecordPlayer extends BaseActivity implements LifecycleObserver, Usb
     @BindView(R.id.tv_seek_num)
     TextView tvSeekNum;
 
-    @BindView(R.id.ly_bottom)
+    @BindView(R.id.ll_bottom_bar_record)
     LinearLayout lyBottom;
 
     @BindView(R.id.tv_prog_num)

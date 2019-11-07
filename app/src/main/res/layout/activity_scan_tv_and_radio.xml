@@ -69,41 +69,6 @@
             android:layout_height="1dp"
             android:background="#c0bfbf" />
 
-        <!--进度条-->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="26dp"
-            android:layout_gravity="center_vertical"
-            android:gravity="center_vertical"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginLeft="16dp"
-                android:text="@string/progress" />
-
-            <TextView
-                android:id="@+id/tv_tv_and_radio_progress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginLeft="16dp" />
-
-            <ProgressBar
-                android:id="@+id/pb_tv_and_radio"
-                style="@style/mProgress_horizontal1"
-                android:layout_width="300dp"
-                android:layout_height="8dp"
-                android:layout_margin="8dp"
-                android:layout_marginStart="16dp"
-                android:layout_marginLeft="16dp"
-                android:indeterminate="false"
-                android:indeterminateOnly="false"
-                android:max="100" />
-        </LinearLayout>
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="25dp"
@@ -130,7 +95,8 @@
                 android:id="@+id/tv_scan_tp"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                tools:text="" />
         </LinearLayout>
 
         <LinearLayout
@@ -238,67 +204,6 @@
                     android:max="100" />
             </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
-
-    <!--底部select-->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_alignParentBottom="true"
-        android:background="@mipmap/right_bottom_background"
-        android:gravity="center"
-        android:orientation="horizontal">
-
-        <!-- Back -->
-        <TextView
-            android:layout_width="42dp"
-            android:layout_height="20dp"
-            android:layout_marginStart="64dp"
-            android:layout_marginLeft="64dp"
-            android:background="@drawable/btn_translate_bg_shape"
-            android:gravity="center"
-            android:text="@string/menu"
-            android:textSize="15sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:layout_marginLeft="6dp"
-            android:gravity="center"
-            android:text="@string/back"
-            android:textSize="15sp" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="20dp"
-            android:layout_marginStart="60dp"
-            android:layout_marginLeft="60dp"
-            android:background="@drawable/btn_translate_bg_shape"
-            android:gravity="center"
-            android:padding="5dp">
-
-            <ImageView
-                android:layout_width="13dp"
-                android:layout_height="13dp"
-                android:src="@drawable/triangle_left"
-                tools:ignore="ContentDescription" />
-
-            <ImageView
-                android:layout_width="13dp"
-                android:layout_height="13dp"
-                android:layout_marginStart="10dp"
-                android:layout_marginLeft="10dp"
-                android:src="@drawable/triangle_right"
-                tools:ignore="ContentDescription" />
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:layout_marginLeft="6dp"
-            android:text="@string/switch_frame" />
     </LinearLayout>
 </RelativeLayout>
 

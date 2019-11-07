@@ -75,22 +75,22 @@ public class ChannelEditActivity extends BaseActivity implements LifecycleObserv
     @BindView(R.id.pb_loading_channel)
     ProgressBar mPbLoadingChannel;
 
-    @BindView(R.id.ll_channel_fav_move)
+    @BindView(R.id.ll_bottom_bar_red)
     LinearLayout mLlChannelFavMove;
 
-    @BindView(R.id.tv_channel_fav_move)
+    @BindView(R.id.tv_bottom_bar_red)
     TextView mTvChannelFavMove;
 
-    @BindView(R.id.tv_channel_lock_rename)
+    @BindView(R.id.tv_bottom_bar_green)
     TextView mTvChannelLockRename;
 
-    @BindView(R.id.tv_channel_more_sort)
+    @BindView(R.id.tv_bottom_bar_blue)
     TextView mTvChannelMoreSort;
 
-    @BindView(R.id.tv_channel_skip_delete)
+    @BindView(R.id.tv_bottom_bar_yellow)
     TextView mTvChannelSkipDelete;
 
-    @BindView(R.id.ll_channel_pid)
+    @BindView(R.id.ll_bottom_bar_gray)
     LinearLayout mLlChannelPid;
 
     @BindArray(R.array.sort_content)
