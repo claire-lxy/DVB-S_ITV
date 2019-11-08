@@ -21,12 +21,11 @@ import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.CommRemindDialog;
 import com.konkawise.dtv.dialog.SearchResultDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
+import com.konkawise.dtv.rx.RxBus;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
 import com.sw.dvblib.msg.MsgEvent;
 import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
-
-import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -390,7 +389,7 @@ public class ScanTVandRadioActivity extends BaseActivity implements LifecycleObs
     private void showSearchResultDialog() {
         int tvSize = Integer.valueOf(mTvTvNum.getText().toString());
         int radioSize = Integer.valueOf(mTvRadioNum.getText().toString());
-        EventBus.getDefault().post(new ProgramUpdateEvent(tvSize, radioSize));
+        RxBus.getInstance().post(new ProgramUpdateEvent(tvSize, radioSize));
 
         new SearchResultDialog()
                 .tvSize(tvSize)

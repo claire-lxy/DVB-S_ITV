@@ -8,9 +8,8 @@ import android.os.Build;
 import android.os.Bundle;
 
 import com.konkawise.dtv.event.BookRegisterListenerEvent;
+import com.konkawise.dtv.rx.RxBus;
 import com.konkawise.dtv.ui.Topmost;
-
-import org.greenrobot.eventbus.EventBus;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -43,7 +42,7 @@ public class KonkaApplication extends Application {
         public void onActivityResumed(Activity activity) {
             // launcher的播放画面进入就是Topmost，可以直接判断处理
             if (activity instanceof Topmost) {
-                EventBus.getDefault().post(new BookRegisterListenerEvent(false));
+                RxBus.getInstance().post(new BookRegisterListenerEvent(false));
             }
         }
 
@@ -65,7 +64,7 @@ public class KonkaApplication extends Application {
         @Override
         public void onActivityDestroyed(Activity activity) {
             if (activity instanceof Topmost) {
-                EventBus.getDefault().post(new BookRegisterListenerEvent(true));
+                RxBus.getInstance().post(new BookRegisterListenerEvent(true));
             }
         }
     }

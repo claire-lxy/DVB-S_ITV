@@ -25,9 +25,8 @@ import com.konkawise.dtv.dialog.OnCheckGroupCallback;
 import com.konkawise.dtv.dialog.PIDDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
+import com.konkawise.dtv.rx.RxBus;
 import com.konkawise.dtv.rx.RxTransformer;
-
-import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -109,7 +108,7 @@ public class ChannelEditActivity extends BaseActivity implements LifecycleObserv
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private void notifyTopmostUpdateProgramWhenChannelEdit() {
         if (isFinishing() && mDataSaved) {
-            EventBus.getDefault().post(new ProgramUpdateEvent(true));
+            RxBus.getInstance().post(new ProgramUpdateEvent(true));
         }
     }
 

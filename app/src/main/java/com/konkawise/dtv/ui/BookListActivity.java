@@ -25,13 +25,10 @@ import com.konkawise.dtv.bean.BookingModel;
 import com.konkawise.dtv.dialog.BookDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.event.BookUpdateEvent;
+import com.konkawise.dtv.rx.RxBus;
 import com.konkawise.dtv.rx.RxTransformer;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.view.TVListView;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -74,12 +71,15 @@ public class BookListActivity extends BaseActivity implements LifecycleObserver,
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     private void registerBookUpdate() {
-        EventBus.getDefault().register(this);
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    private void unregisterBookUpdate() {
-        EventBus.getDefault().unregister(this);
+        addObservable(RxBus.getInstance().toObservable(BookUpdateEvent.class)
+                .subscribe(event -> {
+                    if (event.bookInfo != null) {
+                        int position = findConflictBookProgPosition(event.bookInfo);
+                        if (event.bookInfo.repeatway == HBooking_Enum_Repeat.ONCE && position >= 0) {
+                            mAdapter.removeData(position);
+                        }
+                    }
+                }));
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
@@ -364,15 +364,5 @@ public class BookListActivity extends BaseActivity implements LifecycleObserver,
         }
 
         return super.onKeyDown(keyCode, event);
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onBookUpdate(BookUpdateEvent event) {
-        if (event.bookInfo != null) {
-            int position = findConflictBookProgPosition(event.bookInfo);
-            if (event.bookInfo.repeatway == HBooking_Enum_Repeat.ONCE && position >= 0) {
-                mAdapter.removeData(position);
-            }
-        }
     }
 }

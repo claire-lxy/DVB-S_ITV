@@ -18,9 +18,8 @@ import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.event.ReloadSatEvent;
+import com.konkawise.dtv.rx.RxBus;
 import com.konkawise.dtv.view.TVListView;
-
-import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,7 +111,7 @@ public class FavoriteActivity extends BaseActivity implements LifecycleObserver 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private void notifyTopmostReloadSat() {
         if (isFinishing() && mFavEdit) {
-            EventBus.getDefault().post(new ReloadSatEvent());
+            RxBus.getInstance().post(new ReloadSatEvent());
         }
     }
 

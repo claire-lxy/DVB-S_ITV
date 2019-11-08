@@ -7,8 +7,7 @@ import android.util.Log;
 
 import com.konkawise.dtv.DTVPVRManager;
 import com.konkawise.dtv.event.RecordStateChangeEvent;
-
-import org.greenrobot.eventbus.EventBus;
+import com.konkawise.dtv.rx.RxBus;
 
 public class PowerReceiver extends BroadcastReceiver {
     private static final String TAG = "PowerReceiver";
@@ -18,7 +17,7 @@ public class PowerReceiver extends BroadcastReceiver {
         if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
             Log.i(TAG, "receive screen off");
             if (DTVPVRManager.getInstance().isRecording()) {
-                EventBus.getDefault().post(new RecordStateChangeEvent(false));
+                RxBus.getInstance().post(new RecordStateChangeEvent(false));
             }
         }
     }
