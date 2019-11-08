@@ -21,12 +21,11 @@ import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.CommRemindDialog;
 import com.konkawise.dtv.dialog.SearchResultDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
+import com.konkawise.dtv.rx.RxBus;
 import com.konkawise.dtv.utils.Utils;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
 import com.sw.dvblib.msg.MsgEvent;
 import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
-
-import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,12 +45,6 @@ public class ScanTVandRadioActivity extends BaseActivity implements LifecycleObs
 
     @BindView(R.id.rv_radio_list)
     RecyclerView mRvRadio;
-
-    @BindView(R.id.tv_tv_and_radio_progress)
-    TextView mTvTvAndRadioProgress;
-
-    @BindView(R.id.pb_tv_and_radio)
-    ProgressBar mPbTvAndRadio;
 
     @BindView(R.id.tv_satellite_name)
     TextView mTvSatelliteName;
@@ -124,27 +117,6 @@ public class ScanTVandRadioActivity extends BaseActivity implements LifecycleObs
     private void registerReceiveScanTVAndRadioMsg() {
         MsgEvent msgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.SCAN);
         msgEvent.registerCallbackListener(new CallbackListenerAdapter() {
-            private void onUpdateSearchProgress(int step, int max_step) {
-                if (step > 0 && max_step > 0) {
-                    int bf = step * 100 / max_step;
-                    if (bf < 0) {
-                        bf = 0;
-                    }
-                    if (bf > 100) {
-                        bf = 100;
-                    }
-                    String percent = bf + "%";
-                    mTvTvAndRadioProgress.setText(percent);
-                    mPbTvAndRadio.setMax(max_step);
-                    mPbTvAndRadio.setProgress(step);
-                }
-            }
-
-            @Override
-            public void SEARCH_onNITDataOk(int allNum, int currIndex) {
-                onUpdateSearchProgress(allNum, currIndex);
-            }
-
             /**
              * 搜索 TS Fail  搜索节目失败
              */
@@ -162,8 +134,6 @@ public class ScanTVandRadioActivity extends BaseActivity implements LifecycleObs
              */
             @Override
             public void SEARCH_onOneTSOk(int allNum, int currIndex, int sat, int freq, int symbol, int qam, int plp) {
-                onUpdateSearchProgress(allNum, currIndex);
-
                 ArrayList<HProg_Struct_ProgBasicInfo> pdpInfo_ts = DTVSearchManager.getInstance().getTsSearchResInfo(sat, freq, symbol, qam, plp);
                 if (pdpInfo_ts == null) return;
 
@@ -234,7 +204,6 @@ public class ScanTVandRadioActivity extends BaseActivity implements LifecycleObs
                 }
                 String tp = tpName + "(" + index + "/" + num + ")";
                 mTvScanTp.setText(tp);
-                onUpdateSearchProgress(num, index);
             }
         });
     }
@@ -420,7 +389,7 @@ public class ScanTVandRadioActivity extends BaseActivity implements LifecycleObs
     private void showSearchResultDialog() {
         int tvSize = Integer.valueOf(mTvTvNum.getText().toString());
         int radioSize = Integer.valueOf(mTvRadioNum.getText().toString());
-        EventBus.getDefault().post(new ProgramUpdateEvent(tvSize, radioSize));
+        RxBus.getInstance().post(new ProgramUpdateEvent(tvSize, radioSize));
 
         new SearchResultDialog()
                 .tvSize(tvSize)

@@ -8,6 +8,8 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.KeyEvent;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
@@ -23,13 +25,10 @@ import com.konkawise.dtv.bean.BookingModel;
 import com.konkawise.dtv.dialog.BookDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.event.BookUpdateEvent;
+import com.konkawise.dtv.rx.RxBus;
 import com.konkawise.dtv.rx.RxTransformer;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.view.TVListView;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -50,6 +49,21 @@ public class BookListActivity extends BaseActivity implements LifecycleObserver,
     @BindView(R.id.lv_book_list)
     TVListView mLvBookList;
 
+    @BindView(R.id.ll_bottom_bar_ok)
+    ViewGroup mBottomBarOk;
+
+    @BindView(R.id.ll_bottom_bar_blue)
+    ViewGroup mBottomBarBlue;
+
+    @BindView(R.id.tv_bottom_bar_red)
+    TextView mTvBottomBarAddBook;
+
+    @BindView(R.id.tv_bottom_bar_green)
+    TextView mTvBottomBarEditBook;
+
+    @BindView(R.id.tv_bottom_bar_yellow)
+    TextView mTvBottomBarDeleteBook;
+
     @OnItemSelected(R.id.lv_book_list)
     void onItemSelect(int position) {
         mCurrSelectPosition = position;
@@ -57,12 +71,15 @@ public class BookListActivity extends BaseActivity implements LifecycleObserver,
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     private void registerBookUpdate() {
-        EventBus.getDefault().register(this);
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    private void unregisterBookUpdate() {
-        EventBus.getDefault().unregister(this);
+        addObservable(RxBus.getInstance().toObservable(BookUpdateEvent.class)
+                .subscribe(event -> {
+                    if (event.bookInfo != null) {
+                        int position = findConflictBookProgPosition(event.bookInfo);
+                        if (event.bookInfo.repeatway == HBooking_Enum_Repeat.ONCE && position >= 0) {
+                            mAdapter.removeData(position);
+                        }
+                    }
+                }));
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
@@ -89,6 +106,12 @@ public class BookListActivity extends BaseActivity implements LifecycleObserver,
 
     @Override
     protected void setup() {
+        mBottomBarOk.setVisibility(View.GONE);
+        mBottomBarBlue.setVisibility(View.GONE);
+        mTvBottomBarAddBook.setText(R.string.add);
+        mTvBottomBarEditBook.setText(R.string.edit);
+        mTvBottomBarDeleteBook.setText(R.string.delete);
+
         mAdapter = new BookListAdapter(this, new ArrayList<>());
         mLvBookList.setAdapter(mAdapter);
 
@@ -341,15 +364,5 @@ public class BookListActivity extends BaseActivity implements LifecycleObserver,
         }
 
         return super.onKeyDown(keyCode, event);
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onBookUpdate(BookUpdateEvent event) {
-        if (event.bookInfo != null) {
-            int position = findConflictBookProgPosition(event.bookInfo);
-            if (event.bookInfo.repeatway == HBooking_Enum_Repeat.ONCE && position >= 0) {
-                mAdapter.removeData(position);
-            }
-        }
     }
 }

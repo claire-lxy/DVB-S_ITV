@@ -11,7 +11,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.LinearLayout;
+import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -57,11 +57,23 @@ public class RecordListActivity extends BaseActivity implements LifecycleObserve
     @BindView(R.id.lv_record_channel_list)
     ListView mListView;
 
-    @BindView(R.id.ly_bottom)
-    LinearLayout lyBottom;
+    @BindView(R.id.ll_bottom_bar_record)
+    ViewGroup mBottomBarRecord;
 
-    @BindView(R.id.tv_lock)
-    TextView tvLock;
+    @BindView(R.id.tv_bottom_bar_ok)
+    TextView mTvBottomBarPlay;
+
+    @BindView(R.id.tv_bottom_bar_red)
+    TextView mTvBottomBarSelect;
+
+    @BindView(R.id.tv_bottom_bar_green)
+    TextView mTvBottomBarRename;
+
+    @BindView(R.id.tv_bottom_bar_blue)
+    TextView mTvBottomBarDelete;
+
+    @BindView(R.id.tv_bottom_bar_yellow)
+    TextView mTvBottomBarLock;
 
     @OnItemSelected(R.id.lv_deivce)
     void onDeviceItemSelect(int position) {
@@ -87,9 +99,9 @@ public class RecordListActivity extends BaseActivity implements LifecycleObserve
         Log.i(TAG, "Record selection:" + position);
         mCurrRecordPosition = position;
         if (mAdapter.getItem(position).getHpvrRecFileT() != null && mAdapter.getItem(position).getHpvrRecFileT().LockType == 1) {
-            tvLock.setText(getResources().getString(R.string.unlock));
+            mTvBottomBarLock.setText(getResources().getString(R.string.unlock));
         } else {
-            tvLock.setText(getResources().getString(R.string.lock));
+            mTvBottomBarLock.setText(getResources().getString(R.string.lock));
         }
     }
 
@@ -143,6 +155,12 @@ public class RecordListActivity extends BaseActivity implements LifecycleObserve
 
     @Override
     protected void setup() {
+        mTvBottomBarPlay.setText(R.string.play);
+        mTvBottomBarSelect.setText(R.string.select);
+        mTvBottomBarRename.setText(R.string.rename);
+        mTvBottomBarDelete.setText(R.string.delete);
+        mTvBottomBarLock.setText(R.string.lock);
+
         ltHpvrRecFileTS = DTVPVRManager.getInstance().getRecordFileList(0, -1);
         RECORD_LIST_PATH = DTVPVRManager.getInstance().getRecordDirName() + "/";
 
@@ -234,11 +252,11 @@ public class RecordListActivity extends BaseActivity implements LifecycleObserve
     }
 
     private void showBottomItem() {
-        lyBottom.setVisibility(View.VISIBLE);
+        mBottomBarRecord.setVisibility(View.VISIBLE);
     }
 
     private void dissmissBottomItem() {
-        lyBottom.setVisibility(View.INVISIBLE);
+        mBottomBarRecord.setVisibility(View.INVISIBLE);
     }
 
     private void renameChannel(String oldName, String newName, boolean override) {
@@ -272,10 +290,10 @@ public class RecordListActivity extends BaseActivity implements LifecycleObserve
         mAdapter.updateData(recordList);
         if (recordList.get(mCurrRecordPosition).getHpvrRecFileT() == null) {
             ToastUtils.showToast(R.string.lock_error);
-            tvLock.setText(getResources().getString(R.string.lock));
+            mTvBottomBarLock.setText(getResources().getString(R.string.lock));
             return;
         }
-        tvLock.setText(lockType == 1 ? getResources().getString(R.string.unlock) : getResources().getString(R.string.lock));
+        mTvBottomBarLock.setText(lockType == 1 ? getResources().getString(R.string.unlock) : getResources().getString(R.string.lock));
     }
 
     private void lockChannel(List<RecordInfo> recordList, int position, int lockType) {
@@ -361,21 +379,21 @@ public class RecordListActivity extends BaseActivity implements LifecycleObserve
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_PROG_GREEN) {
-            if (lyBottom.getVisibility() == View.VISIBLE) {
+            if (mBottomBarRecord.getVisibility() == View.VISIBLE) {
                 showRenameDialog();
                 return true;
             }
         }
 
         if (keyCode == KeyEvent.KEYCODE_PROG_BLUE) {
-            if (lyBottom.getVisibility() == View.VISIBLE) {
+            if (mBottomBarRecord.getVisibility() == View.VISIBLE) {
                 showDeleteDialog();
                 return true;
             }
         }
 
         if (keyCode == KeyEvent.KEYCODE_PROG_YELLOW) {
-            if (lyBottom.getVisibility() == View.VISIBLE) {
+            if (mBottomBarRecord.getVisibility() == View.VISIBLE) {
                 if (mAdapter.getItem(mCurrRecordPosition).getHpvrRecFileT() != null && mAdapter.getItem(mCurrRecordPosition).getHpvrRecFileT().LockType == 1) {
                     showPasswordDialog(TYPE_PASSWORD_UNLOCK);
                 } else {
@@ -391,7 +409,7 @@ public class RecordListActivity extends BaseActivity implements LifecycleObserve
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_PROG_RED) {
-            if (lyBottom.getVisibility() == View.VISIBLE) {
+            if (mBottomBarRecord.getVisibility() == View.VISIBLE) {
                 mAdapter.setSelect(mCurrRecordPosition);
                 return true;
             }

@@ -17,12 +17,12 @@
             android:id="@+id/iv_player_handler"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
+            android:layout_marginTop="30dp"
             android:layout_marginEnd="30dp"
             android:layout_marginRight="30dp"
-            android:layout_marginTop="30dp"
             tools:ignore="ContentDescription" />
 
         <TextView
@@ -32,14 +32,14 @@
             android:layout_alignTop="@id/iv_player_handler"
             android:layout_marginEnd="10dp"
             android:layout_marginRight="10dp"
-            android:layout_toLeftOf="@id/iv_player_handler"
             android:layout_toStartOf="@id/iv_player_handler"
+            android:layout_toLeftOf="@id/iv_player_handler"
             android:text="*2"
             android:textColor="@color/holo_red_light"
             android:textSize="30sp" />
 
         <LinearLayout
-            android:id="@+id/ly_bottom"
+            android:id="@+id/ll_bottom_bar_record"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
@@ -50,10 +50,10 @@
                 android:id="@+id/tv_prog_num"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:layout_marginLeft="16dp"
                 android:layout_marginStart="16dp"
+                android:layout_marginLeft="16dp"
                 android:layout_marginTop="5dp"
+                android:layout_marginBottom="16dp"
                 android:text="1.zing"
                 android:textColor="@color/white"
                 android:textSize="30sp" />
@@ -64,9 +64,9 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingBottom="16dp"
                 android:paddingLeft="20dp"
-                android:paddingRight="20dp">
+                android:paddingRight="20dp"
+                android:paddingBottom="16dp">
 
                 <TextView
                     android:id="@+id/tv_current_time"
@@ -93,7 +93,6 @@
                     android:text="00:00:00"
                     android:textColor="@color/white" />
             </LinearLayout>
-
         </LinearLayout>
     </RelativeLayout>
 </FrameLayout>

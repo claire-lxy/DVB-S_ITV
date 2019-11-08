@@ -25,9 +25,8 @@ import com.konkawise.dtv.dialog.OnCheckGroupCallback;
 import com.konkawise.dtv.dialog.PIDDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
+import com.konkawise.dtv.rx.RxBus;
 import com.konkawise.dtv.rx.RxTransformer;
-
-import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,22 +74,22 @@ public class ChannelEditActivity extends BaseActivity implements LifecycleObserv
     @BindView(R.id.pb_loading_channel)
     ProgressBar mPbLoadingChannel;
 
-    @BindView(R.id.ll_channel_fav_move)
+    @BindView(R.id.ll_bottom_bar_red)
     LinearLayout mLlChannelFavMove;
 
-    @BindView(R.id.tv_channel_fav_move)
+    @BindView(R.id.tv_bottom_bar_red)
     TextView mTvChannelFavMove;
 
-    @BindView(R.id.tv_channel_lock_rename)
+    @BindView(R.id.tv_bottom_bar_green)
     TextView mTvChannelLockRename;
 
-    @BindView(R.id.tv_channel_more_sort)
+    @BindView(R.id.tv_bottom_bar_blue)
     TextView mTvChannelMoreSort;
 
-    @BindView(R.id.tv_channel_skip_delete)
+    @BindView(R.id.tv_bottom_bar_yellow)
     TextView mTvChannelSkipDelete;
 
-    @BindView(R.id.ll_channel_pid)
+    @BindView(R.id.ll_bottom_bar_gray)
     LinearLayout mLlChannelPid;
 
     @BindArray(R.array.sort_content)
@@ -109,7 +108,7 @@ public class ChannelEditActivity extends BaseActivity implements LifecycleObserv
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private void notifyTopmostUpdateProgramWhenChannelEdit() {
         if (isFinishing() && mDataSaved) {
-            EventBus.getDefault().post(new ProgramUpdateEvent(true));
+            RxBus.getInstance().post(new ProgramUpdateEvent(true));
         }
     }
 

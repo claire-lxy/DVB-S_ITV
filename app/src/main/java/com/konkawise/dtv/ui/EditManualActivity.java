@@ -1325,7 +1325,11 @@ public class EditManualActivity extends BaseItemFocusChangeActivity implements L
 
     private int getCurrChannel(HProg_Struct_SatInfo satInfo) {
         if (satInfo.unicConfig.UnicEnable > Constants.SatInfoValue.UNICABLE_DISABLE) {
-            return satInfo.unicConfig.SCRNO;
+            if (satInfo.unicConfig.UnicEnable == Constants.SatInfoValue.UNICABLE_SCR_ENABLE) {
+                return satInfo.unicConfig.SCRNO;
+            } else if (satInfo.unicConfig.UnicEnable == Constants.SatInfoValue.UNICABLE_DCSS_ENABLE) {
+                return satInfo.unicConfig.dCSSNO;
+            }
         }
         return 0;
     }

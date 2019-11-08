@@ -30,6 +30,7 @@ import com.konkawise.dtv.dialog.QuitRecordingDialog;
 import com.konkawise.dtv.event.BookRegisterListenerEvent;
 import com.konkawise.dtv.event.BookUpdateEvent;
 import com.konkawise.dtv.event.RecordStateChangeEvent;
+import com.konkawise.dtv.rx.RxBus;
 import com.konkawise.dtv.utils.TimeUtils;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakToolInterface;
@@ -38,12 +39,10 @@ import com.sw.dvblib.DTVManager;
 import com.sw.dvblib.msg.MsgEvent;
 import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
 import java.text.MessageFormat;
 
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
 import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Enum_Task;
 import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Struct_PlayeTimer;
 import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Struct_Timer;
@@ -59,11 +58,11 @@ public class BookService extends BaseService implements WeakToolInterface {
     private BookCountDownHandler mBookCountDownHandler;
     private MsgEvent mMsgEvent;
     private DTVManager.DTVListener mDTVListener;
+    private Disposable mBookListenerDisposable;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        EventBus.getDefault().register(this);
         Log.i(TAG, "book service create");
     }
 
@@ -77,7 +76,9 @@ public class BookService extends BaseService implements WeakToolInterface {
     @Override
     public void onDestroy() {
         Log.i(TAG, "book service destroy");
-        EventBus.getDefault().unregister(this);
+        if (mBookListenerDisposable != null) {
+            mBookListenerDisposable.dispose();
+        }
         WeakToolManager.getInstance().removeWeakTool(this);
         if (mDTVListener != null) {
             DTVDVBManager.getInstance().unregisterDTVListener(mDTVListener);
@@ -126,6 +127,20 @@ public class BookService extends BaseService implements WeakToolInterface {
                 }
             });
         }
+
+        // 按home或退出apk时，通知注册book消息通道
+        // 进入apk时，通知解注册book消息通道
+        mBookListenerDisposable = RxBus.getInstance().toObservable(BookRegisterListenerEvent.class)
+                .subscribe(event -> {
+                    Log.i(TAG, "isRegisterBookListener = " + event.isRegisterBookListener);
+                    if (mDTVListener != null) {
+                        if (event.isRegisterBookListener) {
+                            DTVDVBManager.getInstance().registerDTVListener(mDTVListener);
+                        } else {
+                            DTVDVBManager.getInstance().unregisterDTVListener(mDTVListener);
+                        }
+                    }
+                });
     }
 
     private void showBookReadyDialog() {
@@ -204,7 +219,7 @@ public class BookService extends BaseService implements WeakToolInterface {
                     @Override
                     public void onPositiveListener() {
                         dismissQuitRecordingDialog();
-                        EventBus.getDefault().post(new RecordStateChangeEvent(false)); // 通知Topmost停止录制
+                        RxBus.getInstance().post(new RecordStateChangeEvent(false)); // 通知Topmost停止录制
                         if (bookInfo != null) {
                             bookReady(bookInfo);
                         }
@@ -254,7 +269,7 @@ public class BookService extends BaseService implements WeakToolInterface {
     }
 
     private void notifyBookUpdate(HBooking_Struct_Timer bookInfo) {
-        EventBus.getDefault().post(new BookUpdateEvent(bookInfo));
+        RxBus.getInstance().post(new BookUpdateEvent(bookInfo));
     }
 
     private static class BookCountDownHandler extends WeakHandler<BookService> {
@@ -376,19 +391,6 @@ public class BookService extends BaseService implements WeakToolInterface {
             intent.putExtra(Constants.IntentKey.INTENT_BOOK_TSID, tsid);
             intent.putExtra(Constants.IntentKey.INTENT_BOOK_SAT, sat);
             startActivity(intent);
-        }
-    }
-
-    // 按home或退出apk时，通知注册book消息通道
-    // 进入apk时，通知解注册book消息通道
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onReceiveRegisterBookListener(BookRegisterListenerEvent event) {
-        if (mDTVListener != null) {
-            if (event.isRegisterBookListener) {
-                DTVDVBManager.getInstance().registerDTVListener(mDTVListener);
-            } else {
-                DTVDVBManager.getInstance().unregisterDTVListener(mDTVListener);
-            }
         }
     }
 }

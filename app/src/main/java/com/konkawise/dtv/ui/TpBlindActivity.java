@@ -25,11 +25,10 @@ import com.konkawise.dtv.dialog.CommRemindDialog;
 import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.SearchResultDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
+import com.konkawise.dtv.rx.RxBus;
 import com.konkawise.dtv.rx.RxTransformer;
 import com.sw.dvblib.msg.MsgEvent;
 import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
-
-import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -365,7 +364,7 @@ public class TpBlindActivity extends BaseActivity implements LifecycleObserver {
     private void showSearchResultDialog() {
         int tvSize = Integer.valueOf(mTvTpNum.getText().toString());
         int radioSize = Integer.valueOf(mTvRadioNum.getText().toString());
-        EventBus.getDefault().post(new ProgramUpdateEvent(tvSize, radioSize));
+        RxBus.getInstance().post(new ProgramUpdateEvent(tvSize, radioSize));
 
         new SearchResultDialog()
                 .tvSize(tvSize)

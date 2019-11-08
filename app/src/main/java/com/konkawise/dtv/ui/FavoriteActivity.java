@@ -6,8 +6,9 @@ import android.arch.lifecycle.OnLifecycleEvent;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.LinearLayout;
+import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.R;
@@ -17,9 +18,8 @@ import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.event.ReloadSatEvent;
+import com.konkawise.dtv.rx.RxBus;
 import com.konkawise.dtv.view.TVListView;
-
-import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,11 +46,26 @@ public class FavoriteActivity extends BaseActivity implements LifecycleObserver 
     @BindView(R.id.pb_loading_favorite)
     ProgressBar mPbLoadingFaovrite;
 
-    @BindView(R.id.ll_fav_rename)
-    LinearLayout mBottomFavRename;
+    @BindView(R.id.ll_bottom_bar_red)
+    ViewGroup mBottomBarRed;
 
-    @BindView(R.id.ll_fav_edit_channel)
-    LinearLayout mBottomFavEditChannel;
+    @BindView(R.id.ll_bottom_bar_blue)
+    ViewGroup mBottomBarBlue;
+
+    @BindView(R.id.ll_bottom_bar_green)
+    ViewGroup mBottomBarRename;
+
+    @BindView(R.id.tv_bottom_bar_green)
+    TextView mTvBottomBarRename;
+
+    @BindView(R.id.ll_bottom_bar_ok)
+    ViewGroup mBottomBarOk;
+
+    @BindView(R.id.ll_bottom_bar_yellow)
+    ViewGroup mBottomBarDelete;
+
+    @BindView(R.id.tv_bottom_bar_yellow)
+    TextView mTvBottomBarDelete;
 
     @OnItemSelected(R.id.lv_favorite_group)
     void selectGroupItem(int position) {
@@ -72,8 +87,9 @@ public class FavoriteActivity extends BaseActivity implements LifecycleObserver 
         mFavoriteChannelAdapter.setFocus(isFocus);
         mFavoriteChannelAdapter.setSelectPosition(mLvFavoriteChannel.getCurrentSelect());
 
-        mBottomFavRename.setVisibility(isFocus ? View.GONE : View.VISIBLE);
-        mBottomFavEditChannel.setVisibility(isFocus ? View.VISIBLE : View.GONE);
+        mBottomBarRename.setVisibility(isFocus ? View.GONE : View.VISIBLE);
+        mBottomBarOk.setVisibility(isFocus ? View.VISIBLE : View.GONE);
+        mBottomBarDelete.setVisibility(isFocus ? View.VISIBLE : View.GONE);
 
         mFavoriteChannelAdapter.notifyDataSetChanged();
         mFavoriteGroupAdapter.notifyDataSetChanged();
@@ -95,7 +111,7 @@ public class FavoriteActivity extends BaseActivity implements LifecycleObserver 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private void notifyTopmostReloadSat() {
         if (isFinishing() && mFavEdit) {
-            EventBus.getDefault().post(new ReloadSatEvent());
+            RxBus.getInstance().post(new ReloadSatEvent());
         }
     }
 
@@ -118,6 +134,13 @@ public class FavoriteActivity extends BaseActivity implements LifecycleObserver 
 
     @Override
     protected void setup() {
+        mBottomBarOk.setVisibility(View.GONE);
+        mBottomBarRed.setVisibility(View.GONE);
+        mBottomBarBlue.setVisibility(View.GONE);
+        mBottomBarDelete.setVisibility(View.GONE);
+        mTvBottomBarRename.setText(R.string.rename);
+        mTvBottomBarDelete.setText(R.string.channel_del);
+
         DTVProgramManager.getInstance().setCurrGroup(HProg_Enum_Group.TOTAL_GROUP, 1);
         initFavoriteGroup();
         initFavoriteChannel();
@@ -214,14 +237,14 @@ public class FavoriteActivity extends BaseActivity implements LifecycleObserver 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_PROG_GREEN) {
-            if (mBottomFavRename.getVisibility() == View.VISIBLE) {
+            if (mBottomBarRename.getVisibility() == View.VISIBLE) {
                 showRenameDialog();
                 return true;
             }
         }
 
         if (keyCode == KeyEvent.KEYCODE_PROG_YELLOW) {
-            if (mBottomFavEditChannel.getVisibility() == View.VISIBLE) {
+            if (mBottomBarDelete.getVisibility() == View.VISIBLE) {
                 showDeleteDataDialog();
                 return true;
             }

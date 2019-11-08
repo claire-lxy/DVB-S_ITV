@@ -13,6 +13,7 @@ import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -39,6 +40,7 @@ import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.PasswordDialog;
 import com.konkawise.dtv.event.BookUpdateEvent;
+import com.konkawise.dtv.rx.RxBus;
 import com.konkawise.dtv.rx.RxTransformer;
 import com.konkawise.dtv.utils.TimeUtils;
 import com.konkawise.dtv.utils.ToastUtils;
@@ -47,10 +49,6 @@ import com.konkawise.dtv.weaktool.WeakHandler;
 import com.sw.dvblib.DTVCommon;
 import com.sw.dvblib.msg.MsgEvent;
 import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -98,6 +96,21 @@ public class EpgActivity extends BaseActivity implements LifecycleObserver, Real
 
     @BindView(R.id.pb_loading_epg)
     ProgressBar mPbLoadingEpg;
+
+    @BindView(R.id.ll_bottom_bar_red)
+    ViewGroup mBottomBarRed;
+
+    @BindView(R.id.ll_bottom_bar_green)
+    ViewGroup mBottomBarGreen;
+
+    @BindView(R.id.ll_bottom_bar_yellow)
+    ViewGroup mBottomBarYellow;
+
+    @BindView(R.id.tv_bottom_bar_ok)
+    TextView mTvBottomBarOk;
+
+    @BindView(R.id.tv_bottom_bar_blue)
+    TextView mTvBottomBarBookList;
 
     @BindArray(R.array.dateTexts)
     String[] mDateTexts;
@@ -163,12 +176,12 @@ public class EpgActivity extends BaseActivity implements LifecycleObserver, Real
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     private void registerEpgBookUpdate() {
-        EventBus.getDefault().register(this);
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    private void unregisterEpgBookUpdate() {
-        EventBus.getDefault().unregister(this);
+        addObservable(RxBus.getInstance().toObservable(BookUpdateEvent.class)
+                .subscribe(bookUpdateEvent -> {
+                    if (mProgAdapter.isPositionValid(mLvProgList)) {
+                        notifyEpgChange(mProgAdapter.getItem(mCurrProgSelectPosition));
+                    }
+                }));
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
@@ -305,6 +318,12 @@ public class EpgActivity extends BaseActivity implements LifecycleObserver, Real
 
     @Override
     protected void setup() {
+        mBottomBarRed.setVisibility(View.GONE);
+        mBottomBarGreen.setVisibility(View.GONE);
+        mBottomBarYellow.setVisibility(View.GONE);
+        mTvBottomBarOk.setText(R.string.ok);
+        mTvBottomBarBookList.setText(R.string.booklist);
+
         DTVProgramManager.getInstance().setCurrProgType(HProg_Enum_Type.TVPROG, 0);
         mEpgMsgHandler = new EpgMsgHandler(this);
 
@@ -793,12 +812,5 @@ public class EpgActivity extends BaseActivity implements LifecycleObserver, Real
     public boolean onHomeHandleCallback() {
         hideSurface(); // 按下home键提前销毁surface，让launcher拿到surface资源
         return super.onHomeHandleCallback();
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onBookUpdate(BookUpdateEvent event) {
-        if (mProgAdapter.isPositionValid(mLvProgList)) {
-            notifyEpgChange(mProgAdapter.getItem(mCurrProgSelectPosition));
-        }
     }
 }

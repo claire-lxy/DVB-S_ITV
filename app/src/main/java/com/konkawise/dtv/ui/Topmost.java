@@ -66,6 +66,7 @@ import com.konkawise.dtv.dialog.TeletextDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
 import com.konkawise.dtv.event.RecordStateChangeEvent;
 import com.konkawise.dtv.event.ReloadSatEvent;
+import com.konkawise.dtv.rx.RxBus;
 import com.konkawise.dtv.rx.RxTransformer;
 import com.konkawise.dtv.service.BookService;
 import com.konkawise.dtv.service.PowerService;
@@ -77,10 +78,6 @@ import com.konkawise.dtv.weaktool.CheckSignalHelper;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.sw.dvblib.msg.MsgEvent;
 import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -293,12 +290,26 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     private void registerReceiveEventUpdate() {
-        EventBus.getDefault().register(this);
-    }
-
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-    private void unregisterReceiveEventUpdate() {
-        EventBus.getDefault().unregister(this);
+        addObservable(RxBus.getInstance().toObservable(ProgramUpdateEvent.class)
+                .subscribe(event -> {
+                    Log.i(TAG, "receive program update");
+                    if (event.tvSize != 0 || event.radioSize != 0 || event.isProgramEdit) {
+                        reloadSat();
+                        reloadProg();
+                    }
+                }));
+        addObservable(RxBus.getInstance().toObservable(ReloadSatEvent.class)
+                .subscribe(event -> {
+                    Log.i(TAG, "receive sat update");
+                    reloadSat();
+                }));
+        addObservable(RxBus.getInstance().toObservable(RecordStateChangeEvent.class)
+                .subscribe(event -> {
+                    Log.i(TAG, "receive stop record");
+                    if (!event.isRecording) {
+                        stopRecord();
+                    }
+                }));
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
@@ -696,9 +707,7 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
                 })
                 .compose(RxTransformer.threadTransformer())
                 .subscribe(result -> {
-                    if (result == -3) {
-                        mWaitingStartRecordDisposable.dispose();
-                    } else if (result != -4) {
+                    if (result != -4) {
                         mWaitingStartRecordDisposable.dispose();
                         callback.callback(result);
                     }
@@ -1838,7 +1847,8 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
             if (num > 0) {
                 DTVProgramManager.getInstance().setCurrProgType(currProgType == HProg_Enum_Type.GBPROG ?
                         HProg_Enum_Type.TVPROG : HProg_Enum_Type.GBPROG, 0);
-                onProgramUpdate(new ProgramUpdateEvent(true));
+//                onProgramUpdate(new ProgramUpdateEvent(true));
+                RxBus.getInstance().post(new ProgramUpdateEvent(true));
             } else {
                 ToastUtils.showToast(group == HProg_Enum_Type.GBPROG ? R.string.toast_no_radio : R.string.toast_no_tv);
             }
@@ -1984,14 +1994,14 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
             if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_DOWN
                     && event.getAction() == KeyEvent.ACTION_DOWN
                     && ++mCurrSelectProgPosition >= mProgListAdapter.getCount()) {
-                updateProgListSelectionByPosotion(0);
+                mProgListView.setSelection(0);
                 return true;
             }
 
             if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP
                     && event.getAction() == KeyEvent.ACTION_DOWN
                     && --mCurrSelectProgPosition <= -1) {
-                updateProgListSelectionByPosotion(mProgListAdapter.getCount() - 1);
+                mProgListView.setSelection(mProgListAdapter.getCount() - 1);
                 return true;
             }
 
@@ -2233,21 +2243,6 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
         return super.onKeyLongPress(keyCode, event);
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onProgramUpdate(ProgramUpdateEvent event) {
-        Log.i(TAG, "onProgramUpdate");
-        if (event.tvSize != 0 || event.radioSize != 0 || event.isProgramEdit) {
-            reloadSat();
-            reloadProg();
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onReloadSat(ReloadSatEvent event) {
-        Log.i(TAG, "onReloadSat");
-        reloadSat();
-    }
-
     private void reloadSat() {
         mSatList = null; // 置空重新加载
         updateSatList();
@@ -2256,13 +2251,6 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
     private void reloadProg() {
         mProgListMap.clear(); // 更新频道列表前清空缓存
         updateProgList();
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRecordStateChange(RecordStateChangeEvent event) {
-        if (!event.isRecording) {
-            stopRecord();
-        }
     }
 }
 

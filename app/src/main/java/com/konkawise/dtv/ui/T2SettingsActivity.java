@@ -13,8 +13,7 @@ import com.konkawise.dtv.R;
 import com.konkawise.dtv.base.BaseItemFocusChangeActivity;
 import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
-
-import org.greenrobot.eventbus.EventBus;
+import com.konkawise.dtv.rx.RxBus;
 
 import java.util.Arrays;
 import java.util.List;
@@ -88,7 +87,7 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity implements L
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private void notifyTopmostUpdateProgramWhenLcnChange() {
         if (originalLcnPosition != lcnPosition) {
-            EventBus.getDefault().post(new ProgramUpdateEvent(true));
+            RxBus.getInstance().post(new ProgramUpdateEvent(true));
         }
     }
 

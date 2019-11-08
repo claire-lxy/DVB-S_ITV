@@ -51,8 +51,6 @@ dependencies {
     // butterknife
     implementation "com.jakewharton:butterknife:$rootProject.butterKnifeVersion"
     annotationProcessor "com.jakewharton:butterknife-compiler:$rootProject.butterKnifeVersion"
-    // eventbus
-    implementation "org.greenrobot:eventbus:$rootProject.eventBusVersion"
     //gson
     implementation "com.google.code.gson:gson:$rootProject.gsonVersion"
     // rx

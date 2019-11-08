@@ -483,7 +483,7 @@
             android:id="@+id/rl_signal_quality"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_above="@+id/satellite_param_bottom_bar"
+            android:layout_above="@+id/include_bottom_bar_satellite_param"
             android:layout_marginLeft="244dp"
             android:layout_marginTop="10dp"
             android:layout_marginRight="244dp"
@@ -527,8 +527,8 @@
         </RelativeLayout>
 
         <include
-            android:id="@+id/satellite_param_bottom_bar"
-            layout="@layout/bottom_bar_control_item"
+            android:id="@+id/include_bottom_bar_satellite_param"
+            layout="@layout/include_bottom_bar_control_item"
             android:layout_width="match_parent"
             android:layout_height="55dp"
             android:layout_alignParentBottom="true" />
