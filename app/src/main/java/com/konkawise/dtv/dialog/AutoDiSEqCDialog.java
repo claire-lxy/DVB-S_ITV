@@ -9,16 +9,17 @@ import android.widget.TextView;
 import com.konkawise.dtv.Constants;
 import com.konkawise.dtv.DTVSearchManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.ThreadPoolManager;
-import com.konkawise.dtv.WeakToolManager;
 import com.konkawise.dtv.base.BaseDialogFragment;
-import com.konkawise.dtv.weaktool.WeakRunnable;
+import com.konkawise.dtv.rx.RxTransformer;
 import com.konkawise.dtv.weaktool.WeakToolInterface;
 
 import java.text.MessageFormat;
 
 import butterknife.BindView;
 import butterknife.OnClick;
+import io.reactivex.Observable;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.disposables.Disposable;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_TP;
 
 public class AutoDiSEqCDialog extends BaseDialogFragment implements WeakToolInterface {
@@ -49,8 +50,12 @@ public class AutoDiSEqCDialog extends BaseDialogFragment implements WeakToolInte
     private int mSatIndex;
     private HProg_Struct_TP mTpData;
     private int mLockDiSEqc;
-    private AutoDiSEqCRunnable mAutoDiSEqCRunnable;
+    private Disposable mAutoDiSEqCDisposable;
     private OnAutoDiSEqCResultListener mOnAutoDiSEqCResultListener;
+    private int tryCount;
+    private int portIndex;
+    private boolean lockDiSEqC;
+    private boolean foundDiSEqC;
 
     @Override
     protected int getLayoutId() {
@@ -60,8 +65,8 @@ public class AutoDiSEqCDialog extends BaseDialogFragment implements WeakToolInte
     @Override
     protected void setup(View view) {
         updateAutoDiSEqcContent(0, 0);
-        mAutoDiSEqCRunnable = new AutoDiSEqCRunnable(this);
-        ThreadPoolManager.getInstance().execute(mAutoDiSEqCRunnable);
+
+        autoDiSEqC();
     }
 
     public AutoDiSEqCDialog satIndex(int satIndex) {
@@ -75,20 +80,13 @@ public class AutoDiSEqCDialog extends BaseDialogFragment implements WeakToolInte
     }
 
     private void showAutoDiSEqcResult(int portIndex) {
-        if (getActivity() != null) {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mLockDiSEqc = portIndex;
+        mLockDiSEqc = portIndex;
 
-                    mTvAutoDiSEqCContent.setVisibility(View.GONE);
-                    mAutoDiSEqCResultLayout.setVisibility(View.VISIBLE);
-                    mBtnConfirm.requestFocus();
-                    mTvAutoDiSEqCResult.setText(portIndex < 0 ? getStrings(R.string.dialog_no_found_diseqc)
-                            : MessageFormat.format(getStrings(R.string.dialog_found_diseqc), getFoundDiSEqC(portIndex)));
-                }
-            });
-        }
+        mTvAutoDiSEqCContent.setVisibility(View.GONE);
+        mAutoDiSEqCResultLayout.setVisibility(View.VISIBLE);
+        mBtnConfirm.requestFocus();
+        mTvAutoDiSEqCResult.setText(portIndex < 0 ? getStrings(R.string.dialog_no_found_diseqc)
+                : MessageFormat.format(getStrings(R.string.dialog_found_diseqc), getFoundDiSEqC(portIndex)));
     }
 
     private String getFoundDiSEqC(int portIndex) {
@@ -107,71 +105,57 @@ public class AutoDiSEqCDialog extends BaseDialogFragment implements WeakToolInte
     }
 
     private void updateAutoDiSEqcContent(int portIndex, int tryCount) {
-        if (getActivity() != null) {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    mTvAutoDiSEqCContent.setText(MessageFormat.format(getStrings(R.string.dialog_try_auto_diseqc),
-                            String.valueOf(portIndex), String.valueOf(tryCount), String.valueOf(MAX_TRY_COUNT)));
-                }
-            });
-        }
+        mTvAutoDiSEqCContent.setText(MessageFormat.format(getStrings(R.string.dialog_try_auto_diseqc),
+                String.valueOf(portIndex), String.valueOf(tryCount), String.valueOf(MAX_TRY_COUNT)));
     }
 
-    private static class AutoDiSEqCRunnable extends WeakRunnable<AutoDiSEqCDialog> {
-        private int tryCount;
-        private int portIndex;
-        private boolean lockDiSEqC;
-        private boolean foundDiSEqC;
-
-        AutoDiSEqCRunnable(AutoDiSEqCDialog view) {
-            super(view);
+    private void autoDiSEqC() {
+        if (mAutoDiSEqCDisposable != null) {
+            mAutoDiSEqCDisposable.dispose();
         }
 
-        @Override
-        protected void loadBackground() {
-            AutoDiSEqCDialog context = mWeakReference.get();
-
+        mAutoDiSEqCDisposable = Observable.create((ObservableOnSubscribe<Boolean>) emitter -> {
             while (portIndex <= MAX_PORT_INDEX) {
-                // 尝试失败，换下一个
                 if (tryCount >= MAX_TRY_COUNT) {
                     tryCount = 0;
                     portIndex++;
                     lockDiSEqC = false;
+                } else {
+                    tryCount++;
                 }
 
                 if (!lockDiSEqC) {
-                    lockDiSEqC = DTVSearchManager.getInstance().tunerLockFreqDiSEqC(context.mSatIndex, context.mTpData.Freq, context.mTpData.Symbol, context.mTpData.Qam, portIndex) == 1;
+                    lockDiSEqC = DTVSearchManager.getInstance().tunerLockFreqDiSEqC(mSatIndex, mTpData.Freq, mTpData.Symbol, mTpData.Qam, portIndex) == 1;
                 }
 
                 if (DTVSearchManager.getInstance().tunerIsLocked()) {
-                    foundDiSEqC = true;
-                    context.showAutoDiSEqcResult(portIndex);
-                    break;
-                }
+                    emitter.onNext(true);
+                    emitter.onComplete();
+                } else {
+                    emitter.onNext(false);
 
-                if (context.getActivity() != null) {
-                    context.updateAutoDiSEqcContent(portIndex, ++tryCount);
-                }
-
-                try {
                     Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
             }
-
-            if (!foundDiSEqC) {
-                context.showAutoDiSEqcResult(-1);
+        }).compose(RxTransformer.threadTransformer()).subscribe(foundDiSEqC -> {
+            if (foundDiSEqC) {
+                showAutoDiSEqcResult(portIndex);
+            } else {
+                if (portIndex <= MAX_PORT_INDEX) {
+                    updateAutoDiSEqcContent(portIndex, tryCount);
+                } else {
+                    showAutoDiSEqcResult(-1);
+                }
             }
-        }
+        });
     }
 
     @Override
     protected boolean onKeyListener(DialogInterface dialog, int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN) {
-            ThreadPoolManager.getInstance().remove(mAutoDiSEqCRunnable);
-            WeakToolManager.getInstance().removeWeakTool(this);
+            if (mAutoDiSEqCDisposable != null) {
+                mAutoDiSEqCDisposable.dispose();
+            }
         }
         return super.onKeyListener(dialog, keyCode, event);
     }

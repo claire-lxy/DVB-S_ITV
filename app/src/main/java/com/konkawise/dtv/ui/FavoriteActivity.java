@@ -1,6 +1,8 @@
 package com.konkawise.dtv.ui;
 
-import android.util.Log;
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.OnLifecycleEvent;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.View;
@@ -9,17 +11,13 @@ import android.widget.ProgressBar;
 
 import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.adapter.FavoriteChannelAdapter;
 import com.konkawise.dtv.adapter.FavoriteGroupAdapter;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.CommTipsDialog;
-import com.konkawise.dtv.dialog.OnCommNegativeListener;
-import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.event.ReloadSatEvent;
 import com.konkawise.dtv.view.TVListView;
-import com.konkawise.dtv.weaktool.WeakRunnable;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -30,10 +28,13 @@ import butterknife.BindView;
 import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Group;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
 
-public class FavoriteActivity extends BaseActivity {
+public class FavoriteActivity extends BaseActivity implements LifecycleObserver {
     private static final String TAG = "FavoriteActivity";
 
     @BindView(R.id.lv_favorite_group)
@@ -61,7 +62,6 @@ public class FavoriteActivity extends BaseActivity {
 
     @OnFocusChange(R.id.lv_favorite_channel)
     void favoriteChannelFocusChange(boolean isFocus) {
-        Log.i(TAG, "channel focus change = " + isFocus);
         mFavoriteChannelFocus = isFocus;
 
         //设置左侧分组焦点失去时背景色
@@ -92,10 +92,16 @@ public class FavoriteActivity extends BaseActivity {
         mFavoriteChannelAdapter.setSelect(position);
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    private void notifyTopmostReloadSat() {
+        if (isFinishing() && mFavEdit) {
+            EventBus.getDefault().post(new ReloadSatEvent());
+        }
+    }
+
     private SparseArray<List<HProg_Struct_ProgInfo>> mFavoriteChannelsMap = new SparseArray<>();
     private FavoriteGroupAdapter mFavoriteGroupAdapter;
     private FavoriteChannelAdapter mFavoriteChannelAdapter;
-    private LoadFavoriteRunnable mLoadFavoriteRunnable;
 
     // 注意索引是+1的，获取item信息要-1处理
     private int mFavoriteGroupIndex;
@@ -118,11 +124,8 @@ public class FavoriteActivity extends BaseActivity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        if (isFinishing() && mFavEdit) {
-            EventBus.getDefault().post(new ReloadSatEvent());
-        }
+    protected LifecycleObserver provideLifecycleObserver() {
+        return this;
     }
 
     private void initFavoriteGroup() {
@@ -135,51 +138,34 @@ public class FavoriteActivity extends BaseActivity {
     private void initFavoriteChannel() {
         mFavoriteChannelAdapter = new FavoriteChannelAdapter(this, new ArrayList<>());
         mLvFavoriteChannel.setAdapter(mFavoriteChannelAdapter);
-
-//        loadFavoriteChannels(0);
     }
 
     private void loadFavoriteChannels(int favIndex) {
-        if (mLoadFavoriteRunnable == null) {
-            mLoadFavoriteRunnable = new LoadFavoriteRunnable(this);
+        if (mFavoriteChannelsMap == null || mFavoriteChannelsMap.size() == 0) {
+            addObservable(Observable.just(DTVProgramManager.getInstance().getCurrGroupProgInfoList(new int[1]))
+                    .subscribeOn(Schedulers.io())
+                    .map(channels -> DTVProgramManager.getInstance().getFavChannelMap(channels))
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnNext(listSparseArray -> mPbLoadingFaovrite.setVisibility(View.VISIBLE))
+                    .subscribe(map -> {
+                        mPbLoadingFaovrite.setVisibility(View.GONE);
+                        mFavoriteChannelsMap = map;
+                        refreshFavoriteAdapter(favIndex);
+                    }));
+        } else {
+            refreshFavoriteAdapter(favIndex);
         }
-        mPbLoadingFaovrite.setVisibility(View.VISIBLE);
-        ThreadPoolManager.getInstance().remove(mLoadFavoriteRunnable);
-        mLoadFavoriteRunnable.favIndex = favIndex;
-        ThreadPoolManager.getInstance().execute(mLoadFavoriteRunnable);
     }
 
-    private static class LoadFavoriteRunnable extends WeakRunnable<FavoriteActivity> {
-        int favIndex;
-
-        LoadFavoriteRunnable(FavoriteActivity view) {
-            super(view);
-        }
-
-        @Override
-        protected void loadBackground() {
-            FavoriteActivity context = mWeakReference.get();
-
-            if (context.mFavoriteChannelsMap == null || context.mFavoriteChannelsMap.size() == 0) {
-                List<HProg_Struct_ProgInfo> ltChannels = DTVProgramManager.getInstance().getCurrGroupProgInfoList(new int[1]);
-                context.mFavoriteChannelsMap = DTVProgramManager.getInstance().getFavChannelMap(ltChannels);
+    private void refreshFavoriteAdapter(int favIndex) {
+        List<HProg_Struct_ProgInfo> showProgList = new ArrayList<>();
+        for (HProg_Struct_ProgInfo pdpMInfo_t : mFavoriteChannelsMap.get(favIndex)) {
+            if (pdpMInfo_t.HideFlag == 0) {
+                showProgList.add(pdpMInfo_t);
             }
-
-            context.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    context.mPbLoadingFaovrite.setVisibility(View.GONE);
-                    List<HProg_Struct_ProgInfo> showProgList = new ArrayList<>();
-                    for (HProg_Struct_ProgInfo pdpMInfo_t : context.mFavoriteChannelsMap.get(favIndex)) {
-                        if (pdpMInfo_t.HideFlag == 0) {
-                            showProgList.add(pdpMInfo_t);
-                        }
-                    }
-                    context.mFavoriteChannelAdapter.updateData(showProgList);
-                    context.mFavoriteGroupAdapter.setSelectPosition(0);
-                }
-            });
         }
+        mFavoriteChannelAdapter.updateData(showProgList);
+        mFavoriteGroupAdapter.setSelectPosition(0);
     }
 
     private boolean isMulti() {
@@ -191,46 +177,37 @@ public class FavoriteActivity extends BaseActivity {
                 .setNameType(getString(R.string.edit_favorite_group_name))
                 .setNum(String.valueOf(mFavoriteGroupIndex))
                 .setName(mFavoriteGroupAdapter.getItem(mFavoriteGroupIndex - 1))
-                .setOnRenameEditListener(new RenameDialog.onRenameEditListener() {
-                    @Override
-                    public void onRenameEdit(String newName) {
-                        DTVProgramManager.getInstance().setFavGroupName(mFavoriteGroupIndex - 1, newName);
-                        mFavoriteGroupAdapter.updateData(mFavoriteGroupIndex - 1, newName);
+                .setOnRenameEditListener(newName -> {
+                    DTVProgramManager.getInstance().setFavGroupName(mFavoriteGroupIndex - 1, newName);
+                    mFavoriteGroupAdapter.updateData(mFavoriteGroupIndex - 1, newName);
 
-                        mFavEdit = true;
-                    }
+                    mFavEdit = true;
                 }).show(getSupportFragmentManager(), RenameDialog.TAG);
     }
 
     private void showDeleteDataDialog() {
         new CommTipsDialog().title(getString(R.string.channel_edit_FAVList_delete_title))
                 .content(getString(R.string.channel_edit_FAVList_delete_content))
-                .setOnPositiveListener("", new OnCommPositiveListener() {
-                    @Override
-                    public void onPositiveListener() {
-                        List<HProg_Struct_ProgInfo> ltRemoves = new ArrayList<>();
-                        if (isMulti())
-                            ltRemoves = mFavoriteChannelAdapter.getSelectData();
-                        else
-                            ltRemoves.add(mFavoriteChannelAdapter.getData().get(mFavoriteChannelIndex));
-                        removeFAVChannels(ltRemoves, mFavoriteGroupIndex - 1);
-                        mFavoriteChannelAdapter.clearSelect();
-                        List<HProg_Struct_ProgInfo> showProgList = new ArrayList<>();
-                        for (HProg_Struct_ProgInfo pdpMInfo_t : mFavoriteChannelsMap.get(mFavoriteGroupIndex - 1)) {
-                            if (pdpMInfo_t.HideFlag == 0) {
-                                showProgList.add(pdpMInfo_t);
-                            }
+                .setOnPositiveListener("", () -> {
+                    List<HProg_Struct_ProgInfo> ltRemoves = new ArrayList<>();
+                    if (isMulti())
+                        ltRemoves = mFavoriteChannelAdapter.getSelectData();
+                    else
+                        ltRemoves.add(mFavoriteChannelAdapter.getData().get(mFavoriteChannelIndex));
+                    removeFAVChannels(ltRemoves, mFavoriteGroupIndex - 1);
+                    mFavoriteChannelAdapter.clearSelect();
+                    List<HProg_Struct_ProgInfo> showProgList = new ArrayList<>();
+                    for (HProg_Struct_ProgInfo pdpMInfo_t : mFavoriteChannelsMap.get(mFavoriteGroupIndex - 1)) {
+                        if (pdpMInfo_t.HideFlag == 0) {
+                            showProgList.add(pdpMInfo_t);
                         }
-                        mFavoriteChannelAdapter.updateData(showProgList);
-
-                        mFavEdit = true;
                     }
+                    mFavoriteChannelAdapter.updateData(showProgList);
+
+                    mFavEdit = true;
                 })
-                .setOnNegativeListener("", new OnCommNegativeListener() {
-                    @Override
-                    public void onNegativeListener() {
+                .setOnNegativeListener("", () -> {
 
-                    }
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
 
@@ -286,14 +263,6 @@ public class FavoriteActivity extends BaseActivity {
         }
 
         return super.onKeyDown(keyCode, event);
-    }
-
-    private int[] getFavList(List<HProg_Struct_ProgInfo> favoriteChannelList) {
-        int[] favList = new int[favoriteChannelList.size()];
-        for (int i = 0; i < favoriteChannelList.size(); i++) {
-            favList[i] = favoriteChannelList.get(i).ProgIndex;
-        }
-        return favList;
     }
 
     private void removeFAVChannels(List<HProg_Struct_ProgInfo> removeList, int position) {

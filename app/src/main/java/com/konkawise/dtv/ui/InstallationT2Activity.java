@@ -2,7 +2,6 @@ package com.konkawise.dtv.ui;
 
 import android.content.Intent;
 import android.view.KeyEvent;
-import android.view.View;
 import android.widget.RelativeLayout;
 
 import com.konkawise.dtv.Constants;
@@ -43,15 +42,12 @@ public class InstallationT2Activity extends BaseActivity {
     private void showScanDialog() {
         new ScanDialog()
                 .installationType(ScanDialog.INSTALLATION_TYPE_AUTO_SEARCH)
-                .setOnScanSearchListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(InstallationT2Activity.this, ScanTVandRadioActivity.class);
-                        intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, Constants.SatIndex.T2);
-                        intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.IntentValue.SEARCH_TYPE_T2AUTO);
-                        startActivity(intent);
-                        finish();
-                    }
+                .setOnScanSearchListener(v -> {
+                    Intent intent = new Intent(InstallationT2Activity.this, ScanTVandRadioActivity.class);
+                    intent.putExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, Constants.SatIndex.T2);
+                    intent.putExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, Constants.IntentValue.SEARCH_TYPE_T2AUTO);
+                    startActivity(intent);
+                    finish();
                 }).show(getSupportFragmentManager(), ScanDialog.TAG);
     }
 

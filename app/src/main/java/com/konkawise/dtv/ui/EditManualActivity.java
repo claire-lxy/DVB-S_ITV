@@ -1,9 +1,11 @@
 package com.konkawise.dtv.ui;
 
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.OnLifecycleEvent;
 import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,7 +35,7 @@ import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_TP;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 
-public class EditManualActivity extends BaseItemFocusChangeActivity {
+public class EditManualActivity extends BaseItemFocusChangeActivity implements LifecycleObserver {
     private static final String TAG = "EditManualActivity";
     private static final int ITEM_SATELLITE = 1;
     private static final int ITEM_TP = 2;
@@ -258,6 +260,42 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
     @BindArray(R.array.frequency_dCSS)
     int[] mFrequencyDCSSArray;
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void startCheckSignal() {
+        stopCheckSignal();
+
+        mCheckSignalHelper = new CheckSignalHelper();
+        mCheckSignalHelper.setOnCheckSignalListener((strength, quality) -> {
+            if (isTpEmpty()) {
+                strength = 0;
+                quality = 0;
+            }
+            String strengthPercent = strength + "%";
+            mTvStrengthProgress.setText(strengthPercent);
+            mPbStrength.setProgress(strength);
+
+            String qualityPercent = quality + "%";
+            mTvQualityProgress.setText(qualityPercent);
+            mPbQuality.setProgress(quality);
+        });
+        mCheckSignalHelper.startCheckSignal();
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void stopCheckSignal() {
+        if (mCheckSignalHelper != null) {
+            mCheckSignalHelper.stopCheckSignal();
+            mCheckSignalHelper = null;
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    private void quitBeforeSaveSatInfo() {
+        if (isFinishing()) {
+            saveSatInfo();
+        }
+    }
+
     private int mCurrentSelectItem = ITEM_SATELLITE;
     private int mCurrentSatellite;
     private int mCurrentTp;
@@ -292,38 +330,12 @@ public class EditManualActivity extends BaseItemFocusChangeActivity {
         mLastFocusable22KHz = getResources().getString(R.string.on);
         mCurrentSatellite = DTVProgramManager.getInstance().findPositionBySatIndex(getIntent().getIntExtra(Constants.IntentKey.INTENT_SATELLITE_INDEX, -1));
 
-        initCheckSignal();
         satelliteChange();
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        mCheckSignalHelper.startCheckSignal();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        mCheckSignalHelper.stopCheckSignal();
-        if (isFinishing()) saveSatInfo();
-    }
-
-    private void initCheckSignal() {
-        mCheckSignalHelper = new CheckSignalHelper(this);
-        mCheckSignalHelper.setOnCheckSignalListener((strength, quality) -> {
-            if (isTpEmpty()) {
-                strength = 0;
-                quality = 0;
-            }
-            String strengthPercent = strength + "%";
-            mTvStrengthProgress.setText(strengthPercent);
-            mPbStrength.setProgress(strength);
-
-            String qualityPercent = quality + "%";
-            mTvQualityProgress.setText(qualityPercent);
-            mPbQuality.setProgress(quality);
-        });
+    protected LifecycleObserver provideLifecycleObserver() {
+        return this;
     }
 
     @Override

@@ -63,6 +63,7 @@ public class Constants {
     }
 
     public static final String STANDBY_PROPERTY = "persist.suspend.mode"; // 待机唤醒属性
+
     public interface StandbyProperty {
         String DEEP_RESTART = "deep_restart"; // 系统唤醒重启
         String SMART_SUSPEND = "smart_suspend"; // 系统唤醒返回Launcher
@@ -164,5 +165,17 @@ public class Constants {
 
         int LNB_POWER_OFF = 0;
         int LNB_POWER_ON = 1;
+    }
+
+    public interface TopmostMenuEvent {
+        String MENU_CONFIG_NAME = "menuconfig.json";
+
+        String INSTALLATION = "Installation";
+        String BACK = "Back";
+        String CLEARCHANNEL = "ClearChannel";
+        String RESTOREUSERDATA = "RestoreUserData";
+        String BACKUP = "Backup";
+        String PARENTALCONTAOL = "ParentalControl";
+        String DATARESET = "DataReset";
     }
 }

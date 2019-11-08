@@ -1,5 +1,8 @@
 package com.konkawise.dtv.ui;
 
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.OnLifecycleEvent;
 import android.view.KeyEvent;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -21,7 +24,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 
-public class T2SettingsActivity extends BaseItemFocusChangeActivity {
+public class T2SettingsActivity extends BaseItemFocusChangeActivity implements LifecycleObserver {
 
     private static final String TAG = "KKDVB_" + T2SettingsActivity.class.getSimpleName();
     private static final int ITEM_ANTENNA_POWER = 1;
@@ -82,6 +85,13 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
         showGeneralSettingDialog(getString(R.string.lcn), Arrays.asList(mGeneralSwitchArray), lcnPosition);
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    private void notifyTopmostUpdateProgramWhenLcnChange() {
+        if (originalLcnPosition != lcnPosition) {
+            EventBus.getDefault().post(new ProgramUpdateEvent(true));
+        }
+    }
+
     private int mCurrentSelectItem = ITEM_ANTENNA_POWER;
     private int antennaPowerPosition;
     private int areaSettingPosition;
@@ -103,11 +113,8 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        if (originalLcnPosition != lcnPosition) {
-            EventBus.getDefault().post(new ProgramUpdateEvent(true));
-        }
+    protected LifecycleObserver provideLifecycleObserver() {
+        return this;
     }
 
     private void initData() {
@@ -130,27 +137,24 @@ public class T2SettingsActivity extends BaseItemFocusChangeActivity {
                 .title(title)
                 .content(content)
                 .position(selectPosition)
-                .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
-                    @Override
-                    public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
-                        switch (mCurrentSelectItem) {
-                            case ITEM_ANTENNA_POWER:
-                                mTvAntennaPower.setText(checkContent);
-                                antennaPowerPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
-                                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.AntennaPower, antennaPowerPosition);
-                                break;
-                            case ITEM_AREA_SETTING:
-                                mTvAreaSetting.setText(checkContent);
-                                areaSettingPosition = Arrays.asList(mAreaSettingArray).indexOf(checkContent);
-                                break;
-                            case ITEM_LCN:
-                                mTvLcn.setText(checkContent);
-                                lcnPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
-                                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.ShowNoType, lcnPosition);
-                                break;
-                            default:
-                                break;
-                        }
+                .setOnDismissListener((dialog, position, checkContent) -> {
+                    switch (mCurrentSelectItem) {
+                        case ITEM_ANTENNA_POWER:
+                            mTvAntennaPower.setText(checkContent);
+                            antennaPowerPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
+                            DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.AntennaPower, antennaPowerPosition);
+                            break;
+                        case ITEM_AREA_SETTING:
+                            mTvAreaSetting.setText(checkContent);
+                            areaSettingPosition = Arrays.asList(mAreaSettingArray).indexOf(checkContent);
+                            break;
+                        case ITEM_LCN:
+                            mTvLcn.setText(checkContent);
+                            lcnPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
+                            DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.ShowNoType, lcnPosition);
+                            break;
+                        default:
+                            break;
                     }
                 }).show(getSupportFragmentManager(), CommCheckItemDialog.TAG);
     }

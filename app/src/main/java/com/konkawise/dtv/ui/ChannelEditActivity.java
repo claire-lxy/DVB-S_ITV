@@ -1,5 +1,8 @@
 package com.konkawise.dtv.ui;
 
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.OnLifecycleEvent;
 import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.util.SparseArray;
@@ -13,19 +16,16 @@ import android.widget.TextView;
 
 import com.konkawise.dtv.DTVProgramManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.adapter.ChannelEditAdapter;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
 import com.konkawise.dtv.dialog.FavoriteDialog;
 import com.konkawise.dtv.dialog.OnCheckGroupCallback;
-import com.konkawise.dtv.dialog.OnCommNegativeListener;
-import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.PIDDialog;
 import com.konkawise.dtv.dialog.RenameDialog;
 import com.konkawise.dtv.event.ProgramUpdateEvent;
-import com.konkawise.dtv.weaktool.WeakRunnable;
+import com.konkawise.dtv.rx.RxTransformer;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -37,12 +37,15 @@ import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Group;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgEditInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
 
-public class ChannelEditActivity extends BaseActivity {
+public class ChannelEditActivity extends BaseActivity implements LifecycleObserver {
     private static final int EDIT_TYPE_LOCK = 1 << 1;
     private static final int EDIT_TYPE_HIDE = 1 << 2;
 
@@ -103,6 +106,13 @@ public class ChannelEditActivity extends BaseActivity {
         mAdapter.setSelect(position);
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    private void notifyTopmostUpdateProgramWhenChannelEdit() {
+        if (isFinishing() && mDataSaved) {
+            EventBus.getDefault().post(new ProgramUpdateEvent(true));
+        }
+    }
+
     // 存储原始或保存后的喜爱分组
     private SparseArray<List<HProg_Struct_ProgInfo>> mFavChannelsMap = new SparseArray<>();
     // 存储编辑操作的喜爱分组
@@ -123,7 +133,6 @@ public class ChannelEditActivity extends BaseActivity {
 
     private ChannelEditAdapter mAdapter;
     private int mCurrSelectPosition;
-    private LoadChannelRunnable mLoadChannelRunnable;
 
     private boolean mSaveFavorite;
     private boolean mSaveEditChannel;
@@ -147,48 +156,18 @@ public class ChannelEditActivity extends BaseActivity {
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        if (isFinishing() && mDataSaved) {
-            EventBus.getDefault().post(new ProgramUpdateEvent(true));
-        }
+    protected LifecycleObserver provideLifecycleObserver() {
+        return this;
     }
 
     private void initChannelList() {
         mAdapter = new ChannelEditAdapter(this, new ArrayList<>());
         mLvChannelList.setAdapter(mAdapter);
 
-        updateChannelList();
-    }
-
-    private static class LoadChannelRunnable extends WeakRunnable<ChannelEditActivity> {
-        int scrollToProgIndex;
-
-        LoadChannelRunnable(ChannelEditActivity view) {
-            super(view);
-        }
-
-        @Override
-        protected void loadBackground() {
-            ChannelEditActivity context = mWeakReference.get();
-            List<HProg_Struct_ProgInfo> channelList = context.getChannelList();
-            context.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    context.mPbLoadingChannel.setVisibility(View.GONE);
-                    if (channelList != null && !channelList.isEmpty()) {
-                        context.mAdapter.updateData(channelList);
-                        context.mLvChannelList.setSelection(context.scrollToPosition(scrollToProgIndex));
-                    } else {
-                        context.mAdapter.updateData(new ArrayList<>());
-                    }
-                }
-            });
-            if (context.analyFavFlag) {
-                context.mFavChannelsMap = DTVProgramManager.getInstance().getFavChannelMap(context.ltTotalProgList);
-                context.mEditFavChannelsMap = mWeakReference.get().mFavChannelsMap.clone();
-            }
-        }
+        int scrollToProgIndex = 0;
+        HProg_Struct_ProgInfo currProgInfo = DTVProgramManager.getInstance().getCurrProgInfo();
+        if (currProgInfo != null) scrollToProgIndex = currProgInfo.ProgIndex;
+        loadChannelList(scrollToProgIndex);
     }
 
     private int scrollToPosition(int targetProgIndex) {
@@ -203,22 +182,36 @@ public class ChannelEditActivity extends BaseActivity {
     }
 
     private void updateChannelList() {
-        if (mLoadChannelRunnable == null) {
-            mLoadChannelRunnable = new LoadChannelRunnable(this);
-            HProg_Struct_ProgInfo currProgInfo = DTVProgramManager.getInstance().getCurrProgInfo();
-            if (currProgInfo != null) {
-                mLoadChannelRunnable.scrollToProgIndex = currProgInfo.ProgIndex;
-            }
-        } else {
-            if (mAdapter.getCount() > 0) {
-                if (mCurrSelectPosition > mAdapter.getData().size() - 1)
-                    mCurrSelectPosition = 0;
-                mLoadChannelRunnable.scrollToProgIndex = mAdapter.getItem(mCurrSelectPosition).ProgIndex;
-            }
+        int scrollToProgIndex = 0;
+        if (mAdapter.getCount() > 0) {
+            if (mCurrSelectPosition > mAdapter.getData().size() - 1) mCurrSelectPosition = 0;
+            scrollToProgIndex = mAdapter.getItem(mCurrSelectPosition).ProgIndex;
         }
-        mPbLoadingChannel.setVisibility(View.VISIBLE);
-        ThreadPoolManager.getInstance().remove(mLoadChannelRunnable);
-        ThreadPoolManager.getInstance().execute(mLoadChannelRunnable);
+        loadChannelList(scrollToProgIndex);
+    }
+
+    private void loadChannelList(int scrollToProgIndex) {
+        addObservable(Observable.just(getChannelList())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnNext(channelList -> mPbLoadingChannel.setVisibility(View.VISIBLE))
+                .observeOn(Schedulers.io())
+                .doOnNext(channelList -> {
+                    if (analyFavFlag) {
+                        mFavChannelsMap = DTVProgramManager.getInstance().getFavChannelMap(ltTotalProgList);
+                        mEditFavChannelsMap = mFavChannelsMap.clone();
+                    }
+                })
+                .compose(RxTransformer.threadTransformer())
+                .subscribe(channelList -> {
+                    mPbLoadingChannel.setVisibility(View.GONE);
+
+                    if (channelList != null && !channelList.isEmpty()) {
+                        mAdapter.updateData(channelList);
+                        mLvChannelList.setSelection(scrollToPosition(scrollToProgIndex));
+                    } else {
+                        mAdapter.updateData(new ArrayList<>());
+                    }
+                }));
     }
 
     private List<HProg_Struct_SatInfo> getSateList() {
@@ -235,37 +228,31 @@ public class ChannelEditActivity extends BaseActivity {
     private void showSaveDataDialog() {
         new CommTipsDialog().title(getString(R.string.channel_edit_save_title))
                 .content(getString(R.string.channel_edit_save_content))
-                .setOnPositiveListener("", new OnCommPositiveListener() {
-                    @Override
-                    public void onPositiveListener() {
-                        if (mSaveFavorite) saveFavorite();
-                        if (mSaveEditChannel) saveEditChannel();
-                        if (mSavePid) savePid();
-                        if (mSaveSortType) saveSortType();
+                .setOnPositiveListener("", () -> {
+                    if (mSaveFavorite) saveFavorite();
+                    if (mSaveEditChannel) saveEditChannel();
+                    if (mSavePid) savePid();
+                    if (mSaveSortType) saveSortType();
 
-                        loadFlag = false;
+                    loadFlag = false;
 
-                        // 对数据编辑过一次，退出界面时通知topmost刷新频道列表
-                        if (!mDataSaved && (mSaveFavorite || mSaveEditChannel || mSavePid || mSaveSortType)) {
-                            mDataSaved = true;
-                        }
-                        if (mFinish) {
-                            finish();
-                        } else {
-                            resetEdit();
-                        }
+                    // 对数据编辑过一次，退出界面时通知topmost刷新频道列表
+                    if (!mDataSaved && (mSaveFavorite || mSaveEditChannel || mSavePid || mSaveSortType)) {
+                        mDataSaved = true;
+                    }
+                    if (mFinish) {
+                        finish();
+                    } else {
+                        resetEdit();
                     }
                 })
-                .setOnNegativeListener("", new OnCommNegativeListener() {
-                    @Override
-                    public void onNegativeListener() {
-                        loadFlag = true;
+                .setOnNegativeListener("", () -> {
+                    loadFlag = true;
 
-                        resetSortType();
-                        resetEdit();
+                    resetSortType();
+                    resetEdit();
 
-                        if (mFinish) finish();
-                    }
+                    if (mFinish) finish();
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
 
@@ -612,13 +599,10 @@ public class ChannelEditActivity extends BaseActivity {
         new RenameDialog()
                 .setProgNo(mAdapter.getItem(mCurrSelectPosition).PShowNo)
                 .setName(mAdapter.getItem(mCurrSelectPosition).Name)
-                .setOnRenameEditListener(new RenameDialog.onRenameEditListener() {
-                    @Override
-                    public void onRenameEdit(String newName) {
-                        if (TextUtils.isEmpty(newName)) return;
+                .setOnRenameEditListener(newName -> {
+                    if (TextUtils.isEmpty(newName)) return;
 
-                        renameChannel(newName);
-                    }
+                    renameChannel(newName);
                 }).show(getSupportFragmentManager(), RenameDialog.TAG);
     }
 
@@ -630,20 +614,17 @@ public class ChannelEditActivity extends BaseActivity {
                 .title(getString(R.string.channel_sort))
                 .content(Arrays.asList(mSortArray))
                 .position(currSortType - 1)
-                .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
-                    @Override
-                    public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
-                        if (currSortType != (position + 1)) {
-                            DTVProgramManager.getInstance().setSortType(position + 1);
-                            loadFlag = true;
-                            analyFavFlag = true;
-                            updateChannelList();
-                            recordSaveData(EDIT_SAVE_SORT);
-                        }
-
-                        mAdapter.clearSelect();
-                        mAdapter.clearDelete();
+                .setOnDismissListener((dialog, position, checkContent) -> {
+                    if (currSortType != (position + 1)) {
+                        DTVProgramManager.getInstance().setSortType(position + 1);
+                        loadFlag = true;
+                        analyFavFlag = true;
+                        updateChannelList();
+                        recordSaveData(EDIT_SAVE_SORT);
                     }
+
+                    mAdapter.clearSelect();
+                    mAdapter.clearDelete();
                 }).show(getSupportFragmentManager(), CommCheckItemDialog.TAG);
     }
 
@@ -661,19 +642,16 @@ public class ChannelEditActivity extends BaseActivity {
 
         new PIDDialog()
                 .setPids(currPids)
-                .setOnEditPidListener(new PIDDialog.OnEditPidListener() {
-                    @Override
-                    public void onPidEdit(int[] pids) {
-                        if (pids != null && pids.length == 3) {
-                            if (currPids.length == 3) {
-                                if (isPidEdit(currPids, pids)) {
-                                    mEditPidMap.put(progNo, new int[]{pids[0], pids[1], pids[2]});
-                                }
-                            } else {
+                .setOnEditPidListener(pids -> {
+                    if (pids != null && pids.length == 3) {
+                        if (currPids.length == 3) {
+                            if (isPidEdit(currPids, pids)) {
                                 mEditPidMap.put(progNo, new int[]{pids[0], pids[1], pids[2]});
                             }
-                            recordSaveData(EDIT_SAVE_PID);
+                        } else {
+                            mEditPidMap.put(progNo, new int[]{pids[0], pids[1], pids[2]});
                         }
+                        recordSaveData(EDIT_SAVE_PID);
                     }
                 }).show(getSupportFragmentManager(), PIDDialog.TAG);
     }

@@ -1,5 +1,8 @@
 package com.konkawise.dtv.ui;
 
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.OnLifecycleEvent;
 import android.content.Intent;
 import android.os.Message;
 import android.support.annotation.Nullable;
@@ -25,7 +28,6 @@ import com.konkawise.dtv.RealTimeManager;
 import com.konkawise.dtv.DTVBookingManager;
 import com.konkawise.dtv.DTVDVBManager;
 import com.konkawise.dtv.DTVEpgManager;
-import com.konkawise.dtv.ThreadPoolManager;
 import com.konkawise.dtv.adapter.EpgChannelListAdapter;
 import com.konkawise.dtv.adapter.EpgProgListAdapter;
 import com.konkawise.dtv.annotation.BookConflictType;
@@ -35,15 +37,13 @@ import com.konkawise.dtv.bean.EpgBookParameterModel;
 import com.konkawise.dtv.bean.HandlerMsgModel;
 import com.konkawise.dtv.dialog.CommCheckItemDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
-import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.PasswordDialog;
 import com.konkawise.dtv.event.BookUpdateEvent;
+import com.konkawise.dtv.rx.RxTransformer;
 import com.konkawise.dtv.utils.TimeUtils;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.view.TVListView;
 import com.konkawise.dtv.weaktool.WeakHandler;
-import com.konkawise.dtv.weaktool.WeakRunnable;
-import com.konkawise.dtv.weaktool.WeakTimerTask;
 import com.sw.dvblib.DTVCommon;
 import com.sw.dvblib.msg.MsgEvent;
 import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
@@ -56,13 +56,17 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.OnFocusChange;
 import butterknife.OnItemClick;
 import butterknife.OnItemSelected;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Enum_From;
 import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Enum_Task;
 import vendor.konka.hardware.dtvmanager.V1_0.HEPG_Struct_Event;
@@ -71,9 +75,8 @@ import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Struct_Timer;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
 
-public class EpgActivity extends BaseActivity implements RealTimeManager.OnReceiveTimeListener {
+public class EpgActivity extends BaseActivity implements LifecycleObserver, RealTimeManager.OnReceiveTimeListener {
     private static final String TAG = "EpgActivity";
-    private static final long RELOAD_CHANNEL_PERIOD = 60 * 1000;
     private static final long PLAY_PROG_DELAY = 1000;
     private static final int[] mDateIds = {R.id.btn_date_0, R.id.btn_date_1, R.id.btn_date_2,
             R.id.btn_date_3, R.id.btn_date_4, R.id.btn_date_5, R.id.btn_date_6};
@@ -158,10 +161,88 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
         }
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    private void registerEpgBookUpdate() {
+        EventBus.getDefault().register(this);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    private void unregisterEpgBookUpdate() {
+        EventBus.getDefault().unregister(this);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void registerRealTimeUpdate() {
+        RealTimeManager.getInstance().register(this);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void unregisterRealTimeUpdate() {
+        RealTimeManager.getInstance().unregister(this);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void registerReceiveLockAndEpgMsg() {
+        MsgEvent msgLockEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.LOCK);
+        MsgEvent msgEpgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.EPG);
+        msgLockEvent.registerCallbackListener(new CallbackListenerAdapter() {
+            @Override
+            public void PLAYER_isLocked(int type, int progNo, int progIndex, int home) {
+                showEnterPasswordDialog();
+            }
+        });
+        msgEpgEvent.registerCallbackListener(new CallbackListenerAdapter() {
+            @Override
+            public void EPG_onSchInfoReady(int sat, int tsid, int servid) {
+                if (mProgAdapter.isPositionValid(mLvProgList)) {
+                    HProg_Struct_ProgInfo progInfo = mProgAdapter.getItem(mCurrProgSelectPosition);
+                    if (progInfo != null && progInfo.Sat == sat && progInfo.TsID == tsid && progInfo.ServID == servid) {
+                        updateEpgChannel();
+                    }
+                }
+            }
+        });
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void unregisterReceiveLockAndEpgMsg() {
+        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.LOCK);
+        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.EPG);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void showSurface() {
+        if (mSurfaceView.getVisibility() != View.VISIBLE) {
+            mSurfaceView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    private void hideSurface() {
+        if (mSurfaceView.getVisibility() != View.GONE) {
+            mSurfaceView.setVisibility(View.GONE);
+        }
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void saveStopPlayProperty() {
+        // 跳转或销毁界面要停止播放
+        DTVPlayerManager.getInstance().stopPlay(DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.PD_SwitchMode));
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    private void initUpdateEpgChannelTimer() {
+        addObservable(Observable.interval(0, 60L, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.io())
+                .subscribe(aLong -> {
+                    notifyEpgChange(DTVProgramManager.getInstance().getCurrProgInfo());
+                    notifyUpdateDate();
+                }));
+    }
+
     private EpgProgListAdapter mProgAdapter;
     private EpgChannelListAdapter mEpgChannelAdapter;
     private EpgMsgHandler mEpgMsgHandler;
-    private Timer mUpdateChannelTimer;
 
     private boolean mPasswordEntered = false;
     private boolean mPasswordDialogShowing;
@@ -173,7 +254,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     private int mCurrentFocusDateIndex;
     private boolean mDateButtonFocus;
 
-    private LoadEpgChannelRunnable mLoadEpgChannelRunnable;
+    private Disposable mLoadEpgChannelDisposable;
 
     @Override
     public void onReceiveTimeCallback(String time) {
@@ -217,20 +298,6 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
         }
     }
 
-    private static class UpdateEpgChannelTimerTask extends WeakTimerTask<EpgActivity> {
-
-        UpdateEpgChannelTimerTask(EpgActivity view) {
-            super(view);
-        }
-
-        @Override
-        protected void runTimer() {
-            final EpgActivity context = mWeakReference.get();
-            context.notifyEpgChange(DTVProgramManager.getInstance().getCurrProgInfo());
-            context.notifyUpdateDate();
-        }
-    }
-
     @Override
     protected int getLayoutId() {
         return R.layout.activity_epg;
@@ -240,9 +307,7 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     protected void setup() {
         DTVProgramManager.getInstance().setCurrProgType(HProg_Enum_Type.TVPROG, 0);
         mEpgMsgHandler = new EpgMsgHandler(this);
-        EventBus.getDefault().register(this);
 
-        initUpdateEpgChannelTimer();
         initCurrentDate();
         initEpgChannelDate();
         initProgList();
@@ -251,73 +316,8 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        showSurface();
-        RealTimeManager.getInstance().register(this);
-        registerMsgEvent();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        RealTimeManager.getInstance().unregister(this);
-        unregisterMsgEvent();
-        DTVPlayerManager.getInstance().stopPlay(DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.PD_SwitchMode)); // 跳转或销毁界面要停止播放
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        hideSurface();
-    }
-
-    @Override
-    protected void onDestroy() {
-        dismissPasswordDialog();
-        cancelUpdateEpgChannelTimer();
-        EventBus.getDefault().unregister(this);
-        super.onDestroy();
-    }
-
-    private void registerMsgEvent() {
-        MsgEvent msgLockEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.LOCK);
-        MsgEvent msgEpgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.EPG);
-        msgLockEvent.registerCallbackListener(new CallbackListenerAdapter() {
-            @Override
-            public void PLAYER_isLocked(int type, int progNo, int progIndex, int home) {
-                showEnterPasswordDialog();
-            }
-        });
-        msgEpgEvent.registerCallbackListener(new CallbackListenerAdapter() {
-            @Override
-            public void EPG_onSchInfoReady(int sat, int tsid, int servid) {
-                if (mProgAdapter.isPositionValid(mLvProgList)) {
-                    HProg_Struct_ProgInfo progInfo = mProgAdapter.getItem(mCurrProgSelectPosition);
-                    if (progInfo != null && progInfo.Sat == sat && progInfo.TsID == tsid && progInfo.ServID == servid) {
-                        updateEpgChannel();
-                    }
-                }
-            }
-        });
-    }
-
-    private void unregisterMsgEvent() {
-        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.LOCK);
-        DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.EPG);
-    }
-
-    private void initUpdateEpgChannelTimer() {
-        mUpdateChannelTimer = new Timer();
-        mUpdateChannelTimer.schedule(new UpdateEpgChannelTimerTask(this), 0, RELOAD_CHANNEL_PERIOD);
-    }
-
-    private void cancelUpdateEpgChannelTimer() {
-        if (mUpdateChannelTimer != null) {
-            mUpdateChannelTimer.cancel();
-            mUpdateChannelTimer.purge();
-            mUpdateChannelTimer = null;
-        }
+    protected LifecycleObserver provideLifecycleObserver() {
+        return this;
     }
 
     private void initCurrentDate() {
@@ -355,15 +355,12 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
             mDates[i] = findViewById(mDateIds[i]);
             if (sysTime != null && sysTime.Weekday > 0) {
                 mDates[i].setText(mDateTexts[(i + sysTime.Weekday - 1) % mDateTexts.length]);
-                mDates[i].setOnKeyListener(new View.OnKeyListener() {
-                    @Override
-                    public boolean onKey(View v, int keyCode, KeyEvent event) {
-                        if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN && event.getAction() == KeyEvent.ACTION_DOWN && mDateButtonFocus) {
-                            mLvEpgChannel.requestFocus();
-                            return true;
-                        }
-                        return false;
+                mDates[i].setOnKeyListener((v, keyCode, event) -> {
+                    if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN && event.getAction() == KeyEvent.ACTION_DOWN && mDateButtonFocus) {
+                        mLvEpgChannel.requestFocus();
+                        return true;
                     }
+                    return false;
                 });
             }
         }
@@ -373,72 +370,58 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     private void initProgList() {
         mProgAdapter = new EpgProgListAdapter(this, new ArrayList<>());
         mLvProgList.setAdapter(mProgAdapter);
-        mLvProgList.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-                        if (mCurrProgSelectPosition >= mProgAdapter.getCount() - 1) {
-                            mLvProgList.setSelection(0);
-                            return true;
-                        }
-                    } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-                        if (mCurrProgSelectPosition <= 0) {
-                            mLvProgList.setSelection(mProgAdapter.getCount() - 1);
-                            return true;
-                        }
-                    } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-                        mDates[0].requestFocus();
+        mLvProgList.setOnKeyListener((v, keyCode, event) -> {
+            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                    if (mCurrProgSelectPosition >= mProgAdapter.getCount() - 1) {
+                        mLvProgList.setSelection(0);
                         return true;
                     }
-                }
-
-                return false;
-            }
-        });
-        ThreadPoolManager.getInstance().execute(new WeakRunnable<EpgActivity>(this) {
-            @Override
-            protected void loadBackground() {
-                int[] currentSelectPosition = new int[1];
-                List<HProg_Struct_ProgInfo> progList = DTVProgramManager.getInstance().getWholeGroupProgInfoList(currentSelectPosition);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mCurrProgSelectPosition = currentSelectPosition[0];
-                        mProgAdapter.updateData(progList);
-                        mLvProgList.setSelection(mCurrProgSelectPosition);
+                } else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+                    if (mCurrProgSelectPosition <= 0) {
+                        mLvProgList.setSelection(mProgAdapter.getCount() - 1);
+                        return true;
                     }
-                });
+                } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                    mDates[0].requestFocus();
+                    return true;
+                }
             }
+
+            return false;
         });
+
+        int[] currentSelectPosition = new int[1];
+        addObservable(Observable.just(DTVProgramManager.getInstance().getWholeGroupProgInfoList(currentSelectPosition))
+                .compose(RxTransformer.threadTransformer())
+                .subscribe(progInfoList -> {
+                    mCurrProgSelectPosition = currentSelectPosition[0];
+                    mProgAdapter.updateData(progInfoList);
+                    mLvProgList.setSelection(mCurrProgSelectPosition);
+                }));
     }
 
     private void initEpgChannelList() {
-        mLoadEpgChannelRunnable = new LoadEpgChannelRunnable(this);
-
         mEpgChannelAdapter = new EpgChannelListAdapter(this, new ArrayList<>());
         mLvEpgChannel.setAdapter(mEpgChannelAdapter);
 
-        mLvEpgChannel.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View view, int keycode, KeyEvent event) {
-                if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP) {
-                    mLvEpgChannel.setNextFocusUpId(mDateIds[mCurrentFocusDateIndex]);
-                } else if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
-                    if (mCurrentFocusDateIndex == 0) {
-                        mLvProgList.requestFocus();
-                    } else {
-                        mDates[--mCurrentFocusDateIndex].requestFocus();
-                    }
-                    return true;
-                } else if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
-                    if (mCurrentFocusDateIndex < mDates.length - 1) {
-                        mDates[++mCurrentFocusDateIndex].requestFocus();
-                    }
-                    return true;
+        mLvEpgChannel.setOnKeyListener((view, keycode, event) -> {
+            if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_UP) {
+                mLvEpgChannel.setNextFocusUpId(mDateIds[mCurrentFocusDateIndex]);
+            } else if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT) {
+                if (mCurrentFocusDateIndex == 0) {
+                    mLvProgList.requestFocus();
+                } else {
+                    mDates[--mCurrentFocusDateIndex].requestFocus();
                 }
-                return false;
+                return true;
+            } else if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                if (mCurrentFocusDateIndex < mDates.length - 1) {
+                    mDates[++mCurrentFocusDateIndex].requestFocus();
+                }
+                return true;
             }
+            return false;
         });
     }
 
@@ -467,18 +450,6 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
         });
     }
 
-    private void showSurface() {
-        if (mSurfaceView.getVisibility() != View.VISIBLE) {
-            mSurfaceView.setVisibility(View.VISIBLE);
-        }
-    }
-
-    private void hideSurface() {
-        if (mSurfaceView.getVisibility() != View.GONE) {
-            mSurfaceView.setVisibility(View.GONE);
-        }
-    }
-
     /**
      * Epg book对话框
      */
@@ -502,43 +473,40 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
                 .title(getString(R.string.epg_booking_dialog_title))
                 .content(epgBookCheckContent)
                 .position(getBookPosition(epgBookCheckContent, bookInfo))
-                .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
-                    @Override
-                    public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
-                        HBooking_Struct_Timer newBookInfo;
-                        int bookSchType = getBookCheckSchType(checkContent);
-                        if (!isBooked) {
-                            DTVCommon.TimeModel startTimeInfo = DTVCommonManager.getInstance().getStartTime(eventInfo);
-                            DTVCommon.TimeModel endTimeInfo = DTVCommonManager.getInstance().getEndTime(eventInfo);
-                            EpgBookParameterModel parameterModel = new EpgBookParameterModel();
-                            parameterModel.progInfo = progInfo;
-                            parameterModel.eventInfo = eventInfo;
-                            parameterModel.startTimeInfo = startTimeInfo;
-                            parameterModel.endTimeInfo = endTimeInfo;
-                            parameterModel.schtype = bookSchType;
-                            parameterModel.schway = HBooking_Enum_From.EPG;
-                            newBookInfo = DTVBookingManager.getInstance().newBookTimer(parameterModel);
-                        } else {
-                            newBookInfo = bookInfo;
-                            newBookInfo.schtype = bookSchType;
-                        }
-                        Log.i(TAG, "new book info = " + newBookInfo);
-
-                        HBooking_Struct_Timer conflictBookInfo = DTVBookingManager.getInstance().conflictCheck(newBookInfo);
-                        int conflictType = DTVBookingManager.getInstance().getConflictType(conflictBookInfo);
-                        switch (conflictType) {
-                            case Constants.BookConflictType.NONE: // 当前参数的book没有冲突，正常添加删除
-                            case Constants.BookConflictType.ADD: // 当前参数的book有冲突，如果是添加需要先删除后再添加
-                            case Constants.BookConflictType.REPLACE: // 当前参数的book有冲突，需要询问替换
-                                bookHandle(conflictType, getBookCheckSchType(checkContent), newBookInfo, conflictBookInfo);
-                                break;
-                            case Constants.BookConflictType.LIMIT:
-                                ToastUtils.showToast(R.string.toast_book_limit);
-                                break;
-                        }
-
-                        DTVBookingManager.getInstance().updateDBase(0);
+                .setOnDismissListener((dialog, position, checkContent) -> {
+                    HBooking_Struct_Timer newBookInfo;
+                    int bookSchType = getBookCheckSchType(checkContent);
+                    if (!isBooked) {
+                        DTVCommon.TimeModel startTimeInfo = DTVCommonManager.getInstance().getStartTime(eventInfo);
+                        DTVCommon.TimeModel endTimeInfo = DTVCommonManager.getInstance().getEndTime(eventInfo);
+                        EpgBookParameterModel parameterModel = new EpgBookParameterModel();
+                        parameterModel.progInfo = progInfo;
+                        parameterModel.eventInfo = eventInfo;
+                        parameterModel.startTimeInfo = startTimeInfo;
+                        parameterModel.endTimeInfo = endTimeInfo;
+                        parameterModel.schtype = bookSchType;
+                        parameterModel.schway = HBooking_Enum_From.EPG;
+                        newBookInfo = DTVBookingManager.getInstance().newBookTimer(parameterModel);
+                    } else {
+                        newBookInfo = bookInfo;
+                        newBookInfo.schtype = bookSchType;
                     }
+                    Log.i(TAG, "new book info = " + newBookInfo);
+
+                    HBooking_Struct_Timer conflictBookInfo = DTVBookingManager.getInstance().conflictCheck(newBookInfo);
+                    int conflictType = DTVBookingManager.getInstance().getConflictType(conflictBookInfo);
+                    switch (conflictType) {
+                        case Constants.BookConflictType.NONE: // 当前参数的book没有冲突，正常添加删除
+                        case Constants.BookConflictType.ADD: // 当前参数的book有冲突，如果是添加需要先删除后再添加
+                        case Constants.BookConflictType.REPLACE: // 当前参数的book有冲突，需要询问替换
+                            bookHandle(conflictType, getBookCheckSchType(checkContent), newBookInfo, conflictBookInfo);
+                            break;
+                        case Constants.BookConflictType.LIMIT:
+                            ToastUtils.showToast(R.string.toast_book_limit);
+                            break;
+                    }
+
+                    DTVBookingManager.getInstance().updateDBase(0);
                 }).show(getSupportFragmentManager(), CommCheckItemDialog.TAG);
     }
 
@@ -570,12 +538,9 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
                 .content(MessageFormat.format(getString(R.string.dialog_book_conflict_content),
                         conflictBookModel.getBookDate(this, BookingModel.BOOK_TIME_SEPARATOR_EMPTY), conflictBookModel.progInfo.Name, conflictBookModel.getBookType(this)))
                 .lineSpacing(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 35, getResources().getDisplayMetrics()))
-                .setOnPositiveListener(getString(R.string.dialog_book_conflict_positive), new OnCommPositiveListener() {
-                    @Override
-                    public void onPositiveListener() {
-                        DTVBookingManager.getInstance().replaceTimer(conflictBookModel.bookInfo, newBookModel.bookInfo);
-                        updateItemBookTag(bookSchType);
-                    }
+                .setOnPositiveListener(getString(R.string.dialog_book_conflict_positive), () -> {
+                    DTVBookingManager.getInstance().replaceTimer(conflictBookModel.bookInfo, newBookModel.bookInfo);
+                    updateItemBookTag(bookSchType);
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
 
@@ -630,53 +595,43 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
         if (mPasswordDialog != null && mPasswordDialog.isVisible())
             return;
         mPasswordDialog = new PasswordDialog()
-                .setOnKeyListener(new PasswordDialog.OnKeyListener() {
-                    @Override
-                    public boolean onKeyListener(PasswordDialog dialog, int keyCode, KeyEvent event) {
-                        switch (keyCode) {
-                            case KeyEvent.KEYCODE_BACK:
+                .setOnKeyListener((dialog, keyCode, event) -> {
+                    switch (keyCode) {
+                        case KeyEvent.KEYCODE_BACK:
+                            return true;
+
+                        case KeyEvent.KEYCODE_DPAD_DOWN:
+                            if (mPasswordDialogShowing && event.getAction() == KeyEvent.ACTION_DOWN) {
+                                nextSelectEpgItem();
                                 return true;
+                            }
+                            return false;
 
-                            case KeyEvent.KEYCODE_DPAD_DOWN:
-                                if (mPasswordDialogShowing && event.getAction() == KeyEvent.ACTION_DOWN) {
-                                    nextSelectEpgItem();
-                                    return true;
-                                }
-                                return false;
-
-                            case KeyEvent.KEYCODE_DPAD_UP:
-                                if (mPasswordDialogShowing && event.getAction() == KeyEvent.ACTION_DOWN) {
-                                    lastSelectEpgItem();
-                                    return true;
-                                }
-                                return false;
-                        }
-
-                        return false;
+                        case KeyEvent.KEYCODE_DPAD_UP:
+                            if (mPasswordDialogShowing && event.getAction() == KeyEvent.ACTION_DOWN) {
+                                lastSelectEpgItem();
+                                return true;
+                            }
+                            return false;
                     }
-                }).setOnPasswordInputListener(new PasswordDialog.OnPasswordInputListener() {
-                    @Override
-                    public void onPasswordInput(String inputPassword, String currentPassword, boolean isValid) {
-                        if (isValid) {
-                            mPasswordEntered = true;
-                            mPasswordDialog = null;
-                            epgItemSelect(0);
-                        } else {
-                            ToastUtils.showToast(R.string.toast_invalid_password);
-                        }
+
+                    return false;
+                }).setOnPasswordInputListener((inputPassword, currentPassword, isValid) -> {
+                    if (isValid) {
+                        mPasswordEntered = true;
+                        mPasswordDialog = null;
+                        epgItemSelect(0);
+                    } else {
+                        ToastUtils.showToast(R.string.toast_invalid_password);
                     }
                 });
         mPasswordDialog.show(getSupportFragmentManager(), PasswordDialog.TAG);
 
         // 加个延时处理标志位
-        mEpgMsgHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mPasswordDialogShowing = true;
-            }
-        }, 1000);
+        mEpgMsgHandler.postDelayed(() -> mPasswordDialogShowing = true, 1000);
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     private void dismissPasswordDialog() {
         if (mPasswordDialog != null && mPasswordDialog.isVisible()) {
             mPasswordDialog.dismiss();
@@ -745,39 +700,29 @@ public class EpgActivity extends BaseActivity implements RealTimeManager.OnRecei
     private void updateEpgChannel() {
         clearDateFocus();
 
-        if (mLoadEpgChannelRunnable != null && mProgAdapter.isPositionValid(mLvProgList)) {
-            ThreadPoolManager.getInstance().remove(mLoadEpgChannelRunnable);
-            ThreadPoolManager.getInstance().execute(mLoadEpgChannelRunnable);
-        }
-    }
+        if (mProgAdapter.isPositionValid(mLvProgList)) {
+            if (mLoadEpgChannelDisposable != null && !mLoadEpgChannelDisposable.isDisposed()) {
+                mLoadEpgChannelDisposable.dispose(); // 切断重新加载
+                removeObservable(mLoadEpgChannelDisposable);
+            }
+            mLoadEpgChannelDisposable = Observable.just(DTVEpgManager.getInstance().getCurrProgSchInfo(mCurrentFocusDateIndex))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(epgChannelList -> {
+                        hideLoadingEpg();
 
-    private static class LoadEpgChannelRunnable extends WeakRunnable<EpgActivity> {
+                        if (mEpgChannelAdapter == null) {
+                            mEpgChannelAdapter = new EpgChannelListAdapter(this, new ArrayList<>());
+                            mLvEpgChannel.setAdapter(mEpgChannelAdapter);
+                        }
 
-        LoadEpgChannelRunnable(EpgActivity view) {
-            super(view);
-        }
-
-        @Override
-        protected void loadBackground() {
-            EpgActivity context = mWeakReference.get();
-
-            final List<HEPG_Struct_Event> epgChannelList = DTVEpgManager.getInstance().getCurrProgSchInfo(context.mCurrentFocusDateIndex);
-            context.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    context.hideLoadingEpg();
-                    if (context.mEpgChannelAdapter == null) {
-                        context.mEpgChannelAdapter = new EpgChannelListAdapter(context, new ArrayList<>());
-                        context.mLvEpgChannel.setAdapter(context.mEpgChannelAdapter);
-                    }
-
-                    if (epgChannelList != null && !epgChannelList.isEmpty()) {
-                        context.mEpgChannelAdapter.updateData(epgChannelList);
-                    } else {
-                        context.mEpgChannelAdapter.updateData(new ArrayList<>());
-                    }
-                }
-            });
+                        if (epgChannelList != null && !epgChannelList.isEmpty()) {
+                            mEpgChannelAdapter.updateData(epgChannelList);
+                        } else {
+                            mEpgChannelAdapter.updateData(new ArrayList<>());
+                        }
+                    });
+            addObservable(mLoadEpgChannelDisposable);
         }
     }
 

@@ -1,11 +1,10 @@
 package com.konkawise.dtv.dialog;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Message;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
@@ -21,20 +20,20 @@ import com.konkawise.dtv.DTVSettingManager;
 import com.konkawise.dtv.R;
 import com.konkawise.dtv.RealTimeManager;
 import com.konkawise.dtv.DTVEpgManager;
-import com.konkawise.dtv.WeakToolManager;
 import com.konkawise.dtv.base.BaseDialog;
 import com.konkawise.dtv.bean.DateModel;
+import com.konkawise.dtv.rx.RxTransformer;
 import com.konkawise.dtv.weaktool.CheckSignalHelper;
-import com.konkawise.dtv.weaktool.WeakHandler;
-import com.konkawise.dtv.weaktool.WeakTimerTask;
 import com.konkawise.dtv.weaktool.WeakToolInterface;
-import com.sw.dvblib.DTVManager;
 
-import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import vendor.konka.hardware.dtvmanager.V1_0.HEPG_Struct_Event;
-import vendor.konka.hardware.dtvmanager.V1_0. HProg_Struct_ProgInfo;
+import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgInfo;
 
 public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, RealTimeManager.OnReceiveTimeListener {
     public static final String TAG = "PfBarScanDialog";
@@ -89,23 +88,13 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
 
     private Context mContext;
     private CheckSignalHelper mCheckSignalHelper;
-    private Timer mUpdateInformationTimer;
-
-    @SuppressLint("HandlerLeak")
-    private WeakHandler<PfBarScanDialog> sHandler = new WeakHandler<PfBarScanDialog>(this) {
-
-        @Override
-        protected void handleMsg(Message msg) {
-            dismiss();
-        }
-    };
+    private Disposable mUpdateInformationDisposable;
 
     public PfBarScanDialog(Context context) {
         super(context);
-        initBg();
-        DTVManager.getInstance();
         mContext = context;
-        sHandler.sendEmptyMessageDelayed(0, DTVSettingManager.getInstance().dismissTimeout());
+        initBg();
+        delayDismiss();
     }
 
     @Override
@@ -123,20 +112,24 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
         window.setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
     }
 
+    private void delayDismiss() {
+        Disposable disposable = Observable.timer(DTVSettingManager.getInstance().dismissTimeout(), TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(aLong -> dismiss());
+        Log.i(TAG, "delay dismiss = " + disposable);
+    }
+
     private void startCheckSignal() {
         stopCheckSignal();
-        mCheckSignalHelper = new CheckSignalHelper(this);
-        mCheckSignalHelper.setOnCheckSignalListener(new CheckSignalHelper.OnCheckSignalListener() {
-            @Override
-            public void signal(int strength, int quality) {
-                String strengthPercent = strength + "%";
-                mTvProgressStrength.setText(strengthPercent);
-                mPbStrength.setProgress(strength);
+        mCheckSignalHelper = new CheckSignalHelper();
+        mCheckSignalHelper.setOnCheckSignalListener((strength, quality) -> {
+            String strengthPercent = strength + "%";
+            mTvProgressStrength.setText(strengthPercent);
+            mPbStrength.setProgress(strength);
 
-                String qualityPercent = quality + "%";
-                mTvProgressQuality.setText(qualityPercent);
-                mPbQuality.setProgress(quality);
-            }
+            String qualityPercent = quality + "%";
+            mTvProgressQuality.setText(qualityPercent);
+            mPbQuality.setProgress(quality);
         });
         mCheckSignalHelper.startCheckSignal();
     }
@@ -154,44 +147,31 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
 
     private void startUpdateInformation() {
         stopUpdateInformation();
-        mUpdateInformationTimer = new Timer();
-        mUpdateInformationTimer.schedule(new UpdateInformationTimerTask(this), 0, 1000);
+
+        mUpdateInformationDisposable = Observable.interval(0, 1L, TimeUnit.SECONDS)
+                .map(aLong -> {
+                    HProg_Struct_ProgInfo currProgInfo = DTVProgramManager.getInstance().getCurrProgInfo();
+                    if (currProgInfo != null) {
+                        PfInfoModel pfInfoModel = new PfInfoModel();
+                        pfInfoModel.currPfInfo = DTVEpgManager.getInstance().getPFEventOfServID(currProgInfo.Sat, currProgInfo.TsID, currProgInfo.ServID, 0);
+                        pfInfoModel.nextPfInfo = DTVEpgManager.getInstance().getPFEventOfServID(currProgInfo.Sat, currProgInfo.TsID, currProgInfo.ServID, 1);
+                        return pfInfoModel;
+                    }
+                    return null;
+                })
+                .compose(RxTransformer.threadTransformer())
+                .subscribe(pfInfoModel -> {
+                    if (pfInfoModel != null) {
+                        updateProgInfo(pfInfoModel.currPfInfo);
+                        updateProgInformation(pfInfoModel.currPfInfo, pfInfoModel.nextPfInfo);
+                    }
+                });
     }
 
     private void stopUpdateInformation() {
-        if (mUpdateInformationTimer != null) {
-            mUpdateInformationTimer.cancel();
-            mUpdateInformationTimer.purge();
-            mUpdateInformationTimer = null;
-        }
-    }
-
-    private static class UpdateInformationTimerTask extends WeakTimerTask<PfBarScanDialog> {
-
-        UpdateInformationTimerTask(PfBarScanDialog view) {
-            super(view);
-        }
-
-        @Override
-        protected void runTimer() {
-            HProg_Struct_ProgInfo currProgInfo = DTVProgramManager.getInstance().getCurrProgInfo();
-            HEPG_Struct_Event currPfInfo = null;
-            HEPG_Struct_Event nextPfInfo = null;
-            if (currProgInfo != null) {
-                currPfInfo = DTVEpgManager.getInstance().getPFEventOfServID(currProgInfo.Sat, currProgInfo.TsID, currProgInfo.ServID, 0);
-                nextPfInfo = DTVEpgManager.getInstance().getPFEventOfServID(currProgInfo.Sat, currProgInfo.TsID, currProgInfo.ServID, 1);
-            }
-
-            final HEPG_Struct_Event currPf = currPfInfo;
-            final HEPG_Struct_Event nextPf = nextPfInfo;
-            PfBarScanDialog dialog = mWeakReference.get();
-            dialog.sHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    dialog.updateProgInfo(currPf);
-                    dialog.updateProgInformation(currPf, nextPf);
-                }
-            });
+        if (mUpdateInformationDisposable != null) {
+            mUpdateInformationDisposable.dispose();
+            mUpdateInformationDisposable = null;
         }
     }
 
@@ -200,7 +180,6 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
         stopCheckSignal();
         stopUpdateInformation();
         RealTimeManager.getInstance().unregister(this);
-        WeakToolManager.getInstance().removeWeakTool(this);
         super.dismiss();
     }
 
@@ -244,5 +223,10 @@ public class PfBarScanDialog extends BaseDialog implements WeakToolInterface, Re
         if (!TextUtils.isEmpty(time)) {
             mTvTime.setText(time);
         }
+    }
+
+    private static class PfInfoModel {
+        HEPG_Struct_Event currPfInfo;
+        HEPG_Struct_Event nextPfInfo;
     }
 }

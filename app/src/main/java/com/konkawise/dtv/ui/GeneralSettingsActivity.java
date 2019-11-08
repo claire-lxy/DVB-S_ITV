@@ -216,12 +216,9 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
         new EditTimeDialog().setCurrTime(DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.AutoScanTime) * 1000)
                 .setTimeLimit(23 * 60 * 60 * 1000 + 59 * 60 * 1000)
                 .from(EditTimeDialog.FROM_CHANNEL_SCAN_TIEM)
-                .setTimeListener(new EditTimeDialog.OnTimeListener() {
-                    @Override
-                    public void time(int hour, int minute, int second) {
-                        DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.AutoScanTime, hour * 60 * 60 + minute * 60);
-                        mTvChannelScanTime.setText(hour + ":" + minute);
-                    }
+                .setTimeListener((hour, minute, second) -> {
+                    DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.AutoScanTime, hour * 60 * 60 + minute * 60);
+                    mTvChannelScanTime.setText(hour + ":" + minute);
                 }).show(getSupportFragmentManager(), EditTimeDialog.TAG);
     }
 
@@ -297,64 +294,61 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
                 .title(title)
                 .content(content)
                 .position(selectPosition)
-                .setOnDismissListener(new CommCheckItemDialog.OnDismissListener() {
-                    @Override
-                    public void onDismiss(CommCheckItemDialog dialog, int position, String checkContent) {
-                        switch (mCurrentSelectItem) {
-                            case ITEM_SCART:
-                                mTvScart.setText(checkContent);
-                                scartPosition = Arrays.asList(mScartArray).indexOf(checkContent);
-                                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.TV_SCART, scartPosition);
-                                break;
-                            case ITEM_SUBTITLE_DISPLAY:
-                                mTvSubtitleDisplay.setText(checkContent);
-                                subtitleDisplayPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
-                                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.SubtitleDisplay, subtitleDisplayPosition);
-                                break;
-                            case ITEM_PFBAR_TIMEOUT:
-                                mTvPfTimeout.setText(checkContent);
-                                pfTimeoutPosition = Arrays.asList(mPfTimeoutArray).indexOf(checkContent);
-                                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.PD_dispalytime, arrayPfBarTime[pfTimeoutPosition]);
-                                break;
-                            case ITEM_RATIO_MODE:
-                                mTvRatio.setText(checkContent);
-                                ratioModePosition = Arrays.asList(mRatioModeArray).indexOf(checkContent);
-                                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.ScreenRatio, ratioModePosition);
-                                break;
-                            case ITEM_ASPECT_MODE:
-                                mTvAspect.setText(checkContent);
-                                aspectModePosition = Arrays.asList(mAspectModeArray).indexOf(checkContent);
-                                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.AspectRatio, aspectModePosition);
-                                break;
-                            case ITEM_SWITCH_CHANNEL:
-                                mTvSwitchChannel.setText(checkContent);
-                                switchChannelPosition = Arrays.asList(mSwitchChannelModeArray).indexOf(checkContent);
-                                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.PD_SwitchMode, switchChannelPosition);
-                                break;
-                            case ITEM_FIRST_AUDIO_LANGUAGE:
-                                mTvFirstAudioLanguage.setText(checkContent);
-                                firstAudioLanguagePosition = Arrays.asList(mLanguageArray).indexOf(checkContent);
-                                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.AudioLanguage0, firstAudioLanguagePosition);
-                                break;
-                            case ITEM_SECOND_AUDIO_LANGUAGE:
-                                mTvSecondAudioLanguage.setText(checkContent);
-                                secondAudioLanguagePosition = Arrays.asList(mLanguageArray).indexOf(checkContent);
-                                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.AudioLanguage1, secondAudioLanguagePosition);
-                                break;
-                            case ITEM_SUBTITLE_LANGUAGE:
-                                mTvSubtitleLanguage.setText(checkContent);
-                                subtitleLanguagePosition = Arrays.asList(mLanguageArray).indexOf(checkContent);
-                                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.SubtitleLanguage, subtitleLanguagePosition);
-                                break;
-                            case ITEM_CHANNEL_SCAN:
-                                mTvChannelScan.setText(checkContent);
-                                channelScanPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
-                                DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.AutoScanEnabled, channelScanPosition);
-                                showOrDismissChannelScanTime();
-                                break;
-                            default:
-                                break;
-                        }
+                .setOnDismissListener((dialog, position, checkContent) -> {
+                    switch (mCurrentSelectItem) {
+                        case ITEM_SCART:
+                            mTvScart.setText(checkContent);
+                            scartPosition = Arrays.asList(mScartArray).indexOf(checkContent);
+                            DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.TV_SCART, scartPosition);
+                            break;
+                        case ITEM_SUBTITLE_DISPLAY:
+                            mTvSubtitleDisplay.setText(checkContent);
+                            subtitleDisplayPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
+                            DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.SubtitleDisplay, subtitleDisplayPosition);
+                            break;
+                        case ITEM_PFBAR_TIMEOUT:
+                            mTvPfTimeout.setText(checkContent);
+                            pfTimeoutPosition = Arrays.asList(mPfTimeoutArray).indexOf(checkContent);
+                            DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.PD_dispalytime, arrayPfBarTime[pfTimeoutPosition]);
+                            break;
+                        case ITEM_RATIO_MODE:
+                            mTvRatio.setText(checkContent);
+                            ratioModePosition = Arrays.asList(mRatioModeArray).indexOf(checkContent);
+                            DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.ScreenRatio, ratioModePosition);
+                            break;
+                        case ITEM_ASPECT_MODE:
+                            mTvAspect.setText(checkContent);
+                            aspectModePosition = Arrays.asList(mAspectModeArray).indexOf(checkContent);
+                            DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.AspectRatio, aspectModePosition);
+                            break;
+                        case ITEM_SWITCH_CHANNEL:
+                            mTvSwitchChannel.setText(checkContent);
+                            switchChannelPosition = Arrays.asList(mSwitchChannelModeArray).indexOf(checkContent);
+                            DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.PD_SwitchMode, switchChannelPosition);
+                            break;
+                        case ITEM_FIRST_AUDIO_LANGUAGE:
+                            mTvFirstAudioLanguage.setText(checkContent);
+                            firstAudioLanguagePosition = Arrays.asList(mLanguageArray).indexOf(checkContent);
+                            DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.AudioLanguage0, firstAudioLanguagePosition);
+                            break;
+                        case ITEM_SECOND_AUDIO_LANGUAGE:
+                            mTvSecondAudioLanguage.setText(checkContent);
+                            secondAudioLanguagePosition = Arrays.asList(mLanguageArray).indexOf(checkContent);
+                            DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.AudioLanguage1, secondAudioLanguagePosition);
+                            break;
+                        case ITEM_SUBTITLE_LANGUAGE:
+                            mTvSubtitleLanguage.setText(checkContent);
+                            subtitleLanguagePosition = Arrays.asList(mLanguageArray).indexOf(checkContent);
+                            DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.SubtitleLanguage, subtitleLanguagePosition);
+                            break;
+                        case ITEM_CHANNEL_SCAN:
+                            mTvChannelScan.setText(checkContent);
+                            channelScanPosition = Arrays.asList(mGeneralSwitchArray).indexOf(checkContent);
+                            DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.AutoScanEnabled, channelScanPosition);
+                            showOrDismissChannelScanTime();
+                            break;
+                        default:
+                            break;
                     }
                 }).show(getSupportFragmentManager(), CommCheckItemDialog.TAG);
     }
@@ -515,6 +509,7 @@ public class GeneralSettingsActivity extends BaseItemFocusChangeActivity {
 
                 case ITEM_PFBAR_TIMEOUT:
                     pfTimeoutPosition = getPlusStep(pfTimeoutPosition, mPfTimeoutArray.length - 1);
+                    mTvPfTimeout.setText(mPfTimeoutArray[pfTimeoutPosition]);
                     DTVSettingManager.getInstance().setDTVProperty(HSetting_Enum_Property.PD_dispalytime, arrayPfBarTime[pfTimeoutPosition]);
                     break;
 

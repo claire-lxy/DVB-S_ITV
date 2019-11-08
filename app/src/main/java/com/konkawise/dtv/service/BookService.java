@@ -87,6 +87,7 @@ public class BookService extends BaseService implements WeakToolInterface {
             DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.BOOK);
             mMsgEvent = null;
         }
+        DTVDVBManager.getInstance().releaseResource();
         super.onDestroy();
     }
 

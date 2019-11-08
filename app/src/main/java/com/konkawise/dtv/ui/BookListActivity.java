@@ -1,5 +1,8 @@
 package com.konkawise.dtv.ui;
 
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleObserver;
+import android.arch.lifecycle.OnLifecycleEvent;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
@@ -16,16 +19,13 @@ import com.konkawise.dtv.DTVBookingManager;
 import com.konkawise.dtv.adapter.BookListAdapter;
 import com.konkawise.dtv.annotation.BookType;
 import com.konkawise.dtv.base.BaseActivity;
-import com.konkawise.dtv.bean.BookParameterModel;
 import com.konkawise.dtv.bean.BookingModel;
 import com.konkawise.dtv.dialog.BookDialog;
 import com.konkawise.dtv.dialog.CommTipsDialog;
-import com.konkawise.dtv.dialog.OnCommNegativeListener;
-import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.event.BookUpdateEvent;
+import com.konkawise.dtv.rx.RxTransformer;
 import com.konkawise.dtv.utils.ToastUtils;
 import com.konkawise.dtv.view.TVListView;
-import com.konkawise.dtv.weaktool.WeakAsyncTask;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -37,11 +37,13 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnItemSelected;
+import io.reactivex.Observable;
+import io.reactivex.schedulers.Schedulers;
 import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Enum_Repeat;
 import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Struct_Timer;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgBasicInfo;
 
-public class BookListActivity extends BaseActivity implements RealTimeManager.OnReceiveTimeListener {
+public class BookListActivity extends BaseActivity implements LifecycleObserver, RealTimeManager.OnReceiveTimeListener {
     @BindView(R.id.tv_system_time)
     TextView mTvSystemTime;
 
@@ -53,11 +55,30 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
         mCurrSelectPosition = position;
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+    private void registerBookUpdate() {
+        EventBus.getDefault().register(this);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    private void unregisterBookUpdate() {
+        EventBus.getDefault().unregister(this);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private void registerRealTimeUpdate() {
+        RealTimeManager.getInstance().register(this);
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+    private void unregisterRealTimeUpdate() {
+        RealTimeManager.getInstance().unregister(this);
+    }
+
     private boolean mBook;
 
     private BookListAdapter mAdapter;
     private int mCurrSelectPosition;
-    private LoadBookingTask mLoadBookingTask;
     private List<HProg_Struct_ProgBasicInfo> mCurrTypeProgList;
     private List<HProg_Struct_ProgBasicInfo> mAnotherTypeProgList;
 
@@ -68,42 +89,16 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
 
     @Override
     protected void setup() {
-        EventBus.getDefault().register(this);
-
         mAdapter = new BookListAdapter(this, new ArrayList<>());
         mLvBookList.setAdapter(mAdapter);
 
-        mLoadBookingTask = new LoadBookingTask(this);
-        mLoadBookingTask.execute();
+        loadBookList();
+        preloadProgList();
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        RealTimeManager.getInstance().register(this);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        RealTimeManager.getInstance().unregister(this);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (isFinishing()) {
-            if (mLoadBookingTask != null) {
-                mLoadBookingTask.release();
-                mLoadBookingTask = null;
-            }
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        EventBus.getDefault().unregister(this);
-        super.onDestroy();
+    protected LifecycleObserver provideLifecycleObserver() {
+        return this;
     }
 
     @Override
@@ -113,28 +108,31 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
         }
     }
 
-    private static class LoadBookingTask extends WeakAsyncTask<BookListActivity, Void, List<BookingModel>> {
+    private void loadBookList() {
+        addObservable(Observable.just(DTVBookingManager.getInstance().getBookingModelList())
+                .compose(RxTransformer.threadTransformer())
+                .subscribe(bookingModels -> {
+                    if (bookingModels != null && !bookingModels.isEmpty()) {
+                        mAdapter.addData(bookingModels);
+                    }
+                }));
+    }
 
-        LoadBookingTask(BookListActivity view) {
-            super(view);
-        }
+    private void preloadProgList() {
+        loadCurrTypeProgList();
+        loadAnotherTypeProgList();
+    }
 
-        @Override
-        protected List<BookingModel> backgroundExecute(Void... param) {
-            BookListActivity context = mWeakReference.get();
+    private void loadCurrTypeProgList() {
+        addObservable(Observable.just(DTVProgramManager.getInstance().getCurrGroupProgInfoList())
+                .subscribeOn(Schedulers.io())
+                .subscribe(progInfoList -> mCurrTypeProgList = progInfoList));
+    }
 
-            context.mCurrTypeProgList = DTVProgramManager.getInstance().getCurrGroupProgInfoList();
-            context.mAnotherTypeProgList = DTVProgramManager.getInstance().getAnotherTypeProgInfoList();
-
-            return DTVBookingManager.getInstance().getBookingModelList();
-        }
-
-        @Override
-        protected void postExecute(List<BookingModel> bookingModels) {
-            if (bookingModels != null && !bookingModels.isEmpty()) {
-                mWeakReference.get().mAdapter.addData(bookingModels);
-            }
-        }
+    private void loadAnotherTypeProgList() {
+        addObservable(Observable.just(DTVProgramManager.getInstance().getAnotherTypeProgInfoList())
+                .subscribeOn(Schedulers.io())
+                .subscribe(progInfoList -> mAnotherTypeProgList = progInfoList));
     }
 
     private void showPowerSavingOffDialog(String bookTitle, int bookingType) {
@@ -142,19 +140,11 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
                 .title(getString(R.string.dialog_title_tips))
                 .content(getString(R.string.dialog_power_saving_off_cotnent))
                 .resizeDialogWidth((int) (getResources().getDisplayMetrics().widthPixels * 0.7))
-                .setOnNegativeListener(getString(R.string.cancel), new OnCommNegativeListener() {
-                    @Override
-                    public void onNegativeListener() {
-                        showBookDialog(bookTitle, bookingType);
-                    }
-                })
-                .setOnPositiveListener(getString(R.string.dialog_power_saving_positive), new OnCommPositiveListener() {
-                    @Override
-                    public void onPositiveListener() {
-                        // 设置为浅待机
-                        PropertiesManager.getInstance().setProperty(Constants.STANDBY_PROPERTY, Constants.StandbyProperty.SMART_SUSPEND);
-                        showBookDialog(bookTitle, bookingType);
-                    }
+                .setOnNegativeListener(getString(R.string.cancel), () -> showBookDialog(bookTitle, bookingType))
+                .setOnPositiveListener(getString(R.string.dialog_power_saving_positive), () -> {
+                    // 设置为浅待机
+                    PropertiesManager.getInstance().setProperty(Constants.STANDBY_PROPERTY, Constants.StandbyProperty.SMART_SUSPEND);
+                    showBookDialog(bookTitle, bookingType);
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
 
@@ -171,43 +161,40 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
                 .currTypeProgList(progList)
                 .anotherTypeProgList(getAnotherTypeProgList(bookingType)) // if book type is edit, it will be null
                 .channelNamePosition(getChannelNamePosition(bookingType))
-                .setOnBookCallbackListener(new BookDialog.OnBookCallbackListener() {
-                    @Override
-                    public void onBookCallback(@NonNull BookParameterModel pm) {
-                        if (pm.bookingModel == null) return;
+                .setOnBookCallbackListener(pm -> {
+                    if (pm.bookingModel == null) return;
 
-                        switch (pm.bookConflict) {
-                            case Constants.BookConflictType.NONE: // 当前参数的book没有冲突，正常添加
-                                if (bookingType == Constants.BookType.ADD) {
-                                    DTVBookingManager.getInstance().addTimer(pm.bookingModel.bookInfo);
-                                    mAdapter.addData(mAdapter.getCount(), pm.bookingModel);
-                                } else {
-                                    DTVBookingManager.getInstance().replaceTimer(mAdapter.getItem(mCurrSelectPosition).bookInfo, pm.bookingModel.bookInfo);
-                                    mAdapter.updateData(mCurrSelectPosition, pm.bookingModel);
-                                }
-                                break;
-                            case Constants.BookConflictType.LIMIT:
-                                ToastUtils.showToast(R.string.toast_book_limit);
-                                break;
-                            case Constants.BookConflictType.ADD: // 当前参数的book有冲突，如果是添加需要先删除后再添加
-                                int conflictPosition = findConflictBookProgPosition(pm.conflictBookProg);
-                                if (conflictPosition != -1) {
-                                    DTVBookingManager.getInstance().addTimer(pm.bookConflict, pm.conflictBookProg, pm.bookingModel.bookInfo);
-                                    mAdapter.removeData(conflictPosition);
-                                    mAdapter.addData(mAdapter.getCount(), pm.bookingModel);
-                                }
-                                break;
-                            case Constants.BookConflictType.REPLACE: // 当前参数的book有冲突，需要询问替换
-                                BookingModel conflictBookModel = new BookingModel();
-                                conflictBookModel.bookInfo = pm.conflictBookProg;
-                                conflictBookModel.progInfo = DTVProgramManager.getInstance().getProgInfoByServiceId(pm.conflictBookProg.servid, pm.conflictBookProg.tsid, pm.conflictBookProg.sat);
-                                showReplaceBookDialog(conflictBookModel, pm.bookingModel);
-                                break;
-                        }
-
-                        mBook = true;
-                        DTVBookingManager.getInstance().updateDBase(0);
+                    switch (pm.bookConflict) {
+                        case Constants.BookConflictType.NONE: // 当前参数的book没有冲突，正常添加
+                            if (bookingType == Constants.BookType.ADD) {
+                                DTVBookingManager.getInstance().addTimer(pm.bookingModel.bookInfo);
+                                mAdapter.addData(mAdapter.getCount(), pm.bookingModel);
+                            } else {
+                                DTVBookingManager.getInstance().replaceTimer(mAdapter.getItem(mCurrSelectPosition).bookInfo, pm.bookingModel.bookInfo);
+                                mAdapter.updateData(mCurrSelectPosition, pm.bookingModel);
+                            }
+                            break;
+                        case Constants.BookConflictType.LIMIT:
+                            ToastUtils.showToast(R.string.toast_book_limit);
+                            break;
+                        case Constants.BookConflictType.ADD: // 当前参数的book有冲突，如果是添加需要先删除后再添加
+                            int conflictPosition = findConflictBookProgPosition(pm.conflictBookProg);
+                            if (conflictPosition != -1) {
+                                DTVBookingManager.getInstance().addTimer(pm.bookConflict, pm.conflictBookProg, pm.bookingModel.bookInfo);
+                                mAdapter.removeData(conflictPosition);
+                                mAdapter.addData(mAdapter.getCount(), pm.bookingModel);
+                            }
+                            break;
+                        case Constants.BookConflictType.REPLACE: // 当前参数的book有冲突，需要询问替换
+                            BookingModel conflictBookModel = new BookingModel();
+                            conflictBookModel.bookInfo = pm.conflictBookProg;
+                            conflictBookModel.progInfo = DTVProgramManager.getInstance().getProgInfoByServiceId(pm.conflictBookProg.servid, pm.conflictBookProg.tsid, pm.conflictBookProg.sat);
+                            showReplaceBookDialog(conflictBookModel, pm.bookingModel);
+                            break;
                     }
+
+                    mBook = true;
+                    DTVBookingManager.getInstance().updateDBase(0);
                 }).show(getSupportFragmentManager(), BookDialog.TAG);
     }
 
@@ -217,14 +204,11 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
                 .content(MessageFormat.format(getString(R.string.dialog_book_conflict_content),
                         conflictBookModel.getBookDate(this, BookingModel.BOOK_TIME_SEPARATOR_EMPTY), conflictBookModel.progInfo.Name, conflictBookModel.getBookType(this)))
                 .lineSpacing(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 35, getResources().getDisplayMetrics()))
-                .setOnPositiveListener(getString(R.string.dialog_book_conflict_positive), new OnCommPositiveListener() {
-                    @Override
-                    public void onPositiveListener() {
-                        DTVBookingManager.getInstance().replaceTimer(conflictBookModel.bookInfo, newBookModel.bookInfo);
-                        int conflictPosition = findConflictBookProgPosition(conflictBookModel.bookInfo);
-                        if (conflictPosition != -1) {
-                            mAdapter.updateData(conflictPosition, newBookModel);
-                        }
+                .setOnPositiveListener(getString(R.string.dialog_book_conflict_positive), () -> {
+                    DTVBookingManager.getInstance().replaceTimer(conflictBookModel.bookInfo, newBookModel.bookInfo);
+                    int conflictPosition = findConflictBookProgPosition(conflictBookModel.bookInfo);
+                    if (conflictPosition != -1) {
+                        mAdapter.updateData(conflictPosition, newBookModel);
                     }
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
@@ -291,15 +275,12 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
 
         new CommTipsDialog().title(getString(R.string.delete_book_title))
                 .content(getString(R.string.delete_book_content))
-                .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
-                    @Override
-                    public void onPositiveListener() {
-                        DTVBookingManager.getInstance().deleteTimer(mAdapter.getItem(mCurrSelectPosition).bookInfo);
-                        mAdapter.removeData(mCurrSelectPosition);
+                .setOnPositiveListener(getString(R.string.ok), () -> {
+                    DTVBookingManager.getInstance().deleteTimer(mAdapter.getItem(mCurrSelectPosition).bookInfo);
+                    mAdapter.removeData(mCurrSelectPosition);
 
-                        mBook = true;
-                        DTVBookingManager.getInstance().updateDBase(0);
-                    }
+                    mBook = true;
+                    DTVBookingManager.getInstance().updateDBase(0);
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
 
@@ -366,7 +347,7 @@ public class BookListActivity extends BaseActivity implements RealTimeManager.On
     public void onBookUpdate(BookUpdateEvent event) {
         if (event.bookInfo != null) {
             int position = findConflictBookProgPosition(event.bookInfo);
-            if (event.bookInfo.repeatway == HBooking_Enum_Repeat.ONCE && position > 0) {
+            if (event.bookInfo.repeatway == HBooking_Enum_Repeat.ONCE && position >= 0) {
                 mAdapter.removeData(position);
             }
         }

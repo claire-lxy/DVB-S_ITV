@@ -92,9 +92,6 @@
     <string name="motor_select">Select</string>
     <string name="motor_ok">OK</string>
 
-    <string name="south">S</string>
-    <string name="west">W</string>
-
     <!--DVB setting-->
     <string name="general_setting">General Settings</string>
     <string name="t2_setting">T/T2 Settings</string>
@@ -106,13 +103,11 @@
     <string name="first_audio_language">First Audio Language</string>
     <string name="second_audio_language">Second Audio Language</string>
     <string name="language">English</string>
-    <string name="teletext_language">Teletext Language</string>
     <string name="subtitle_language">Subtitle Language</string>
     <string name="switch_channel_block">Black</string>
     <string name="scart">SCART</string>
     <string name="scart_mode_rgb">RGB</string>
     <string name="scart_mode_cvbs">CVBS</string>
-    <string name="auto_start">Auto Start</string>
     <string name="channel_scan">Channel Scan</string>
     <string name="channel_scan_time">Channel Scan Time</string>
 
@@ -153,9 +148,7 @@
     <string name="dtv_setting">DTV Setting</string>
 
     <!--activity_blind_select.xml-->
-    <string name="blindscan_select">BlindScan Select</string>
     <string name="satellite_blind">Satellite:</string>
-    <string name="diseqc_1_x">DiSEqC 1.X:</string>
     <string name="freq_22KHz">22KHz:</string>
 
     <!--activity_scan_tv_and_radio.xml-->
@@ -254,13 +247,9 @@
     <string name="dialog_pf_pol">Polarization:{0}</string>
 
     <!--pid_dialog-->
-    <string name="video_type">Video Type</string>
-    <string name="audio_type">Audio Type</string>
     <string name="video_pid">Video PID</string>
     <string name="audio_pid">Audio PID</string>
     <string name="pcr_pid">PCR PID</string>
-    <string name="h264">H264</string>
-    <string name="mpeg2">MPEG2</string>
 
     <!--password_dialog-->
     <string name="password">Enter Password</string>
@@ -278,7 +267,6 @@
     <string name="please_search">No programs, please search</string>
 
     <!-- Parental Control -->
-    <string name="preference_settings">Preference Settings</string>
     <string name="parental_control">Parental Control</string>
     <string name="menu_lock">Menu Lock</string>
     <string name="channel_lock2">Channel Lock</string>
