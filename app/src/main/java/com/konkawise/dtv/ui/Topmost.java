@@ -317,10 +317,11 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
         RealTimeManager.getInstance().start();
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     private void stopReceiveRealTimeMsg() {
-        RealTimeManager.getInstance().stop();
-        DTVDVBManager.getInstance().releaseResource();
+        if (isFinishing()) {
+            RealTimeManager.getInstance().stop();
+        }
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
@@ -1482,6 +1483,7 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
                 .setOnPositiveListener(getString(R.string.ok), () -> {
                     dismissSettingPasswordDialog();
                     hideSurface();
+                    DTVDVBManager.getInstance().releaseResource();
                     finish();
                 }).show(getSupportFragmentManager(), CommTipsDialog.TAG);
     }
@@ -1847,7 +1849,6 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
             if (num > 0) {
                 DTVProgramManager.getInstance().setCurrProgType(currProgType == HProg_Enum_Type.GBPROG ?
                         HProg_Enum_Type.TVPROG : HProg_Enum_Type.GBPROG, 0);
-//                onProgramUpdate(new ProgramUpdateEvent(true));
                 RxBus.getInstance().post(new ProgramUpdateEvent(true));
             } else {
                 ToastUtils.showToast(group == HProg_Enum_Type.GBPROG ? R.string.toast_no_radio : R.string.toast_no_tv);

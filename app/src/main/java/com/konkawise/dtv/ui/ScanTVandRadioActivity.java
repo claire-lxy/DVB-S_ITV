@@ -239,8 +239,6 @@ public class ScanTVandRadioActivity extends BaseActivity implements LifecycleObs
         mCaFilter = DTVSettingManager.getInstance().getCurrCAS();
         mLcn = DTVSettingManager.getInstance().getDTVProperty(HSetting_Enum_Property.ShowNoType);
 
-        registerReceiveScanTVAndRadioMsg();
-
         initIntent();
         initRecyclerView();
     }

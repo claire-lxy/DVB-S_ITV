@@ -24,10 +24,7 @@ import com.konkawise.dtv.base.BaseService;
 import com.konkawise.dtv.bean.BookingModel;
 import com.konkawise.dtv.bean.HandlerMsgModel;
 import com.konkawise.dtv.dialog.BookReadyDialog;
-import com.konkawise.dtv.dialog.OnCommNegativeListener;
-import com.konkawise.dtv.dialog.OnCommPositiveListener;
 import com.konkawise.dtv.dialog.QuitRecordingDialog;
-import com.konkawise.dtv.event.BookRegisterListenerEvent;
 import com.konkawise.dtv.event.BookUpdateEvent;
 import com.konkawise.dtv.event.RecordStateChangeEvent;
 import com.konkawise.dtv.rx.RxBus;
@@ -35,14 +32,11 @@ import com.konkawise.dtv.utils.TimeUtils;
 import com.konkawise.dtv.weaktool.WeakHandler;
 import com.konkawise.dtv.weaktool.WeakToolInterface;
 import com.sw.dvblib.DTVCommon;
-import com.sw.dvblib.DTVManager;
 import com.sw.dvblib.msg.MsgEvent;
 import com.sw.dvblib.msg.listener.CallbackListenerAdapter;
 
 import java.text.MessageFormat;
 
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Function;
 import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Enum_Task;
 import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Struct_PlayeTimer;
 import vendor.konka.hardware.dtvmanager.V1_0.HBooking_Struct_Timer;
@@ -57,8 +51,6 @@ public class BookService extends BaseService implements WeakToolInterface {
     private QuitRecordingDialog mQuitRecordingDialog;
     private BookCountDownHandler mBookCountDownHandler;
     private MsgEvent mMsgEvent;
-    private DTVManager.DTVListener mDTVListener;
-    private Disposable mBookListenerDisposable;
 
     @Override
     public void onCreate() {
@@ -76,14 +68,7 @@ public class BookService extends BaseService implements WeakToolInterface {
     @Override
     public void onDestroy() {
         Log.i(TAG, "book service destroy");
-        if (mBookListenerDisposable != null) {
-            mBookListenerDisposable.dispose();
-        }
         WeakToolManager.getInstance().removeWeakTool(this);
-        if (mDTVListener != null) {
-            DTVDVBManager.getInstance().unregisterDTVListener(mDTVListener);
-            mDTVListener = null;
-        }
         if (mMsgEvent != null) {
             DTVDVBManager.getInstance().unregisterMsgEvent(Constants.MsgCallbackId.BOOK);
             mMsgEvent = null;
@@ -95,7 +80,6 @@ public class BookService extends BaseService implements WeakToolInterface {
     private void registerBookMsg() {
         if (mMsgEvent == null) {
             Log.i(TAG, "register book msg");
-            mDTVListener = new DTVManager.DTVListener(DTVManager.getInstance());
             mMsgEvent = DTVDVBManager.getInstance().registerMsgEvent(Constants.MsgCallbackId.BOOK);
             mMsgEvent.registerCallbackListener(new CallbackListenerAdapter() {
                 // 预订节目播放倒计时
@@ -127,20 +111,6 @@ public class BookService extends BaseService implements WeakToolInterface {
                 }
             });
         }
-
-        // 按home或退出apk时，通知注册book消息通道
-        // 进入apk时，通知解注册book消息通道
-        mBookListenerDisposable = RxBus.getInstance().toObservable(BookRegisterListenerEvent.class)
-                .subscribe(event -> {
-                    Log.i(TAG, "isRegisterBookListener = " + event.isRegisterBookListener);
-                    if (mDTVListener != null) {
-                        if (event.isRegisterBookListener) {
-                            DTVDVBManager.getInstance().registerDTVListener(mDTVListener);
-                        } else {
-                            DTVDVBManager.getInstance().unregisterDTVListener(mDTVListener);
-                        }
-                    }
-                });
     }
 
     private void showBookReadyDialog() {
@@ -176,26 +146,20 @@ public class BookService extends BaseService implements WeakToolInterface {
                 .content(MessageFormat.format(getString(R.string.dialog_book_ready_content), content, String.valueOf(countDownSeconds)))
                 .channelName(channelName)
                 .mode(mode)
-                .setOnPositiveListener(positive, new OnCommPositiveListener() {
-                    @Override
-                    public void onPositiveListener() {
-                        dismissBookReadyDialog();
-                        removeHandlerMsg();
-                        cancelBook(bookInfo);
-                        if (DTVPVRManager.getInstance().isRecording()) {
-                            showQuitRecordingDialog(bookInfo);
-                        } else {
-                            bookReady(bookInfo);
-                        }
+                .setOnPositiveListener(positive, () -> {
+                    dismissBookReadyDialog();
+                    removeHandlerMsg();
+                    cancelBook(bookInfo);
+                    if (DTVPVRManager.getInstance().isRecording()) {
+                        showQuitRecordingDialog(bookInfo);
+                    } else {
+                        bookReady(bookInfo);
                     }
                 })
-                .setOnNegativeListener(getString(R.string.dialog_book_cancel), new OnCommNegativeListener() {
-                    @Override
-                    public void onNegativeListener() {
-                        dismissBookReadyDialog();
-                        removeHandlerMsg();
-                        cancelBook(bookInfo);
-                    }
+                .setOnNegativeListener(getString(R.string.dialog_book_cancel), () -> {
+                    dismissBookReadyDialog();
+                    removeHandlerMsg();
+                    cancelBook(bookInfo);
                 });
         if (mBookReadyDialog.getWindow() != null) {
             mBookReadyDialog.getWindow().setType(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ?
@@ -215,22 +179,16 @@ public class BookService extends BaseService implements WeakToolInterface {
     private void showQuitRecordingDialog(HBooking_Struct_Timer bookInfo) {
         mQuitRecordingDialog = new QuitRecordingDialog(this);
         mQuitRecordingDialog.content(getString(R.string.dialog_quit_record_content))
-                .setOnPositiveListener(getString(R.string.ok), new OnCommPositiveListener() {
-                    @Override
-                    public void onPositiveListener() {
-                        dismissQuitRecordingDialog();
-                        RxBus.getInstance().post(new RecordStateChangeEvent(false)); // 通知Topmost停止录制
-                        if (bookInfo != null) {
-                            bookReady(bookInfo);
-                        }
+                .setOnPositiveListener(getString(R.string.ok), () -> {
+                    dismissQuitRecordingDialog();
+                    RxBus.getInstance().post(new RecordStateChangeEvent(false)); // 通知Topmost停止录制
+                    if (bookInfo != null) {
+                        bookReady(bookInfo);
                     }
                 })
-                .setOnNegativeListener("", new OnCommNegativeListener() {
-                    @Override
-                    public void onNegativeListener() {
-                        dismissQuitRecordingDialog();
-                        cancelBook(bookInfo);
-                    }
+                .setOnNegativeListener("", () -> {
+                    dismissQuitRecordingDialog();
+                    cancelBook(bookInfo);
                 });
         if (mQuitRecordingDialog.getWindow() != null) {
             mQuitRecordingDialog.getWindow().setType(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ?
