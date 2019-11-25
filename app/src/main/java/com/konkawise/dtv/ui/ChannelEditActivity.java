@@ -598,6 +598,7 @@ public class ChannelEditActivity extends BaseActivity implements LifecycleObserv
         new RenameDialog()
                 .setProgNo(mAdapter.getItem(mCurrSelectPosition).PShowNo)
                 .setName(mAdapter.getItem(mCurrSelectPosition).Name)
+                .setFilterLineBreak(true)
                 .setOnRenameEditListener(newName -> {
                     if (TextUtils.isEmpty(newName)) return;
 
