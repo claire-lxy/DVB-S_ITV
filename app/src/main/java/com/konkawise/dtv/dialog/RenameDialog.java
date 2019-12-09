@@ -1,6 +1,7 @@
 package com.konkawise.dtv.dialog;
 
 import android.text.InputFilter;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -10,6 +11,9 @@ import com.konkawise.dtv.R;
 import com.konkawise.dtv.base.BaseDialogFragment;
 import com.konkawise.dtv.utils.EditUtils;
 import com.konkawise.dtv.view.LastInputEditText;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -48,6 +52,9 @@ public class RenameDialog extends BaseDialogFragment {
     private String mName;
     private String mNameHint;
     private int mMaxLength;
+    private boolean mFilterLineBreak;
+
+    private List<InputFilter> mFilters = new ArrayList<>();
 
     @Override
     protected int getLayoutId() {
@@ -61,7 +68,15 @@ public class RenameDialog extends BaseDialogFragment {
         mTvNameType.setText(TextUtils.isEmpty(mNameType) ? getStrings(R.string.channel_name) : mNameType);
         mEtRename.setHint(mNameHint);
         mEtRename.setText(mName);
-        if (mMaxLength > 0) mEtRename.setFilters(new InputFilter[]{new InputFilter.LengthFilter(mMaxLength)});
+        if (mMaxLength > 0) {
+            mFilters.add(new InputFilter.LengthFilter(mMaxLength));
+        }
+        if (mFilterLineBreak) {
+            mFilters.add(new LineBreakInputFilter());
+        }
+        if (!mFilters.isEmpty()) {
+            mEtRename.setFilters(mFilters.toArray(new InputFilter[0]));
+        }
 
         mBtnCancel.requestFocus();
         mEtRename.setOnKeyListener(new View.OnKeyListener() {
@@ -80,6 +95,14 @@ public class RenameDialog extends BaseDialogFragment {
                 return false;
             }
         });
+    }
+
+    private static final class LineBreakInputFilter implements InputFilter {
+
+        @Override
+        public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+            return source.toString().replace("\n", "");
+        }
     }
 
     public RenameDialog setNum(String num) {
@@ -109,6 +132,11 @@ public class RenameDialog extends BaseDialogFragment {
 
     public RenameDialog setMaxLength(int maxLength) {
         this.mMaxLength = maxLength;
+        return this;
+    }
+
+    public RenameDialog setFilterLineBreak(boolean filterLineBreak) {
+        this.mFilterLineBreak = filterLineBreak;
         return this;
     }
 
