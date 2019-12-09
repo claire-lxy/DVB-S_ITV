@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/background"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@mipmap/right_background"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/installation_c_title"
+            style="@style/TitleStyle"
+            android:layout_marginTop="22dp"
+            android:text="@string/installation_c_title" />
+
+        <View
+            android:id="@+id/installation_c_title_divider"
+            style="@style/TitleDividerStyle"
+            android:layout_width="match_parent"
+            android:layout_below="@id/installation_c_title"
+            android:layout_marginTop="18dp" />
+
+        <RelativeLayout
+            android:id="@+id/rl_installation_c_auto_search"
+            style="@style/ItemEntranceStyle"
+            android:layout_below="@id/installation_c_title_divider"
+            android:layout_marginTop="50dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/c_auto_search"
+                android:textSize="18sp" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rl_installation_c_manual_search"
+            style="@style/ItemEntranceStyle"
+            android:layout_below="@id/rl_installation_c_auto_search"
+            android:layout_marginTop="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/c_manual_search"
+                android:textSize="18sp" />
+        </RelativeLayout>
+
+        <include
+            layout="@layout/include_bottom_bar_select_item"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_alignParentBottom="true" />
+    </RelativeLayout>
+</RelativeLayout>

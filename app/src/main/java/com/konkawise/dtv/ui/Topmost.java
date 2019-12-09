@@ -1424,7 +1424,7 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
         List<String> content = new ArrayList<>();
         content.add(getString(R.string.installation_s2));
         content.add(getString(R.string.installation_t2));
-
+        content.add(getString(R.string.installation_c));
         mProgHandler.postDelayed(() -> new CommCheckItemDialog()
                 .title(getString(R.string.dialog_title_tips))
                 .content(content)
@@ -1432,9 +1432,14 @@ public class Topmost extends BaseActivity implements LifecycleObserver {
                 .position(0)
                 .setOnDismissListener((dialog, position, checkContent) -> {
                     if (position == 0) {
-                        startActivity(new Intent(Topmost.this, SatelliteActivity.class));
+                        startActivity(new Intent(Topmost.this,
+                                SatelliteActivity.class));
+                    } else if (position == 1) {
+                        startActivity(new Intent(Topmost.this,
+                                InstallationT2Activity.class));
                     } else {
-                        startActivity(new Intent(Topmost.this, InstallationT2Activity.class));
+                        startActivity(new Intent(Topmost.this,
+                                InstallationCActivity.class));
                     }
                 }).show(getSupportFragmentManager(), CommCheckItemDialog.TAG), 100);
     }

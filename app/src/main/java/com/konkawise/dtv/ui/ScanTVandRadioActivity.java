@@ -6,16 +6,17 @@ import android.arch.lifecycle.OnLifecycleEvent;
 import android.content.Intent;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.konkawise.dtv.Constants;
+import com.konkawise.dtv.DTVDVBManager;
 import com.konkawise.dtv.DTVProgramManager;
+import com.konkawise.dtv.DTVSearchManager;
 import com.konkawise.dtv.DTVSettingManager;
 import com.konkawise.dtv.R;
-import com.konkawise.dtv.DTVDVBManager;
-import com.konkawise.dtv.DTVSearchManager;
 import com.konkawise.dtv.adapter.TvAndRadioRecycleViewAdapter;
 import com.konkawise.dtv.base.BaseActivity;
 import com.konkawise.dtv.dialog.CommRemindDialog;
@@ -32,9 +33,9 @@ import java.util.List;
 
 import butterknife.BindView;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Enum_Type;
-import vendor.konka.hardware.dtvmanager.V1_0.HSearch_Enum_StoreType;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_ProgBasicInfo;
 import vendor.konka.hardware.dtvmanager.V1_0.HProg_Struct_SatInfo;
+import vendor.konka.hardware.dtvmanager.V1_0.HSearch_Enum_StoreType;
 import vendor.konka.hardware.dtvmanager.V1_0.HSetting_Enum_Property;
 
 public class ScanTVandRadioActivity extends BaseActivity implements LifecycleObserver {
@@ -199,10 +200,13 @@ public class ScanTVandRadioActivity extends BaseActivity implements LifecycleObs
                 String tpName;
                 if (isFromT2AutoSearch() || isFromT2ManualSearchActivity()) {
                     tpName = freq / 10 + "." + freq % 10 + "MHz" + " / " + symbol + "M";
+                } else if (isFromCAutoSearch() || isFromCManualSearchActivity()) {
+                    tpName = freq / 10 + "." + freq % 10 + "MHz" + " / "
+                            + symbol + "Ks/s" + " / " + qam + "-QAM";
                 } else {
                     tpName = freq + Utils.getVorH(ScanTVandRadioActivity.this, qam) + symbol;
                 }
-                String tp = tpName + "(" + index + "/" + num + ")";
+                String tp = tpName + " (" + index + "/" + num + ")";
                 mTvScanTp.setText(tp);
             }
         });
@@ -256,12 +260,14 @@ public class ScanTVandRadioActivity extends BaseActivity implements LifecycleObs
             searchMultiSatellite();
         } else if (mSatList.size() == 0 && isFromSatelliteActivity()) {
             setSatInfo();
-            mTvSatelliteName.setText(DTVProgramManager.getInstance().getSatInfo(getSatelliteIndex()).sat_name);
+            mTvSatelliteName.setText(DTVProgramManager.getInstance()
+                    .getSatInfo(getSatelliteIndex()).sat_name);
             DTVSearchManager.getInstance().searchByNet(getSatelliteIndex(), mScanMode, mNitOpen, mCaFilter);
         }
 
         if (isFromEditManualActivity()) {
-            mTvSatelliteName.setText(DTVProgramManager.getInstance().getSatInfo(getSatelliteIndex()).sat_name);
+            mTvSatelliteName.setText(DTVProgramManager.getInstance()
+                    .getSatInfo(getSatelliteIndex()).sat_name);
             DTVSearchManager.getInstance().searchByNet(getSatelliteIndex(), mScanMode, mNitOpen, mCaFilter);
         }
 
@@ -297,6 +303,26 @@ public class ScanTVandRadioActivity extends BaseActivity implements LifecycleObs
             }
         }
 
+        if (isFromCAutoSearch()) {
+            mTvSatelliteName.setText(R.string.installation_c);
+            DTVSearchManager.getInstance().searchByNet(getSatelliteIndex(), mScanMode, mNitOpen, mCaFilter);
+        }
+
+        if (isFromCManualSearchActivity()) {
+            mTvSatelliteName.setText(R.string.installation_c);
+            int freq = getFreq();
+            int satIndex = getSatelliteIndex();
+            int qam = getQam();
+            int symbol = getSymbol();
+            if (DTVSettingManager.getInstance().getCurrNetwork() == 0) {
+                DTVSearchManager.getInstance().searchByOneTS(satIndex, freq, symbol, qam,
+                        mScanMode, mNitOpen, mCaFilter);
+            } else {
+                DTVSearchManager.getInstance().searchByNIT(satIndex, freq, symbol, qam, mScanMode,
+                        mNitOpen, mCaFilter);
+            }
+        }
+
     }
 
     private boolean isFromSatelliteActivity() {
@@ -317,6 +343,16 @@ public class ScanTVandRadioActivity extends BaseActivity implements LifecycleObs
 
     private boolean isFromT2AutoSearch() {
         return getIntent().getIntExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, -1) == Constants.IntentValue.SEARCH_TYPE_T2AUTO;
+    }
+
+    private boolean isFromCManualSearchActivity() {
+        return getIntent().getIntExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, -1) ==
+                Constants.IntentValue.SEARCH_TYPE_CMANUAL;
+    }
+
+    private boolean isFromCAutoSearch() {
+        return getIntent().getIntExtra(Constants.IntentKey.INTENT_SEARCH_TYPE, -1) ==
+                Constants.IntentValue.SEARCH_TYPE_CAUTO;
     }
 
     private int getFreq() {

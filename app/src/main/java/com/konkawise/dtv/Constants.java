@@ -125,6 +125,8 @@ public class Constants {
         int SEARCH_TYPE_EDITMANUAL = 3;
         int SEARCH_TYPE_T2MANUAL = 4;
         int SEARCH_TYPE_T2AUTO = 5;
+        int SEARCH_TYPE_CAUTO = 6;
+        int SEARCH_TYPE_CMANUAL = 7;
     }
 
     public interface RequestCode {

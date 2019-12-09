@@ -302,11 +302,19 @@
     <string name="channel_type">Channel Type</string>
     <string name="scan_type">Scan Type</string>
 
-    <string name="transponder">TransponderNo:</string>
-    <string name="frequency">Frequency:</string>
+    <!-- C -->
+    <string name="installation_c">DVB Cable</string>
+    <string name="installation_c_title">Installation Cable</string>
+    <string name="c_auto_search">Auto Search</string>
+    <string name="c_manual_search">Manual Search</string>
+
+    <string name="qam">Qam</string>
+    <string name="transponder">TransponderNo</string>
+    <string name="frequency">Frequency</string>
     <string name="frequency_text">{0} MHz</string>
     <string name="bandwidth">BandWidth:</string>
     <string name="bandwidth_text">{0} M</string>
+    <string name="symbol_rate_text">{0} Ks/s</string>
 
     <string name="antenna_power">Antenna Power</string>
     <string name="area_setting">Area Setting</string>

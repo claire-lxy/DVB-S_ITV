@@ -29,6 +29,7 @@ public class T2ManualSearchActivity extends BaseItemFocusChangeActivity implemen
     private static final int ITEM_TRANSPONDER = 1;
     private static final int ITEM_FREQUENCY = 2;
     private static final int ITEM_BANDWIDTH = 3;
+    private static final String TAG = T2ManualSearchActivity.class.getSimpleName();
 
     private int mCurrntChannel = 0;
 
