@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/background"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="70dp"
+        android:layout_marginBottom="70dp"
+        android:background="@mipmap/right_background">
+
+        <TextView
+            android:id="@+id/c_manual_search_title"
+            style="@style/TitleStyle"
+            android:layout_marginTop="22dp"
+            android:text="@string/manual_installation" />
+
+        <View
+            android:id="@+id/c_manual_search_title_divider"
+            style="@style/TitleDividerStyle"
+            android:layout_below="@id/c_manual_search_title"
+            android:layout_marginTop="18dp" />
+
+        <!-- Transponder -->
+        <RelativeLayout
+            android:id="@+id/item_transponder"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/c_manual_search_title_divider"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/dvb_btn_fragment_selector">
+
+            <TextView
+                style="@style/ItemTitleStyle"
+                android:text="@string/transponder"
+                tools:ignore="RelativeOverlap" />
+
+            <ImageView
+                android:id="@+id/iv_transponder_left"
+                style="@style/ItemArrowLeftStyle"
+                android:layout_toStartOf="@+id/tv_transponder"
+                android:layout_toLeftOf="@+id/tv_transponder"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_transponder"
+                style="@style/ItemContentStyle"
+                android:layout_toStartOf="@+id/iv_transponder_right"
+                android:layout_toLeftOf="@+id/iv_transponder_right"
+                android:background="@drawable/btn_red_bg_shape" />
+
+            <ImageView
+                android:id="@+id/iv_transponder_right"
+                style="@style/ItemArrowRightStyle"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <!-- Frequency -->
+        <RelativeLayout
+            android:id="@+id/item_frequency"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/item_transponder"
+            android:background="@drawable/dvb_btn_fragment_selector">
+
+            <TextView
+                style="@style/ItemTitleStyle"
+                android:text="@string/frequency"
+                tools:ignore="RelativeOverlap" />
+
+            <ImageView
+                android:id="@+id/iv_frequency_left"
+                style="@style/ItemArrowLeftStyle"
+                android:layout_toStartOf="@+id/tv_frequency"
+                android:layout_toLeftOf="@+id/tv_frequency"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_frequency"
+                style="@style/ItemContentStyle"
+                android:layout_toStartOf="@+id/iv_frequency_right"
+                android:layout_toLeftOf="@+id/iv_frequency_right" />
+
+            <ImageView
+                android:id="@+id/iv_frequency_right"
+                style="@style/ItemArrowRightStyle"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <!-- Symbol Rate -->
+        <RelativeLayout
+            android:id="@+id/item_symbol_rate"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/item_frequency"
+            android:background="@drawable/dvb_btn_fragment_selector">
+
+            <TextView
+                style="@style/ItemTitleStyle"
+                android:text="@string/symbol_rate"
+                tools:ignore="RelativeOverlap" />
+
+            <ImageView
+                android:id="@+id/iv_symbol_rate_left"
+                style="@style/ItemArrowLeftStyle"
+                android:layout_toStartOf="@+id/tv_symbol_rate"
+                android:layout_toLeftOf="@+id/tv_symbol_rate"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_symbol_rate"
+                style="@style/ItemContentStyle"
+                android:layout_toStartOf="@+id/iv_symbol_rate_right"
+                android:layout_toLeftOf="@+id/iv_symbol_rate_right" />
+
+            <ImageView
+                android:id="@+id/iv_symbol_rate_right"
+                style="@style/ItemArrowRightStyle"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <!-- Qam -->
+        <RelativeLayout
+            android:id="@+id/item_qam"
+            style="@style/ItemGroupStyle"
+            android:layout_below="@id/item_symbol_rate"
+            android:background="@drawable/dvb_btn_fragment_selector">
+
+            <TextView
+                style="@style/ItemTitleStyle"
+                android:text="@string/qam"
+                tools:ignore="RelativeOverlap" />
+
+            <ImageView
+                android:id="@+id/iv_qam_left"
+                style="@style/ItemArrowLeftStyle"
+                android:layout_toStartOf="@+id/tv_qam"
+                android:layout_toLeftOf="@+id/tv_qam"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tv_qam"
+                style="@style/ItemContentStyle"
+                android:layout_toStartOf="@+id/iv_qam_right"
+                android:layout_toLeftOf="@+id/iv_qam_right" />
+
+            <ImageView
+                android:id="@+id/iv_qam_right"
+                style="@style/ItemArrowRightStyle"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/rl_quality_progress"
+            android:layout_marginLeft="244dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="244dp"
+            android:layout_marginBottom="3dp">
+
+            <TextView
+                android:id="@+id/tv_progress_strength_title"
+                android:layout_width="16dp"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:text="@string/i"
+                android:textSize="12sp" />
+
+            <ProgressBar
+                android:id="@+id/pb_strength"
+                style="@style/pfBar_mProgress_horizontal1"
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="12dp"
+                android:layout_marginLeft="12dp"
+                android:layout_toStartOf="@+id/tv_progress_strength"
+                android:layout_toLeftOf="@+id/tv_progress_strength"
+                android:layout_toEndOf="@id/tv_progress_strength_title"
+                android:layout_toRightOf="@id/tv_progress_strength_title"
+                android:indeterminate="false"
+                android:indeterminateOnly="false"
+                android:max="100" />
+
+            <TextView
+                android:id="@+id/tv_progress_strength"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="16dp"
+                android:layout_marginLeft="16dp"
+                android:textSize="12sp"
+                tools:text="90%" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rl_quality_progress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/ll_bottom_menu"
+            android:layout_marginLeft="244dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="244dp"
+            android:layout_marginBottom="30dp">
+
+            <TextView
+                android:id="@+id/tv_quality_title"
+                android:layout_width="16dp"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:text="@string/q"
+                android:textSize="12sp" />
+
+            <ProgressBar
+                android:id="@+id/pb_quality"
+                style="@style/pfBar_mProgress_horizontal2"
+                android:layout_width="match_parent"
+                android:layout_height="8dp"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="12dp"
+                android:layout_marginLeft="12dp"
+                android:layout_toStartOf="@+id/tv_progress_quality"
+                android:layout_toLeftOf="@+id/tv_progress_quality"
+                android:layout_toEndOf="@id/tv_quality_title"
+                android:layout_toRightOf="@id/tv_quality_title"
+                android:indeterminate="false"
+                android:indeterminateOnly="false"
+                android:max="100" />
+
+            <TextView
+                android:id="@+id/tv_progress_quality"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="16dp"
+                android:layout_marginLeft="16dp"
+                android:textSize="12sp"
+                tools:text="100%" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_bottom_menu"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_alignParentBottom="true"
+            android:background="@mipmap/right_bottom_background"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="26dp"
+                android:layout_height="16dp"
+                android:layout_marginStart="26dp"
+                android:layout_marginLeft="26dp"
+                android:background="@mipmap/btn_red"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginLeft="10dp"
+                android:gravity="center"
+                android:text="@string/scan"
+                android:textSize="12sp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="26dp"
+                android:layout_marginLeft="26dp"
+                android:background="@drawable/btn_translate_bg_shape"
+                android:padding="6dp">
+
+                <ImageView
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:src="@drawable/triangle_up"
+                    tools:ignore="ContentDescription" />
+
+                <ImageView
+                    android:layout_width="10dp"
+                    android:layout_height="10dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginLeft="16dp"
+                    android:src="@drawable/triangle_down"
+                    tools:ignore="ContentDescription" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginLeft="10dp"
+                android:gravity="center"
+                android:text="@string/up_down"
+                android:textSize="12sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginLeft="16dp"
+                android:background="@drawable/btn_translate_bg_shape"
+                android:gravity="center"
+                android:padding="3dp"
+                android:text="@string/menu"
+                android:textSize="12sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginLeft="10dp"
+                android:gravity="center"
+                android:text="@string/back"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </RelativeLayout>
+</LinearLayout>

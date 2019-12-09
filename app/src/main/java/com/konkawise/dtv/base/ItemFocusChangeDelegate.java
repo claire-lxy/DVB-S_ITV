@@ -54,6 +54,9 @@ public class ItemFocusChangeDelegate {
         } else if (stepType == Constants.StepType.MINUS) {
             currStep = minusStep(currStep);
             if (currStep < limit) currStep = maxSize;
+            if (maxSize < limit) {
+                currStep = 0;
+            }
             return currStep;
         }
         return currStep;
