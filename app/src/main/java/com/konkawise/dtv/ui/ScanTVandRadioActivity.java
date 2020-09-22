@@ -6,7 +6,6 @@ import android.arch.lifecycle.OnLifecycleEvent;
 import android.content.Intent;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -201,8 +200,9 @@ public class ScanTVandRadioActivity extends BaseActivity implements LifecycleObs
                 if (isFromT2AutoSearch() || isFromT2ManualSearchActivity()) {
                     tpName = freq / 10 + "." + freq % 10 + "MHz" + " / " + symbol + "M";
                 } else if (isFromCAutoSearch() || isFromCManualSearchActivity()) {
-                    tpName = freq / 10 + "." + freq % 10 + "MHz" + " / "
-                            + symbol + "Ks/s" + " / " + qam + "-QAM";
+                    tpName = freq + "MHz" + " / "
+                            + symbol + "Ks/s" + " / "
+                            + (int) Math.pow(2, 3 + qam) + "-QAM";
                 } else {
                     tpName = freq + Utils.getVorH(ScanTVandRadioActivity.this, qam) + symbol;
                 }

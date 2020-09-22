@@ -306,8 +306,8 @@
     <string name="c_auto_search">Auto Search</string>
     <string name="c_manual_search">Manual Search</string>
 
-    <string name="qam">Qam</string>
-    <string name="transponder">TransponderNo</string>
+    <string name="qam">QAM</string>
+    <string name="transponder">Transponder No:</string>
     <string name="frequency">Frequency</string>
     <string name="frequency_text">{0} MHz</string>
     <string name="bandwidth">BandWidth:</string>

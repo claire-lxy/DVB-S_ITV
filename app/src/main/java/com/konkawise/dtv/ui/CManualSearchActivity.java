@@ -31,7 +31,6 @@ public class CManualSearchActivity extends BaseItemFocusChangeActivity implement
     private static final int ITEM_FREQUENCY = 2;
     private static final int ITEM_SYMBOLRATE = 3;
     private static final int ITEM_QAM = 4;
-    private static final String TAG = CManualSearchActivity.class.getSimpleName();
 
     private int mCurrntChannel = 0;
 
@@ -156,8 +155,6 @@ public class CManualSearchActivity extends BaseItemFocusChangeActivity implement
             mCurrntChannel = PreferenceManager.getInstance().getInt(Constants.PrefsKey.SAVE_CHANNEL);
             DTVSearchManager.getInstance().tunerLockFreq(Constants.SatIndex.CABLE, channel.Freq,
                     channel.Symbol, channel.Qam, 1, 0);
-        } else {
-            initChannel();
         }
     }
 
@@ -166,22 +163,13 @@ public class CManualSearchActivity extends BaseItemFocusChangeActivity implement
         if (satChannelInfoList != null && mCurrntChannel < satChannelInfoList.size()
                 && satChannelInfoList.size() > 0) {
             channel = satChannelInfoList.get(mCurrntChannel);
-        } else {
-            initChannel();
+            mTvFrequency.setText(MessageFormat.format(getString(R.string.frequency_text),
+                    channel.Freq));
+            mTvSymbolRate.setText(MessageFormat.format(getString(R.string.symbol_rate_text),
+                    channel.Symbol));
+            mTvQam.setText(String.valueOf((int) Math.pow(2, 3 + channel.Qam)));
+            DTVSearchManager.getInstance().tunerLockFreq(Constants.SatIndex.CABLE, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
         }
-        mTvFrequency.setText(MessageFormat.format(getString(R.string.frequency_text),
-                (channel.Freq / 10) + "." + (channel.Freq % 10)));
-        mTvSymbolRate.setText(MessageFormat.format(getString(R.string.symbol_rate_text),
-                channel.Symbol));
-        mTvQam.setText(String.valueOf(channel.Qam));
-        DTVSearchManager.getInstance().tunerLockFreq(Constants.SatIndex.CABLE, channel.Freq, channel.Symbol, channel.Qam, 1, 0);
-    }
-
-    private void initChannel() {
-        channel = new HProg_Struct_TP();
-        channel.Freq = 0;
-        channel.Symbol = 0;
-        channel.Qam = 0;
     }
 
     @Override
